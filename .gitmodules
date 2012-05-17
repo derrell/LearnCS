@@ -13,3 +13,6 @@
 [submodule "desktop/compilers/jison.git"]
 	path = desktop/compilers/jison.git
 	url = https://github.com/zaach/jison.git
+[submodule "desktop/compilers/narwhal.git"]
+	path = desktop/compilers/narwhal.git
+	url = https://github.com/tlrobinson/narwhal.git
