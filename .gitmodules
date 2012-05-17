@@ -4,6 +4,9 @@
 [submodule "lib/qxblockly"]
 	path = lib/qxblockly
 	url = git@github.com:qooxdoo-contrib/qxblockly.git
-[submodule "lib/blockly"]
-	path = lib/blockly
+[submodule "lib/Blockly"]
+	path = lib/Blockly
 	url = git@github.com:derrell/Blockly.git
+[submodule "lib/CollapsablePanel"]
+	path = lib/CollapsablePanel
+	url = git@github.com:qooxdoo-contrib/collapsablepanel.git
