@@ -10,3 +10,6 @@
 [submodule "lib/CollapsablePanel"]
 	path = lib/CollapsablePanel
 	url = git@github.com:qooxdoo-contrib/collapsablepanel.git
+[submodule "desktop/compilers/jison.git"]
+	path = desktop/compilers/jison.git
+	url = https://github.com/zaach/jison.git
