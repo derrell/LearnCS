@@ -1,0 +1,9 @@
+[submodule "lib/ScriptListLoader"]
+	path = lib/ScriptListLoader
+	url = git@github.com:qooxdoo-contrib/ScriptListLoader.git
+[submodule "lib/qxblockly"]
+	path = lib/qxblockly
+	url = git@github.com:qooxdoo-contrib/qxblockly.git
+[submodule "lib/blockly"]
+	path = lib/blockly
+	url = git@github.com:derrell/Blockly.git
