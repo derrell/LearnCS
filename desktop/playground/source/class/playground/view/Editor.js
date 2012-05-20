@@ -78,14 +78,27 @@ qx.Class.define("playground.view.Editor",
       this.setLayout(layout);
       this.setDecorator("main");
 
-      // caption
-      var caption = new qx.ui.basic.Label(this.tr("Source Code")).set({
-        font       : "bold",
-        padding    : 5,
-        allowGrowX : true,
-        allowGrowY : true
-      });
-      this.add(caption);
+      // Create a tab view to contain the blocks and source editors
+      var tabView = new qx.ui.tabview.TabView();
+      this.add(tabView, { flex : 1 });
+      
+      // Create the blocks editor page
+      var blocksPage = new qx.ui.tabview.Page(this.tr("Blocks Editor"));
+      var label = blocksPage.getChildControl("button").getChildControl("label");
+      label.setFont("bold");
+      blocksPage.setLayout(new qx.ui.layout.VBox());
+      tabView.add(blocksPage);
+
+      // Create a blockly editor
+      this.__blocksEditor = new blockly.Blockly();
+      blocksPage.add(this.__blocksEditor, { flex : 1 });
+
+      // Create the source editor page
+      var sourcePage = new qx.ui.tabview.Page(this.tr("Source Code"));
+      label = sourcePage.getChildControl("button").getChildControl("label");
+      label.setFont("bold");
+      sourcePage.setLayout(new qx.ui.layout.VBox());
+      tabView.add(sourcePage);
 
       // plain text area
       this.__textarea = new qx.ui.form.TextArea().set({
@@ -95,7 +108,7 @@ qx.Class.define("playground.view.Editor",
         backgroundColor: "white",
         padding   : [0,0,0,5]
       });
-      this.add(this.__textarea, { flex : 1 });
+      sourcePage.add(this.__textarea, { flex : 1 });
 
       this.__editor = new qx.ui.core.Widget();
       this.__editor.setDecorator("separator-vertical");
@@ -116,7 +129,7 @@ qx.Class.define("playground.view.Editor",
         }, this);
       }
       this.__editor.setVisibility("excluded");
-      this.add(this.__editor, { flex : 1 });
+      sourcePage.add(this.__editor, { flex : 1 });
 
 
       // load the CSS files for the code editor
