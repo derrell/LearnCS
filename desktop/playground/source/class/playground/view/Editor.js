@@ -79,15 +79,15 @@ qx.Class.define("playground.view.Editor",
       this.setDecorator("main");
 
       // Create a tab view to contain the blocks and source editors
-      var tabView = new qx.ui.tabview.TabView();
-      this.add(tabView, { flex : 1 });
+      this.__codeView = new qx.ui.tabview.TabView();
+      this.add(this.__codeView, { flex : 1 });
       
       // Create the blocks editor page
       var blocksPage = new qx.ui.tabview.Page(this.tr("Blocks Editor"));
       var label = blocksPage.getChildControl("button").getChildControl("label");
       label.setFont("bold");
       blocksPage.setLayout(new qx.ui.layout.VBox());
-      tabView.add(blocksPage);
+      this.__codeView.add(blocksPage);
 
       // Create a blockly editor
       this.__blocksEditor = new blockly.Blockly();
@@ -98,7 +98,21 @@ qx.Class.define("playground.view.Editor",
       label = sourcePage.getChildControl("button").getChildControl("label");
       label.setFont("bold");
       sourcePage.setLayout(new qx.ui.layout.VBox());
-      tabView.add(sourcePage);
+      this.__codeView.add(sourcePage);
+      
+/*
+      this.__codeView.setSelection( [ sourcePage ] );
+      qx.util.TimerManager.getInstance().start(
+        function()
+        {
+          this.__codeView.setSelection( [ blocksPage ] );
+        },
+        0,
+        this,
+        null,
+        100);
+*/
+      
 
       // plain text area
       this.__textarea = new qx.ui.form.TextArea().set({
@@ -113,6 +127,7 @@ qx.Class.define("playground.view.Editor",
       this.__editor = new qx.ui.core.Widget();
       this.__editor.setDecorator("separator-vertical");
       var highlightDisabled = false;
+/*
       var badIE = qx.core.Environment.get("engine.name") == "mshtml";
       if (badIE) {
         badIE = parseFloat(qx.core.Environment.get("browser.version")) <= 8 ||
@@ -130,6 +145,9 @@ qx.Class.define("playground.view.Editor",
       }
       this.__editor.setVisibility("excluded");
       sourcePage.add(this.__editor, { flex : 1 });
+*/
+this.fireEvent("disableHighlighting");
+highlightDisabled = true;
 
 
       // load the CSS files for the code editor
@@ -257,6 +275,11 @@ qx.Class.define("playground.view.Editor",
           this.__textarea.setValue(this.__ace.getSession().getValue());
         }
       }
+    },
+    
+    getCodeView : function()
+    {
+      return this.__codeView;
     }
   },
 

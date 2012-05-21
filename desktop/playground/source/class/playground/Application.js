@@ -134,6 +134,7 @@ qx.Class.define("playground.Application",
 
       // toolbar listener
       this.__toolbar.addListener("run", this.run, this);
+      this.__toolbar.addListener("fromBlocks", this.toJavaScript, this);
       this.__toolbar.addListener("changeSample", this.__onSampleChange, this);
       this.__toolbar.addListener("changeHighlight", this.__onHighlightChange, this);
       this.__toolbar.addListener("changeLog", this.__onLogChange, this);
@@ -840,6 +841,27 @@ qx.Class.define("playground.Application",
       this.__updatePlayground();
     },
 
+    /**
+     * Convert the blocks to JavaScript and place that code in the editor
+     *
+     * @param e {qx.event.type.Event} A possible events (unused)
+     */
+    toJavaScript : function(e)
+    {
+      var tabView = this.__editor.getCodeView();
+      tabView.setSelection( [ tabView.getChildren()[1] ]);
+      qx.util.TimerManager.getInstance().start(
+        function()
+        {
+          var code = Blockly.Generator.workspaceToCode('JavaScript');
+          this.__editor.setCode(code);
+          this.setOriginCode(this.__editor.getCode());
+        },
+        0,
+        this,
+        null,
+        0);
+    },
 
     // ***************************************************
     // STANDALONE SUPPORT
