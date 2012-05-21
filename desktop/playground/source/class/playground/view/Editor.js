@@ -280,6 +280,11 @@ highlightDisabled = true;
     getCodeView : function()
     {
       return this.__codeView;
+    },
+    
+    getBlocksCode : function()
+    {
+      return Blockly.Generator.workspaceToCode('JavaScript');
     }
   },
 

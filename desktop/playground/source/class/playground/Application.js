@@ -825,7 +825,7 @@ qx.Class.define("playground.Application",
     /**
      * Runs the current set sample and checks if it need to be saved to the url.
      *
-     * @param e {qx.event.type.Event} A possible events (unused)
+     * @param e {qx.event.type.Event} A possible event (unused)
      */
     run : function(e)
     {
@@ -844,7 +844,7 @@ qx.Class.define("playground.Application",
     /**
      * Convert the blocks to JavaScript and place that code in the editor
      *
-     * @param e {qx.event.type.Event} A possible events (unused)
+     * @param e {qx.event.type.Event} A possible event (unused)
      */
     toJavaScript : function(e)
     {
@@ -853,7 +853,7 @@ qx.Class.define("playground.Application",
       qx.util.TimerManager.getInstance().start(
         function()
         {
-          var code = Blockly.Generator.workspaceToCode('JavaScript');
+          var code = this.__editor.getBlocksCode();
           this.__editor.setCode(code);
           this.setOriginCode(this.__editor.getCode());
         },
