@@ -90,7 +90,8 @@ qx.Class.define("playground.view.Editor",
       this.__codeView.add(blocksPage);
 
       // Create a blockly editor
-      this.__blocksEditor = new blockly.Blockly();
+      this.__blocksEditor = 
+        new blockly.Blockly(playground.language.Language.getLanguageData());
       blocksPage.add(this.__blocksEditor, { flex : 1 });
 
       // Create the source editor page
@@ -284,7 +285,7 @@ highlightDisabled = true;
     
     getBlocksCode : function()
     {
-      return Blockly.Generator.workspaceToCode('JavaScript');
+      return this.__blocksEditor.toJavaScript();
     }
   },
 
