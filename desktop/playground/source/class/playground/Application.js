@@ -947,28 +947,43 @@ qx.Class.define("playground.Application",
             origin        : "pubsub.pubnub.com"
           });
 
-        this.__pubnub.subscribe(
-          {
-            channel  : "test",
-
-            connect  : function()
+        // Get a unique id so we can ignore our own messages
+        PUBNUB.uuid(
+          qx.lang.Function.bind(
+            function(uuid)
             {
-              qx.log.Logger.debug("Subscribe connection established");
-            },
+              // Store our id
+              this.__myId = uuid;
 
-            callback : qx.lang.Function.bind(
-              function(message)
-              {
-                qx.dev.Debug.debugObject(message, "xxx", 3);
-                this.__receiveMessage(message);
-              },
-              this)
-          });
+              // Subscribe to receive messages.
+              this.__pubnub.subscribe(
+                {
+                  channel  : "test",
+
+                  connect  : function()
+                  {
+                    qx.log.Logger.debug("Subscribe connection established");
+                  },
+
+                  callback : qx.lang.Function.bind(this.__receiveMessage, this)
+                });
+            },
+            this));
       }
     },
 
     __broadcastMessage : function(message)
     {
+      // If this change was a result of a received message...
+      if (this.__bInternalUpdate)
+      {
+        // ... then do not rebroadcast it
+        return;
+      }
+
+      // Add the source id to the message
+      message.source = this.__myId;
+
       this.debug("Broadcasting a message");
       this.__pubnub.publish(
         {
@@ -979,9 +994,32 @@ qx.Class.define("playground.Application",
     
     __receiveMessage : function(message)
     {
+      // Ignore messages that we generated
+      if (message.source == this.__myId)
+      {
+        return;
+      }
+
       qx.dev.Debug.debugObject(message, "received message", 3);
+      
+      // Prevent rebroadcast of changes as we update the blocks editor
+      this.__bInternalUpdate = true;
+
+      // Get the list of top-level blocks, so we can destroy all of them
+      var topBlocks = Blockly.mainWorkspace.getTopBlocks();
+      topBlocks.forEach(
+        function(block)
+        {
+          // Destroy this block
+          block.destroy(false);
+        });
+
+      // Add the block layout received in the message to the workspace
       var xml = Blockly.Xml.textToDom(message.xml);
       Blockly.Xml.domToWorkspace(Blockly.mainWorkspace, xml);
+      
+      // Re-allow broadcast, as chagnes are made at the blocks editor
+      this.__bInternalUpdate = false;
     }
   },
 
