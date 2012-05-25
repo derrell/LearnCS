@@ -34,9 +34,12 @@ qx.Class.define("playground.view.Editor",
   include : qx.ui.core.MBlocker,
 
 
-  construct : function()
+  construct : function(broadcast)
   {
     this.base(arguments);
+    
+    // Save the provided broadcast function
+    this.__broadcast = broadcast;
   },
 
 
@@ -91,7 +94,8 @@ qx.Class.define("playground.view.Editor",
 
       // Create a blockly editor
       this.__blocksEditor = 
-        new blockly.Blockly(playground.language.Language.getLanguageData());
+        new blockly.Blockly(playground.language.Language.getLanguageData(),
+                            this.__broadcast);
       blocksPage.add(this.__blocksEditor, { flex : 1 });
 
       // Create the source editor page

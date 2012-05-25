@@ -23,6 +23,7 @@
 /* ************************************************************************
 
 #asset(qx/icon/${qx.icontheme}/*)
+#ignore(PUBNUB)
 
 ************************************************************************ */
 
@@ -116,6 +117,13 @@ qx.Class.define("playground.Application",
       // Call super class
       this.base(arguments);
 
+      // Start loading PubNub code. When it's loaded, subscribe.
+      new scriptlistloader.Loader(
+        qx.lang.Function.bind(this.__onPubNubLoaded, this),
+        null,
+        [ "http://cdn.pubnub.com/pubnub-3.1.js" ],
+        null);
+
       // container layout
       var layout = new qx.ui.layout.VBox();
 
@@ -186,7 +194,8 @@ qx.Class.define("playground.Application",
 
 
       // need to split up the creation process
-      this.__editor = new playground.view.Editor();
+      this.__editor = new playground.view.Editor(
+        qx.lang.Function.bind(this.__broadcastMessage, this));
       this.__editor.addListener("disableHighlighting", function() {
         this.__toolbar.enableHighlighting(false);
       }, this);
@@ -918,6 +927,61 @@ qx.Class.define("playground.Application",
         var exc = ex;
         this.error(this.__errorMsg.replace(/\|/g, "\n") + exc);
       }
+    },
+    
+    __onPubNubLoaded : function(failures)
+    {
+      // Ensure that all files loaded properly
+      if (failures.length > 0)
+      {
+        alert("Failed to load files:\n\t" + failures.join("\n\t"));
+      }
+      else
+      {
+        this.debug("PubNub is loaded. Initializing it.");
+        PUBNUB.ready();
+        this.__pubnub = PUBNUB.init(
+          {
+            publish_key   : "pub-00dd7e63-2fa2-4ff3-ba48-4c471276760c",
+            subscribe_key : "sub-2cfc883d-a479-11e1-a8bf-b3191d461b7a",
+            origin        : "pubsub.pubnub.com"
+          });
+
+        this.__pubnub.subscribe(
+          {
+            channel  : "test",
+
+            connect  : function()
+            {
+              qx.log.Logger.debug("Subscribe connection established");
+            },
+
+            callback : qx.lang.Function.bind(
+              function(message)
+              {
+                qx.dev.Debug.debugObject(message, "xxx", 3);
+                this.__receiveMessage(message);
+              },
+              this)
+          });
+      }
+    },
+
+    __broadcastMessage : function(message)
+    {
+      this.debug("Broadcasting a message");
+      this.__pubnub.publish(
+        {
+          channel : "test",
+          message : message
+        });
+    },
+    
+    __receiveMessage : function(message)
+    {
+      qx.dev.Debug.debugObject(message, "received message", 3);
+      var xml = Blockly.Xml.textToDom(message.xml);
+      Blockly.Xml.domToWorkspace(Blockly.mainWorkspace, xml);
     }
   },
 
