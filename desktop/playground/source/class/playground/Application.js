@@ -894,13 +894,13 @@ qx.Class.define("playground.Application",
         return (
           clazz && clazz.superclass &&
           clazz.superclass.classname === "qx.application.Standalone"
-        )
+        );
       // mobile mode supports mobild applications
       } else if (this.__mode == "mobile") {
         return (
           clazz && clazz.superclass &&
           clazz.superclass.classname === "qx.application.Mobile"
-        )
+        );
       }
       return false;
     },
@@ -974,6 +974,7 @@ qx.Class.define("playground.Application",
 
     __broadcastMessage : function(message)
     {
+return;
       // If this change was a result of a received message...
       if (this.__bInternalUpdate)
       {
@@ -984,7 +985,7 @@ qx.Class.define("playground.Application",
       // Add the source id to the message
       message.source = this.__myId;
 
-      this.debug("Broadcasting a message");
+      qx.dev.Debug.debugObject(message, "Broadcasting message");
       this.__pubnub.publish(
         {
           channel : "test",
