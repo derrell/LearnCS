@@ -49,6 +49,9 @@
           "manifest" : "${QOOXDOO_PATH}/component/library/versionlabel/Manifest.json"
         },
         {
+          "manifest" : "../../language/Manifest.json"
+        },
+        {
           "manifest" : "../../lib/CollapsablePanel/Manifest.json"
         },
         {

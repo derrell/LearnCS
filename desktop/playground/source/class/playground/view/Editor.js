@@ -94,7 +94,7 @@ qx.Class.define("playground.view.Editor",
 
       // Create a blockly editor
       this.__blocksEditor = 
-        new blockly.Blockly(playground.language.Language.getLanguageData(),
+        new blockly.Blockly(workshop.language.Language.getLanguageData(),
                             this.__broadcast);
       blocksPage.add(this.__blocksEditor, { flex : 1 });
 
