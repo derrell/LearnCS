@@ -3,7 +3,6 @@
  * 
  * License:
  *   LGPL: http://www.gnu.org/licenses/lgpl.html 
- *   EPL : http://www.eclipse.org/org/documents/epl-v10.php
  */
 
 /*
@@ -23,7 +22,7 @@ qx.Class.define("playground.language.qxmobileui.Container",
       /**
        * A navigation container. It automatically consumes the entire screen.
        */
-      container_navigation :
+      container_application :
       {
         category : "Container",
 
