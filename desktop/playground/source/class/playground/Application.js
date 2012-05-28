@@ -24,6 +24,9 @@
 
 #asset(qx/icon/${qx.icontheme}/*)
 #ignore(PUBNUB)
+#ignore(Blockly)
+#ignore(Blockly.Xml)
+#ignore(Blockly.mainWorkspace)
 
 ************************************************************************ */
 
