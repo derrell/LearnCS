@@ -198,7 +198,7 @@ qx.Class.define("playground.Application",
 
       // need to split up the creation process
       this.__editor = new playground.view.Editor(
-        qx.lang.Function.bind(this.__broadcastMessage, this));
+        qx.lang.Function.bind(this.__publishMessage, this));
       this.__editor.addListener("disableHighlighting", function() {
         this.__toolbar.enableHighlighting(false);
       }, this);
@@ -941,7 +941,6 @@ qx.Class.define("playground.Application",
       }
       else
       {
-        this.debug("PubNub is loaded. Initializing it.");
         PUBNUB.ready();
         this.__pubnub = PUBNUB.init(
           {
@@ -958,6 +957,7 @@ qx.Class.define("playground.Application",
               // Store our id
               this.__myId = uuid;
 
+/*
               // Subscribe to receive messages.
               this.__pubnub.subscribe(
                 {
@@ -970,29 +970,34 @@ qx.Class.define("playground.Application",
 
                   callback : qx.lang.Function.bind(this.__receiveMessage, this)
                 });
+*/
             },
             this));
       }
     },
 
-    __broadcastMessage : function(message)
+    __publishMessage : function(message, messageType)
     {
-return;
       // If this change was a result of a received message...
       if (this.__bInternalUpdate)
       {
-        // ... then do not rebroadcast it
+        // ... then do not republish it
         return;
       }
 
       // Add the source id to the message
       message.source = this.__myId;
 
-      qx.dev.Debug.debugObject(message, "Broadcasting message");
+      qx.dev.Debug.debugObject(message,
+                               "Publishing message: type=" + messageType);
       this.__pubnub.publish(
         {
           channel : "test",
-          message : message
+          message : 
+          {
+            messageType : messageType,
+            message     : message
+          }
         });
     },
     
@@ -1006,7 +1011,7 @@ return;
 
       qx.dev.Debug.debugObject(message, "received message", 3);
       
-      // Prevent rebroadcast of changes as we update the blocks editor
+      // Prevent republishing of changes as we update the blocks editor
       this.__bInternalUpdate = true;
 
       // Get the list of top-level blocks, so we can destroy all of them
@@ -1022,7 +1027,7 @@ return;
       var xml = Blockly.Xml.textToDom(message.xml);
       Blockly.Xml.domToWorkspace(Blockly.mainWorkspace, xml);
       
-      // Re-allow broadcast, as chagnes are made at the blocks editor
+      // Re-allow publish, as chagnes are made at the blocks editor
       this.__bInternalUpdate = false;
     }
   },
