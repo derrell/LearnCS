@@ -108,6 +108,10 @@ qx.Class.define("playground.Application",
 
     __mode : null,
     __maximized : null,
+    
+    __myId : null,
+    __pendingEnvelopes : null,
+    __messageSendTimer : null,
 
     /**
      * This method contains the initial application code and gets called
@@ -226,6 +230,9 @@ qx.Class.define("playground.Application",
 
       infosplit.add(this.__log, 1);
       this.__log.exclude();
+      
+      // Prepare to publish messages. They get queued and published as a group.
+      this.__pendingEnvelopes = [];
     },
 
 
@@ -865,7 +872,10 @@ qx.Class.define("playground.Application",
       qx.util.TimerManager.getInstance().start(
         function()
         {
-          var code = this.__editor.getBlocksCode();
+          var code =
+            "this.getRoot().add(" +
+            this.__editor.getBlocksCode() +
+            ", { flex : 1 });";
           this.__editor.setCode(code);
           this.setOriginCode(this.__editor.getCode());
         },
@@ -978,6 +988,8 @@ qx.Class.define("playground.Application",
 
     __publishMessage : function(message, messageType)
     {
+      var             timer = qx.util.TimerManager.getInstance();
+
       // If this change was a result of a received message...
       if (this.__bInternalUpdate)
       {
@@ -988,46 +1000,95 @@ qx.Class.define("playground.Application",
       // Add the source id to the message
       message.source = this.__myId;
 
+      // Add this message to and envelope, and add the envelope to the group
+      // of envelopes to be sent
       qx.dev.Debug.debugObject(message,
-                               "Publishing message: type=" + messageType);
-      this.__pubnub.publish(
+                               "Enquing envelope: type=" + messageType);
+      this.__pendingEnvelopes.push(
         {
-          channel : "test",
-          message : 
-          {
-            messageType : messageType,
-            message     : message
-          }
+          messageType : messageType,
+          message     : message
         });
+      
+      // If no timer exists to publish queued envelopes...
+      if (! this.__messageSendTimer)
+      {
+        // ... then create one now.
+        this.__messageSendTimer = timer.start(
+          function()
+          {
+            // Check for programmer error
+            if (this.__pendingEnvelopes.length == 0)
+            {
+              this.warn("Publish timer expired with no envelopes on queue!");
+              return;
+            }
+
+            this.debug("Publishing envelopes: count=" +
+                       this.__pendingEnvelopes.length);
+
+            // Publish the pending envelopes as a group
+            this.__pubnub.publish(
+              {
+                channel : "test",
+                message : this.__pendingEnvelopes
+              });
+            
+            // Flush the pending envelopes array now that those have been sent
+            this.__pendingEnvelopes = [];
+            
+            // Clear the message timer so a new one is created as needed
+            this.__messageSendTimer = null;
+          },
+          0,
+          this,
+          null,
+          1000);
+        
+      }
     },
     
-    __receiveMessage : function(message)
+    __receiveMessage : function(messages)
     {
-      // Ignore messages that we generated
-      if (message.source == this.__myId)
+      // Check for bogus message
+      if (! qx.lang.Type.isArray(messages))
       {
+        // Received an invalid message. All of our messages are arrays
+        this.warn("Received bogus message:\n" +
+                  qx.dev.Debug.debugObjectToString(messages));
         return;
       }
-
-      qx.dev.Debug.debugObject(message, "received message", 3);
       
       // Prevent republishing of changes as we update the blocks editor
       this.__bInternalUpdate = true;
 
-      // Get the list of top-level blocks, so we can destroy all of them
-      var topBlocks = Blockly.mainWorkspace.getTopBlocks();
-      topBlocks.forEach(
-        function(block)
+      messages.forEach(
+        function(message)
         {
-          // Destroy this block
-          block.destroy(false);
-        });
+          // Ignore messages that we generated
+          if (message.source == this.__myId)
+          {
+            return;
+          }
 
-      // Add the block layout received in the message to the workspace
-      var xml = Blockly.Xml.textToDom(message.xml);
-      Blockly.Xml.domToWorkspace(Blockly.mainWorkspace, xml);
-      
-      // Re-allow publish, as chagnes are made at the blocks editor
+          qx.dev.Debug.debugObject(message, "received message", 3);
+
+          // Get the list of top-level blocks, so we can destroy all of them
+          var topBlocks = Blockly.mainWorkspace.getTopBlocks();
+          topBlocks.forEach(
+            function(block)
+            {
+              // Destroy this block
+              block.destroy(false);
+            });
+
+          // Add the block layout received in the message to the workspace
+          var xml = Blockly.Xml.textToDom(message.xml);
+          Blockly.Xml.domToWorkspace(Blockly.mainWorkspace, xml);
+        },
+        this);
+
+      // Re-allow publish, as changes are made at the blocks editor
       this.__bInternalUpdate = false;
     }
   },
