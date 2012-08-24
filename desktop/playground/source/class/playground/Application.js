@@ -108,7 +108,7 @@ qx.Class.define("playground.Application",
 
     __mode : null,
     __maximized : null,
-    
+
     __myId : null,
     __pendingEnvelopes : null,
     __messageSendTimer : null,
@@ -360,6 +360,11 @@ qx.Class.define("playground.Application",
         throw new Error("Mode '" + mode + "' not supported");
       }
 
+      // only set new mode if not already set
+      if (this.__mode == mode) {
+        return true;
+      }
+
       // only change the mode if no code gets lost
       if (this.__discardChanges()) {
         return false;
@@ -584,7 +589,7 @@ qx.Class.define("playground.Application",
     __initBookmarkSupport : function()
     {
       this.__history = qx.bom.History.getInstance();
-      this.__history.addListener("request", this.__onHistoryChanged, this);
+      this.__history.addListener("changeState", this.__onHistoryChanged, this);
 
       // Handle bookmarks
       var state = this.__history.getState();
@@ -872,10 +877,7 @@ qx.Class.define("playground.Application",
       qx.util.TimerManager.getInstance().start(
         function()
         {
-          var code =
-            "this.getRoot().add(" +
-            this.__editor.getBlocksCode() +
-            ", { flex : 1 });";
+          var code = this.__editor.getBlocksCode();
           this.__editor.setCode(code);
           this.setOriginCode(this.__editor.getCode());
         },

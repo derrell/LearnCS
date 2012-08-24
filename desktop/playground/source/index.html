@@ -1,10 +1,15 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<html>
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <title>qooxdoo &raquo; Playground</title>
   <style type="text/css">
     .qx_samples { display:none }
+    .vbox {
+      /* Solves Firefox bug on playground.*/
+      height:100%;
+    }
+
   </style>
   <script src="resource/playground/editor/ace.js" type="text/javascript" charset="utf-8"></script>
   <script src="resource/playground/editor/theme-eclipse.js" type="text/javascript" charset="utf-8"></script>
@@ -23,29 +28,27 @@
 
 <!-- ********************************************************************** -->
 
-<textarea class="qx_samples" title="Hello World-mobile">var navigationContainer = new qx.ui.mobile.container.Navigation();
-this.getRoot().add(navigationContainer, {flex:1});
-
+<textarea class="qx_samples" title="Hello World-mobile">
 var page = new qx.ui.mobile.page.NavigationPage();
 page.setTitle("Hello World");
 page.addListener("initialize", function() {
   var button = new qx.ui.mobile.form.Button("First Button");
-  page.getContent().add(button);          
+  page.getContent().add(button);
 
   button.addListener("tap", function() {
     alert("Hello World");
   }, this);
 },this);
-navigationContainer.add(page);
+
+this.getManager().addDetail(page);
+
 page.show();</textarea>
 
 
 <!-- ********************************************************************** -->
 
 
-<textarea class="qx_samples" title="List-mobile">var navigationContainer = new qx.ui.mobile.container.Navigation();
-this.getRoot().add(navigationContainer, {flex:1});
-
+<textarea class="qx_samples" title="List-mobile">
 var page = new qx.ui.mobile.page.NavigationPage();
 page.setTitle("List");
 page.addListener("initialize", function() {
@@ -70,21 +73,19 @@ page.addListener("initialize", function() {
   list.addListener("changeSelection", function(evt) {
     alert("Item Selected #" + evt.getData());
   }, this);
-  
+
   page.getContent().add(list);
 },this);
 
-navigationContainer.add(page,{flex:1});
+this.getManager().addDetail(page);
+
 page.show();</textarea>
 
 
 <!-- ********************************************************************** -->
 
 
-<textarea class="qx_samples" title="Pages-mobile">var navigationContainer = new qx.ui.mobile.container.Navigation();
-this.getRoot().add(navigationContainer, {flex:1});
-
-// Page 1
+<textarea class="qx_samples" title="Pages-mobile">// Page 1
 var page1 = new qx.ui.mobile.page.NavigationPage();
 page1.setTitle("Page 1");
 page1.addListener("initialize", function() {
@@ -112,8 +113,7 @@ page2.addListener("back", function() {
   page1.show({reverse:true});
 }, this);
 
-navigationContainer.add(page1);
-navigationContainer.add(page2);
+this.getManager().addDetail([page1,page2]);
 
 page1.show();</textarea>
 
@@ -123,31 +123,28 @@ page1.show();</textarea>
 
 
 <textarea class="qx_samples" title="Form-mobile">
-var navigationContainer = new qx.ui.mobile.container.Navigation();
-this.getRoot().add(navigationContainer, {flex:1});
-
 var page = new qx.ui.mobile.page.NavigationPage();
 page.setTitle("Login");
 page.addListener("initialize", function() {
   var form = new qx.ui.mobile.form.Form();
-  
+
   // User name
   var user = new qx.ui.mobile.form.TextField();
   user.setRequired(true);
   form.add(user, "Username");
-  
+
   // Password
   var pwd = new qx.ui.mobile.form.PasswordField();
   pwd.setRequired(true);
   form.add(pwd, "Password");
-  
+
   // Use form renderer
   page.getContent().add(new qx.ui.mobile.form.renderer.SinglePlaceholder(form));
-  
+
   // login button
   var button = new qx.ui.mobile.form.Button("Login");
   page.getContent().add(button);
-  
+
   button.addListener("tap", function() {
     if (form.validate()) {  // use form validation
       alert("Loggin in " + user.getValue());
@@ -155,7 +152,7 @@ page.addListener("initialize", function() {
   }, this);
 },this);
 
-navigationContainer.add(page);
+this.getManager().addDetail(page);
 
 page.show();</textarea>
 
@@ -164,9 +161,6 @@ page.show();</textarea>
 
 
 <textarea class="qx_samples" title="YQL Binding-mobile">
-var navigationContainer = new qx.ui.mobile.container.Navigation();
-this.getRoot().add(navigationContainer, {flex:1});
-
 // Data model
 var query = "select * from feed where url='http://feeds.feedburner.com/qooxdoo/news/content'";
 
@@ -192,7 +186,7 @@ page.addListener("initialize", function()
   page.getContent().add(list);
 },this);
 
-navigationContainer.add(page);
+this.getManager().addDetail(page);
 page.show();</textarea>
 
 
@@ -219,8 +213,8 @@ button1.addListener("execute", function(e) {
 
 <!-- ********************************************************************** -->
 
-<div id="compare_div1" visibility="hidden"></div>
-<div id="compare_div2" visibility="hidden"></div>
+<div id="compare_div1" style="visibility: hidden;"></div>
+<div id="compare_div2" style="visibility: hidden;"></div>
 
 <textarea class="qx_samples" title="Window-ria">var win = new qx.ui.window.Window("First Window");
 win.setWidth(300);

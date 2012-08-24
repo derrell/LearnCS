@@ -14,6 +14,14 @@
 
    Authors:
      * Martin Wittemann (martinwittemann)
+     * Christopher Zuendorf (czuendorf)
+
+************************************************************************ */
+/* ************************************************************************
+
+#asset(qx/mobile/icon/android/*)
+#asset(qx/mobile/icon/ios/*)
+#asset(qx/mobile/icon/common/*)
 
 ************************************************************************ */
 /**
@@ -25,6 +33,10 @@ qx.Class.define("playground.view.MobilePlayArea",
 
   members :
   {
+    // Page manager
+    __manager : null,
+
+
     // overridden
     init : function()
     {
@@ -41,15 +53,17 @@ qx.Class.define("playground.view.MobilePlayArea",
         playRootEl.style["background"] = "none";
       }
 
-
       this._playRoot = new qx.ui.mobile.core.Root(playRootEl);
 
       var self = this;
-      
+
       this._playApp = new qx.application.Mobile();
-      this._playApp.getRoot = function() {
-        return self._playRoot;
+      this._playApp.getManager = function() {
+        return self.__manager;
       };
+
+      // Create the "global" variable storage area
+      this._playApp.obj = {};
 
       this._initialized = true;
     },
@@ -58,6 +72,13 @@ qx.Class.define("playground.view.MobilePlayArea",
     // overridden
     reset : function(beforeReg, afterReg, code) {
       this._playRoot.removeAll();
+
+      if(this.__manager) {
+        this.__manager.dispose();
+        this.__manager = null;
+      }
+
+      this.__manager = new qx.ui.mobile.page.Manager(false, this._playRoot);
     }
   }
 });
