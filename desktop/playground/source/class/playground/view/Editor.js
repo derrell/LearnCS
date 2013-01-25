@@ -33,13 +33,35 @@ qx.Class.define("playground.view.Editor",
   extend : qx.ui.container.Composite,
   include : qx.ui.core.MBlocker,
 
+  statics : {
+    loadAce : function(clb, ctx) {
+      var resource = [
+        "playground/editor/ace.js",
+        "playground/editor/theme-eclipse.js",
+        "playground/editor/mode-javascript.js"
+      ];
+      var load = function(list) {
+        if (list.length == 0) {
+          clb.call(ctx);
+          return;
+        }
+        var res = list.shift();
+        var uri = qx.util.ResourceManager.getInstance().toUri(res);
+        var loader = new qx.bom.request.Script();
+        loader.onload = function() {
+          load(list);
+        };
+        loader.open("GET", uri);
+        loader.send();
+      }
+      load(resource);
+    }
+  },
 
-  construct : function(fPublish)
+
+  construct : function()
   {
     this.base(arguments);
-    
-    // Save the provided broadcast function
-    this.__fPublish = fPublish;
   },
 
 
@@ -58,6 +80,7 @@ qx.Class.define("playground.view.Editor",
     __highlighted : null,
     __editor : null,
     __ace : null,
+    __errorLabel : null,
 
     /**
      * The constructor was spit up to make the included mixin available during
@@ -81,42 +104,21 @@ qx.Class.define("playground.view.Editor",
       this.setLayout(layout);
       this.setDecorator("main");
 
-      // Create a tab view to contain the blocks and source editors
-      this.__codeView = new qx.ui.tabview.TabView();
-      this.add(this.__codeView, { flex : 1 });
-      
-      // Create the blocks editor page
-      var blocksPage = new qx.ui.tabview.Page(this.tr("Blocks Editor"));
-      var label = blocksPage.getChildControl("button").getChildControl("label");
-      label.setFont("bold");
-      blocksPage.setLayout(new qx.ui.layout.VBox());
-      this.__codeView.add(blocksPage);
-
-      // Create a blockly editor
-      this.__blocksEditor = 
-        new blockly.Blockly(workshop.language.Language.getLanguageData(),
-                            this.__fPublish);
-      blocksPage.add(this.__blocksEditor, { flex : 1 });
-
-      // Create the source editor page
-      var sourcePage = new qx.ui.tabview.Page(this.tr("Source Code"));
-      label = sourcePage.getChildControl("button").getChildControl("label");
-      label.setFont("bold");
-      sourcePage.setLayout(new qx.ui.layout.VBox());
-      this.__codeView.add(sourcePage);
-      
+      // caption
+      var caption = new qx.ui.container.Composite().set({
+        padding    : 5,
+        allowGrowX : true,
+        allowGrowY : true,
+        backgroundColor: "white"
+      });
+      this.add(caption);
+      // configure caption
+      caption.setLayout(new qx.ui.layout.HBox(10));
 /*
-      this.__codeView.setSelection( [ sourcePage ] );
-      qx.util.TimerManager.getInstance().start(
-        function()
-        {
-          this.__codeView.setSelection( [ blocksPage ] );
-        },
-        0,
-        this,
-        null,
-        100);
+      caption.add(new qx.ui.basic.Label(this.tr("Source Code")).set({font: "bold"}));
 */
+      this.__errorLabel = new qx.ui.basic.Label().set({textColor: "red"});
+      caption.add(this.__errorLabel);
 
       // plain text area
       this.__textarea = new qx.ui.form.TextArea().set({
@@ -126,20 +128,21 @@ qx.Class.define("playground.view.Editor",
         backgroundColor: "white",
         padding   : [0,0,0,5]
       });
-      sourcePage.add(this.__textarea, { flex : 1 });
+      this.add(this.__textarea, { flex : 1 });
 
       this.__editor = new qx.ui.core.Widget();
       this.__editor.setDecorator("separator-vertical");
       var highlightDisabled = false;
-/*
       var badIE = qx.core.Environment.get("engine.name") == "mshtml";
       if (badIE) {
         badIE = parseFloat(qx.core.Environment.get("browser.version")) <= 8 ||
           qx.core.Environment.get("browser.documentmode") <= 8;
       }
 
+      var opera = qx.core.Environment.get("engine.name") == "opera";
+
       // FF2 does not have that...
-      if (!document.createElement("div").getBoundingClientRect || badIE || !window.ace) {
+      if (!document.createElement("div").getBoundingClientRect || badIE || opera || !window.ace) {
         this.fireEvent("disableHighlighting");
         highlightDisabled = true;
       } else {
@@ -148,19 +151,7 @@ qx.Class.define("playground.view.Editor",
         }, this);
       }
       this.__editor.setVisibility("excluded");
-      sourcePage.add(this.__editor, { flex : 1 });
-*/
-this.fireEvent("disableHighlighting");
-highlightDisabled = true;
-
-
-/*
-      // load the CSS files for the code editor
-      var uri = qx.util.ResourceManager.getInstance().toUri("resource/playground/css/editor.css");
-      qx.bom.Stylesheet.includeFile(uri);
-      uri = qx.util.ResourceManager.getInstance().toUri("resource/playground/css/tm.css");
-      qx.bom.Stylesheet.includeFile(uri);
-*/
+      this.add(this.__editor, { flex : 1 });
 
       // override the focus border CSS of the editor
       qx.bom.Stylesheet.createElement(
@@ -243,6 +234,15 @@ highlightDisabled = true;
 
 
     /**
+     * Displays the given error in the caption bar.
+     * @param ex {Exception} The exception to display.
+     */
+    setError : function(ex) {
+      this.__errorLabel.setValue(ex ? ex.toString() : "");
+    },
+
+
+    /**
      * Switches between the ajax code editor editor and a plain textarea.
      * @param value {Boolean} True, if the code editor should be used.
      */
@@ -268,16 +268,6 @@ highlightDisabled = true;
           this.__textarea.setValue(this.__ace.getSession().getValue());
         }
       }
-    },
-    
-    getCodeView : function()
-    {
-      return this.__codeView;
-    },
-    
-    getBlocksCode : function()
-    {
-      return this.__blocksEditor.toJavaScript();
     }
   },
 

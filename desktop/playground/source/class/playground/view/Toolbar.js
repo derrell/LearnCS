@@ -46,16 +46,6 @@ qx.Class.define("playground.view.Toolbar",
       this.fireEvent("run");
     }, this);
 
-    var fromBlocks = new qx.ui.toolbar.Button(
-      this.tr("Blocks to JS")
-    );
-    this.add(fromBlocks);
-    fromBlocks.setToolTipText(
-      this.tr("Convert the Blocks code into JavaScript"));
-    fromBlocks.addListener("execute", function() {
-      this.fireEvent("fromBlocks");
-    }, this);
-
     // sample button
     this.__samplesCheckButton = new qx.ui.form.ToggleButton(
       this.tr("Samples"), "icon/22/actions/edit-copy.png"
@@ -188,11 +178,6 @@ qx.Class.define("playground.view.Toolbar",
      * Fired if the run button is pressed.
      */
     "run" : "qx.event.type.Event",
-
-    /**
-     * Fired when the Blocks to JS button is pressed
-     */
-    "fromBlocks" : "qx.event.type.Event",
 
     /**
      * Fired if a new sample should be selected. The data contains the name of

@@ -15,7 +15,7 @@
     "APPLICATION"  : "playground",
     "QOOXDOO_PATH" : "../../../../qooxdoo.git",
     "QXTHEME"      : "playground.theme.Theme",
-    "LOCALES"      : [ "en", "de", "ro", "sv"],
+    "LOCALES"      : [ "en", "de", "ro", "sv", "cs"],
     "ROOT"         : "."
   },
 
@@ -48,25 +48,15 @@
         },
         {
           "manifest" : "${QOOXDOO_PATH}/component/library/versionlabel/Manifest.json"
-        },
-        {
-          "manifest" : "../../language/Manifest.json"
-        },
-        {
-          "manifest" : "../../lib/CollapsablePanel/Manifest.json"
-        },
-        {
-          "manifest" : "../../lib/ScriptListLoader/Manifest.json"
-        },
-        {
-          "manifest" : "../../lib/qxblockly/Manifest.json"
         }
       ],
       "exclude" :
       [
         "qx.test.*",
         "qx.dev.unit.*",
-        "playground.test.*"
+        "playground.test.*",
+        "qx.core.MEvents",
+        "qx.lang.Core"
       ],
 
       "environment" :
@@ -85,7 +75,7 @@
       "add-css" :
       [
         {
-          "uri" : "resource/qx/mobile/css/android.css"
+          "uri" : "resource/qx/mobile/css/indigo.css"
         }
       ]
     },
@@ -103,7 +93,7 @@
       "add-css" :
       [
         {
-          "uri" : "../../../../../qooxdoo.git/framework/source/resource/qx/mobile/css/android.css"
+          "uri" : "../../../../../qooxdoo.git/framework/source/resource/qx/mobile/css/indigo.css"
         }
       ]
     },
@@ -114,7 +104,7 @@
       "add-css" :
       [
         {
-          "uri" : "../../../../../qooxdoo.git/framework/source/resource/qx/mobile/css/android.css"
+          "uri" : "../../../../../qooxdoo.git/framework/source/resource/qx/mobile/css/indigo.css"
         }
       ]
     },

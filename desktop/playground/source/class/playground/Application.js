@@ -23,10 +23,6 @@
 /* ************************************************************************
 
 #asset(qx/icon/${qx.icontheme}/*)
-#ignore(PUBNUB)
-#ignore(Blockly)
-#ignore(Blockly.Xml)
-#ignore(Blockly.mainWorkspace)
 
 ************************************************************************ */
 
@@ -75,12 +71,14 @@ qx.Class.define("playground.Application",
   {
     // UI Components
     __header : null,
+    __mainsplit : null,
     __toolbar : null,
     __log : null,
     __editor : null,
     __playArea : null,
     __samplesPane : null,
     __editorsplit : null,
+    __websiteContent : null,
 
     // storages
     __samples : null,
@@ -109,10 +107,6 @@ qx.Class.define("playground.Application",
     __mode : null,
     __maximized : null,
 
-    __myId : null,
-    __pendingEnvelopes : null,
-    __messageSendTimer : null,
-
     /**
      * This method contains the initial application code and gets called
      * during startup of the application.
@@ -123,13 +117,6 @@ qx.Class.define("playground.Application",
     {
       // Call super class
       this.base(arguments);
-
-      // Start loading PubNub code. When it's loaded, subscribe.
-      new scriptlistloader.Loader(
-        qx.lang.Function.bind(this.__onPubNubLoaded, this),
-        null,
-        [ "http://cdn.pubnub.com/pubnub-3.1.js" ],
-        null);
 
       // container layout
       var layout = new qx.ui.layout.VBox();
@@ -149,7 +136,6 @@ qx.Class.define("playground.Application",
 
       // toolbar listener
       this.__toolbar.addListener("run", this.run, this);
-      this.__toolbar.addListener("fromBlocks", this.toJavaScript, this);
       this.__toolbar.addListener("changeSample", this.__onSampleChange, this);
       this.__toolbar.addListener("changeHighlight", this.__onHighlightChange, this);
       this.__toolbar.addListener("changeLog", this.__onLogChange, this);
@@ -159,9 +145,9 @@ qx.Class.define("playground.Application",
       this.__toolbar.addListener("openDemoBrowser",this.__onDemoBrowser,this);
 
       // mainsplit, contains the editor splitpane and the info splitpane
-      var mainsplit = new qx.ui.splitpane.Pane("horizontal");
-      mainContainer.add(mainsplit, { flex : 1 });
-      mainsplit.setAppearance("app-splitpane");
+      this.__mainsplit = new qx.ui.splitpane.Pane("horizontal");
+      mainContainer.add(this.__mainsplit, { flex : 1 });
+      this.__mainsplit.setAppearance("app-splitpane");
 
       // editor split (left side of main split)
       this.__editorsplit = new qx.ui.splitpane.Pane("horizontal");
@@ -199,30 +185,57 @@ qx.Class.define("playground.Application",
       }
       this.__store.bind("model", this.__samplesPane, "model");
 
+      // Create a tabview to hold the Source and Block Editors
+      var tabview = new qx.ui.tabview.TabView();
+      var container;
+      var page;
+        
+      // Create the page for the Block editor
+      page = new qx.ui.tabview.Page("Blocks");
+      page.setLayout(new qx.ui.layout.VBox());
+      this.__blockEditor = new playground.view.Blockly();
+      playground.view.Blockly.loadBlockly(function() {
+          this.init("blockly");
+        },
+        this);
+      
+      // Add the block editor to the page
+      page.add(this.__blockEditor, { flex : 1 });
 
-      // need to split up the creation process
-      this.__editor = new playground.view.Editor(
-        qx.lang.Function.bind(this.__publishMessage, this));
+      // Add the page to the tabview
+      tabview.add(page);
+
+      // Create the page for the Source editor
+      page = new qx.ui.tabview.Page("Source");
+      page.setLayout(new qx.ui.layout.VBox());
+      this.__editor = new playground.view.Editor();
       this.__editor.addListener("disableHighlighting", function() {
         this.__toolbar.enableHighlighting(false);
       }, this);
-      this.__editor.init();
+      playground.view.Editor.loadAce(function() {
+        this.init("ace");
+      }, this);
+      
+      // Add the source editor to the page
+      page.add(this.__editor, { flex : 1 });
+      
+      // Add the page to the tabview
+      tabview.add(page);
 
       this.__editorsplit.add(this.__samplesPane, 1);
-      this.__editorsplit.add(this.__editor, 4);
-
-      mainsplit.add(this.__editorsplit, 6);
-      mainsplit.add(infosplit, 3);
+      this.__editorsplit.add(tabview, 4);
+      this.__mainsplit.add(this.__editorsplit, 6);
+      this.__mainsplit.add(infosplit, 3);
 
       this.__playArea = new playground.view.PlayArea();
       this.__playArea.addListener("toggleMaximize", this._onToggleMaximize, this);
       infosplit.add(this.__playArea, 2);
 
-      mainsplit.getChildControl("splitter").addListener("mousedown", function() {
+      this.__mainsplit.getChildControl("splitter").addListener("mousedown", function() {
         this.__editor.block();
       }, this);
 
-      mainsplit.addListener("losecapture", function() {
+      this.__mainsplit.addListener("losecapture", function() {
         this.__editor.unblock();
       }, this);
 
@@ -230,14 +243,36 @@ qx.Class.define("playground.Application",
 
       infosplit.add(this.__log, 1);
       this.__log.exclude();
-      
-      // Prepare to publish messages. They get queued and published as a group.
-      this.__pendingEnvelopes = [];
     },
 
 
-    // overridden
-    finalize: function() {
+    /**
+     * Initialization after the external editor has been loaded.
+     */
+    init: function(who) {
+      // If this is the first call to init...
+      if (! this.__initCalled) {
+        // ... then initialize a map to store who has called us
+        this.__initCalled = {};
+      }
+      
+      // Remember that we were called by the current caller
+      this.__initCalled[who] = true;
+
+      // Call the appropriate editor's init function
+      if (who == "ace") {
+        this.__editor.init();
+      } else { // "blockly"
+        this.__blockEditor.init();
+      }
+      
+      // If we haven't initialized both "ace" and "blockly"...
+      if (! this.__initCalled["ace"] || 
+          ! this.__initCalled["blockly"]) {
+        // ... then await the other call to this function
+        return;
+      }
+
       // check if mobile chould be used
       if (this.__supportsMode("mobile")) {
         // check for the mode cookie
@@ -313,6 +348,31 @@ qx.Class.define("playground.Application",
     // ***************************************************
     // MODE HANDLING
     // ***************************************************
+    __enableWebsiteMode : function(enabled) {
+      if (enabled) {
+        this.__toolbar.exclude();
+        this.__mainsplit.exclude();
+      } else {
+        this.__toolbar.show();
+        this.__mainsplit.show();
+      }
+
+      // on demand creation
+      if (!this.__websiteContent && enabled) {
+        this.__websiteContent = new playground.view.WebsiteContent();
+        this.getRoot().getChildren()[0].add(this.__websiteContent, {flex: 1});
+      }
+
+      if (this.__websiteContent) {
+        if (!enabled) {
+          this.__websiteContent.exclude();
+        } else {
+          this.__websiteContent.show();
+        }
+      }
+
+    },
+
     /**
      * Event handler for changing the mode of the palyground.
      * @param e {qx.event.type.Data} The data event containing the mode.
@@ -342,8 +402,20 @@ qx.Class.define("playground.Application",
     __supportsMode : function(mode) {
       if (mode == "mobile") {
         var engine = qx.core.Environment.get("engine.name");
-        return (engine == "webkit" || engine == "gecko");
-      } else if (mode == "ria") {
+
+        // all webkits are ok
+        if (engine == "webkit") {
+          return true;
+        }
+        // ie > 10 is ok
+        if (engine == "mshtml" && parseInt(qx.core.Environment.get("browser.documentmode")) >= 10) {
+          return true;
+        }
+        // ff > 10 is ok
+        if (engine == "gecko" && parseInt(qx.core.Environment.get("engine.version")) >= 10) {
+          return true;
+        }
+      } else if (mode == "ria" || mode == "website") {
         return true;
       }
       return false;
@@ -381,6 +453,8 @@ qx.Class.define("playground.Application",
 
       // erase the code
       this.__editor.setCode("");
+
+      this.__enableWebsiteMode(mode == "website");
 
       return true;
     },
@@ -815,7 +889,7 @@ qx.Class.define("playground.Application",
         qx.ui.core.queue.Manager.flush();
         this.__beforeReg = qx.lang.Object.clone(qx.core.ObjectRegistry.getRegistry());
 
-        // run the aplpication
+        // run the application
         this.fun.call(this.__playArea.getApp());
         qx.ui.core.queue.Manager.flush();
         this.__afterReg = qx.lang.Object.clone(qx.core.ObjectRegistry.getRegistry());
@@ -849,7 +923,7 @@ qx.Class.define("playground.Application",
     /**
      * Runs the current set sample and checks if it need to be saved to the url.
      *
-     * @param e {qx.event.type.Event} A possible event (unused)
+     * @param e {qx.event.type.Event} A possible events (unused)
      */
     run : function(e)
     {
@@ -865,27 +939,6 @@ qx.Class.define("playground.Application",
       this.__updatePlayground();
     },
 
-    /**
-     * Convert the blocks to JavaScript and place that code in the editor
-     *
-     * @param e {qx.event.type.Event} A possible event (unused)
-     */
-    toJavaScript : function(e)
-    {
-      var tabView = this.__editor.getCodeView();
-      tabView.setSelection( [ tabView.getChildren()[1] ]);
-      qx.util.TimerManager.getInstance().start(
-        function()
-        {
-          var code = this.__editor.getBlocksCode();
-          this.__editor.setCode(code);
-          this.setOriginCode(this.__editor.getCode());
-        },
-        0,
-        this,
-        null,
-        0);
-    },
 
     // ***************************************************
     // STANDALONE SUPPORT
@@ -909,13 +962,13 @@ qx.Class.define("playground.Application",
         return (
           clazz && clazz.superclass &&
           clazz.superclass.classname === "qx.application.Standalone"
-        );
+        )
       // mobile mode supports mobild applications
       } else if (this.__mode == "mobile") {
         return (
           clazz && clazz.superclass &&
           clazz.superclass.classname === "qx.application.Mobile"
-        );
+        )
       }
       return false;
     },
@@ -942,156 +995,6 @@ qx.Class.define("playground.Application",
         var exc = ex;
         this.error(this.__errorMsg.replace(/\|/g, "\n") + exc);
       }
-    },
-    
-    __onPubNubLoaded : function(failures)
-    {
-      // Ensure that all files loaded properly
-      if (failures.length > 0)
-      {
-        alert("Failed to load files:\n\t" + failures.join("\n\t"));
-      }
-      else
-      {
-        PUBNUB.ready();
-        this.__pubnub = PUBNUB.init(
-          {
-            publish_key   : "pub-00dd7e63-2fa2-4ff3-ba48-4c471276760c",
-            subscribe_key : "sub-2cfc883d-a479-11e1-a8bf-b3191d461b7a",
-            origin        : "pubsub.pubnub.com"
-          });
-
-        // Get a unique id so we can ignore our own messages
-        PUBNUB.uuid(
-          qx.lang.Function.bind(
-            function(uuid)
-            {
-              // Store our id
-              this.__myId = uuid;
-
-/*
-              // Subscribe to receive messages.
-              this.__pubnub.subscribe(
-                {
-                  channel  : "test",
-
-                  connect  : function()
-                  {
-                    qx.log.Logger.debug("Subscribe connection established");
-                  },
-
-                  callback : qx.lang.Function.bind(this.__receiveMessage, this)
-                });
-*/
-            },
-            this));
-      }
-    },
-
-    __publishMessage : function(message, messageType)
-    {
-      var             timer = qx.util.TimerManager.getInstance();
-
-      // If this change was a result of a received message...
-      if (this.__bInternalUpdate)
-      {
-        // ... then do not republish it
-        return;
-      }
-
-      // Add the source id to the message
-      message.source = this.__myId;
-
-      // Add this message to and envelope, and add the envelope to the group
-      // of envelopes to be sent
-      qx.dev.Debug.debugObject(message,
-                               "Enquing envelope: type=" + messageType);
-      this.__pendingEnvelopes.push(
-        {
-          messageType : messageType,
-          message     : message
-        });
-      
-      // If no timer exists to publish queued envelopes...
-      if (! this.__messageSendTimer)
-      {
-        // ... then create one now.
-        this.__messageSendTimer = timer.start(
-          function()
-          {
-            // Check for programmer error
-            if (this.__pendingEnvelopes.length == 0)
-            {
-              this.warn("Publish timer expired with no envelopes on queue!");
-              return;
-            }
-
-            this.debug("Publishing envelopes: count=" +
-                       this.__pendingEnvelopes.length);
-
-            // Publish the pending envelopes as a group
-            this.__pubnub.publish(
-              {
-                channel : "test",
-                message : this.__pendingEnvelopes
-              });
-            
-            // Flush the pending envelopes array now that those have been sent
-            this.__pendingEnvelopes = [];
-            
-            // Clear the message timer so a new one is created as needed
-            this.__messageSendTimer = null;
-          },
-          0,
-          this,
-          null,
-          1000);
-        
-      }
-    },
-    
-    __receiveMessage : function(messages)
-    {
-      // Check for bogus message
-      if (! qx.lang.Type.isArray(messages))
-      {
-        // Received an invalid message. All of our messages are arrays
-        this.warn("Received bogus message:\n" +
-                  qx.dev.Debug.debugObjectToString(messages));
-        return;
-      }
-      
-      // Prevent republishing of changes as we update the blocks editor
-      this.__bInternalUpdate = true;
-
-      messages.forEach(
-        function(message)
-        {
-          // Ignore messages that we generated
-          if (message.source == this.__myId)
-          {
-            return;
-          }
-
-          qx.dev.Debug.debugObject(message, "received message", 3);
-
-          // Get the list of top-level blocks, so we can destroy all of them
-          var topBlocks = Blockly.mainWorkspace.getTopBlocks();
-          topBlocks.forEach(
-            function(block)
-            {
-              // Destroy this block
-              block.destroy(false);
-            });
-
-          // Add the block layout received in the message to the workspace
-          var xml = Blockly.Xml.textToDom(message.xml);
-          Blockly.Xml.domToWorkspace(Blockly.mainWorkspace, xml);
-        },
-        this);
-
-      // Re-allow publish, as changes are made at the blocks editor
-      this.__bInternalUpdate = false;
     }
   },
 

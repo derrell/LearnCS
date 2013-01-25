@@ -62,9 +62,6 @@ qx.Class.define("playground.view.MobilePlayArea",
         return self.__manager;
       };
 
-      // Create the "global" variable storage area
-      this._playApp.obj = {};
-
       this._initialized = true;
     },
 
