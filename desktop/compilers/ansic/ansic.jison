@@ -21,8 +21,11 @@ start_sym
     R("start_sym : translation_unit");
     if (error.errorCount == 0)
     {
+      var data = {};
+
       node.display($1);
       symtab.display();
+      node.process($1, data);
     }
     else
     {
@@ -1360,27 +1363,27 @@ labeled_statement
   ;
 
 compound_statement
-  : lbrace rbrace
+  : lbrace_scope rbrace_scope
   {
-    R("compound_statement : lbrace rbrace");
+    R("compound_statement : lbrace_scope rbrace_scope");
     $$ = node.create("compound_statement", yytext, yylineno);
   }
-  | lbrace statement_list rbrace
+  | lbrace_scope statement_list rbrace_scope
   {
-    R("compound_statement : lbrace statement_list rbrace");
+    R("compound_statement : lbrace_scope statement_list rbrace_scope");
     $$ = node.create("compound_statement", yytext, yylineno);
     $$.children.push(null);     // no declaration_list
     $$.children.push($2);
   }
-  | lbrace declaration_list rbrace
+  | lbrace_scope declaration_list rbrace_scope
   {
-    R("compound_statement : lbrace declaration_list rbrace");
+    R("compound_statement : lbrace_scope declaration_list rbrace_scope");
     $$ = node.create("compound_statement", yytext, yylineno);
     $$.children.push($2);
   }
-  | lbrace declaration_list statement_list rbrace
+  | lbrace_scope declaration_list statement_list rbrace_scope
   {
-    R("compound_statement : lbrace declaration_list statement_list rbrace");
+    R("compound_statement : lbrace_scope declaration_list statement_list rbrace_scope");
     $$ = node.create("compound_statement", yytext, yylineno);
     $$.children.push($2);
     $$.children.push($3);
@@ -1658,19 +1661,35 @@ ellipsis
   }
   ;
 
+lbrace_scope
+  : lbrace
+  {
+    R("lbrace_scope : lbrace");
+    // Create a symbol table with an arbitrary (for now) name.
+    symtab.create(symtab.getCurrent(), null);
+  }
+  ;
+  
+rbrace_scope
+  : rbrace
+  {
+    R("rbrace_scope : rbrace");
+    // Pop this block's symbol table from the stack
+    symtab.popStack();
+  }
+  ;
+  
 lbrace
   : LBRACE
   {
-    // Create a symbol table with an arbitrary (for now) name.
-    symtab.create(symtab.getCurrent(), null);
+    R("lbrace : LBRACE");
   }
   ;
 
 rbrace
   : RBRACE
   {
-    // Pop this block's symbol table from the stack
-    symtab.popStack();
+    R("rbrace : RBRACE");
   }
   ;
 

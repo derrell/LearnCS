@@ -101,3 +101,407 @@ exports.display = function(node, indent)
   }
 };
 
+/**
+ * Process, recursively, the abstract syntax tree beginning at the specified
+ * node.
+ *
+ * @param node {Map|String|Null}
+ *   One of:
+ *    - A Node object to be processed, along with, recursively, all of its
+ *      children.
+ *    - A string, representing the value of the parent node. This is used for
+ *      the names of identifiers, values of integers, etc.
+ *    - null, to indicate lack of an optional child of the parent node
+ */
+exports.process = function(node, data)
+{
+  var             i;
+
+  // Is this a Node object?
+  if (node && typeof node == "object")
+  {
+    // Yup. See what type it is.
+    switch(node.type)
+    {
+    case "abstract_declarator" :
+      break;
+      
+    case "add" :
+      break;
+      
+    case "add-assign" :
+      break;
+      
+    case "address_of" :
+      break;
+      
+    case "and" :
+      break;
+      
+    case "argument_expression_list" :
+      break;
+      
+    case "array_decl" :
+      break;
+      
+    case "array_decl" :
+      break;
+      
+    case "array_decl" :
+      break;
+      
+    case "array_decl" :
+      break;
+      
+    case "array_decl" :
+      break;
+      
+    case "array_expression" :
+      break;
+      
+    case "assign" :
+      break;
+      
+    case "auto" :
+      break;
+      
+    case "bit-and" :
+      break;
+      
+    case "bit-and-assign" :
+      break;
+      
+    case "bit_invert" :
+      break;
+      
+    case "bit-or" :
+      break;
+      
+    case "bit-or-assign" :
+      break;
+      
+    case "break" :
+      break;
+      
+    case "case" :
+      break;
+      
+    case "cast_expression" :
+      break;
+      
+    case "char" :
+      break;
+      
+    case "compound_statement" :
+      break;
+      
+    case "const" :
+      break;
+      
+    case "constant" :
+      break;
+      
+    case "continue" :
+      break;
+      
+    case "declaration_list" :
+      break;
+      
+    case "declarator" :
+      break;
+      
+    case "default" :
+      break;
+      
+    case "dereference" :
+      break;
+      
+    case "direct_abstract_declarator" :
+      break;
+      
+    case "direct_abstract_declarator" :
+      break;
+      
+    case "direct_abstract_declarator" :
+      break;
+      
+    case "direct_abstract_declarator" :
+      break;
+      
+    case "direct_abstract_declarator" :
+      break;
+      
+    case "direct_declarator" :
+      break;
+      
+    case "divide" :
+      break;
+      
+    case "divide-assign" :
+      break;
+      
+    case "double" :
+      break;
+      
+    case "do-while" :
+      break;
+      
+    case "ellipsis" :
+      break;
+      
+    case "enumerator_list" :
+      break;
+      
+    case "enum_specifier" :
+      break;
+      
+    case "equal" :
+      break;
+      
+    case "exclusive-or" :
+      break;
+      
+    case "expression" :
+      break;
+      
+    case "expression" :
+      break;
+      
+    case "extern" :
+      break;
+      
+    case "float" :
+      break;
+      
+    case "for" :
+      break;
+      
+    case "for" :
+      break;
+      
+    case "function_call" :
+      break;
+      
+    case "function_decl" :
+      break;
+      
+    case "function_definition" :
+      break;
+      
+    case "goto" :
+      break;
+      
+    case "greater-equal" :
+      break;
+      
+    case "greater-than" :
+      break;
+      
+    case "identifer" :
+      break;
+      
+    case "identifier_list" :
+      break;
+      
+    case "if" :
+      break;
+      
+    case "init_declarator_list" :
+      break;
+      
+    case "initializer" :
+      break;
+      
+    case "initializer_list" :
+      break;
+      
+    case "int" :
+      break;
+      
+    case "label" :
+      break;
+      
+    case "left-shift" :
+      break;
+      
+    case "left-shift-assign" :
+      break;
+      
+    case "less-equal" :
+      break;
+      
+    case "less-than" :
+      break;
+      
+    case "long" :
+      break;
+      
+    case "mod" :
+      break;
+      
+    case "mod-assign" :
+      break;
+      
+    case "multiply" :
+      break;
+      
+    case "multiply-assign" :
+      break;
+      
+    case "negative" :
+      break;
+      
+    case "not" :
+      break;
+      
+    case "not-equal" :
+      break;
+      
+    case "or" :
+      break;
+      
+    case "parameter_declaration" :
+      break;
+      
+    case "parameter_list" :
+      break;
+      
+    case "parameter_type_list" :
+      break;
+      
+    case "pointer" :
+      break;
+      
+    case "pointer_access" :
+      break;
+      
+    case "positive" :
+      break;
+      
+    case "post_decrement_op" :
+      break;
+      
+    case "postfix_expression" :
+      break;
+      
+    case "post_increment_op" :
+      break;
+      
+    case "pre_decrement_op" :
+      break;
+      
+    case "pre_increment_op" :
+      break;
+      
+    case "register" :
+      break;
+      
+    case "return" :
+      break;
+      
+    case "right-shift" :
+      break;
+      
+    case "right-shift-assign" :
+      break;
+      
+    case "short" :
+      break;
+      
+    case "signed" :
+      break;
+      
+    case "sizeof" :
+      break;
+      
+    case "specifier_qualifier_list" :
+      break;
+      
+    case "statement_list" :
+      break;
+      
+    case "static" :
+      break;
+      
+    case "string_literal" :
+      break;
+      
+    case "struct" :
+      break;
+      
+    case "struct_declaration" :
+      break;
+      
+    case "struct_declaration_list" :
+      break;
+      
+    case "struct_declarator" :
+      break;
+      
+    case "struct_declarator_list" :
+      break;
+      
+    case "structure_reference" :
+      break;
+      
+    case "subtract" :
+      break;
+      
+    case "subtract-assign" :
+      break;
+      
+    case "switch" :
+      break;
+      
+    case "translation_unit" :
+      node.children.forEach(arguments.callee, data);
+      break;
+      
+    case "trinary" :
+      break;
+      
+    case "type" :
+      break;
+      
+    case "typedef" :
+      break;
+      
+    case "type_definition" :
+      break;
+      
+    case "type_name" :
+      break;
+      
+    case "type_name" :
+      break;
+      
+    case "type_qualifier_list" :
+      break;
+      
+    case "union" :
+      break;
+      
+    case "unsigned" :
+      break;
+      
+    case "void" :
+      break;
+      
+    case "volatile" :
+      break;
+      
+    case "xor-assign" :
+      break;
+
+    default:
+      sys.print("Unexpected node type: " + node.type);
+      break;
+    }
+  }
+  else
+  {
+    // It's null. Display a representation of a null value.
+    sys.print("<null>\n");
+  }
+};
+

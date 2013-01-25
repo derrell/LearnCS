@@ -248,6 +248,7 @@ exports.display = function()
     }
   }
   
+/*
   sys.print("Looking for symbol IntPtr...\n");
   sym = exports.get(exports.getCurrent(), "IntPtr");
   if (sym)
@@ -258,5 +259,5 @@ exports.display = function()
   {
     sys.print("Could not find symbol IntPtr\n");
   }
-
+*/
 };
