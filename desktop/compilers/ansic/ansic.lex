@@ -50,7 +50,8 @@ SQ                      ("'")
                           var             sym;
 
                           sym = symtab.get(symtab.getCurrent(), yytext);
-                          return (sym && sym.type == "type"
+sym && sys.print("getIsType(" + yytext + "=" + (sym.getIsType() ? "true" : "false") + "\n")
+                          return (sym && sym.getIsType()
                                   ? parser.symbols_.TYPE_NAME
                                   : parser.symbols_.IDENTIFIER);
                         }

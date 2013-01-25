@@ -28,10 +28,16 @@ exports.create = function(type, text, line, filename)
     {
       type     : type,
       children : [],
-      line     : line,
+      line     : line + 1,
       filename : filename
     };
   
+  node.error = function(message)
+  {
+    sys.print("Error: line " + this.line + ": " + message);
+    ++error.errorCount;
+  };
+
   // Redefine push() to save the parent of the pushed child in the child
   node.children.push = function(child)
   {
@@ -116,6 +122,8 @@ exports.display = function(node, indent)
 exports.process = function(node, data)
 {
   var             i;
+  var             subnode;
+  var             entries;
 
   // Is this a Node object?
   if (node && typeof node == "object")
@@ -193,6 +201,11 @@ exports.process = function(node, data)
       break;
       
     case "compound_statement" :
+      symtab.create(symtab.getCurrent(), null);
+      
+      // ... do something
+      
+      symtab_pop();
       break;
       
     case "const" :
@@ -204,6 +217,75 @@ exports.process = function(node, data)
     case "continue" :
       break;
       
+      /*
+       * 0: type specifier
+       *    0: type specifier
+       *       0: ...
+       * 1: init_declarator_list
+       *    0: declarator
+       *       0: identifier
+       *       1: pointer|<null>
+       *          0: pointer|<null>
+       *             0: etc.
+       *       2: initializer?
+       *          ...
+       *    1: declarator
+       *    ...
+       */
+    case "declaration" :
+      // If this is a typedef, it's already been added to the symbol table
+      if (node.children[0].type == "typedef")
+      {
+        break;
+      }
+
+      // We'll want to keep track of symbol table entries in this declaration
+      entries = [];
+
+      // Create symbol table entries for these identifiers
+      node.children[1].children.forEach(
+        function(declarator)
+        {
+          var             entry;
+          var             pointer;
+          
+          // Create a symbol table entry for this variable
+          entry = symtab.add(null, declarator.children[0].value, 
+                             declarator.line, false);
+          
+          if (! entry)
+          {
+            node.error("Redefined variable: " + declarator.children[0].value);
+            return;
+          }
+          
+          // Count and save the dereference level of this pointer
+          for (pointer = declarator.children[1];
+               pointer;
+               pointer = pointer.children[0])
+          {
+            entry.incrementPointerCount();
+          }
+          
+          // Add this entry to the list of entries for this declaration
+          entries.push(entry);
+        });
+      
+      // Add this declaration's types to each of those symtab entries
+      for (subnode = node.children[0];
+           subnode;
+           subnode = subnode.children ? subnode.children[0] : null)
+      {
+        // For each symtab entry...
+        entries.forEach(
+          function(entry)
+          {
+            // ... add this declared type
+            entry.setFlag(subnode.type);
+          });
+      }
+      break;
+
     case "declaration_list" :
       break;
       
@@ -283,6 +365,11 @@ exports.process = function(node, data)
       break;
       
     case "function_decl" :
+      symtab.create(symtab.getCurrent(), null);
+      
+      // ... do something
+      
+      symtab_pop();
       break;
       
     case "function_definition" :

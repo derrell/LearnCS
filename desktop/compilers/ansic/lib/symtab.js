@@ -6,6 +6,287 @@ var symtabs = {};
 /** Stack of symbol tables in use during parsing */
 var symtabStack = [];
 
+/** Bit fields in the flags field of an Entry */
+var EF = 
+  {
+    Char     : 1 << 0,
+    Short    : 1 << 1,
+    Int      : 1 << 2,
+    Long     : 1 << 3,
+    LongLong : 1 << 4,
+
+    Float    : 1 << 5,
+    Double   : 1 << 6,
+    
+    Unsigned : 1 << 7
+  };
+
+// Export the flags so it can be interpreted elsewhere
+exports.ENTRY_FLAGS = EF;
+
+/** Create a new symtab entry */
+function Entry(bIsType, symtab, line)
+{
+  var entry =
+    {
+      // whether this entry is a type definition
+      bIsType      : bIsType,
+
+      // See EF (exports.ENTRY_FLAGS), above
+      flags        : 0,
+
+      // user-defined type name
+      typeName     : null,
+
+      // the symbol table of this entry
+      symtab       : symtab,
+      
+      // number of asterisks
+      pointerCount : 0,
+      
+      // line number on which this symbol was defined
+      line         : line
+    };
+  
+  var types = function(checkTypes, thisType, otherTypes)
+  {
+    var             typeList = [];
+    
+    // List previously-added types
+    if ((checkTypes & EF.Char) && (otherTypes & EF.Char))
+    {
+      typeList.push("char");
+    }
+    
+    if ((checkTypes && EF.Short) && (otherTypes & EF.Short))
+    {
+      typeList.push("short");
+    }
+    
+    if ((checkTypes && EF.Int) && (otherTypes & EF.Int))
+    {
+      typeList.push("int");
+    }
+    
+    if ((checkTypes && EF.Long) && (otherTypes & EF.Long))
+    {
+      typeList.push("long");
+    }
+    
+    if ((checkTypes & EF.Float) && (otherTypes & EF.Float))
+    {
+      typeList.push("float");
+    }
+    
+    if ((checkTypes & EF.Double) && (otherTypes & EF.Double))
+    {
+      typeList.push("double");
+    }
+    
+    // Give 'em a string listing all of those, and the new type
+    return typeList.join(", ") + " with " + thisType;
+  };
+
+  entry.getIsType = function()
+  {
+    return entry.bIsType;
+  };
+  
+  entry.setIsType = function(bIsType)
+  {
+    entry.bIsType = bIsType;
+  };
+  
+  entry.getFlags = function()
+  {
+    return entry.flags;
+  };
+  
+  entry.setFlag = function(type)
+  {
+    switch(type)
+    {
+    case "char" :
+    case "short" :
+    case "float" :
+    case "double" :
+    case "int" :
+    case "long" :
+      if (entry.flags & (EF.Char | EF.Short | EF.Float | EF.Double))
+      {
+        entry.error("Incompatible type combination: " +
+                    types(EF.Char | EF.Short | EF.Float | EF.Double,
+                          type, entry.flags));
+        return;
+      }
+      
+      if ((type == "float" || type == "double") && (entry.flags & EF.Long))
+      {
+        entry.error("Incompatible type combination: " +
+                    types(EF.Float | EF.Double, type, entry.flags));
+        return;
+      }
+      break;
+      
+    case "unsigned" :
+      if (entry.flags & (EF.Float | EF.Double))
+      {
+        entry.error("Incompatible type combination: " +
+                    types(EF.Float | EF.Double, type, entry.flags));
+        return;
+      }
+      break;
+
+    default:
+      // We got a user-defined (typedef'ed) type
+      entry.typeName = type;
+      return;
+    }
+
+    // Now set the appropriate bit
+    switch(type)
+    {
+    case "char" :
+      if (entry.flags & EF.Char)
+      {
+        entry.error("Type specified multiple times: " + type);
+        return;
+      }
+      entry.flags |= EF.Char;
+      break;
+      
+    case "short" :
+      if (entry.flags & EF.Short)
+      {
+        entry.error("Type specified multiple times: " + type);
+        return;
+      }
+      entry.flags |= EF.Short;
+      break;
+      
+    case "float" :
+      if (entry.flags & EF.Float)
+      {
+        entry.error("Type specified multiple times: " + type);
+        return;
+      }
+      entry.flags |= EF.Float;
+      break;
+      
+    case "double" :
+      if (entry.flags & EF.Double)
+      {
+        entry.error("Type specified multiple times: " + type);
+        return;
+      }
+      entry.flags |= EF.Double;
+      break;
+      
+    case "int" :
+      if (entry.flags & EF.Int)
+      {
+        entry.error("Type specified multiple times: " + type);
+        return;
+      }
+      entry.flags |= EF.Int;
+      break;
+      
+    case "long" :
+      if (entry.flags & EF.LongLong)
+      {
+        entry.error("Type is too long: long long long");
+        return;
+      }
+      entry.flags |= (entry.flags & EF.Long) ? EF.LongLong : EF.Long;
+      break;
+      
+    case "unsigned" :
+      if (entry.flags & EF.Unsigned)
+      {
+        entry.error("Type specified multiple times: " + type);
+        return;
+      }
+      entry.flags |= EF.Unsigned;
+      break;
+    }
+  };
+  
+  entry.getIsUnsigned = function()
+  {
+    // Return a true binary, not the null indicating that it's not yet set.
+    return !!entry.bUnsigned;
+  };
+  
+  entry.setIsUnsigned = function(bIsUnsigned)
+  {
+    // If signedness has not been specified yet...
+    if (this.bUnsigned === null)
+    {
+      // ... then specify it.
+      entry.bUnsigned = bIsUnsigned;
+      return;
+    }
+    
+    // Can't set signedness multiple times.
+    entry.error("Signedness was previously specified");
+  };
+
+  entry.getIsFloat = function()
+  {
+    // Return a true binary, not the null indicating that it's not yet set.
+    return !!entry.bUnsigned;
+  };
+  
+  entry.setIsFloat = function(bIsFloat)
+  {
+    // If floatedness has not been specified yet...
+    if (this.bFloat === null)
+    {
+      // ... then specify it.
+      entry.bFloat = bIsFloat;
+      return;
+    }
+    
+    // Can't set signedness multiple times.
+    if (entry.bFloat)
+    {
+      entry.error("Previously specified to be floating point");
+    }
+    else
+    {
+      entry.error("Previously specified to be an integer");
+    }
+  };
+
+  entry.getSymtab = function()
+  {
+    return entry.symtab;
+  };
+  
+  entry.getPointerCount = function()
+  {
+    return entry.pointerCount;
+  };
+  
+  entry.incrementPointerCount = function()
+  {
+    ++entry.pointerCount;
+  };
+  
+  entry.getLine = function()
+  {
+    return entry.line;
+  };
+  
+  entry.error = function(message)
+  {
+    sys.print("Error: line " + this.line + ": " + message);
+    ++error.errorCount;
+  };
+
+  return entry;
+}
+
 /**
  * Create a new symbol table.
  *
@@ -103,8 +384,8 @@ exports.getCurrent = function()
  * @param symName
  *   The symbol name
  *
- * @param type
- *   The type of the (internally-allocated) symbol table entry
+ * @param bIsType
+ *   Whether this is a type (via typedef) or a variable
  *
  * @param line
  *   The line number at which this symbol is defined
@@ -115,7 +396,7 @@ exports.getCurrent = function()
  *   null otherwise, i.e., the symbol was already in the symbol table
  *
  */
-exports.add = function(symtab, symName, type, line)
+exports.add = function(symtab, symName, line, bIsType)
 {
   var             value;
   var             entry;
@@ -135,26 +416,9 @@ exports.add = function(symtab, symName, type, line)
     return null;
   }
   
-  entry =
-    {
-      type     : type,
-      origType : type,          // type may change, e.g. if Function
-      symtab   : symtab,
-      line     : line
-    };
+  // Get a new, initialized symbol table entry
+  entry = Entry(bIsType || false, symtab, line);
 
-  // Do type-specific initialization
-  switch(type)
-  {
-  /*
-  case "function_definition":
-    break;
-    
-  case "array":
-    break;
-  */
-  }
-  
   // Add this symbol to the symbol table
   symtab.symbols[symName] = entry;
 
@@ -227,8 +491,25 @@ exports.get = function(symtab, symName)
   return null;
 };
 
+
+/**
+ * Prepare for processing by resetting the name creation such that new
+ * calls to symtab.add() will yield the same names as previously.
+ */
+exports.reset = function()
+{
+  symtabStack.forEach(
+    function(symtab)
+    {
+      symtab.nextChild = 1;
+    });
+}
+
+
 exports.display = function()
 {
+  var             i;
+  var             entry;
   var             symtab;
   var             symtabName;
   var             symbolName;
@@ -243,8 +524,60 @@ exports.display = function()
     
     for (symbolName in symtab.symbols)
     {
-      sys.print("  " + symbolName + ": " +
-                symtab.symbols[symbolName].type + "\n");
+      // Get quick reference to this symbol table entry
+      entry = symtab.symbols[symbolName];
+
+      sys.print("  " + symbolName + ":");
+      if (entry.getIsType())
+      {
+        sys.print(" type\n");
+      }
+      else
+      {
+        if (entry.flags & EF.Unsigned)
+        {
+          sys.print(" unsigned");
+        }
+        if (entry.flags & EF.LongLong)
+        {
+          sys.print(" long");
+        }
+        if (entry.flags & EF.Long)
+        {
+          sys.print(" long");
+        }
+        if (entry.flags & EF.Short)
+        {
+          sys.print(" short");
+        }
+        if (entry.flags & EF.Char)
+        {
+          sys.print(" char");
+        }
+        if (entry.flags & EF.Int)
+        {
+          sys.print(" int");
+        }
+        if (entry.flags & EF.Float)
+        {
+          sys.print(" float");
+        }
+        if (entry.flags & EF.Double)
+        {
+          sys.print(" double");
+        }
+        if (entry.flags === 0 && entry.typeName)
+        {
+          sys.print(" " + entry.typeName);
+        }
+      }
+
+      sys.print(" ");
+      for (i = symtab.symbols[symbolName].getPointerCount(); i > 0; i--)
+      {
+        sys.print("*");
+      }
+      sys.print("\n");
     }
   }
   

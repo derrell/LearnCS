@@ -1,9 +1,12 @@
 /* Here's a typedef! */
 typedef char CH;
-int a, b = 23;
+int a, ***c;
+unsigned long long int ** b;
+double f;
 CH ch;
 
 void foo(void)
 {
+    int foo1 = 19;
     a = 42;
 }

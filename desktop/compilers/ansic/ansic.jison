@@ -25,12 +25,15 @@ start_sym
 
       node.display($1);
       symtab.display();
+
+      symtab.reset();
       node.process($1, data);
+
+      sys.print("\n\nAfter processing...");
+      symtab.display();
     }
-    else
-    {
-      sys.print(error.errorCount + " errors.\n");
-    }
+
+    sys.print("\nErrors encountered: " + error.errorCount + "\n\n");
   }
   ;
 
@@ -574,7 +577,12 @@ declaration
     // condition.
     lexer.begin("INITIAL");
 
-    $$ = $1;
+    $$ = node.create("declaration", yytext, yylineno);
+    $$.children.push($1);
+
+    sys.log("Declaration:\n");
+    node.display($$);
+    sys.log("\n\n");
   }
   | declaration_specifiers init_declarator_list ';'
   {
@@ -584,8 +592,13 @@ declaration
     // condition.
     lexer.begin("INITIAL");
 
-    $$ = $1;
+    $$ = node.create("declaration", yytext, yylineno);
+    $$.children.push($1);
     $$.children.push($2);
+
+    sys.print("Declaration:\n");
+    node.display($$);
+    sys.print("\n\n");
   }
   ;
 
@@ -955,6 +968,7 @@ declarator
     R("declarator : direct_declarator");
     $$ = node.create("declarator", yytext, yylineno);
     $$.children.push($1);
+    $$.children.push(null);
   }
   ;
 
@@ -962,14 +976,12 @@ direct_declarator
   : identifier
   {
     R("direct_declarator : identifier");
-    $$ = node.create("direct_declarator", yytext, yylineno);
-    $$.children.push($1);
+    $$ = $1;
   }
   | '(' declarator ')'
   {
     R("direct_declarator : '(' declarator ')'");
-    $$ = node.create("direct_declarator", yytext, yylineno);
-    $$.children.push($2);
+    $$ = $2;
   }
   | direct_declarator '[' constant_expression ']'
   {
@@ -992,9 +1004,10 @@ direct_declarator
     array_decl = node.create("array_decl", yytext, yylineno);
     $$.children.push(array_decl);
   }
-  | direct_declarator '(' parameter_type_list ')'
+  | direct_declarator lparen_scope parameter_type_list rparen_scope
   {
-    R("direct_declarator : direct_declarator '(' parameter_type_list ')'");
+    R("direct_declarator : " +
+      "direct_declarator lparen_scope parameter_type_list rparen_scope");
     
     var             function_decl;
 
@@ -1003,9 +1016,11 @@ direct_declarator
     function_decl.children.push($3);
     $$.children.push(function_decl);
   }
-  | direct_declarator '(' identifier_list ')'
+  | direct_declarator lparen_scope identifier_list rparen_scope
   {
-    R("direct_declarator : direct_declarator '(' identifier_list ')'");
+    R("direct_declarator : " +
+      "direct_declarator lparen_scope identifier_list rparen_scope");
+
     var             function_decl;
 
     $$ = $1;
@@ -1013,9 +1028,9 @@ direct_declarator
     function_decl.children.push($3);
     $$.children.push(function_decl);
   }
-  | direct_declarator '(' ')'
+  | direct_declarator lparen_scope rparen_scope
   {
-    R("direct_declarator : direct_declarator '(' ')'");
+    R("direct_declarator : direct_declarator lparen_scope rparen_scope");
     
     var             function_decl;
 
@@ -1270,20 +1285,17 @@ initializer
   : assignment_expression
   {
     R("initializer : assignment_expression");
-    $$ = node.create("initializer", yytext, yylineno);
-    $$.children.push($1);
+    $$ = $1;
   }
   | lbrace initializer_list rbrace
   {
     R("initializer : lbrace initializer_list rbrace");
-    $$ = node.create("initializer", yytext, yylineno);
-    $$.children.push($2);
+    $$ = $2;
   }
   | lbrace initializer_list ',' rbrace
   {
     R("initializer : lbrace initializer_list ',' rbrace");
-    $$ = node.create("initializer", yytext, yylineno);
-    $$.children.push($2);
+    $$ = $2;
   }
   ;
 
@@ -1604,7 +1616,7 @@ identifier
       R("identifier : TYPE_DEFINITION (" + yytext + ")");
       $$ = node.create("type_definition", yytext, yylineno);
       $$.value = yytext;
-      symtab.add(null, yytext, "type", yylineno);
+      symtab.add(null, yytext, yylineno, true);
     }
     else
     {
@@ -1661,6 +1673,23 @@ ellipsis
   }
   ;
 
+lparen_scope
+  : '('
+  {
+    R("lparen_scope : '('");
+    // Create a symbol table with an arbitrary (for now) name.
+    symtab.create(symtab.getCurrent(), null);
+  }
+  ;
+  
+rparen_scope
+  : ')'
+  {
+    R("rparen_scope : ')'");
+    // Pop this block's symbol table from the stack
+    symtab.popStack();
+  }
+  ;
 lbrace_scope
   : lbrace
   {
@@ -1711,5 +1740,5 @@ symtab.create(null);
 // Function to display rules as they are parsed
 function R(rule)
 {
-//  sys.print("rule: " + rule + "\n");
+  sys.print("rule: " + rule + "\n");
 }
