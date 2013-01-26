@@ -21,8 +21,21 @@ var EF =
     Unsigned : 1 << 7
   };
 
-// Export the flags so it can be interpreted elsewhere
+/** Size, in bytes, of each type */
+var SIB =
+  {
+    Char     : 1,
+    Short    : 2,
+    Int      : 4,
+    Long     : 4,
+    LongLong : 8,
+    Float    : 4,
+    Double   : 8
+  };
+
+// Export the flags and sizes so they can be interpreted elsewhere
 exports.ENTRY_FLAGS = EF;
+exports.SIZE_IN_BYTES = SIB;
 
 /** Create a new symtab entry */
 function Entry(bIsType, symtab, line)
@@ -44,6 +57,13 @@ function Entry(bIsType, symtab, line)
       // number of asterisks
       pointerCount : 0,
       
+      // calculated size, based on the flags
+      size         : 0,
+
+      // offset from the base pointer (in activation record, at the beginning
+      // of automatic local variable portion)
+      offset       : 0,
+
       // line number on which this symbol was defined
       line         : line
     };
@@ -153,6 +173,7 @@ function Entry(bIsType, symtab, line)
         return;
       }
       entry.flags |= EF.Char;
+      entry.size = SIB.Char;
       break;
       
     case "short" :
@@ -162,6 +183,7 @@ function Entry(bIsType, symtab, line)
         return;
       }
       entry.flags |= EF.Short;
+      entry.size = SIB.Short;
       break;
       
     case "float" :
@@ -171,6 +193,7 @@ function Entry(bIsType, symtab, line)
         return;
       }
       entry.flags |= EF.Float;
+      entry.size = SIB.Float;
       break;
       
     case "double" :
@@ -180,6 +203,7 @@ function Entry(bIsType, symtab, line)
         return;
       }
       entry.flags |= EF.Double;
+      entry.size = SIB.Double;
       break;
       
     case "int" :
@@ -189,6 +213,12 @@ function Entry(bIsType, symtab, line)
         return;
       }
       entry.flags |= EF.Int;
+      
+      // this one may have already by set, e.g., short int
+      if (entry.size === 0)
+      {
+        entry.size = SIB.Int;
+      }
       break;
       
     case "long" :
@@ -198,6 +228,7 @@ function Entry(bIsType, symtab, line)
         return;
       }
       entry.flags |= (entry.flags & EF.Long) ? EF.LongLong : EF.Long;
+      entry.size = (entry.flags & EF.LongLong) ? SIB.LongLong : SIB.Long;
       break;
       
     case "unsigned" :
@@ -207,6 +238,12 @@ function Entry(bIsType, symtab, line)
         return;
       }
       entry.flags |= EF.Unsigned;
+      
+      // Default to unsigned int, if not otherwise set; may get overridden
+      if (entry.size === 0)
+      {
+        entry.size = SIB.Int;
+      }
       break;
     }
   };
@@ -331,10 +368,12 @@ exports.create = function(parent, name)
   // Create this new symbol table
   symtab =
     {
-      name      : name,
-      parent    : parent,
-      symbols   : {},
-      nextChild : 1
+      name        : name,
+      parent      : parent,
+      symbols     : {},
+      symbolOrder : [],
+      nextChild   : 1,
+      nextOffset  : 0
     };
   
   // Allow finding a symbol table by its name
@@ -421,6 +460,7 @@ exports.add = function(symtab, symName, line, bIsType)
 
   // Add this symbol to the symbol table
   symtab.symbols[symName] = entry;
+  symtab.symbolOrder.push(entry);
 
   // Successfully entered the symbol into the symbol table. Give it to 'em.
   return entry;
@@ -530,46 +570,44 @@ exports.display = function()
       sys.print("  " + symbolName + ":");
       if (entry.getIsType())
       {
-        sys.print(" type\n");
+        sys.print(" type:");
       }
-      else
+
+      if (entry.flags & EF.Unsigned)
       {
-        if (entry.flags & EF.Unsigned)
-        {
-          sys.print(" unsigned");
-        }
-        if (entry.flags & EF.LongLong)
-        {
-          sys.print(" long");
-        }
-        if (entry.flags & EF.Long)
-        {
-          sys.print(" long");
-        }
-        if (entry.flags & EF.Short)
-        {
-          sys.print(" short");
-        }
-        if (entry.flags & EF.Char)
-        {
-          sys.print(" char");
-        }
-        if (entry.flags & EF.Int)
-        {
-          sys.print(" int");
-        }
-        if (entry.flags & EF.Float)
-        {
-          sys.print(" float");
-        }
-        if (entry.flags & EF.Double)
-        {
-          sys.print(" double");
-        }
-        if (entry.flags === 0 && entry.typeName)
-        {
-          sys.print(" " + entry.typeName);
-        }
+        sys.print(" unsigned");
+      }
+      if (entry.flags & EF.LongLong)
+      {
+        sys.print(" long");
+      }
+      if (entry.flags & EF.Long)
+      {
+        sys.print(" long");
+      }
+      if (entry.flags & EF.Short)
+      {
+        sys.print(" short");
+      }
+      if (entry.flags & EF.Char)
+      {
+        sys.print(" char");
+      }
+      if (entry.flags & EF.Int)
+      {
+        sys.print(" int");
+      }
+      if (entry.flags & EF.Float)
+      {
+        sys.print(" float");
+      }
+      if (entry.flags & EF.Double)
+      {
+        sys.print(" double");
+      }
+      if (entry.flags === 0 && entry.typeName)
+      {
+        sys.print(" " + entry.typeName);
       }
 
       sys.print(" ");

@@ -756,8 +756,7 @@ type_specifier
   | type_name_token
   {
     R("type_specifier : type_name_token");
-    $$ = node.create("type", yytext, yylineno);
-    $$.children.push(yytext);
+    $$ = $1;
   }
   ;
 
@@ -1631,7 +1630,7 @@ type_name_token
   : TYPE_NAME
   {
     R("identifier : TYPE_NAME (" + yytext + ")");
-    $$ = node.create("type_name", yytext, yylineno);
+    $$ = node.create(yytext, yytext, yylineno);
     $$.value = yytext;
   }
   ;

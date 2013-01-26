@@ -124,6 +124,7 @@ exports.process = function(node, data)
   var             i;
   var             subnode;
   var             entries;
+  var             bExists;
 
   // Is this a Node object?
   if (node && typeof node == "object")
@@ -233,14 +234,18 @@ exports.process = function(node, data)
        *    ...
        */
     case "declaration" :
+      // We'll want to keep track of symbol table entries in this declaration
+      entries = [];
+      
+      // Assume we do not expect the entry to already exist in the symbol table
+      bExists = false;
+
       // If this is a typedef, it's already been added to the symbol table
       if (node.children[0].type == "typedef")
       {
-        break;
+        // If it's a type, then it will exist already
+        bExists = true;
       }
-
-      // We'll want to keep track of symbol table entries in this declaration
-      entries = [];
 
       // Create symbol table entries for these identifiers
       node.children[1].children.forEach(
@@ -249,14 +254,29 @@ exports.process = function(node, data)
           var             entry;
           var             pointer;
           
-          // Create a symbol table entry for this variable
-          entry = symtab.add(null, declarator.children[0].value, 
-                             declarator.line, false);
-          
-          if (! entry)
+          // If the symbol table should already exist...
+          if (bExists)
           {
-            node.error("Redefined variable: " + declarator.children[0].value);
-            return;
+            // ... then retrieve the entry
+            entry = symtab.get(null, declarator.children[0].value);
+            
+            if (! entry)
+            {
+              node.error("Programmer error: type name should have existed");
+              return;
+            }
+          }
+          else
+          {
+            // It shouldn't exist. Create a symbol table entry for this variable
+            entry = symtab.add(null, declarator.children[0].value, 
+                               declarator.line, false);
+
+            if (! entry)
+            {
+              node.error("Redefined variable: " + declarator.children[0].value);
+              return;
+            }
           }
           
           // Count and save the dereference level of this pointer

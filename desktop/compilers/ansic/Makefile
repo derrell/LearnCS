@@ -1,5 +1,5 @@
 ansic.js:	ansic.jison ansic.lex lib/error.js lib/node.js lib/symtab.js
-	../narwhal.git/bin/narwhal ../jison.git/bin/jison ansic.jison ansic.lex
+	nodejs ../jison.git/bin/jison ansic.jison ansic.lex
 	@echo ""
 	@echo "------------------------------"
 	@echo "Now run 'node ansic.js FILE.c'"
