@@ -218,6 +218,7 @@ exports.process = function(node, data)
     case "continue" :
       break;
       
+    case "declaration" :
       /*
        * 0: type specifier
        *    0: type specifier
@@ -233,7 +234,7 @@ exports.process = function(node, data)
        *    1: declarator
        *    ...
        */
-    case "declaration" :
+
       // We'll want to keep track of symbol table entries in this declaration
       entries = [];
       
@@ -274,12 +275,14 @@ exports.process = function(node, data)
 
             if (! entry)
             {
-              node.error("Redefined variable: " + declarator.children[0].value);
+              node.error("Variable was previously declared: " +
+                         declarator.children[0].value);
               return;
             }
           }
           
-          // Count and save the dereference level of this pointer
+          // Count and save the number of levels of pointers of this variable
+          // e.g., char **p; would call incrementPointerCount() twice.
           for (pointer = declarator.children[1];
                pointer;
                pointer = pointer.children[0])
@@ -316,18 +319,6 @@ exports.process = function(node, data)
       break;
       
     case "dereference" :
-      break;
-      
-    case "direct_abstract_declarator" :
-      break;
-      
-    case "direct_abstract_declarator" :
-      break;
-      
-    case "direct_abstract_declarator" :
-      break;
-      
-    case "direct_abstract_declarator" :
       break;
       
     case "direct_abstract_declarator" :
