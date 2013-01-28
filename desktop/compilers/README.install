@@ -1,0 +1,5 @@
+git clone https://github.com/zaach/jison.git jison.git
+
+sudo add-apt-repository ppa:chris-lea/node.js 
+sudo apt-get update
+sudo apt-get install nodejs npm
