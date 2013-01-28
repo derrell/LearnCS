@@ -70,7 +70,8 @@ exports.create = function(type, text, line, filename)
  *   The indentation level. The top-level call may be issued without passing
  *   this parameter, in which case 0 is used.
  */
-exports.display = function(node, indent)
+var display;
+exports.display = display = function(node, indent)
 {
   var             i;
 
@@ -246,6 +247,16 @@ exports.process = function(node, data)
       {
         // If it's a type, then it will exist already
         bExists = true;
+      }
+
+      // We expect there to be children of the second child
+      if (! node.children || 
+          node.children.length < 2 ||
+          ! node.children[1].children)
+      {
+        node.error("NOT YET SUPPORTED: ");
+        display(node, 0);
+        return;
       }
 
       // Create symbol table entries for these identifiers
