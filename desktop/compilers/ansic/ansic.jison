@@ -580,9 +580,9 @@ declaration
     $$ = node.create("declaration", yytext, yylineno);
     $$.children.push($1);
 
-    sys.log("Declaration:\n");
+    sys.print("Declaration:\n");
     node.display($$);
-    sys.log("\n\n");
+    sys.print("\n\n");
   }
   | declaration_specifiers init_declarator_list ';'
   {
@@ -766,21 +766,22 @@ struct_or_union_specifier
     R("struct_or_union_specifier : " +
       "struct_or_union identifier lbrace struct_declaration_list rbrace");
     $$ = $1;
-    $$.children.push($2);
     $$.children.push($4);
+    $$.children.push($2);
   }
   | struct_or_union lbrace struct_declaration_list rbrace
   {
     R("struct_or_union_specifier : " +
       "struct_or_union lbrace struct_declaration_list rbrace");
     $$ = $1;
-    $$.children.push(null);     // no identifier
     $$.children.push($3);
+    $$.children.push(null);     // no identifier
   }
   | struct_or_union identifier
   {
     R("struct_or_union_specifier : struct_or_union identifier");
     $$ = $1;
+    $$.children.push(null);     // no declaration list
     $$.children.push($2);
   }
   ;
@@ -894,20 +895,21 @@ enum_specifier
   {
     R("enum_specifier : ENUM lbrace enumerator_list rbrace");
     $$ = node.create("enum_specifier", yytext, yylineno);
-    $$.children.push(null);     // no identifier
     $$.children.push($3);
+    $$.children.push(null);     // no identifier
   }
   | ENUM identifier lbrace enumerator_list rbrace
   {
     R("enum_specifier : ENUM identifier lbrace enumerator_list rbrace");
     $$ = node.create("enum_specifier", yytext, yylineno);
-    $$.children.push($2);
     $$.children.push($4);
+    $$.children.push($2);
   }
   | ENUM identifier
   {
     R("enum_specifier : ENUM identifier");
     $$ = node.create("enum_specifier", yytext, yylineno);
+    $$.children.push(null);     // no enumerator list
     $$.children.push($2);
   }
   ;
@@ -1739,5 +1741,5 @@ symtab.create(null);
 // Function to display rules as they are parsed
 function R(rule)
 {
-  sys.print("rule: " + rule + "\n");
+//  sys.print("rule: " + rule + "\n");
 }
