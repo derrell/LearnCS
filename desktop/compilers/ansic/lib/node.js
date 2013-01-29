@@ -1,4 +1,10 @@
 /**
+ * Unique (hidden) identifier names are created, for anonymous structures.
+ */
+var             nextUniqueId = 1;
+
+
+/**
  * Create a new node.
  * 
  * @param type {String}
@@ -95,10 +101,11 @@ exports.display = display = function(node, indent)
       sys.print(node.type + " (" + node.line + ")" +  "\n");
 
       // Call recursively to handle children
-      for (i = 0; i < node.children.length; i++)
-      {
-        arguments.callee(node.children[i], indent + 1);
-      }
+      node.children.forEach(
+        function(subnode)
+        {
+          display(subnode, indent + 1);
+        });
     }
   }
   else
@@ -120,12 +127,15 @@ exports.display = display = function(node, indent)
  *      the names of identifiers, values of integers, etc.
  *    - null, to indicate lack of an optional child of the parent node
  */
-exports.process = function(node, data)
+var process;
+exports.process = process = function(node, data)
 {
   var             i;
   var             subnode;
+  var             entry;
   var             entries;
   var             bExists;
+  var             identifier;
 
   // Is this a Node object?
   if (node && typeof node == "object")
@@ -221,19 +231,20 @@ exports.process = function(node, data)
       
     case "declaration" :
       /*
-       * 0: type specifier
-       *    0: type specifier
-       *       0: ...
-       * 1: init_declarator_list
-       *    0: declarator
-       *       0: identifier
-       *       1: pointer|<null>
-       *          0: pointer|<null>
-       *             0: etc.
-       *       2: initializer?
-       *          ...
-       *    1: declarator
-       *    ...
+       * declaration
+       *   0: type specifier
+       *      0: type specifier
+       *         0: ...
+       *   1: init_declarator_list
+       *      0: declarator
+       *         0: identifier
+       *         1: pointer|<null>
+       *            0: pointer|<null>
+       *               0: etc.
+       *         2: initializer?
+       *            ...
+       *      1: declarator
+       *      ...
        */
 
       // We'll want to keep track of symbol table entries in this declaration
@@ -242,68 +253,72 @@ exports.process = function(node, data)
       // Assume we do not expect the entry to already exist in the symbol table
       bExists = false;
 
-      // If this is a typedef, it's already been added to the symbol table
-      if (node.children[0].type == "typedef")
+      // Look for specially-handled type specifiers.
+      switch(node.children[0].type)
       {
-        // If it's a type, then it will exist already
-        bExists = true;
-      }
-
-      // We expect there to be children of the second child
-      if (! node.children || 
-          node.children.length < 2 ||
-          ! node.children[1].children)
-      {
-        node.error("NOT YET SUPPORTED: ");
-        display(node, 0);
-        return;
-      }
-
-      // Create symbol table entries for these identifiers
-      node.children[1].children.forEach(
-        function(declarator)
+      case "struct" :
+        process(node.children[0], data);
+        break;
+        
+      case "enum_specifier" :
+        break;
+        
+      default:
+        // If this is a typedef, it's already been added to the symbol table
+        if (node.children[0].type == "typedef")
         {
-          var             entry;
-          var             pointer;
-          
-          // If the symbol table should already exist...
-          if (bExists)
-          {
-            // ... then retrieve the entry
-            entry = symtab.get(null, declarator.children[0].value);
-            
-            if (! entry)
-            {
-              node.error("Programmer error: type name should have existed");
-              return;
-            }
-          }
-          else
-          {
-            // It shouldn't exist. Create a symbol table entry for this variable
-            entry = symtab.add(null, declarator.children[0].value, 
-                               declarator.line, false);
+          // If it's a type, then it will exist already
+          bExists = true;
+        }
 
-            if (! entry)
-            {
-              node.error("Variable was previously declared: " +
-                         declarator.children[0].value);
-              return;
-            }
-          }
-          
-          // Count and save the number of levels of pointers of this variable
-          // e.g., char **p; would call incrementPointerCount() twice.
-          for (pointer = declarator.children[1];
-               pointer;
-               pointer = pointer.children[0])
+        // Create symbol table entries for these identifiers
+        node.children[1].children.forEach(
+          function(declarator)
           {
-            entry.incrementPointerCount();
-          }
-          
-          // Add this entry to the list of entries for this declaration
-          entries.push(entry);
-        });
+            var             entry;
+            var             pointer;
+
+            // If the symbol table should already exist...
+            if (bExists)
+            {
+              // ... then retrieve the entry
+              entry = symtab.get(null, declarator.children[0].value);
+
+              if (! entry)
+              {
+                node.error("Programmer error: type name should have existed");
+                return;
+              }
+            }
+            else
+            {
+              // It shouldn't exist. Create a symbol table entry for this
+              // variable
+              entry = symtab.add(null, declarator.children[0].value, 
+                                 declarator.line, false);
+
+              if (! entry)
+              {
+                node.error("Variable was previously declared: " +
+                           declarator.children[0].value);
+                return;
+              }
+            }
+
+            // Count and save the number of levels of pointers of this variable
+            // e.g., char **p; would call incrementPointerCount() twice.
+            for (pointer = declarator.children[1];
+                 pointer;
+                 pointer = pointer.children[0])
+            {
+              entry.incrementPointerCount();
+            }
+
+            // Add this entry to the list of entries for this declaration
+            entries.push(entry);
+          });
+        break;
+      }
       
       // Add this declaration's types to each of those symtab entries
       for (subnode = node.children[0];
@@ -315,7 +330,9 @@ exports.process = function(node, data)
           function(entry)
           {
             // ... add this declared type
-            entry.setFlag(subnode.type);
+            entry.setType(subnode.type == "type_name"
+                          ? subnode.value
+                          : subnode.type);
           });
       }
       break;
@@ -536,12 +553,84 @@ exports.process = function(node, data)
       break;
       
     case "struct" :
+      /*
+       * struct
+       *   0 : struct_declaration_list
+       *   1 : identifier
+       */
+
+      // Is there an identifier?
+      if (node.children.length > 1)
+      {
+        // Yes. Retrieve it.
+        identifier = node.children[1].value;
+sys.print("\n\nstruct node: identifier=" + identifier + "\n");
+display(node, 0);
+sys.print("\n\n");
+      }
+      else
+      {
+        // Otherwise, create a unique identifier.
+        identifier = "struct#" + nextUniqueId++;
+      }
+
+      // Add a symbol table entry for this struct (a type)
+      entry = symtab.add(null, identifier, node.line, true);
+
+      // Create a special symbol table for this struct's members
+      entry.setStructSymtab(symtab.create(null, identifier));
+
+      // Add each of the members to the entry's symbol table
+      process(node.children[0], { entry : entry });
       break;
       
     case "struct_declaration" :
+      /*
+       * struct_declaration
+       *   0: specifier_qualifier_list
+       *   1: struct_declarator_list
+       *      0: struct_declarator
+       *         0: declarator
+       *            0: identifier
+       *            1: pointer
+       *               0: ...
+       */
+      
+      // Obtain a symbol table entry for the identifier. Put it in the sybol
+      // table associated with the entry in our data.
+      identifier = node.children[1].children[0].children[0].children[0].value;
+      entry = 
+        symtab.add(data.entry.getStructSymtab(), identifier, node.line, false);
+
+      if (! entry)
+      {
+        node.error("Structure member was previously declared: " + identifier);
+        return;
+      }
+
+      // Process the specifier qualifier list to add this declaration's types
+      // to the symtab entry. For each declared type...
+      node.children[0].children.forEach(
+        function(subnode)
+        {
+          // ... add this declared type to the entry
+          entry.setType(subnode.type == "type_name"
+                        ? subnode.value
+                        : subnode.type);
+        });
       break;
       
     case "struct_declaration_list" :
+      /*
+       * struct_declaration_list
+       *   0: struct_declaration
+       *   ...
+       */
+      node.children.forEach(
+        function(subnode)
+        {
+          process(subnode, data);
+        });
       break;
       
     case "struct_declarator" :
@@ -563,7 +652,11 @@ exports.process = function(node, data)
       break;
       
     case "translation_unit" :
-      node.children.forEach(arguments.callee, data);
+      node.children.forEach(
+        function(subnode)
+        {
+          process(subnode, data);
+        });
       break;
       
     case "trinary" :
@@ -576,9 +669,6 @@ exports.process = function(node, data)
       break;
       
     case "type_definition" :
-      break;
-      
-    case "type_name" :
       break;
       
     case "type_name" :

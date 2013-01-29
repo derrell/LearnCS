@@ -6,8 +6,8 @@ var symtabs = {};
 /** Stack of symbol tables in use during parsing */
 var symtabStack = [];
 
-/** Bit fields in the flags field of an Entry */
-var EF = 
+/** Bit fields in the typeFlags field of an Entry */
+var TF = 
   {
     Char     : 1 << 0,
     Short    : 1 << 1,
@@ -19,6 +19,14 @@ var EF =
     Double   : 1 << 6,
     
     Unsigned : 1 << 7
+  };
+
+/** Bit fields in the storageFlags field of an Entry */
+var SF =
+  {
+    Static   : 1 << 0,
+    Const    : 1 << 1,
+    Volatile : 1 << 2
   };
 
 /** Size, in bytes, of each type */
@@ -34,22 +42,25 @@ var SIB =
   };
 
 // Export the flags and sizes so they can be interpreted elsewhere
-exports.ENTRY_FLAGS = EF;
+exports.TYPE_FLAGS = TF;
 exports.SIZE_IN_BYTES = SIB;
 
 /** Create a new symtab entry */
-function Entry(bIsType, symtab, line)
+var Entry = function(bIsType, symtab, line)
 {
   var entry =
     {
       // whether this entry is a type definition
       bIsType      : bIsType,
 
-      // See EF (exports.ENTRY_FLAGS), above
-      flags        : 0,
+      // See TF (exports.TYPE_FLAGS), above
+      typeFlags    : 0,
 
-      // user-defined type name
+      // user-defined type name, if bIsType
       typeName     : null,
+
+      // symbol table containing structure entries
+      structSymtab : null,
 
       // the symbol table of this entry
       symtab       : symtab,
@@ -57,7 +68,7 @@ function Entry(bIsType, symtab, line)
       // number of asterisks
       pointerCount : 0,
       
-      // calculated size, based on the flags
+      // calculated size, based on the typeFlags
       size         : 0,
 
       // offset from the base pointer (in activation record, at the beginning
@@ -73,32 +84,32 @@ function Entry(bIsType, symtab, line)
     var             typeList = [];
     
     // List previously-added types
-    if ((checkTypes & EF.Char) && (otherTypes & EF.Char))
+    if ((checkTypes & TF.Char) && (otherTypes & TF.Char))
     {
       typeList.push("char");
     }
     
-    if ((checkTypes && EF.Short) && (otherTypes & EF.Short))
+    if ((checkTypes && TF.Short) && (otherTypes & TF.Short))
     {
       typeList.push("short");
     }
     
-    if ((checkTypes && EF.Int) && (otherTypes & EF.Int))
+    if ((checkTypes && TF.Int) && (otherTypes & TF.Int))
     {
       typeList.push("int");
     }
     
-    if ((checkTypes && EF.Long) && (otherTypes & EF.Long))
+    if ((checkTypes && TF.Long) && (otherTypes & TF.Long))
     {
       typeList.push("long");
     }
     
-    if ((checkTypes & EF.Float) && (otherTypes & EF.Float))
+    if ((checkTypes & TF.Float) && (otherTypes & TF.Float))
     {
       typeList.push("float");
     }
     
-    if ((checkTypes & EF.Double) && (otherTypes & EF.Double))
+    if ((checkTypes & TF.Double) && (otherTypes & TF.Double))
     {
       typeList.push("double");
     }
@@ -117,12 +128,12 @@ function Entry(bIsType, symtab, line)
     entry.bIsType = bIsType;
   };
   
-  entry.getFlags = function()
+  entry.getTypes = function()
   {
-    return entry.flags;
+    return entry.typeFlags;
   };
   
-  entry.setFlag = function(type)
+  entry.setType = function(type)
   {
     switch(type)
     {
@@ -130,29 +141,29 @@ function Entry(bIsType, symtab, line)
     case "short" :
     case "float" :
     case "double" :
-    case "int" :
     case "long" :
-      if (entry.flags & (EF.Char | EF.Short | EF.Float | EF.Double))
+      if (entry.typeFlags & (TF.Char | TF.Short | TF.Float | TF.Double))
       {
         entry.error("Incompatible type combination: " +
-                    types(EF.Char | EF.Short | EF.Float | EF.Double,
-                          type, entry.flags));
+                    types(TF.Char | TF.Short | TF.Float | TF.Double,
+                          type, entry.typeFlags));
         return;
       }
       
-      if ((type == "float" || type == "double") && (entry.flags & EF.Long))
+      if ((type == "float" || type == "double") && 
+          ((entry.typeFlags & TF.Long) || (entry.typeFlags & TF.Int)))
       {
         entry.error("Incompatible type combination: " +
-                    types(EF.Float | EF.Double, type, entry.flags));
+                    types(TF.Float | TF.Double, type, entry.typeFlags));
         return;
       }
       break;
       
     case "unsigned" :
-      if (entry.flags & (EF.Float | EF.Double))
+      if (entry.typeFlags & (TF.Float | TF.Double))
       {
         entry.error("Incompatible type combination: " +
-                    types(EF.Float | EF.Double, type, entry.flags));
+                    types(TF.Float | TF.Double, type, entry.typeFlags));
         return;
       }
       break;
@@ -167,52 +178,52 @@ function Entry(bIsType, symtab, line)
     switch(type)
     {
     case "char" :
-      if (entry.flags & EF.Char)
+      if (entry.typeFlags & TF.Char)
       {
         entry.error("Type specified multiple times: " + type);
         return;
       }
-      entry.flags |= EF.Char;
+      entry.typeFlags |= TF.Char;
       entry.size = SIB.Char;
       break;
       
     case "short" :
-      if (entry.flags & EF.Short)
+      if (entry.typeFlags & TF.Short)
       {
         entry.error("Type specified multiple times: " + type);
         return;
       }
-      entry.flags |= EF.Short;
+      entry.typeFlags |= TF.Short;
       entry.size = SIB.Short;
       break;
       
     case "float" :
-      if (entry.flags & EF.Float)
+      if (entry.typeFlags & TF.Float)
       {
         entry.error("Type specified multiple times: " + type);
         return;
       }
-      entry.flags |= EF.Float;
+      entry.typeFlags |= TF.Float;
       entry.size = SIB.Float;
       break;
       
     case "double" :
-      if (entry.flags & EF.Double)
+      if (entry.typeFlags & TF.Double)
       {
         entry.error("Type specified multiple times: " + type);
         return;
       }
-      entry.flags |= EF.Double;
+      entry.typeFlags |= TF.Double;
       entry.size = SIB.Double;
       break;
       
     case "int" :
-      if (entry.flags & EF.Int)
+      if (entry.typeFlags & TF.Int)
       {
         entry.error("Type specified multiple times: " + type);
         return;
       }
-      entry.flags |= EF.Int;
+      entry.typeFlags |= TF.Int;
       
       // this one may have already by set, e.g., short int
       if (entry.size === 0)
@@ -222,22 +233,22 @@ function Entry(bIsType, symtab, line)
       break;
       
     case "long" :
-      if (entry.flags & EF.LongLong)
+      if (entry.typeFlags & TF.LongLong)
       {
         entry.error("Type is too long: long long long");
         return;
       }
-      entry.flags |= (entry.flags & EF.Long) ? EF.LongLong : EF.Long;
-      entry.size = (entry.flags & EF.LongLong) ? SIB.LongLong : SIB.Long;
+      entry.typeFlags |= (entry.typeFlags & TF.Long) ? TF.LongLong : TF.Long;
+      entry.size = (entry.typeFlags & TF.LongLong) ? SIB.LongLong : SIB.Long;
       break;
       
     case "unsigned" :
-      if (entry.flags & EF.Unsigned)
+      if (entry.typeFlags & TF.Unsigned)
       {
         entry.error("Type specified multiple times: " + type);
         return;
       }
-      entry.flags |= EF.Unsigned;
+      entry.typeFlags |= TF.Unsigned;
       
       // Default to unsigned int, if not otherwise set; may get overridden
       if (entry.size === 0)
@@ -300,6 +311,16 @@ function Entry(bIsType, symtab, line)
     return entry.symtab;
   };
   
+  entry.setStructSymtab = function(symtab)
+  {
+    entry.structSymtab = symtab;
+  };
+  
+  entry.getStructSymtab = function()
+  {
+    return entry.structSymtab;
+  };
+
   entry.getPointerCount = function()
   {
     return entry.pointerCount;
@@ -362,7 +383,7 @@ exports.create = function(parent, name)
   else
   {
     // A local name was provided. Prepend the parent's name.
-    name = parent.name + ":" + name;
+    name = ((parent && parent.name) || "") + ":" + name;
   }
 
   // Create this new symbol table
@@ -570,42 +591,42 @@ exports.display = function()
       sys.print("  " + symbolName + ":");
       if (entry.getIsType())
       {
-        sys.print(" type:");
+        sys.print(" type");
       }
 
-      if (entry.flags & EF.Unsigned)
+      if (entry.typeFlags & TF.Unsigned)
       {
         sys.print(" unsigned");
       }
-      if (entry.flags & EF.LongLong)
+      if (entry.typeFlags & TF.LongLong)
       {
         sys.print(" long");
       }
-      if (entry.flags & EF.Long)
+      if (entry.typeFlags & TF.Long)
       {
         sys.print(" long");
       }
-      if (entry.flags & EF.Short)
+      if (entry.typeFlags & TF.Short)
       {
         sys.print(" short");
       }
-      if (entry.flags & EF.Char)
+      if (entry.typeFlags & TF.Char)
       {
         sys.print(" char");
       }
-      if (entry.flags & EF.Int)
+      if (entry.typeFlags & TF.Int)
       {
         sys.print(" int");
       }
-      if (entry.flags & EF.Float)
+      if (entry.typeFlags & TF.Float)
       {
         sys.print(" float");
       }
-      if (entry.flags & EF.Double)
+      if (entry.typeFlags & TF.Double)
       {
         sys.print(" double");
       }
-      if (entry.flags === 0 && entry.typeName)
+      if (entry.typeFlags === 0 && entry.typeName)
       {
         sys.print(" " + entry.typeName);
       }

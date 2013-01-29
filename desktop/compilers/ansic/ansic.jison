@@ -767,6 +767,10 @@ struct_or_union_specifier
       "struct_or_union identifier lbrace struct_declaration_list rbrace");
     $$ = $1;
     $$.children.push($4);
+
+    // Munge the name of the struct
+    $2.value = "struct#" + $2.value;
+
     $$.children.push($2);
   }
   | struct_or_union lbrace struct_declaration_list rbrace
@@ -782,6 +786,10 @@ struct_or_union_specifier
     R("struct_or_union_specifier : struct_or_union identifier");
     $$ = $1;
     $$.children.push(null);     // no declaration list
+
+    // Munge the name of the struct
+    $2.value = "struct#" + $2.value;
+
     $$.children.push($2);
   }
   ;
@@ -830,25 +838,25 @@ specifier_qualifier_list
   {
     R("specifier_qualifier_list : type_specifier specifier_qualifier_list");
     $$ = $2;
-    $$.children.push($1);
+    $$.children.unshift($1);
   }
   | type_specifier
   {
     R("specifier_qualifier_list : type_specifier");
     $$ = node.create("specifier_qualifier_list", yytext, yylineno);
-    $$.children.push($1);
+    $$.children.unshift($1);
   }
   | type_qualifier specifier_qualifier_list
   {
     R("specifier_qualifier_list : type_qualifier specifier_qualifier_list");
-    $$ = $1;
-    $$.children.push($1);
+    $$ = $2;
+    $$.children.unshift($1);
   }
   | type_qualifier
   {
     R("specifier_qualifier_list : type_qualifier");
     $$ = node.create("specifier_qualifier_list", yytext, yylineno);
-    $$.children.push($1);
+    $$.children.unshift($1);
   }
   ;
 
@@ -1632,7 +1640,7 @@ type_name_token
   : TYPE_NAME
   {
     R("identifier : TYPE_NAME (" + yytext + ")");
-    $$ = node.create(yytext, yytext, yylineno);
+    $$ = node.create("type_name", yytext, yylineno);
     $$.value = yytext;
   }
   ;
