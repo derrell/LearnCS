@@ -295,7 +295,7 @@ exports.process = process = function(node, data)
               if (! entry)
               {
                 node.error("Variable was previously declared: " +
-                           declarator.children[0].value);
+                           declarator.children[0].value + "\n");
                 return;
               }
             }
@@ -570,11 +570,18 @@ exports.process = process = function(node, data)
       entry = symtab.get(symtab.getCurrent(), identifier);
 
       // Create a special symbol table for this struct's members
-      symtabStruct = symtab.create(null, identifier);
-      entry.setStructSymtab(symtabStruct);
+      symtabStruct = entry.getStructSymtab();
+      if (! symtabStruct)
+      {
+        symtabStruct = symtab.create(null, identifier);
+        entry.setStructSymtab(symtabStruct);
+      }
 
       // Add each of the members to the entry's symbol table
-      process(node.children[0], { entry : entry });
+      if (node.children[0])
+      {
+        process(node.children[0], { entry : entry });
+      }
       break;
       
     case "struct_declaration" :
@@ -597,7 +604,8 @@ exports.process = process = function(node, data)
 
       if (! entry)
       {
-        node.error("Structure member was previously declared: " + identifier);
+        node.error("Structure member was previously declared: " + 
+                   identifier + "\n");
         return;
       }
 
@@ -606,10 +614,28 @@ exports.process = process = function(node, data)
       node.children[0].children.forEach(
         function(subnode)
         {
-          // ... add this declared type to the entry
-          entry.setType(subnode.type == "type_name"
-                        ? subnode.value
-                        : subnode.type);
+          // ... add this declared type to the entry. First check for ones we
+          // must handle specially.
+          if (subnode.type == "struct")
+          {
+            /*
+             * struct
+             *   0: struct_declaration_list
+             *   1: identifier
+             */
+            process(subnode, data);
+            entry.setType(subnode.children[1].value);
+          }
+          else if (subnode.type == "enum_specifier")
+          {
+
+          }
+          else
+          {
+            entry.setType(subnode.type == "type_name"
+                          ? subnode.value
+                          : subnode.type);
+          }
         });
       break;
       
