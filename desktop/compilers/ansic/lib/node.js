@@ -1,10 +1,4 @@
 /**
- * Unique (hidden) identifier names are created, for anonymous structures.
- */
-var             nextUniqueId = 1;
-
-
-/**
  * Create a new node.
  * 
  * @param type {String}
@@ -136,6 +130,7 @@ exports.process = process = function(node, data)
   var             entries;
   var             bExists;
   var             identifier;
+  var             symtabStruct;
 
   // Is this a Node object?
   if (node && typeof node == "object")
@@ -564,21 +559,19 @@ exports.process = process = function(node, data)
       {
         // Yes. Retrieve it.
         identifier = node.children[1].value;
-sys.print("\n\nstruct node: identifier=" + identifier + "\n");
-display(node, 0);
-sys.print("\n\n");
       }
       else
       {
         // Otherwise, create a unique identifier.
-        identifier = "struct#" + nextUniqueId++;
+        identifier = "struct#" + symtab.getUniqueId();
       }
 
-      // Add a symbol table entry for this struct (a type)
-      entry = symtab.add(null, identifier, node.line, true);
+      // Retrieve the symbol table entry for this struct (a type)
+      entry = symtab.get(symtab.getCurrent(), identifier);
 
       // Create a special symbol table for this struct's members
-      entry.setStructSymtab(symtab.create(null, identifier));
+      symtabStruct = symtab.create(null, identifier);
+      entry.setStructSymtab(symtabStruct);
 
       // Add each of the members to the entry's symbol table
       process(node.children[0], { entry : entry });
@@ -599,8 +592,8 @@ sys.print("\n\n");
       // Obtain a symbol table entry for the identifier. Put it in the sybol
       // table associated with the entry in our data.
       identifier = node.children[1].children[0].children[0].children[0].value;
-      entry = 
-        symtab.add(data.entry.getStructSymtab(), identifier, node.line, false);
+      symtabStruct = data.entry.getStructSymtab();
+      entry = symtab.add(symtabStruct, identifier, node.line, false);
 
       if (! entry)
       {

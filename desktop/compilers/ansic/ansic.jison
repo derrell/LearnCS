@@ -772,6 +772,9 @@ struct_or_union_specifier
     $2.value = "struct#" + $2.value;
 
     $$.children.push($2);
+
+    // Add a symbol table entry for this struct (a type)
+    symtab.add(null, $2.value, yylineno, true);
   }
   | struct_or_union lbrace struct_declaration_list rbrace
   {
@@ -780,6 +783,9 @@ struct_or_union_specifier
     $$ = $1;
     $$.children.push($3);
     $$.children.push(null);     // no identifier
+
+    // Add a symbol table entry for this struct (a type)
+    symtab.add(null, "struct#" + symtab.getUniqueId(), yylineno, true);
   }
   | struct_or_union identifier
   {
@@ -791,6 +797,9 @@ struct_or_union_specifier
     $2.value = "struct#" + $2.value;
 
     $$.children.push($2);
+
+    // Add a symbol table entry for this struct (a type)
+    symtab.add(null, $2.value, yylineno, true);
   }
   ;
 
@@ -1737,6 +1746,14 @@ sys = require("sys");                // for sys.print()
 node = require("./lib/node.js");     // Node functionality
 error = require("./lib/error.js");   // parseError, errorCount, etc.
 symtab = require("./lib/symtab.js"); // symbol table functionality
+
+modules =
+  {
+    sys    : sys,
+    node   : node,
+    error  : error,
+    symtab : symtab
+  };
 
 error.setParser(parser);                 // provide parser to the error module
 

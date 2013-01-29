@@ -6,6 +6,13 @@ var symtabs = {};
 /** Stack of symbol tables in use during parsing */
 var symtabStack = [];
 
+/** Stack of symbol tables for the struct namespace */
+var symtabStackStruct = [];
+
+/** Next unique symtab entry id */
+var nextUniqueId = 0;
+
+
 /** Bit fields in the typeFlags field of an Entry */
 var TF = 
   {
@@ -383,7 +390,10 @@ exports.create = function(parent, name)
   else
   {
     // A local name was provided. Prepend the parent's name.
-    name = ((parent && parent.name) || "") + ":" + name;
+    if (parent && parent.name)
+    {
+      name = parent.name + ":" + name;
+    }
   }
 
   // Create this new symbol table
@@ -400,8 +410,17 @@ exports.create = function(parent, name)
   // Allow finding a symbol table by its name
   symtabs[name] = symtab;
 
-  // Push it onto the stack
-  symtabStack.push(symtab);
+  // Push it onto the appropriate stack
+  if (name.match(/^struct#/))
+  {
+    symtabStackStruct.push(symtab);
+  }
+  else
+  {
+    symtabStack.push(symtab);
+  }
+  
+  return symtab;
 };
 
 /**
@@ -554,6 +573,15 @@ exports.get = function(symtab, symName)
 
 
 /**
+ * Retrieve a unique id for a symbol table name
+ */
+exports.getUniqueId = function()
+{
+  return nextUniqueId++;
+};
+
+
+/**
  * Prepare for processing by resetting the name creation such that new
  * calls to symtab.add() will yield the same names as previously.
  */
@@ -564,6 +592,8 @@ exports.reset = function()
     {
       symtab.nextChild = 1;
     });
+  
+  nextUniqueId = 0;
 }
 
 
@@ -588,7 +618,7 @@ exports.display = function()
       // Get quick reference to this symbol table entry
       entry = symtab.symbols[symbolName];
 
-      sys.print("  " + symbolName + ":");
+      sys.print("  '" + symbolName + "':");
       if (entry.getIsType())
       {
         sys.print(" type");
