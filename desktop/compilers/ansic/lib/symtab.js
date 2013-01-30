@@ -364,10 +364,14 @@ var Entry = function(bIsType, symtab, line)
  *   the enclosing function. If not provided, then the a name will be
  *   generated dynamically based on the parent's name.
  *
- * @return {Map}
- *   TODOC
+ * @param line {Integer}
+ *   The line number at which this symbol table is created
+ *
+ * @return {Object}
+ *   The opaque symbol table entry
+ *
  */
-exports.create = function(parent, name)
+exports.create = function(parent, name, line)
 {
   var             symtab;
 
@@ -378,12 +382,12 @@ exports.create = function(parent, name)
     if (! parent)
     {
       // Parent does not exist, so this is the root symbol table.
-      name = "<root>";
+      name = "*";
     }
     else
     {
       // Derive name from parent and child identifier
-      name = parent.name + ":" + parent.nextChild;
+      name = parent.name + "/" + parent.nextChild;
       ++parent.nextChild;
     }
   }
@@ -392,7 +396,8 @@ exports.create = function(parent, name)
     // A local name was provided. Prepend the parent's name.
     if (parent && parent.name)
     {
-      name = parent.name + ":" + name;
+      name = parent.name + "/" + parent.nextChild + "-" + name;
+      ++parent.nextChild;
     }
   }
 
@@ -404,7 +409,8 @@ exports.create = function(parent, name)
       symbols     : {},
       symbolOrder : [],
       nextChild   : 1,
-      nextOffset  : 0
+      nextOffset  : 0,
+      line        : line
     };
   
   // Allow finding a symbol table by its name

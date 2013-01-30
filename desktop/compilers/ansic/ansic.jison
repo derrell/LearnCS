@@ -606,36 +606,39 @@ declaration_specifiers
   : storage_class_specifier
   {
     R("declaration_specifiers : storage_class_specifier");
-    $$ = $1;
+    $$ = node.create("declaration_specifiers", yytext, yylineno);
+    $$.children.unshift($1);
   }
   | storage_class_specifier declaration_specifiers
   {
     R("declaration_specifiers : " +
       "storage_class_specifier declaration_specifiers");
-    $$ = $1;
-    $$.children.push($2);
+    $$ = $2;
+    $$.children.unshift($1);
   }
   | type_specifier
   {
     R("declaration_specifiers : type_specifier");
-    $$ = $1;
+    $$ = node.create("declaration_specifiers", yytext, yylineno);
+    $$.children.unshift($1);
   }
   | type_specifier declaration_specifiers
   {
     R("declaration_specifiers : type_specifier declaration_specifiers");
-    $$ = $1;
-    $$.children.push($2);
+    $$ = $2;
+    $$.children.unshift($1);
   }
   | type_qualifier
   {
     R("declaration_specifiers : type_qualifier");
-    $$ = $1;
+    $$ = node.create("declaration_specifiers", yytext, yylineno);
+    $$.children.unshift($1);
   }
   | type_qualifier declaration_specifiers
   {
     R("declaration_specifiers : type_qualifier declaration_specifiers");
-    $$ = $1;
-    $$.children.push($2);
+    $$ = $2;
+    $$.children.unshift($1);
   }
   ;
 
@@ -1027,34 +1030,29 @@ direct_declarator
     R("direct_declarator : " +
       "direct_declarator lparen_scope parameter_type_list rparen_scope");
     
-    var             function_decl;
-
-    $$ = $1;
-    function_decl = node.create("function_decl", yytext, yylineno);
-    function_decl.children.push($3);
-    $$.children.push(function_decl);
+    $$ = node.create("function_decl", yytext, yylineno);
+    $$.children.push($1);
+    $$.children.push($3);
+    $$.children.push(null);     // no identifier_list
   }
   | direct_declarator lparen_scope identifier_list rparen_scope
   {
     R("direct_declarator : " +
       "direct_declarator lparen_scope identifier_list rparen_scope");
 
-    var             function_decl;
-
-    $$ = $1;
-    function_decl = node.create("function_decl", yytext, yylineno);
-    function_decl.children.push($3);
-    $$.children.push(function_decl);
+    $$ = node.create("function_decl", yytext, yylineno);
+    $$.children.push($1);
+    $$.children.push(null);     // no parameter_type_list
+    $$.children.push($3);
   }
   | direct_declarator lparen_scope rparen_scope
   {
     R("direct_declarator : direct_declarator lparen_scope rparen_scope");
     
-    var             function_decl;
-
-    $$ = $1;
-    function_decl = node.create("function_decl", yytext, yylineno);
-    $$.children.push(function_decl);
+    $$ = node.create("function_decl", yytext, yylineno);
+    $$.children.push($1);
+    $$.children.push(null);     // no parameter_type_list
+    $$.children.push(null);     // no identifier_list
   }
   ;
 
@@ -1105,8 +1103,7 @@ parameter_type_list
   : parameter_list
   {
     R("parameter_type_list : parameter_list");
-    $$ = node.create("parameter_type_list", yytext, yylineno);
-    $$.children.push($1);
+    $$ = $1;
   }
   | parameter_list ',' ellipsis
   {
@@ -1138,12 +1135,14 @@ parameter_declaration
     $$ = node.create("parameter_declaration", yytext, yylineno);
     $$.children.push($1);
     $$.children.push($2);
+    $$.children.push(null);     // no abstract declarator
   }
   | declaration_specifiers abstract_declarator
   {
     R("parameter_declaration : declaration_specifiers abstract_declarator");
     $$ = node.create("parameter_declaration", yytext, yylineno);
     $$.children.push($1);
+    $$.children.push(null);     // no declarator
     $$.children.push($2);
   }
   | declaration_specifiers
@@ -1151,6 +1150,8 @@ parameter_declaration
     R("parameter_declaration : declaration_specifiers");
     $$ = node.create("parameter_declaration", yytext, yylineno);
     $$.children.push($1);
+    $$.children.push(null);     // no declarator
+    $$.children.push(null);     // no abstract declarator
   }
   ;
 
@@ -1410,6 +1411,7 @@ compound_statement
     R("compound_statement : lbrace_scope declaration_list rbrace_scope");
     $$ = node.create("compound_statement", yytext, yylineno);
     $$.children.push($2);
+    $$.children.push(null);     // no statement list
   }
   | lbrace_scope declaration_list statement_list rbrace_scope
   {
@@ -1696,7 +1698,7 @@ lparen_scope
   {
     R("lparen_scope : '('");
     // Create a symbol table with an arbitrary (for now) name.
-    symtab.create(symtab.getCurrent(), null);
+    symtab.create(symtab.getCurrent(), null, yylineno + 1);
   }
   ;
   
@@ -1713,7 +1715,7 @@ lbrace_scope
   {
     R("lbrace_scope : lbrace");
     // Create a symbol table with an arbitrary (for now) name.
-    symtab.create(symtab.getCurrent(), null);
+    symtab.create(symtab.getCurrent(), null, yylineno + 1);
   }
   ;
   
@@ -1761,10 +1763,10 @@ error.setParser(parser);                 // provide parser to the error module
 parser.yy.parseError = error.parseError;
 
 // Create the root-level symbol table
-symtab.create(null);
+symtab.create(null, null, 0);
 
 // Function to display rules as they are parsed
 function R(rule)
 {
-//  sys.print("rule: " + rule + "\n");
+  sys.print("rule: " + rule + "\n");
 }

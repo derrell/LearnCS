@@ -5,7 +5,7 @@ unsigned long long int ** b;
 double f;
 CH ch;
 
-void foo(void)
+char foo(int bar)
 {
     int foo1 = 19;
     a = 42;
