@@ -262,7 +262,9 @@ exports.process = process = function(node, data)
       bExists = false;
 
       // If this is a typedef, it's already been added to the symbol table
-      if (node.children[0].type == "typedef")
+      if (node.children[0].children &&
+          node.children[0].children.length > 0 &&
+          node.children[0].children[0].type == "typedef")
       {
         // If it's a type, then it will exist already
         bExists = true;
@@ -274,12 +276,16 @@ exports.process = process = function(node, data)
         {
           var             entry;
           var             pointer;
+          var             identifier;
+
+          // Get the identifier name
+          identifier = declarator.children[0].value;
 
           // If the symbol table should already exist...
           if (bExists)
           {
             // ... then retrieve the entry
-            entry = symtab.get(null, declarator.children[0].value);
+            entry = symtab.get(null, identifier);
 
             if (! entry)
             {
@@ -291,13 +297,12 @@ exports.process = process = function(node, data)
           {
             // It shouldn't exist. Create a symbol table entry for this
             // variable
-            entry = symtab.add(null, declarator.children[0].value, 
-                               declarator.line, false);
+            entry = symtab.add(null, identifier, declarator.line, false);
 
             if (! entry)
             {
-              entry = symtab.get(null, declarator.children[0].value);
-              node.error("Variable '" + declarator.children[0].value + "' " +
+              entry = symtab.get(null, identifier);
+              node.error("Variable '" + identifier + "' " +
                          "was previously declared near line " +
                          entry.getLine());
               return;
@@ -350,27 +355,29 @@ exports.process = process = function(node, data)
       node.children.forEach(
         function(subnode)
         {
-          if (node.children[0] == "typedef")
+sys.print("subnode.type=" + subnode.type + "\n");
+          if (subnode.type == "typedef")
           {
 
           }
-          else if (node.children[0] == "type_name")
+          else if (subnode.type == "type_name")
           {
             // Add this declared type
             data.entry.setType(subnode.value);
           }
-          else if (node.children[0] == "enum_specifier")
+          else if (subnode.type == "enum_specifier")
           {
 
           }
-          else if (node.children[0] == "struct")
+          else if (subnode.type == "struct")
           {
-            process(node.children[0], data);
-            data.entry.setType(data.structEntry);
+            process(subnode, data);
+            data.entry.setType(data.structEntry.name);
           }
           else
           {
             // Add this declared type
+sys.print("adding type " + subnode.type + " to " + data.entry.getName() + "\n");
             data.entry.setType(subnode.type);
           }
         });
@@ -776,7 +783,7 @@ break;
        */
 
       // Is there an identifier?
-      if (node.children.length > 1)
+      if (node.children.length > 1 && node.children[1])
       {
         // Yes. Retrieve it.
         identifier = node.children[1].value;

@@ -1,5 +1,3 @@
-
-
 /** Map of available symbol tables */
 var symtabs = {};
 
@@ -9,9 +7,11 @@ var symtabStack = [];
 /** Stack of symbol tables for the struct namespace */
 var symtabStackStruct = [];
 
-/** Next unique symtab entry id */
+/** Next unique symtab id (only assigned by caller) */
 var nextUniqueId = 0;
 
+/** Next entry id, assigned to every symbol table entry */
+var nextEntryId = 0;
 
 /** Bit fields in the typeFlags field of an Entry */
 var TF = 
@@ -53,10 +53,16 @@ exports.TYPE_FLAGS = TF;
 exports.SIZE_IN_BYTES = SIB;
 
 /** Create a new symtab entry */
-var Entry = function(bIsType, symtab, line)
+var Entry = function(name, bIsType, symtab, line)
 {
   var entry =
     {
+      // this symbol's name
+      name         : name,
+
+      // identifier for this entry
+      id           : nextEntryId++,
+
       // whether this entry is a type definition
       bIsType      : bIsType,
 
@@ -125,6 +131,16 @@ var Entry = function(bIsType, symtab, line)
     return typeList.join(", ") + " with " + thisType;
   };
 
+  entry.getName = function()
+  {
+    return entry.name;
+  };
+
+  entry.getId = function()
+  {
+    return entry.id;
+  };
+
   entry.getIsType = function()
   {
     return entry.bIsType;
@@ -173,6 +189,9 @@ var Entry = function(bIsType, symtab, line)
                     types(TF.Float | TF.Double, type, entry.typeFlags));
         return;
       }
+      break;
+
+    case "int" :
       break;
 
     default:
@@ -230,6 +249,7 @@ var Entry = function(bIsType, symtab, line)
         entry.error("Type specified multiple times: " + type);
         return;
       }
+sys.print("Adding TF.Int (" + TF.Int + ") to " + entry.name + "\n");
       entry.typeFlags |= TF.Int;
       
       // this one may have already by set, e.g., short int
@@ -347,6 +367,21 @@ var Entry = function(bIsType, symtab, line)
   {
     sys.print("Error: line " + this.line + ": " + message);
     ++error.errorCount;
+  };
+
+  entry.display = function()
+  {
+    var             key;
+
+    sys.print("\n");
+
+    for (key in this)
+    {
+      if (typeof this[key] != "function")
+      {
+        sys.print("\t" + key + " = " + this[key] + "\n");
+      }
+    }
   };
 
   return entry;
@@ -502,7 +537,7 @@ exports.add = function(symtab, symName, line, bIsType)
   }
   
   // Get a new, initialized symbol table entry
-  entry = Entry(bIsType || false, symtab, line);
+  entry = Entry(symName, bIsType || false, symtab, line);
 
   // Add this symbol to the symbol table
   symtab.symbols[symName] = entry;
@@ -664,7 +699,7 @@ exports.display = function()
       }
       if (entry.typeFlags === 0 && entry.typeName)
       {
-        sys.print(" " + entry.typeName);
+        entry.display();
       }
 
       sys.print(" ");
