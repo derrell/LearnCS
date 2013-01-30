@@ -580,9 +580,9 @@ declaration
     $$ = node.create("declaration", yytext, yylineno);
     $$.children.push($1);
 
-    sys.print("Declaration:\n");
-    node.display($$);
-    sys.print("\n\n");
+    // sys.print("Declaration:\n");
+    // node.display($$);
+    // sys.print("\n\n");
   }
   | declaration_specifiers init_declarator_list ';'
   {
@@ -596,9 +596,9 @@ declaration
     $$.children.push($1);
     $$.children.push($2);
 
-    sys.print("Declaration:\n");
-    node.display($$);
-    sys.print("\n\n");
+    // sys.print("Declaration:\n");
+    // node.display($$);
+    // sys.print("\n\n");
   }
   ;
 
@@ -1699,6 +1699,7 @@ lparen_scope
     R("lparen_scope : '('");
     // Create a symbol table with an arbitrary (for now) name.
     symtab.create(symtab.getCurrent(), null, yylineno + 1);
+sys.print("lparen_scope: symtab=" + symtab.getCurrent().name + "\n");
   }
   ;
   
@@ -1706,6 +1707,7 @@ rparen_scope
   : ')'
   {
     R("rparen_scope : ')'");
+
     // Pop this block's symbol table from the stack
     symtab.popStack();
   }
@@ -1714,8 +1716,10 @@ lbrace_scope
   : lbrace
   {
     R("lbrace_scope : lbrace");
+
     // Create a symbol table with an arbitrary (for now) name.
     symtab.create(symtab.getCurrent(), null, yylineno + 1);
+sys.print("lbrace_scope: symtab=" + symtab.getCurrent().name + "\n");
   }
   ;
   
@@ -1764,9 +1768,10 @@ parser.yy.parseError = error.parseError;
 
 // Create the root-level symbol table
 symtab.create(null, null, 0);
+sys.print("root: symtab=" + symtab.getCurrent().name + "\n");
 
 // Function to display rules as they are parsed
 function R(rule)
 {
-  sys.print("rule: " + rule + "\n");
+//  sys.print("rule: " + rule + "\n");
 }

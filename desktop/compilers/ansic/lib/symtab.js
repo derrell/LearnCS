@@ -25,7 +25,9 @@ var TF =
     Float    : 1 << 5,
     Double   : 1 << 6,
     
-    Unsigned : 1 << 7
+    Unsigned : 1 << 7,
+    
+    Function : 1 << 8
   };
 
 /** Bit fields in the storageFlags field of an Entry */
@@ -194,6 +196,9 @@ var Entry = function(name, bIsType, symtab, line)
     case "int" :
       break;
 
+    case "function" :
+      break;
+
     default:
       // We got a user-defined (typedef'ed) type
       entry.typeName = type;
@@ -281,6 +286,11 @@ var Entry = function(name, bIsType, symtab, line)
       {
         entry.size = SIB.Int;
       }
+      break;
+      
+    case "function" :
+      entry.typeFlags |= TF.Function;
+      entry.size = 0;
       break;
     }
   };
@@ -384,7 +394,7 @@ var Entry = function(name, bIsType, symtab, line)
   };
 
   return entry;
-}
+};
 
 /**
  * Create a new symbol table.
@@ -627,6 +637,7 @@ exports.getUniqueId = function()
  */
 exports.reset = function()
 {
+  symtabs = {};
   symtabStack.forEach(
     function(symtab)
     {
@@ -634,7 +645,7 @@ exports.reset = function()
     });
   
   nextUniqueId = 0;
-}
+};
 
 
 exports.display = function()
@@ -664,6 +675,10 @@ exports.display = function()
         sys.print(" type");
       }
 
+      if (entry.typeFlags & TF.Function)
+      {
+        sys.print(" function");
+      }
       if (entry.typeFlags & TF.Unsigned)
       {
         sys.print(" unsigned");
