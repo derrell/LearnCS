@@ -355,30 +355,34 @@ exports.process = process = function(node, data)
       node.children.forEach(
         function(subnode)
         {
-sys.print("subnode.type=" + subnode.type + "\n");
-          if (subnode.type == "typedef")
+          switch(subnode.type)
           {
-
-          }
-          else if (subnode.type == "type_name")
-          {
+          case "typedef" :
+            // nothing to do; already noted
+            break;
+            
+          case "type_name" :
             // Add this declared type
             data.entry.setType(subnode.value);
-          }
-          else if (subnode.type == "enum_specifier")
-          {
-
-          }
-          else if (subnode.type == "struct")
-          {
+            break;
+            
+          case "enum_specifier" :
+            throw new Error("TBD");
+            break;
+            
+          case "struct" :
+            // Handle declaration of the struct, if necessary
             process(subnode, data);
+            
+            // We received back the structure symtab entry. Our entry's type
+            // is its name.
             data.entry.setType(data.structEntry.name);
-          }
-          else
-          {
+            break;
+            
+          default:
             // Add this declared type
-sys.print("adding type " + subnode.type + " to " + data.entry.getName() + "\n");
             data.entry.setType(subnode.type);
+            break;
           }
         });
       break;

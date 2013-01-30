@@ -249,7 +249,6 @@ var Entry = function(name, bIsType, symtab, line)
         entry.error("Type specified multiple times: " + type);
         return;
       }
-sys.print("Adding TF.Int (" + TF.Int + ") to " + entry.name + "\n");
       entry.typeFlags |= TF.Int;
       
       // this one may have already by set, e.g., short int
@@ -699,7 +698,9 @@ exports.display = function()
       }
       if (entry.typeFlags === 0 && entry.typeName)
       {
-        entry.display();
+        // This is a struct or an enum
+        sys.print(" " + entry.typeName);
+        // entry.display();
       }
 
       sys.print(" ");
