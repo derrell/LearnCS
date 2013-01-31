@@ -89,24 +89,17 @@ postfix_expression
   | postfix_expression '(' ')'
     {
       R("postfix_expression : postfix_expression '(' ')'");
-
-      var             function_call;
-
-      $$ = $1;
-      function_call = node.create("function_call", yytext, yylineno);
-      $$.children.push(function_call);
+      $$ = node.create("function_call", yytext, yylineno);
+      $$.children.push($1);
+      $$.children.push(null);   // no argument_expression_list
     }
   | postfix_expression '(' argument_expression_list ')'
     {
       R("postfix_expression : " +
         "postfix_expression '(' argument_expression_list ')'");
-
-      var             function_call;
-
-      $$ = $1;
-      function_call = node.create("function_call", yytext, yylineno);
-      function_call.children.push($3);
-      $$.children.push(function_call);
+      $$ = node.create("function_call", yytext, yylineno);
+      $$.children.push($1);
+      $$.children.push($3);
     }
   | postfix_expression '.' identifier
     {

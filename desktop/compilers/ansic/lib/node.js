@@ -162,7 +162,12 @@ exports.process = process = function(node, data)
       break;
       
     case "argument_expression_list" :
-      throw new Error("argument_expression_list");
+      /*
+       * argument_expression_list
+       *   0: assignment_expression
+       *   ...
+       */
+      processSubnodes(node, data);
       break;
       
     case "array_decl" :
@@ -190,6 +195,8 @@ exports.process = process = function(node, data)
       break;
       
     case "assign" :
+        // Test for left side variable or address (lvalue) in 23 = 42
+        // Produce a *meaningful* error message
       throw new Error("assign");
       break;
       
@@ -371,11 +378,7 @@ exports.process = process = function(node, data)
       break;
 
     case "declaration_list" :
-      node.children.forEach(
-        function(subnode)
-        {
-          process(subnode, data);
-        });
+      processSubnodes(node, data);
       break;
       
     case "declaration_specifiers" :
@@ -437,6 +440,7 @@ exports.process = process = function(node, data)
       break;
 
     case "declarator" :
+      // should never occur; handled in each case that uses a declarator
       throw new Error("declarator");
       break;
       
@@ -765,11 +769,7 @@ exports.process = process = function(node, data)
        *   ...
        *   n: ellipsis?
        */
-      node.children.forEach(
-        function(subnode)
-        {
-          process(subnode, data);
-        });
+      processSubnodes(node, data);
       break;
       
     case "pointer" :
@@ -837,13 +837,7 @@ exports.process = process = function(node, data)
       break;
       
     case "statement_list" :
-sys.print("IGNORING STATEMENT_LIST");
-break;
-      node.children.forEach(
-        function(subnode)
-        {
-          process(subnode, data);
-        });
+      processSubnodes(node, data);
       break;
       
     case "static" :
@@ -956,11 +950,7 @@ break;
        *   0: struct_declaration
        *   ...
        */
-      node.children.forEach(
-        function(subnode)
-        {
-          process(subnode, data);
-        });
+      processSubnodes(node, data);
       break;
       
     case "struct_declarator" :
@@ -988,11 +978,7 @@ break;
       break;
       
     case "translation_unit" :
-      node.children.forEach(
-        function(subnode)
-        {
-          process(subnode, data);
-        });
+      processSubnodes(node, data);
       break;
       
     case "trinary" :
@@ -1050,4 +1036,21 @@ break;
     throw new Error("attempt to process <null>");
   }
 };
+
+
+/**
+ * Process all sub-nodes of a node
+ * 
+ * @param node
+ *   The node whose sub-nodes (children) are to be processed
+ */
+var processSubnodes = function(node, data)
+{
+  node.children.forEach(
+    function(subnode)
+    {
+      process(subnode, data);
+    });
+};
+
 
