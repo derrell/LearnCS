@@ -378,6 +378,11 @@ exports.process = process = function(node, data)
       break;
 
     case "declaration_list" :
+      /*
+       * declaration_list
+       *   0: declaration
+       *   ...
+       */
       processSubnodes(node, data);
       break;
       
