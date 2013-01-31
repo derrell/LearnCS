@@ -537,11 +537,17 @@ exports.add = function(symtab, symName, line, bIsType)
     symtab = exports.getCurrent();
   }
 
+  if (modules.symtab.debug)
+  {
+    sys.print("symtab.add: symtab=" + symtab.name + "\n");
+  }
+
   // See if this symbol already exists in the symbol table
   value = symtab.symbols[symName];
   if (value)
   {
     // The symbol was already in the symbol table
+sys.print("symtab.add: symtab " + symtab.name + " already contains " + symName + "\n");
     return null;
   }
   
@@ -648,7 +654,7 @@ exports.reset = function()
 };
 
 
-exports.display = function()
+exports.display = function(message)
 {
   var             i;
   var             entry;
@@ -658,6 +664,10 @@ exports.display = function()
   var             sym;
 
   sys.print("\n");
+  if (message)
+  {
+    sys.print(message + "\n");
+  }
 
   for (symtabName in symtabs)
   {

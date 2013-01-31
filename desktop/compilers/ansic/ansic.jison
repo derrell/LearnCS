@@ -13,6 +13,7 @@
 %token LBRACE RBRACE
 
 %start start_sym
+
 %%
 
 start_sym
@@ -26,7 +27,13 @@ start_sym
       node.display($1);
       symtab.display();
 
+      // Reset the symbol table to a clean state
       symtab.reset();
+
+      // Re-create the root-level symbol table
+      symtab.create(null, null, 0);
+
+      // Process the abstract syntax tree.
       node.process($1, data);
 
       sys.print("\n\nAfter processing...");
@@ -579,10 +586,6 @@ declaration
 
     $$ = node.create("declaration", yytext, yylineno);
     $$.children.push($1);
-
-    // sys.print("Declaration:\n");
-    // node.display($$);
-    // sys.print("\n\n");
   }
   | declaration_specifiers init_declarator_list ';'
   {
@@ -595,10 +598,6 @@ declaration
     $$ = node.create("declaration", yytext, yylineno);
     $$.children.push($1);
     $$.children.push($2);
-
-    // sys.print("Declaration:\n");
-    // node.display($$);
-    // sys.print("\n\n");
   }
   ;
 
@@ -1025,29 +1024,29 @@ direct_declarator
     array_decl = node.create("array_decl", yytext, yylineno);
     $$.children.push(array_decl);
   }
-  | direct_declarator lparen_scope parameter_type_list rparen_scope
+  | direct_declarator function_scope '(' parameter_type_list ')'
   {
     R("direct_declarator : " +
-      "direct_declarator lparen_scope parameter_type_list rparen_scope");
+      "direct_declarator '(' parameter_type_list ')'");
     
     $$ = node.create("function_decl", yytext, yylineno);
     $$.children.push($1);
-    $$.children.push($3);
+    $$.children.push($4);
     $$.children.push(null);     // no identifier_list
   }
-  | direct_declarator lparen_scope identifier_list rparen_scope
+  | direct_declarator function_scope '(' identifier_list ')'
   {
     R("direct_declarator : " +
-      "direct_declarator lparen_scope identifier_list rparen_scope");
+      "direct_declarator '(' identifier_list ')'");
 
     $$ = node.create("function_decl", yytext, yylineno);
     $$.children.push($1);
     $$.children.push(null);     // no parameter_type_list
-    $$.children.push($3);
+    $$.children.push($4);
   }
-  | direct_declarator lparen_scope rparen_scope
+  | direct_declarator function_scope '(' ')'
   {
-    R("direct_declarator : direct_declarator lparen_scope rparen_scope");
+    R("direct_declarator : direct_declarator '(' ')'");
     
     $$ = node.create("function_decl", yytext, yylineno);
     $$.children.push($1);
@@ -1579,6 +1578,10 @@ external_declaration
   {
     R("external_declaration : function_definition");
     $$ = $1;
+
+    // Pop the symtab created by function_scope from the stack
+    symtab.popStack();
+    $$ = $1;
   }
   | declaration
   {
@@ -1625,6 +1628,14 @@ function_definition
     $$.children.push($1);       // declarator
     $$.children.push(null);     // declaration_list
     $$.children.push($2);       // compound_statement
+  }
+  ;
+
+function_scope
+  :
+  {
+    symtab.create(symtab.getCurrent(), null, yylineno + 1);
+    $$ = $1;
   }
   ;
 
@@ -1693,25 +1704,6 @@ ellipsis
   }
   ;
 
-lparen_scope
-  : '('
-  {
-    R("lparen_scope : '('");
-    // Create a symbol table with an arbitrary (for now) name.
-    symtab.create(symtab.getCurrent(), null, yylineno + 1);
-sys.print("lparen_scope: symtab=" + symtab.getCurrent().name + "\n");
-  }
-  ;
-  
-rparen_scope
-  : ')'
-  {
-    R("rparen_scope : ')'");
-
-    // Pop this block's symbol table from the stack
-    symtab.popStack();
-  }
-  ;
 lbrace_scope
   : lbrace
   {
@@ -1719,7 +1711,6 @@ lbrace_scope
 
     // Create a symbol table with an arbitrary (for now) name.
     symtab.create(symtab.getCurrent(), null, yylineno + 1);
-sys.print("lbrace_scope: symtab=" + symtab.getCurrent().name + "\n");
   }
   ;
   
@@ -1727,6 +1718,7 @@ rbrace_scope
   : rbrace
   {
     R("rbrace_scope : rbrace");
+
     // Pop this block's symbol table from the stack
     symtab.popStack();
   }
@@ -1768,7 +1760,8 @@ parser.yy.parseError = error.parseError;
 
 // Create the root-level symbol table
 symtab.create(null, null, 0);
-sys.print("root: symtab=" + symtab.getCurrent().name + "\n");
+
+var scopeStack = [];
 
 // Function to display rules as they are parsed
 function R(rule)

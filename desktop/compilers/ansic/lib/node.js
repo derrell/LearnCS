@@ -142,73 +142,95 @@ exports.process = process = function(node, data)
     switch(node.type)
     {
     case "abstract_declarator" :
-      throw new Error("TBD");
+      throw new Error("abstract_declarator");
       break;
       
     case "add" :
+      throw new Error("add");
       break;
       
     case "add-assign" :
+      throw new Error("add-assign");
       break;
       
     case "address_of" :
+      throw new Error("address_of");
       break;
       
     case "and" :
+      throw new Error("and");
       break;
       
     case "argument_expression_list" :
+      throw new Error("argument_expression_list");
       break;
       
     case "array_decl" :
+      throw new Error("array_decl");
       break;
       
     case "array_decl" :
+      throw new Error("array_decl");
       break;
       
     case "array_decl" :
+      throw new Error("array_decl");
       break;
       
     case "array_decl" :
+      throw new Error("array_decl");
       break;
       
     case "array_decl" :
+      throw new Error("array_decl");
       break;
       
     case "array_expression" :
+      throw new Error("array_expression");
       break;
       
     case "assign" :
+      throw new Error("assign");
       break;
       
     case "auto" :
+      throw new Error("auto");
       break;
       
     case "bit-and" :
+      throw new Error("bit-and");
       break;
       
     case "bit-and-assign" :
+      throw new Error("bit-and-assign");
       break;
       
     case "bit_invert" :
+      throw new Error("bit_invert");
       break;
       
     case "bit-or" :
+      throw new Error("bit-or");
       break;
       
     case "bit-or-assign" :
+      throw new Error("bit-or-assign");
       break;
       
     case "break" :
+      throw new Error("break");
       break;
       
     case "case" :
+      throw new Error("case");
       break;
       
     case "cast_expression" :
+      throw new Error("cast_expression");
       break;
       
     case "char" :
+      throw new Error("char");
       break;
       
     case "compound_statement" :
@@ -220,25 +242,33 @@ exports.process = process = function(node, data)
       
       // Create a new scope for this compound statement
       symtab.create(symtab.getCurrent(), null, node.line);
-sys.print("compound_statement: symtab=" + symtab.getCurrent().name + "\n");
       
       // Process the declaration list
-      process(node.children[0], data);
+      if (node.children[0])
+      {
+        process(node.children[0], data);
+      }
       
       // Process the statement_list
-      process(node.children[1], data);
+      if (node.children[1])
+      {
+        process(node.children[1], data);
+      }
       
       // Revert to the prior scope
       symtab.popStack();
       break;
       
     case "const" :
+      throw new Error("const");
       break;
       
     case "constant" :
+      throw new Error("constant");
       break;
       
     case "continue" :
+      throw new Error("continue");
       break;
       
     case "declaration" :
@@ -270,6 +300,14 @@ sys.print("compound_statement: symtab=" + symtab.getCurrent().name + "\n");
       {
         // If it's a type, then it will exist already
         bExists = true;
+      }
+
+      // Are there identifiers to apply these declaration specifieres to?
+      if (! node.children[1])
+      {
+        // Nope. Just process the declaration_specifiers.
+        process(node.children[0], {});
+        break;
       }
 
       // Create symbol table entries for these identifiers
@@ -365,94 +403,125 @@ sys.print("compound_statement: symtab=" + symtab.getCurrent().name + "\n");
             
           case "type_name" :
             // Add this declared type
-            data.entry.setType(subnode.value);
+            if (data.entry)
+            {
+              data.entry.setType(subnode.value);
+            }
             break;
             
           case "enum_specifier" :
-            throw new Error("TBD");
+            throw new Error("declaration_specifiers -> enum_specifier");
             break;
             
           case "struct" :
             // Handle declaration of the struct, if necessary
             process(subnode, data);
             
-            // We received back the structure symtab entry. Our entry's type
-            // is its name.
-            data.entry.setType(data.structEntry.name);
+            // We received back the structure symtab entry. Our entry's type,
+            // if we were given an entry, is its name.
+            if (data.entry)
+            {
+              data.entry.setType(data.structEntry.name);
+            }
             break;
             
           default:
             // Add this declared type
-            data.entry.setType(subnode.type);
+            if (data.entry)
+            {
+              data.entry.setType(subnode.type);
+            }
             break;
           }
         });
       break;
 
     case "declarator" :
+      throw new Error("declarator");
       break;
       
     case "default" :
+      throw new Error("default");
       break;
       
     case "dereference" :
+      throw new Error("dereference");
       break;
       
     case "direct_abstract_declarator" :
+      throw new Error("direct_abstract_declarator");
       break;
       
     case "direct_declarator" :
+      throw new Error("direct_declarator");
       break;
       
     case "divide" :
+      throw new Error("divide");
       break;
       
     case "divide-assign" :
+      throw new Error("divide-assign");
       break;
       
     case "double" :
+      throw new Error("double");
       break;
       
     case "do-while" :
+      throw new Error("do-while");
       break;
       
     case "ellipsis" :
+      throw new Error("ellipsis");
       break;
       
     case "enumerator_list" :
+      throw new Error("enumerator_list");
       break;
       
     case "enum_specifier" :
+      throw new Error("enum_specifier");
       break;
       
     case "equal" :
+      throw new Error("equal");
       break;
       
     case "exclusive-or" :
+      throw new Error("exclusive-or");
       break;
       
     case "expression" :
+      throw new Error("expression");
       break;
       
     case "expression" :
+      throw new Error("expression");
       break;
       
     case "extern" :
+      throw new Error("extern");
       break;
       
     case "float" :
+      throw new Error("float");
       break;
       
     case "for" :
+      throw new Error("for");
       break;
       
     case "for" :
+      throw new Error("for");
       break;
       
     case "function_call" :
+      throw new Error("function_call");
       break;
       
     case "function_decl" :
+      throw new Error("function_decl");
       break;
       
     case "function_definition" :
@@ -494,10 +563,12 @@ sys.print("compound_statement: symtab=" + symtab.getCurrent().name + "\n");
       symtab.create(symtab.getCurrent(), 
                     function_decl.children[0].value,
                     function_decl.line);
-sys.print("function_definition: symtab=" + symtab.getCurrent().name + "\n");
 
       // Process the paremeter list
-      process(function_decl.children[1], data);
+      if (function_decl.children[1])
+      {
+        process(function_decl.children[1], data);
+      }
 
       // Look for specially-handled type specifiers.
       switch(node.children[0].type)
@@ -548,75 +619,99 @@ sys.print("function_definition: symtab=" + symtab.getCurrent().name + "\n");
       break;
       
     case "goto" :
+      throw new Error("goto");
       break;
       
     case "greater-equal" :
+      throw new Error("greater-equal");
       break;
       
     case "greater-than" :
+      throw new Error("greater-than");
       break;
       
     case "identifer" :
+      throw new Error("identifer");
       break;
       
     case "identifier_list" :
+      throw new Error("identifier_list");
       break;
       
     case "if" :
+      throw new Error("if");
       break;
       
     case "init_declarator_list" :
+      throw new Error("init_declarator_list");
       break;
       
     case "initializer" :
+      throw new Error("initializer");
       break;
       
     case "initializer_list" :
+      throw new Error("initializer_list");
       break;
       
     case "int" :
+      throw new Error("int");
       break;
       
     case "label" :
+      throw new Error("label");
       break;
       
     case "left-shift" :
+      throw new Error("left-shift");
       break;
       
     case "left-shift-assign" :
+      throw new Error("left-shift-assign");
       break;
       
     case "less-equal" :
+      throw new Error("less-equal");
       break;
       
     case "less-than" :
+      throw new Error("less-than");
       break;
       
     case "long" :
+      throw new Error("long");
       break;
       
     case "mod" :
+      throw new Error("mod");
       break;
       
     case "mod-assign" :
+      throw new Error("mod-assign");
       break;
       
     case "multiply" :
+      throw new Error("multiply");
       break;
       
     case "multiply-assign" :
+      throw new Error("multiply-assign");
       break;
       
     case "negative" :
+      throw new Error("negative");
       break;
       
     case "not" :
+      throw new Error("not");
       break;
       
     case "not-equal" :
+      throw new Error("not-equal");
       break;
       
     case "or" :
+      throw new Error("or");
       break;
       
     case "parameter_declaration" :
@@ -657,7 +752,10 @@ sys.print("function_definition: symtab=" + symtab.getCurrent().name + "\n");
       process(node.children[0], { entry : entry });
 
       // Process abstract declarators
-      process(node.children[2], { entry : entry });
+      if (node.children[2])
+      {
+        process(node.children[2], { entry : entry });
+      }
       break;
       
     case "parameter_list" :
@@ -675,60 +773,85 @@ sys.print("function_definition: symtab=" + symtab.getCurrent().name + "\n");
       break;
       
     case "pointer" :
+      throw new Error("pointer");
       break;
       
     case "pointer_access" :
+      throw new Error("pointer_access");
       break;
       
     case "positive" :
+      throw new Error("positive");
       break;
       
     case "post_decrement_op" :
+      throw new Error("post_decrement_op");
       break;
       
     case "postfix_expression" :
+      throw new Error("postfix_expression");
       break;
       
     case "post_increment_op" :
+      throw new Error("post_increment_op");
       break;
       
     case "pre_decrement_op" :
+      throw new Error("pre_decrement_op");
       break;
       
     case "pre_increment_op" :
+      throw new Error("pre_increment_op");
       break;
       
     case "register" :
+      throw new Error("register");
       break;
       
     case "return" :
+      throw new Error("return");
       break;
       
     case "right-shift" :
+      throw new Error("right-shift");
       break;
       
     case "right-shift-assign" :
+      throw new Error("right-shift-assign");
       break;
       
     case "short" :
+      throw new Error("short");
       break;
       
     case "signed" :
+      throw new Error("signed");
       break;
       
     case "sizeof" :
+      throw new Error("sizeof");
       break;
       
     case "specifier_qualifier_list" :
+      throw new Error("specifier_qualifier_list");
       break;
       
     case "statement_list" :
+sys.print("IGNORING STATEMENT_LIST");
+break;
+      node.children.forEach(
+        function(subnode)
+        {
+          process(subnode, data);
+        });
       break;
       
     case "static" :
+      throw new Error("static");
       break;
       
     case "string_literal" :
+      throw new Error("string_literal");
       break;
       
     case "struct" :
@@ -758,7 +881,6 @@ sys.print("function_definition: symtab=" + symtab.getCurrent().name + "\n");
       if (! symtabStruct)
       {
         symtabStruct = symtab.create(null, identifier, node.line);
-sys.print("struct: symtab=" + symtab.getCurrent().name + "\n");
         entry.setStructSymtab(symtabStruct);
       }
 
@@ -842,21 +964,27 @@ sys.print("struct: symtab=" + symtab.getCurrent().name + "\n");
       break;
       
     case "struct_declarator" :
+      throw new Error("struct_declarator");
       break;
       
     case "struct_declarator_list" :
+      throw new Error("struct_declarator_list");
       break;
       
     case "structure_reference" :
+      throw new Error("structure_reference");
       break;
       
     case "subtract" :
+      throw new Error("subtract");
       break;
       
     case "subtract-assign" :
+      throw new Error("subtract-assign");
       break;
       
     case "switch" :
+      throw new Error("switch");
       break;
       
     case "translation_unit" :
@@ -868,36 +996,47 @@ sys.print("struct: symtab=" + symtab.getCurrent().name + "\n");
       break;
       
     case "trinary" :
+      throw new Error("trinary");
       break;
       
     case "type" :
+      throw new Error("type");
       break;
       
     case "typedef" :
+      throw new Error("typedef");
       break;
       
     case "type_definition" :
+      throw new Error("type_definition");
       break;
       
     case "type_name" :
+      throw new Error("type_name");
       break;
       
     case "type_qualifier_list" :
+      throw new Error("type_qualifier_list");
       break;
       
     case "union" :
+      throw new Error("union");
       break;
       
     case "unsigned" :
+      throw new Error("unsigned");
       break;
       
     case "void" :
+      throw new Error("void");
       break;
       
     case "volatile" :
+      throw new Error("volatile");
       break;
       
     case "xor-assign" :
+      throw new Error("xor-assign");
       break;
 
     default:
@@ -908,7 +1047,7 @@ sys.print("struct: symtab=" + symtab.getCurrent().name + "\n");
   else
   {
     // It's null. Display a representation of a null value.
-    sys.print("<null>\n");
+    throw new Error("attempt to process <null>");
   }
 };
 
