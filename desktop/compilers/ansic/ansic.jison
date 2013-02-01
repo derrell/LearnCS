@@ -1,3 +1,12 @@
+/**
+ * Grammar for ANSI C (with some C99 mods)
+ *
+ * Copyright (c) 2013 Derrell Lipman
+ * 
+ * License:
+ *   GPL Version 2: http://www.gnu.org/licenses/gpl-2.0.html 
+ */
+
 %token IDENTIFIER CONSTANT STRING_LITERAL SIZEOF
 %token PTR_OP INC_OP DEC_OP LEFT_OP RIGHT_OP LE_OP GE_OP EQ_OP NE_OP
 %token AND_OP OR_OP MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN ADD_ASSIGN

@@ -1,3 +1,12 @@
+/**
+ * Symbol table functionality
+ *
+ * Copyright (c) 2013 Derrell Lipman
+ * 
+ * License:
+ *   GPL Version 2: http://www.gnu.org/licenses/gpl-2.0.html 
+ */
+
 /** Map of available symbol tables */
 var symtabs = {};
 
@@ -547,7 +556,6 @@ exports.add = function(symtab, symName, line, bIsType)
   if (value)
   {
     // The symbol was already in the symbol table
-sys.print("symtab.add: symtab " + symtab.name + " already contains " + symName + "\n");
     return null;
   }
   
