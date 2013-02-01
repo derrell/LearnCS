@@ -1763,8 +1763,6 @@ parser.yy.parseError = error.parseError;
 // Create the root-level symbol table
 symtab.create(null, null, 0);
 
-var scopeStack = [];
-
 // Function to display rules as they are parsed
 function R(rule)
 {
