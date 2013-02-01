@@ -28,7 +28,7 @@ function AbstractType(type)
 /*
  * Retrieve the type of this Value
  */
-AbstractType.prototype.getTypeOfType = function()
+AbstractType.prototype.getTypeOfValue = function()
 {
   return this.valueType;
 };

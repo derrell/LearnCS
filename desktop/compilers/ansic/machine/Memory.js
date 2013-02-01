@@ -56,14 +56,39 @@ function Memory()
   this._memoryInternal = [];
 }
 
-/*
+/**
  * Assign a value to a memory address
+ *
+ * @param addr {Number}
+ *   The address at which memory is to be placed
+ *
+ * @param value {NumberType|AddressType|OpcodeType}
+ *   The value to be placed at the specified address
  */
-Memory.prototype.assign = function(addr, value)
+Memory.prototype.put = function(addr, value)
 {
+  // If the type is opcode, then this can only be placed in the Program region.
+  if (value.getTypeOfValue() == "OpCode" && 
+      (addr < info.prog.start || addr >= info.prog.start + info.prog.length))
+  {
+    throw new Error("Invalid memory access: writing code into data space " +
+                    "at address " + addr);
+  }
+  
+  // Otherwise, it can *not* be placed in the Program region.
+  if (value.getTypeOfValue() != "OpCode" &&
+      (addr >= info.prog.start && addr < info.prog.start + info.prog.length))
+  {
+    throw new Error("Invalid memory access: writing data into code space " +
+                    "at address " + addr);
+  }
+
   this._memoryInternal[addr] = value;
 };
 
+/**
+ * Create a displayable representation of memory.
+ */
 Memory.prototype.toDisplayArray = function()
 {
 };
