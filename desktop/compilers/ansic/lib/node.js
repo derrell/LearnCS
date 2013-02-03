@@ -248,7 +248,7 @@ exports.process = process = function(node, data)
        */
       
       // Create a new scope for this compound statement
-      symtab.create(symtab.getCurrent(), null, node.line);
+      symtab.create(symtab.getCurrent(), "compound@" + node.line, node.line);
       
       // Process the declaration list
       if (node.children[0])
@@ -526,10 +526,16 @@ exports.process = process = function(node, data)
       break;
       
     case "function_call" :
+      /*
+       * function_call
+       *   0: postfix_expression (function to be called)
+       *   1: argument_expression_list?
+       */
       throw new Error("function_call");
       break;
       
     case "function_decl" :
+      // handled by function_definition
       throw new Error("function_decl");
       break;
       
@@ -639,12 +645,17 @@ exports.process = process = function(node, data)
       throw new Error("greater-than");
       break;
       
-    case "identifer" :
+    case "identifier" :
       throw new Error("identifer");
       break;
       
     case "identifier_list" :
-      throw new Error("identifier_list");
+      /*
+       * identifier_list
+       *   0: identifier
+       *   ...
+       */
+      processSubnodes(node, data);
       break;
       
     case "if" :
@@ -652,7 +663,12 @@ exports.process = process = function(node, data)
       break;
       
     case "init_declarator_list" :
-      throw new Error("init_declarator_list");
+      /*
+       * init_declarator_list
+       *   0: init_declarator
+       *   ...
+       */
+      processSubnodes(node, data);
       break;
       
     case "initializer" :
@@ -842,6 +858,11 @@ exports.process = process = function(node, data)
       break;
       
     case "statement_list" :
+      /*
+       * statement_list
+       *   0: statement
+       *   ...
+       */
       processSubnodes(node, data);
       break;
       
@@ -983,6 +1004,11 @@ exports.process = process = function(node, data)
       break;
       
     case "translation_unit" :
+      /*
+       * translation_unit
+       *   0: external_declaration
+       *   ...
+       */
       processSubnodes(node, data);
       break;
       

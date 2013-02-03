@@ -431,7 +431,7 @@ exports.create = function(parent, name, line)
     else
     {
       // Derive name from parent and child identifier
-      name = parent.name + "/" + parent.nextChild;
+      name = parent.name + "/" + parent.nextChild + "@L" + line;
       ++parent.nextChild;
     }
   }

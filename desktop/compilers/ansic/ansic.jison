@@ -1574,7 +1574,6 @@ external_declaration
 
     // Pop the symtab created by function_scope from the stack
     symtab.popStack();
-    $$ = $1;
   }
   | declaration
   {
@@ -1645,7 +1644,7 @@ identifier
     else
     {
       R("identifier : IDENTIFIER (" + yytext + ")");
-      $$ = node.create("identifer", yytext, yylineno);
+      $$ = node.create("identifier", yytext, yylineno);
       $$.value = yytext;
     }
   }
@@ -1721,6 +1720,7 @@ lbrace
   : LBRACE
   {
     R("lbrace : LBRACE");
+    $$ = node.create("lbrace", yytext, yylineno);
   }
   ;
 
@@ -1728,6 +1728,7 @@ rbrace
   : RBRACE
   {
     R("rbrace : RBRACE");
+    $$ = node.create("rbrace", yytext, yylineno);;
   }
   ;
 
