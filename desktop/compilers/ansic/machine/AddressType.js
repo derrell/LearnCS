@@ -21,10 +21,16 @@ function AddressType(value)
 {
   // Initialize the specified value
   this.setValue(typeof value == "undefined" ? 0 : value);
+
+  // Save the size of this address (pointer)
+  this.setSizeOfValue(AddressType.size);
 }
 
 // Extend the AbstractValue class
 AddressType.prototype = new AbstractType.construct("Address");
+
+// All addresses (pointers) are the same size
+AddressType.size = 4;
 
 // Export the constructor
 exports.construct = AddressType;

@@ -53,8 +53,25 @@ var info =
  */
 function Memory()
 {
+  var             i;
+  var             memSize = info.rts.start + info.rts.length;
+  var             uint8Arr;
+
   // The array associated with this memory block
-  this._memoryInternal = [];
+  this._memory = 
+    {
+      bytes : new ArrayBuffer(memSize),
+      value : new Array(memSize)
+    };
+  
+  // Access the bytes array as unsigned chars (octets)
+  uint8Arr = new Uint8Array(this._memory.bytes);
+
+  // Initialize the bytes array with random data
+  for (i = 0; i < memSize; i++)
+  {
+    uint8Arr[i] = Math.floor(Math.random() * 256);
+  }
 }
 
 /**
@@ -71,11 +88,16 @@ Memory.prototype.put = function(addr, value)
   var             line;
   var             contAddr;
   var             oldValue;
+  var             valueType;
   var             valueSize;
+  var             mem;
+
+  // Determine the type of value we were given
+  valueType = value.getTypeOfValue();
 
   // If the type is Instruction, then this can only be placed in the Program
   // region.
-  if (value.getTypeOfValue() == "Instruction" && 
+  if (valueType == "Instruction" && 
       (addr < info.prog.start || addr >= info.prog.start + info.prog.length))
   {
     throw new Error("Invalid memory access: writing code into data space " +
@@ -83,43 +105,105 @@ Memory.prototype.put = function(addr, value)
   }
   
   // Otherwise, it can *not* be placed in the Program region.
-  if (value.getTypeOfValue() != "Instruction" &&
+  if (valueType != "Instruction" &&
       (addr >= info.prog.start && addr < info.prog.start + info.prog.length))
   {
     throw new Error("Invalid memory access: writing data into code space " +
                     "at address " + addr);
   }
 
-  // Remove continuations from the existing value
-  oldValue = this._memoryInternal[addr];
-  for (valueSize = value.getSizeOfValue() - 1,
-         line = value.getLine,
-         contAddr = addr + 1;
-       valueSize > 0;
-       --valueSize, 
-         ++contAddr)
+  // Determine the size of this value
+  valueSize = value.getSizeOfValue();
+
+  // Only values of size one can be at odd addresses
+  if (addr % 1 == 0 && valueSize != 1)
   {
-    // For now, replace them with a random value.
-    //
-    // TODO: calculate and store the individual byte values that would remain,
-    // based on the old value and the size of the new value.
-    this._memoryInternal[contAddr] = 
-      new NumberType("unsigned char", floor(random() * 256));
+    throw new Error("Invalid memory access: " +
+                    "writing non-byte to odd address " + addr);
   }
 
-  // Save the assigned value
-  this._memoryInternal[addr] = value;
-  
-  // In each following cell consumed by this value, ...
-  for (valueSize = value.getSizeOfValue() - 1,
-         line = value.getLine,
-         contAddr = addr + 1;
-       valueSize > 0;
-       --valueSize, 
-         ++contAddr)
+  // Save the assigned value. The means to do so differs depending upon
+  // the type and size of value to be written.
+  switch(valueType)
   {
-    // ... place a Continuation
-    this._memoryInternal[contAddr] = new Continuation(addr, line);
+  case "Instruction" :
+    break;
+    
+  case "NumberType" :
+    switch(value.getTypeOfNumber())
+    {
+    case "char" :
+      mem = new Int8Array(this._memory.bytes, 1);
+      break;
+      
+    case "unsigned char" :
+      mem = new Uint8Array(this._memory.bytes, 1);
+      break;
+      
+    case "short" :
+      mem = new Int16Array(this._memory.bytes, 1);
+      break;
+      
+    case "unsigned short" :
+      mem = new Uint16Array(this._memory.bytes, 1);
+      break;
+      
+    case "int" :
+      mem = new Int32Array(this._memory.bytes, 1);
+      break;
+      
+    case "unsigned int" :
+      mem = new Uint32Array(this._memory.bytes, 1);
+      break;
+      
+    case "long" :
+      mem = new Int32Array(this._memory.bytes, 1);
+      break;
+      
+    case "unsigned long" :
+      mem = new Uint32Array(this._memory.bytes, 1);
+      break;
+      
+    case "long long" :
+      mem = new Int32Array(this._memory.bytes, 2);
+      mem[1] = (value.getValue() >> 32) & 0xffff;
+      // mem[0] is handled below
+      break;
+      
+    case "unsigned long long" :
+      mem = new Uint32Array(this._memory.bytes, 2);
+      mem[1] = (value.getValue() >>> 32) & 0xffff;
+      // mem[0] is handled below
+      break;
+      
+    case "float" :
+      mem = new Float32Array(this._memory.bytes, 1);
+      break;
+      
+    case "double" :
+      mem = new Float64Array(this._memory.bytes, 1);
+      break;
+
+    default :
+      throw new Error("Unrecognized number type: " + value.getTypeOfNumber());
+      break;
+    }
+    break;
+    
+  case "AddressType" :
+    mem = new Uint32Array(this._memory.bytes, 1);
+    break;
+    
+  default:
+    throw new Error("Unrecognized value type: " + valueType);
+  }
+
+  // If we haven't already handled it specially (which we know because mem is
+  // null), now that we have an appropriate view into the memory, write out
+  // the value there.
+  if (mem !== null)
+  {
+    mem[0] = value.getValue();
   }
 };
 
@@ -127,6 +211,13 @@ Memory.prototype.get = function(addr, type, size)
 {
   var             value;
   
+  // Only values of size one can be at odd addresses
+  if (addr % 1 == 0 && size != 1)
+  {
+    throw new Error("Invalid memory access: " +
+                    "reading non-byte from odd address " + addr);
+  }
+
   // Retrieve the value from the specified address
   value = this._memoryInternal[addr];
   
@@ -148,72 +239,6 @@ Memory.prototype.toDisplayArray = function()
 {
 };
 
-
-
-var getBytes = function(value)
-{
-  var             i;
-  var             valueType;
-  var             valueSize;
-  var             bytes;
-  var             view;
-  var             setters;
-
-  switch(value.getTypeOfValue())
-  {
-  case NumberType :
-    // Determine the number of bytes taken by this number type
-    valueType = value.getTypeOfNumber();
-    valueSize = NumberType.size[valueType];
-    
-    // Cool stuff!
-    // https://developer.mozilla.org/en-US/docs/JavaScript/Typed_arrays?redirectlocale=en-US&redirectslug=JavaScript_typed_arrays
-
-    // Get a reference to a view on an array buffer of the appropriate size
-    view = new DataView(new ArrayBuffer(valueSize));
-    
-    // Save the specified value in the array buffer
-    setters =
-    {
-      "char"               : view.setInt8,
-      "unsigned char"      : view.setUint8,
-      "short"              : view.setInt16,
-      "unsigned short"     : view.setUint16,
-      "int"                : view.setInt32,
-      "unsigned int"       : view.setUint32,
-      "long"               : view.setInt32,
-      "unsigned long"      : view.setUint32,
-      "long long"          : function(offset, value)
-      {
-        view.setInt32((value >> 32) & 0xffff);
-        view.setUint32(value & 0xffff);
-      },
-      "unsigned long long" : function(offset, value)
-      {
-        view.setUint32((value >>> 32) & 0xffff);
-        view.setUint32(value & 0xffff);
-      },
-      "float"              : setFloat64
-    };
-    setters[valueType](0, value.getValue());
-
-    for (i = 0; i < valueSize; i++)
-    {
-      
-    }
-    break;
-    
-  case AddressType :
-    break;
-    
-  case Instruction :
-    break;
-    
-  default:
-    throw new Error("Value has unrecognized type: " + value.getTypeOfValue());
-    break;
-  }
-};
 
 
 // Export the constructor and information object

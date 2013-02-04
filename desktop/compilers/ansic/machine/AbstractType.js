@@ -25,11 +25,6 @@ function AbstractType(type)
    * The type for this Value
    */
   this.valueType = type;
-  
-  /**
-   * The size of this Value
-   */
-  this.valueSize = size;
 }
 
 AbstractType.prototype.clone = function()

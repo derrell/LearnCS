@@ -21,7 +21,7 @@ var AbstractType = require("./AbstractType");
  *     "int",       "unsigned int",
  *     "long",      "unsigned long",
  *     "long long", "unsigned long long",
- *     "float"
+ *     "float",     "double"
  *
  * @param value {NumberType|Number?}
  *   Another NumberType instance or a native numeric value, containing the
@@ -63,7 +63,8 @@ NumberType.size =
     "unsigned long"      : 4,
     "long long"          : 8,
     "unsigned long long" : 8,
-    "float"              : 8
+    "float"              : 4,
+    "double"             : 8
   };
 
 // Export the constructor
