@@ -16,8 +16,11 @@
  * @param operation {String}
  *   One of: ">>", "<<", "&&", "||", "<=", ">=", "==", "!=", "&", "|", "^",
  *           "+", "-", "*", "/", "%"
+ *
+ * @param line {Number}
+ *   The line number in the source code from which this instruction derives.
  */
-function binaryOp(operation)
+function binaryOp(operation, line)
 {
   
 }
@@ -29,8 +32,11 @@ function binaryOp(operation)
  *
  * @param operation {String}
  *   One of: "++", "--", "~", "~"
+ *
+ * @param line {Number}
+ *   The line number in the source code from which this instruction derives.
  */
-function unaryOp(operation)
+function unaryOp(operation, line)
 {
   
 }
@@ -40,8 +46,11 @@ function unaryOp(operation)
  *
  * @param value
  *   The Number, Address, or Register to be pushed onto the stack
+ *
+ * @param line {Number}
+ *   The line number in the source code from which this instruction derives.
  */
-function push(value)
+function push(value, line)
 {
   
 }
@@ -51,8 +60,11 @@ function push(value)
  *
  * @param address {Address|Register}
  *   The address at which the popped value is to be stored
+ *
+ * @param line {Number}
+ *   The line number in the source code from which this instruction derives.
  */
-function popAndStore(address)
+function popAndStore(address, line)
 {
   
 }
@@ -60,8 +72,11 @@ function popAndStore(address)
 /**
  * Pop the Address off of the top of the stack and replace it with the value
  * (Number or Address) stored at that address.
+ *
+ * @param line {Number}
+ *   The line number in the source code from which this instruction derives.
  */
-function dereference()
+function dereference(line)
 {
   
 }
@@ -71,13 +86,28 @@ function dereference()
  *
  * @param address {Address|Register}
  *   The address at which execution should continue
+ *
+ * @param line {Number}
+ *   The line number in the source code from which this instruction derives.
  */
-function jump(address)
+function jump(address, line)
 {
   
 }
 
-function setRegister(register, value)
+/**
+ * Set a register to a given value.
+ *
+ * @param registerName {String}
+ *   The name of the register whose address is to be modified
+ *
+ * @param value {Number}
+ *   The address to store in the specified register
+ *
+ * @param line {Number}
+ *   The line number in the source code from which this instruction derives.
+ */
+function setRegister(register, value, line)
 {
   
 }
