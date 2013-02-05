@@ -57,7 +57,7 @@ var register =
 var NUM_REGS = 5;
 
 // The size of one word
-var WORDSIZE = 4;
+var WORDSIZE = DataValue.size["int"];
 
 
 
@@ -67,7 +67,7 @@ var WORDSIZE = 4;
  * @param name {String}
  *   The name of this memory.
  * 
- * @param initialSize {Integer}
+ * @param initialSize {Number}
  *   The number of entries in the internal memory array
  *
  */
@@ -205,96 +205,10 @@ Memory.prototype.move = function(addrSrc, typeSrc, addrDest, typeDest)
   }
 
   // Get an appropriate view into the memory, based on the source type
-  switch(typeSrc)
-  {
-  case "char" :
-    memSrc = new Int8Array(this._memory[addrSrc], 1);
-    break;
-
-  case "unsigned char" :
-    memSrc = new Uint8Array(this._memory[addrSrc], 1);
-    break;
-
-  case "short" :
-    memSrc = new Int16Array(this._memory[addrSrc], 1);
-    break;
-
-  case "unsigned short" :
-    memSrc = new Uint16Array(this._memory[addrSrc], 1);
-    break;
-
-  case "int" :
-    memSrc = new Int32Array(this._memory[addrSrc], 1);
-    break;
-
-  case "unsigned int" :
-    memSrc = new Uint32Array(this._memory[addrSrc], 1);
-    break;
-
-  case "long" :
-  case "long long" :
-    memSrc = new Int32Array(this._memory[addrSrc], 1);
-    break;
-
-  case "unsigned long" :
-  case "unsigned long long" :
-    memSrc = new Uint32Array(this._memory[addrSrc], 1);
-    break;
-
-  case "float" :
-  case "double" :
-    memSrc = new Float32Array(this._memory[addrSrc], 1);
-    break;
-
-  default:
-    throw new Error("Unrecognized source type: " + typeSrc);
-  }
+  memSrc = getByType(typeSrc, addrSrc);
 
   // Get an appropriate view into the memory, based on the destination type
-  switch(typeDest)
-  {
-  case "char" :
-    memDest = new Int8Array(this._memory[addrDest], 1);
-    break;
-
-  case "unsigned char" :
-    memDest = new UInt8Array(this._memory[addrDest], 1);
-    break;
-
-  case "short" :
-    memDest = new Int16Array(this._memory[addrDest], 1);
-    break;
-
-  case "unsigned short" :
-    memDest = new Unt16Array(this._memory[addrDest], 1);
-    break;
-
-  case "int" :
-    memDest = new Int32Array(this._memory[addrDest], 1);
-    break;
-
-  case "unsigned int" :
-    memDest = new UInt32Array(this._memory[addrDest], 1);
-    break;
-
-  case "long" :
-  case "long long" :
-    memDest = new Int32Array(this._memory[addrDest], 1);
-    break;
-
-  case "unsigned long" :
-  case "unsigned long long" :
-    memDest = new UInt32Array(this._memory[addrDest], 1);
-    break;
-
-  case "float" :
-  case "double" :
-    memDest = new Float32Array(this._memory[addrDest], 1);
-    break;
-
-  default:
-    throw new Error("Unrecognized destination type: " + typeDest);
-  }
+  memDest = getByType(typeDest, addrDest);
 
   // Now that we have appropriate views into the memory, read and write
   // the data.
@@ -303,10 +217,80 @@ Memory.prototype.move = function(addrSrc, typeSrc, addrDest, typeDest)
 
 
 /**
+ * Set the value of a register, used internally by instructions.
+ */
+Memory.prototype.setReg = function(registerName, type, value)
+{
+  var             mem;
+  
+  // Get an appropriate view into the memory, based on the destination type
+  mem = getByType(type, register[registerName]);
+  
+  // Set the register value
+  mem[0] = value;
+};
+
+
+/**
+ * Retrieve the value of a register, used internally by instructions.
+ */
+Memory.prototype.getReg = function(registerName, type)
+{
+  var             mem;
+  
+  // Get an appropriate view into the memory, based on the destination type
+  mem = getByType(type, register[registerName]);
+  
+  // Retrieve the register value
+  return mem[0];
+};
+
+
+/**
  * Create a displayable representation of memory.
  */
 Memory.prototype.toDisplayArray = function()
 {
+};
+
+
+var getByType = function(type, addr)
+{
+  switch(type)
+  {
+  case "char" :
+    return new Int8Array(this._memory[addr], 1);
+
+  case "unsigned char" :
+    return new UInt8Array(this._memory[addr], 1);
+
+  case "short" :
+    return new Int16Array(this._memory[addr], 1);
+
+  case "unsigned short" :
+    return new Unt16Array(this._memory[addr], 1);
+
+  case "int" :
+    return new Int32Array(this._memory[addr], 1);
+
+  case "unsigned int" :
+    return new UInt32Array(this._memory[addr], 1);
+
+  case "long" :
+  case "long long" :
+    return new Int32Array(this._memory[addr], 1);
+
+  case "unsigned long" :
+  case "unsigned long long" :
+    return new UInt32Array(this._memory[addr], 1);
+
+  case "float" :
+  case "double" :
+    return new Float32Array(this._memory[addr], 1);
+
+  default:
+    throw new Error("Unrecognized destination type: " + type);
+  }
 };
 
 
@@ -328,3 +312,4 @@ exports.getInstance = function()
 
 exports.info = info;
 exports.register = register;
+exports.WORDSIZE = WORDSIZE;
