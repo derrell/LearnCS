@@ -1,16 +1,12 @@
 var sys = require("sys");
-var mem = require("./Memory");
+var Memory = require("./Memory");
 var instr = require("./Instruction");
 
-var data = mem.getInstance().toDisplayArray(0, 32);
-sys.print(" 0: ");
-data.forEach(
-  function(value, i)
-  {
-    if (i != 0 && i % 16 == 0)
-    {
-      sys.print("\n" + ("000000000" + i.toString(16)).substr(-2) + ": ");
-    }
-    sys.print(("00" + value.toString(16)).substr(-2) + " ");
-  });
-sys.print("\n");
+var mem = Memory.getInstance();
+
+mem.debugDisplay("Initial reg: ",
+                 Memory.info.reg.start, Memory.info.reg.length);
+
+mem.setReg("R1", "unsigned int", 0x11223344);
+mem.debugDisplay("After setting R1: ",
+                 Memory.info.reg.start, Memory.info.reg.length);

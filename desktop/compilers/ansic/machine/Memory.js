@@ -7,8 +7,15 @@
  *   GPL Version 2: http://www.gnu.org/licenses/gpl-2.0.html 
  */
 
+var sys = require("sys");
 var DataValue = require("./DataValue");
 var Instruction = require("./Instruction");
+
+// The number of registers
+var NUM_REGS = 6;
+
+// The size of one word
+var WORDSIZE = DataValue.size["int"];
 
 var info =
   {
@@ -53,12 +60,6 @@ var register =
     "R3" : info.reg.start + (4 * WORDSIZE)
   };
 
-// The number of registers
-var NUM_REGS = 5;
-
-// The size of one word
-var WORDSIZE = DataValue.size["int"];
-
 
 
 /**
@@ -91,9 +92,9 @@ function Memory()
   }
   
   // Initialize the registers
-  this._memory[register.PC] = 0; // Begin executing at address 0
-  this._memory[register.SP] = info.rts.start + info.rts.length;
-  this._memory[register.FP] = info.rts.start + info.rts.length;
+  this.setReg("PC", "unsigned int", 0); // Begin executing at address 0
+  this.setReg("SP", "unsigned int", info.rts.start + info.rts.length);
+  this.setReg("FP", "unsigned int", info.rts.start + info.rts.length);
 }
 
 /**
@@ -206,10 +207,10 @@ Memory.prototype.move = function(addrSrc, typeSrc, addrDest, typeDest)
   }
 
   // Get an appropriate view into the memory, based on the source type
-  memSrc = getByType(typeSrc, addrSrc);
+  memSrc = this._getByType(typeSrc, addrSrc);
 
   // Get an appropriate view into the memory, based on the destination type
-  memDest = getByType(typeDest, addrDest);
+  memDest = this._getByType(typeDest, addrDest);
 
   // Now that we have appropriate views into the memory, read and write
   // the data.
@@ -224,8 +225,8 @@ Memory.prototype.setReg = function(registerName, type, value)
 {
   var             mem;
   
-  // Get an appropriate view into the memory, based on the destination type
-  mem = getByType(type, register[registerName]);
+  // Get an appropriate view into the memory, based on the destination types
+  mem = this._getByType(type, register[registerName]);
   
   // Set the register value
   mem[0] = value;
@@ -240,10 +241,63 @@ Memory.prototype.getReg = function(registerName, type)
   var             mem;
   
   // Get an appropriate view into the memory, based on the destination type
-  mem = getByType(type, register[registerName]);
+  mem = this._getByType(type, register[registerName]);
   
   // Retrieve the register value
   return mem[0];
+};
+
+
+/**
+ * Retrieve an accessor to typed value from memory
+ *
+ * @param type {String}
+ *   One of the C data types, or "pointer"
+ *
+ * @param addr {Number}
+ *   The address in simulated memory from which to retrieve the value
+ *
+ * @return
+ *   The typed value retrieved from memory
+ *
+ */
+Memory.prototype._getByType = function(type, addr)
+{
+  switch(type)
+  {
+  case "char" :
+    return new Int8Array(this._memory, addr, 1);
+
+  case "unsigned char" :
+    return new Uint8Array(this._memory, addr, 1);
+
+  case "short" :
+    return new Int16Array(this._memory, addr, 1);
+
+  case "unsigned short" :
+    return new Unt16Array(this._memory, addr, 1);
+
+  case "int" :
+    return new Int32Array(this._memory, addr, 1);
+
+  case "unsigned int" :
+    return new Uint32Array(this._memory, addr, 1);
+
+  case "long" :
+  case "long long" :
+    return new Int32Array(this._memory, addr, 1);
+
+  case "unsigned long" :
+  case "unsigned long long" :
+    return new Uint32Array(this._memory, addr, 1);
+
+  case "float" :
+  case "double" :
+    return new Float32Array(this._memory, addr, 1);
+
+  default:
+    throw new Error("Unrecognized destination type: " + type);
+  }
 };
 
 
@@ -265,44 +319,41 @@ Memory.prototype.toDisplayArray = function(startAddr, length)
 };
 
 
-var getByType = function(type, addr)
+/**
+ * Display a region of memory
+ *
+ * @param startAddr
+ *   The starting address to display
+ *
+ * @param length
+ *   The number of bytes of data to display
+ */
+Memory.prototype.debugDisplay = function(message, startAddr, length)
 {
-  switch(type)
-  {
-  case "char" :
-    return new Int8Array(this._memory[addr], 1);
+  var data = instance.toDisplayArray(startAddr, length);
+  
+  // Display the message
+  sys.print(message + "\n");
 
-  case "unsigned char" :
-    return new UInt8Array(this._memory[addr], 1);
-
-  case "short" :
-    return new Int16Array(this._memory[addr], 1);
-
-  case "unsigned short" :
-    return new Unt16Array(this._memory[addr], 1);
-
-  case "int" :
-    return new Int32Array(this._memory[addr], 1);
-
-  case "unsigned int" :
-    return new UInt32Array(this._memory[addr], 1);
-
-  case "long" :
-  case "long long" :
-    return new Int32Array(this._memory[addr], 1);
-
-  case "unsigned long" :
-  case "unsigned long long" :
-    return new UInt32Array(this._memory[addr], 1);
-
-  case "float" :
-  case "double" :
-    return new Float32Array(this._memory[addr], 1);
-
-  default:
-    throw new Error("Unrecognized destination type: " + type);
-  }
-};
+  // For each value to be displayed...
+  data.forEach(
+    function(value, i)
+    {
+      // See if we need an address heading
+      if (i % 16 == 0)
+      {
+        // We do. Display it, as four hex digits
+        sys.print((i == 0 ? "" : "\n") +
+                  ("0000" + (startAddr + i).toString(16)).substr(-4) + ": ");
+      }
+      
+      // Display this value, as two hex digits
+      sys.print(("00" + value.toString(16)).substr(-2) + " ");
+    });
+  
+  // Terminate the display with a newline
+  sys.print("\n\n");
+}
 
 
 
@@ -322,7 +373,7 @@ exports.getInstance = function()
 };
 
 // Ensure the singleton is created
-exports.getInstance();
+var instance = exports.getInstance();
 
 exports.info = info;
 exports.register = register;
