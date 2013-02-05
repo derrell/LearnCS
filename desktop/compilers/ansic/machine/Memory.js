@@ -77,17 +77,13 @@ function Memory()
   var             memSize = info.rts.start + info.rts.length;
   var             uint8Arr;
 
-  // The array associated with this memory block
-  this._memory = 
-    {
-      bytes  : new ArrayBuffer(memSize),
-      layout : new Array(memSize)
-    };
+  // Our simulated machine's memory
+  this._memory = new ArrayBuffer(memSize);
   
-  // Access the bytes array as unsigned chars (octets)
-  uint8Arr = new Uint8Array(this._memory.bytes);
+  // Access the memory array as unsigned chars (octets)
+  uint8Arr = new Uint8Array(this._memory);
 
-  // Initialize the bytes array with random data
+  // Initialize the memory with random data
   for (i = 0; i < memSize; i++)
   {
     uint8Arr[i] = Math.floor(Math.random() * 256);
@@ -212,42 +208,42 @@ Memory.prototype.move = function(addrSrc, typeSrc, addrDest, typeDest)
   switch(typeSrc)
   {
   case "char" :
-    memSrc = new Int8Array(this._memory.bytes[addrSrc], 1);
+    memSrc = new Int8Array(this._memory[addrSrc], 1);
     break;
 
   case "unsigned char" :
-    memSrc = new Uint8Array(this._memory.bytes[addrSrc], 1);
+    memSrc = new Uint8Array(this._memory[addrSrc], 1);
     break;
 
   case "short" :
-    memSrc = new Int16Array(this._memory.bytes[addrSrc], 1);
+    memSrc = new Int16Array(this._memory[addrSrc], 1);
     break;
 
   case "unsigned short" :
-    memSrc = new Uint16Array(this._memory.bytes[addrSrc], 1);
+    memSrc = new Uint16Array(this._memory[addrSrc], 1);
     break;
 
   case "int" :
-    memSrc = new Int32Array(this._memory.bytes[addrSrc], 1);
+    memSrc = new Int32Array(this._memory[addrSrc], 1);
     break;
 
   case "unsigned int" :
-    memSrc = new Uint32Array(this._memory.bytes[addrSrc], 1);
+    memSrc = new Uint32Array(this._memory[addrSrc], 1);
     break;
 
   case "long" :
   case "long long" :
-    memSrc = new Int32Array(this._memory.bytes[addrSrc], 1);
+    memSrc = new Int32Array(this._memory[addrSrc], 1);
     break;
 
   case "unsigned long" :
   case "unsigned long long" :
-    memSrc = new Uint32Array(this._memory.bytes[addrSrc], 1);
+    memSrc = new Uint32Array(this._memory[addrSrc], 1);
     break;
 
   case "float" :
   case "double" :
-    memSrc = new Float32Array(this._memory.bytes[addrSrc], 1);
+    memSrc = new Float32Array(this._memory[addrSrc], 1);
     break;
 
   default:
@@ -258,42 +254,42 @@ Memory.prototype.move = function(addrSrc, typeSrc, addrDest, typeDest)
   switch(typeDest)
   {
   case "char" :
-    memDest = new Int8Array(this._memory.bytes[addrDest], 1);
+    memDest = new Int8Array(this._memory[addrDest], 1);
     break;
 
   case "unsigned char" :
-    memDest = new UInt8Array(this._memory.bytes[addrDest], 1);
+    memDest = new UInt8Array(this._memory[addrDest], 1);
     break;
 
   case "short" :
-    memDest = new Int16Array(this._memory.bytes[addrDest], 1);
+    memDest = new Int16Array(this._memory[addrDest], 1);
     break;
 
   case "unsigned short" :
-    memDest = new Unt16Array(this._memory.bytes[addrDest], 1);
+    memDest = new Unt16Array(this._memory[addrDest], 1);
     break;
 
   case "int" :
-    memDest = new Int32Array(this._memory.bytes[addrDest], 1);
+    memDest = new Int32Array(this._memory[addrDest], 1);
     break;
 
   case "unsigned int" :
-    memDest = new UInt32Array(this._memory.bytes[addrDest], 1);
+    memDest = new UInt32Array(this._memory[addrDest], 1);
     break;
 
   case "long" :
   case "long long" :
-    memDest = new Int32Array(this._memory.bytes[addrDest], 1);
+    memDest = new Int32Array(this._memory[addrDest], 1);
     break;
 
   case "unsigned long" :
   case "unsigned long long" :
-    memDest = new UInt32Array(this._memory.bytes[addrDest], 1);
+    memDest = new UInt32Array(this._memory[addrDest], 1);
     break;
 
   case "float" :
   case "double" :
-    memDest = new Float32Array(this._memory.bytes[addrDest], 1);
+    memDest = new Float32Array(this._memory[addrDest], 1);
     break;
 
   default:
