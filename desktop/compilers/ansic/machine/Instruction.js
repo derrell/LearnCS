@@ -163,7 +163,6 @@ var Instruction =
       // Call that function, and store the result back into register R1.
       mem.setReg('R1', typeCoerceTo, f());
     },
-    0 : binaryOp,               // opcode
 
     /**
      * Compute the result of a unary operation.  The value in register R1 is
@@ -293,7 +292,6 @@ var Instruction =
       
 
     },
-    1 : Instruction.unaryOp,    // opcode
 
     /**
      * Compare the values in registers R1 and R2, using the specified
@@ -357,7 +355,6 @@ var Instruction =
       // that address.
       mem.setReg("PC", "pointer", addr);
     },
-    2 : Instruction.jumpConditionally, // opcode
 
     /**
      * Push a value onto the stack.
@@ -415,7 +412,6 @@ var Instruction =
       // location pointed to by the stack pointer.
       mem.move(addr, type, sp, "unsigned int");
     },
-    3 : Instruction.push,       // opcode
 
     /**
      * Pop a value off of the stack and store it at the specified address
@@ -473,7 +469,6 @@ var Instruction =
       // Store the new value back into the stack pointer
       mem.setReg("SP", "unsigned int", sp);
     },
-    4 : Instruction.popAndStore, // opcode
 
     /**
      * Push the current program counter onto the stack, and jump to the
@@ -512,7 +507,6 @@ var Instruction =
       // Store the new address into the program counter
       mem.setReg("PC", "unsigned int", addr);
     },
-    5 : Instruction.callFunction, // opcode
 
     /**
      * Pop the return address from the top of the stack, and jump to that
@@ -545,8 +539,7 @@ var Instruction =
       
       // Store the new value back into the stack pointer
       mem.setReg("SP", "unsigned int", sp);
-    },
-    6 : Instruction.returnFromFunction // opcode
+    }
 };
 
 var indexToType =
@@ -639,7 +632,18 @@ var cast = function(register, typeFrom, typeTo)
 };
 
 
-Instruction.toOpcode = function(name)
+exports.processOpcode =
+  [
+    Instruction["binaryOp"],
+    Instruction["unaryOp"],
+    Instruction["jumpConditionally"],
+    Instruction["push"],
+    Instruction["popAndStore"],
+    Instruction["callFunction"],
+    Instruction["returnFromFunction"]
+  ];
+
+exports.nameToOpcode = function(name)
 {
   return (
   {

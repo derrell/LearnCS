@@ -86,7 +86,8 @@ function Memory()
   // Initialize the memory with random data
   for (i = 0; i < memSize; i++)
   {
-    uint8Arr[i] = Math.floor(Math.random() * 256);
+//    uint8Arr[i] = Math.floor(Math.random() * 256);
+    uint8Arr[i] = 0xa5;
   }
   
   // Initialize the registers
@@ -249,8 +250,18 @@ Memory.prototype.getReg = function(registerName, type)
 /**
  * Create a displayable representation of memory.
  */
-Memory.prototype.toDisplayArray = function()
+Memory.prototype.toDisplayArray = function(startAddr, length)
 {
+  var             i;
+  var             mem;
+  var             ret = [];
+  
+  mem = new Uint8Array(this._memory, startAddr, length);
+  for (i = 0; i < length; i++)
+  {
+    ret.push(mem[i]);
+  }
+  return ret;
 };
 
 
@@ -309,6 +320,9 @@ exports.getInstance = function()
   // Return that singleton.
   return singleton;
 };
+
+// Ensure the singleton is created
+exports.getInstance();
 
 exports.info = info;
 exports.register = register;

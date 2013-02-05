@@ -68,7 +68,7 @@ DataValue.prototype.getType = function()
 
 
 // Create a map of number sizes
-DataValue.size =
+exports.size =
   {
     "char"               : 1,
     "unsigned char"      : 1,
