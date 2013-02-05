@@ -10,7 +10,7 @@
 /**
  * A machine register
  *
- * @extends AbstractValue
+ * @extends Number
  *
  * @param name {String}
  *   The name of the register being instantiated

@@ -33,28 +33,28 @@ AbstractType.prototype.clone = function()
 };
 
 /**
- * Retrieve the type of this Value
+ * Retrieve the type of this data value
  */
-AbstractType.prototype.getTypeOfValue = function()
+AbstractType.prototype.getTypeOfData = function()
 {
   return this.valueType;
 };
 
 /**
- * Retrieve the size, in bytes, of this Value
+ * Retrieve the size, in bytes, of this data value
  */
-AbstractType.prototype.getSizeOfValue = function()
+AbstractType.prototype.getSizeOfData = function()
 {
   return this.valueSize;
 };
 
 /**
- * Set the size, in bytes, of this value
+ * Set the size, in bytes, of this data value
  *
  * @param size {Number}
  *   The size of this value
  */
-AbstractType.prototype.setSizeOfValue = function(size)
+AbstractType.prototype.setSizeOfData = function(size)
 {
   if (typeof size != "number")
   {
@@ -69,20 +69,20 @@ AbstractType.prototype.setSizeOfValue = function(size)
  * Set the value.
  *
  * @param value {Any}
- *   The value, as appropriate to the subclass
+ *   The data, as appropriate to the subclass
  */
-AbstractType.prototype.setValue = function(value)
+AbstractType.prototype.setData = function(value)
 {
   this.value = value;
 };
 
 /**
- * Retrieve the value.
+ * Retrieve the data value.
  *
  * @return {Any}
- *   The current value, as appropriate for the subclass
+ *   The current data value, as appropriate for the subclass
  */
-AbstractType.prototype.getValue = function()
+AbstractType.prototype.getData = function()
 {
   return this.value;
 };

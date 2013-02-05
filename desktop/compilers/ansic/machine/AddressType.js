@@ -23,7 +23,7 @@ function AddressType(value)
   this.setValue(typeof value == "undefined" ? 0 : value);
 
   // Save the size of this address (pointer)
-  this.setSizeOfValue(AddressType.size);
+  this.setSizeOfData(AddressType.size);
 }
 
 // Extend the AbstractValue class

@@ -7,8 +7,7 @@
  *   GPL Version 2: http://www.gnu.org/licenses/gpl-2.0.html 
  */
 
-var NumberType = require("./NumberType");
-var AddressType = require("./AddressType");
+var DataValue = require("./DataValue");
 var Instruction = require("./Instruction");
 
 var info =
@@ -19,15 +18,21 @@ var info =
       length : 1 * 1024
     },
 
+    "reg" :                     // Registers
+    {
+      start  : 7 * 1024,
+      length : NUM_REGS * WORDSIZE
+    },
+
     "gas" :                     // Globals and Statics
     {
-      start  : 4 * 1024,
+      start  : 8 * 1024,
       length : 64
     },
 
     "heap" :                    // Heap
     {
-      start  : 8 * 1024,
+      start  : 12 * 1024,
       length : 64
     },
 
@@ -38,12 +43,27 @@ var info =
     }
 };
 
+var register =
+  {
+    "PC" : info.reg.start + (0 * WORDSIZE),
+    "SP" : info.reg.start + (1 * WORDSIZE),
+    "FP" : info.reg.start + (2 * WORDSIZE),
+    "R1" : info.reg.start + (3 * WORDSIZE),
+    "R2" : info.reg.start + (4 * WORDSIZE),
+    "R3" : info.reg.start + (4 * WORDSIZE)
+  };
+
+// The number of registers
+var NUM_REGS = 5;
+
+// The size of one word
+var WORDSIZE = 4;
+
+
 
 /**
- * Instantiate a Memory object. There  typically only one of these.
+ * Instantiate a Memory object. This is typically a singleton (enforced below)
  *
- * @type abstract
- * 
  * @param name {String}
  *   The name of this memory.
  * 
@@ -60,8 +80,8 @@ function Memory()
   // The array associated with this memory block
   this._memory = 
     {
-      bytes : new ArrayBuffer(memSize),
-      value : new Array(memSize)
+      bytes  : new ArrayBuffer(memSize),
+      layout : new Array(memSize)
     };
   
   // Access the bytes array as unsigned chars (octets)
@@ -72,165 +92,219 @@ function Memory()
   {
     uint8Arr[i] = Math.floor(Math.random() * 256);
   }
+  
+  // Initialize the registers
+  this._memory[register.PC] = 0; // Begin executing at address 0
+  this._memory[register.SP] = info.rts.start + info.rts.length;
+  this._memory[register.FP] = info.rts.start + info.rts.length;
 }
 
 /**
- * Assign a value to a memory address
  *
- * @param addr {Number}
- *   The address at which memory is to be placed
- *
- * @param value {NumberType|AddressType|OpcodeType}
- *   The value to be placed at the specified address
  */
-Memory.prototype.put = function(addr, value)
+Memory.prototype.move = function(addrSrc, typeSrc, addrDest, typeDest)
 {
   var             line;
-  var             contAddr;
-  var             oldValue;
-  var             valueType;
-  var             valueSize;
-  var             mem;
+  var             memSrc;
+  var             memDest;
+  var             sizeSrc;
+  var             sizeDest;
 
-  // Determine the type of value we were given
-  valueType = value.getTypeOfValue();
+  // Determine size to be moved
+  sizeSrc = DataValue.size[typeSrc];
+  sizeDest = DataValue.size[typeDest];
 
-  // If the type is Instruction, then this can only be placed in the Program
-  // region.
-  if (valueType == "Instruction" && 
-      (addr < info.prog.start || addr >= info.prog.start + info.prog.length))
+  // Ensure that access is from the correct region of memory
+  if (! (addrSrc >= info.reg.start  && 
+         addrSrc < info.reg.start + info.reg.length) ||
+        (addrSrc >= info.gas.start && 
+         addrSrc < info.gas.start + info.gas.length) ||
+        (addrSrc >= info.heap.start && 
+         addrSrc < info.heap.start + info.heap.length) ||
+        (addrSrc >= info.rts.start &&
+         addrSrc < info.rts.start  + info.rts.length))
   {
-    throw new Error("Invalid memory access: writing code into data space " +
-                    "at address " + addr);
-  }
-  
-  // Otherwise, it can *not* be placed in the Program region.
-  if (valueType != "Instruction" &&
-      (addr >= info.prog.start && addr < info.prog.start + info.prog.length))
-  {
-    throw new Error("Invalid memory access: writing data into code space " +
-                    "at address " + addr);
+    throw new Error("Invalid memory access at " + addrDest + ": " +
+                    "ASSIGN FROM address is not within the " +
+                    "'globals and statics', 'heap', or " +
+                    "'run time stack' regions of memory.");
   }
 
-  // Determine the size of this value
-  valueSize = value.getSizeOfValue();
+  // Ensure that access is to the correct region of memory
+  if (! (addrDest >= info.reg.start  && 
+         addrDest < info.reg.start + info.reg.length) ||
+        (addrDest >= info.gas.start && 
+         addrDest < info.gas.start + info.gas.length) ||
+        (addrDest >= info.heap.start && 
+         addrDest < info.heap.start + info.heap.length) ||
+        (addrDest >= info.rts.start &&
+         addrDest < info.rts.start  + info.rts.length))
+  {
+    throw new Error("Invalid memory access at " + addrDest + ": " +
+                    "ASSIGN TO address is not within the " +
+                    "'globals and statics', 'heap', or " +
+                    "'run time stack' regions of memory.");
+  }
+
+  // Ensure that the access remains in one region of memory
+  if ((addrSrc >= info.reg.start  && 
+       addrSrc < info.reg.start + WORDSIZE &&
+       addrSrc + sizeSrc >= info.reg.start + WORDSIZE) ||
+
+      (addrSrc >= info.gas.start && 
+       addrSrc < info.gas.start + info.gas.length &&
+       addrSrc + sizeSrc >= info.gas.start + info.gas.length) ||
+
+      (addrSrc >= info.heap.start && 
+       addrSrc < info.heap.start + info.heap.length &&
+       addrSrc + sizeSrc >= info.heap.start + info.heap.length) ||
+
+      (addrSrc >= info.rts.start &&
+       addrSrc < info.rts.start  + info.rts.length &&
+       addrSrc + sizeSrc >= info.rts.start + info.rts.length))
+  {
+    throw new Error("Invalid memory access at " + addrSrc + ": " +
+                    "Size of object being assigned causes a read beyond the " +
+                    "bounds of its 'globals and statics', 'heap', or " +
+                    "'run time stack' region of memory.");
+  }
+
+  // Ensure that the access remains in one region of memory
+  if ((addrDest >= info.reg.start  && 
+       addrDest < info.reg.start + WORDSIZE &&
+       addrDest + sizeDest >= info.reg.start + WORDSIZE) ||
+
+      (addrDest >= info.gas.start && 
+       addrDest < info.gas.start + info.gas.length &&
+       addrDest + sizeDest >= info.gas.start + info.gas.length) ||
+
+      (addrDest >= info.heap.start && 
+       addrDest < info.heap.start + info.heap.length &&
+       addrDest + sizeDest >= info.heap.start + info.heap.length) ||
+
+      (addrDest >= info.rts.start &&
+       addrDest < info.rts.start  + info.rts.length &&
+       addrDest + sizeDest >= info.rts.start + info.rts.length))
+  {
+    throw new Error("Invalid memory access at " + addrDest + ": " +
+                    "Size of object being assigned to causes a write beyond " +
+                    "the bounds of its 'globals and statics', 'heap', or " +
+                    "'run time stack' region of memory.");
+  }
 
   // Only values of size one can be at odd addresses
-  if (addr % 1 == 0 && valueSize != 1)
+  if (addrSrc % 1 == 0 && typeSrc != "char" && typeSrc != "unsigned char")
   {
-    throw new Error("Invalid memory access: " +
-                    "writing non-byte to odd address " + addr);
+    throw new Error("Invalid memory access at " + addr + ": " +
+                    "only char or unsigned char can be read from " +
+                    "an odd address.");
   }
 
-  // Save the assigned value. The means to do so differs depending upon
-  // the type and size of value to be written.
-  switch(valueType)
+  // Only values of size one can be at odd addresses
+  if (addrDest % 1 == 0 && typeDest != "char" && typeDest != "unsigned char")
   {
-  case "Instruction" :
-    break;
-    
-  case "NumberType" :
-    switch(value.getTypeOfNumber())
-    {
-    case "char" :
-      mem = new Int8Array(this._memory.bytes, 1);
-      break;
-      
-    case "unsigned char" :
-      mem = new Uint8Array(this._memory.bytes, 1);
-      break;
-      
-    case "short" :
-      mem = new Int16Array(this._memory.bytes, 1);
-      break;
-      
-    case "unsigned short" :
-      mem = new Uint16Array(this._memory.bytes, 1);
-      break;
-      
-    case "int" :
-      mem = new Int32Array(this._memory.bytes, 1);
-      break;
-      
-    case "unsigned int" :
-      mem = new Uint32Array(this._memory.bytes, 1);
-      break;
-      
-    case "long" :
-      mem = new Int32Array(this._memory.bytes, 1);
-      break;
-      
-    case "unsigned long" :
-      mem = new Uint32Array(this._memory.bytes, 1);
-      break;
-      
-    case "long long" :
-      mem = new Int32Array(this._memory.bytes, 2);
-      mem[1] = (value.getValue() >> 32) & 0xffff;
-      // mem[0] is handled below
-      break;
-      
-    case "unsigned long long" :
-      mem = new Uint32Array(this._memory.bytes, 2);
-      mem[1] = (value.getValue() >>> 32) & 0xffff;
-      // mem[0] is handled below
-      break;
-      
-    case "float" :
-      mem = new Float32Array(this._memory.bytes, 1);
-      break;
-      
-    case "double" :
-      mem = new Float64Array(this._memory.bytes, 1);
-      break;
+    throw new Error("Invalid memory access at " + addr + ": " +
+                    "only char or unsigned char can be written to " +
+                    "an odd address.");
+  }
 
-    default :
-      throw new Error("Unrecognized number type: " + value.getTypeOfNumber());
-      break;
-    }
+  // Get an appropriate view into the memory, based on the source type
+  switch(typeSrc)
+  {
+  case "char" :
+    memSrc = new Int8Array(this._memory.bytes[addrSrc], 1);
     break;
-    
-  case "AddressType" :
-    mem = new Uint32Array(this._memory.bytes, 1);
+
+  case "unsigned char" :
+    memSrc = new Uint8Array(this._memory.bytes[addrSrc], 1);
     break;
-    
+
+  case "short" :
+    memSrc = new Int16Array(this._memory.bytes[addrSrc], 1);
+    break;
+
+  case "unsigned short" :
+    memSrc = new Uint16Array(this._memory.bytes[addrSrc], 1);
+    break;
+
+  case "int" :
+    memSrc = new Int32Array(this._memory.bytes[addrSrc], 1);
+    break;
+
+  case "unsigned int" :
+    memSrc = new Uint32Array(this._memory.bytes[addrSrc], 1);
+    break;
+
+  case "long" :
+  case "long long" :
+    memSrc = new Int32Array(this._memory.bytes[addrSrc], 1);
+    break;
+
+  case "unsigned long" :
+  case "unsigned long long" :
+    memSrc = new Uint32Array(this._memory.bytes[addrSrc], 1);
+    break;
+
+  case "float" :
+  case "double" :
+    memSrc = new Float32Array(this._memory.bytes[addrSrc], 1);
+    break;
+
   default:
-    throw new Error("Unrecognized value type: " + valueType);
+    throw new Error("Unrecognized source type: " + typeSrc);
   }
 
-  // If we haven't already handled it specially (which we know because mem is
-  // null), now that we have an appropriate view into the memory, write out
-  // the value there.
-  if (mem !== null)
+  // Get an appropriate view into the memory, based on the destination type
+  switch(typeDest)
   {
-    mem[0] = value.getValue();
+  case "char" :
+    memDest = new Int8Array(this._memory.bytes[addrDest], 1);
+    break;
+
+  case "unsigned char" :
+    memDest = new UInt8Array(this._memory.bytes[addrDest], 1);
+    break;
+
+  case "short" :
+    memDest = new Int16Array(this._memory.bytes[addrDest], 1);
+    break;
+
+  case "unsigned short" :
+    memDest = new Unt16Array(this._memory.bytes[addrDest], 1);
+    break;
+
+  case "int" :
+    memDest = new Int32Array(this._memory.bytes[addrDest], 1);
+    break;
+
+  case "unsigned int" :
+    memDest = new UInt32Array(this._memory.bytes[addrDest], 1);
+    break;
+
+  case "long" :
+  case "long long" :
+    memDest = new Int32Array(this._memory.bytes[addrDest], 1);
+    break;
+
+  case "unsigned long" :
+  case "unsigned long long" :
+    memDest = new UInt32Array(this._memory.bytes[addrDest], 1);
+    break;
+
+  case "float" :
+  case "double" :
+    memDest = new Float32Array(this._memory.bytes[addrDest], 1);
+    break;
+
+  default:
+    throw new Error("Unrecognized destination type: " + typeDest);
   }
+
+  // Now that we have appropriate views into the memory, read and write
+  // the data.
+  memDest[0] = memSrc[0];
 };
 
-Memory.prototype.get = function(addr, type, size)
-{
-  var             value;
-  
-  // Only values of size one can be at odd addresses
-  if (addr % 1 == 0 && size != 1)
-  {
-    throw new Error("Invalid memory access: " +
-                    "reading non-byte from odd address " + addr);
-  }
-
-  // Retrieve the value from the specified address
-  value = this._memoryInternal[addr];
-  
-  // Does the value at this location have the requested size?
-  if (value.getSizeOfValue() === size)
-  {
-    // Yes, return it.
-    return value.clone();
-  }
-  
-  // The value is not the requested size. We'll need to convert it.
-  
-};
 
 /**
  * Create a displayable representation of memory.
@@ -257,4 +331,4 @@ exports.getInstance = function()
 };
 
 exports.info = info;
-
+exports.register = register;

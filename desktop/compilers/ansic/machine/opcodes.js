@@ -84,13 +84,23 @@ function dereference(line)
 /**
  * Jump to the specified address.
  *
+ * @param condition {String}
+ *
+ *   One of: "<", "<=", "==", "!=", ">", ">=", or null. If null, the jump is
+ *   unconditional.
+ *
  * @param address {Address|Register}
  *   The address at which execution should continue
  *
  * @param line {Number}
  *   The line number in the source code from which this instruction derives.
+ *
+ * Compare the top two 32-bit values on the stack, using the specified
+ * comparison condition. If the specified condition is met, jump to the
+ * specified address. Otherwise, execution continues at the statement after
+ * this one.
  */
-function jump(address, line)
+function jump(condition, address, line)
 {
   
 }
@@ -108,6 +118,17 @@ function jump(address, line)
  *   The line number in the source code from which this instruction derives.
  */
 function setRegister(register, value, line)
+{
+  
+}
+
+
+function callSubroutine(addr)
+{
+  
+}
+
+function returnFromSubroutine()
 {
   
 }

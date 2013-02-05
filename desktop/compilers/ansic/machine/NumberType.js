@@ -30,10 +30,10 @@ var AbstractType = require("./AbstractType");
 function NumberType(type, value)
 {
   // Initialize the specified value
-  this.setValue(typeof value == "undefined" ? 0 : value);
+  this.setData(typeof value == "undefined" ? 0 : value);
   
   // Save the size of this value
-  this.setSizeOfValue(NumberType.size[type]);
+  this.setSizeOfData(NumberType.size[type]);
 
   /**
    * Retrieve this number's type (by closure)
