@@ -9,7 +9,6 @@
 
 var sys = require("sys");
 var DataValue = require("./DataValue");
-var Instruction = require("./Instruction");
 
 // The number of registers
 var NUM_REGS = 6;
@@ -100,7 +99,9 @@ function Memory()
 /**
  *
  */
-Memory.prototype.move = function(addrSrc, typeSrc, addrDest, typeDest)
+Memory.prototype.move = function(addrSrc, typeSrc,
+                                 addrDest, typeDest,
+                                 bForce)
 {
   var             line;
   var             memSrc;
@@ -112,86 +113,93 @@ Memory.prototype.move = function(addrSrc, typeSrc, addrDest, typeDest)
   sizeSrc = DataValue.size[typeSrc];
   sizeDest = DataValue.size[typeDest];
 
-  // Ensure that access is from the correct region of memory
-  if (! (addrSrc >= info.reg.start  && 
-         addrSrc < info.reg.start + info.reg.length) ||
+  // Forcing is for internal writes to code space, when we really, really know
+  // exactly what we're doing. It bypasses all of the error checks.
+  if (! bForce)
+  {
+    // Ensure that access is from the correct region of memory
+    if (! (addrSrc >= info.reg.start  && 
+           addrSrc < info.reg.start + info.reg.length) ||
+          (addrSrc >= info.gas.start && 
+           addrSrc < info.gas.start + info.gas.length) ||
+          (addrSrc >= info.heap.start && 
+           addrSrc < info.heap.start + info.heap.length) ||
+          (addrSrc >= info.rts.start &&
+           addrSrc < info.rts.start  + info.rts.length))
+    {
+      throw new Error("Invalid memory access at " + addrDest + ": " +
+                      "ASSIGN FROM address is not within the " +
+                      "'globals and statics', 'heap', or " +
+                      "'run time stack' regions of memory.");
+    }
+
+    // Ensure that access is to the correct region of memory
+    if (! (addrDest >= info.reg.start  && 
+           addrDest < info.reg.start + info.reg.length) ||
+          (addrDest >= info.gas.start && 
+           addrDest < info.gas.start + info.gas.length) ||
+          (addrDest >= info.heap.start && 
+           addrDest < info.heap.start + info.heap.length) ||
+          (addrDest >= info.rts.start &&
+           addrDest < info.rts.start  + info.rts.length))
+    {
+      throw new Error("Invalid memory access at " + addrDest + ": " +
+                      "ASSIGN TO address is not within the " +
+                      "'globals and statics', 'heap', or " +
+                      "'run time stack' regions of memory.");
+    }
+
+    // Ensure that the access remains in one region of memory
+    if ((addrSrc >= info.reg.start  && 
+         addrSrc < info.reg.start + WORDSIZE &&
+         addrSrc + sizeSrc >= info.reg.start + WORDSIZE) ||
+
         (addrSrc >= info.gas.start && 
-         addrSrc < info.gas.start + info.gas.length) ||
+         addrSrc < info.gas.start + info.gas.length &&
+         addrSrc + sizeSrc >= info.gas.start + info.gas.length) ||
+
         (addrSrc >= info.heap.start && 
-         addrSrc < info.heap.start + info.heap.length) ||
+         addrSrc < info.heap.start + info.heap.length &&
+         addrSrc + sizeSrc >= info.heap.start + info.heap.length) ||
+
         (addrSrc >= info.rts.start &&
-         addrSrc < info.rts.start  + info.rts.length))
-  {
-    throw new Error("Invalid memory access at " + addrDest + ": " +
-                    "ASSIGN FROM address is not within the " +
-                    "'globals and statics', 'heap', or " +
-                    "'run time stack' regions of memory.");
-  }
+         addrSrc < info.rts.start  + info.rts.length &&
+         addrSrc + sizeSrc >= info.rts.start + info.rts.length))
+    {
+      throw new Error("Invalid memory access at " + addrSrc + ": " +
+                      "Size of object being assigned causes a " +
+                      "read beyond the " +
+                      "bounds of its 'globals and statics', 'heap', or " +
+                      "'run time stack' region of memory.");
+    }
 
-  // Ensure that access is to the correct region of memory
-  if (! (addrDest >= info.reg.start  && 
-         addrDest < info.reg.start + info.reg.length) ||
+    // Ensure that the access remains in one region of memory
+    if ((addrDest >= info.reg.start  && 
+         addrDest < info.reg.start + WORDSIZE &&
+         addrDest + sizeDest >= info.reg.start + WORDSIZE) ||
+
         (addrDest >= info.gas.start && 
-         addrDest < info.gas.start + info.gas.length) ||
+         addrDest < info.gas.start + info.gas.length &&
+         addrDest + sizeDest >= info.gas.start + info.gas.length) ||
+
         (addrDest >= info.heap.start && 
-         addrDest < info.heap.start + info.heap.length) ||
+         addrDest < info.heap.start + info.heap.length &&
+         addrDest + sizeDest >= info.heap.start + info.heap.length) ||
+
         (addrDest >= info.rts.start &&
-         addrDest < info.rts.start  + info.rts.length))
-  {
-    throw new Error("Invalid memory access at " + addrDest + ": " +
-                    "ASSIGN TO address is not within the " +
-                    "'globals and statics', 'heap', or " +
-                    "'run time stack' regions of memory.");
-  }
-
-  // Ensure that the access remains in one region of memory
-  if ((addrSrc >= info.reg.start  && 
-       addrSrc < info.reg.start + WORDSIZE &&
-       addrSrc + sizeSrc >= info.reg.start + WORDSIZE) ||
-
-      (addrSrc >= info.gas.start && 
-       addrSrc < info.gas.start + info.gas.length &&
-       addrSrc + sizeSrc >= info.gas.start + info.gas.length) ||
-
-      (addrSrc >= info.heap.start && 
-       addrSrc < info.heap.start + info.heap.length &&
-       addrSrc + sizeSrc >= info.heap.start + info.heap.length) ||
-
-      (addrSrc >= info.rts.start &&
-       addrSrc < info.rts.start  + info.rts.length &&
-       addrSrc + sizeSrc >= info.rts.start + info.rts.length))
-  {
-    throw new Error("Invalid memory access at " + addrSrc + ": " +
-                    "Size of object being assigned causes a read beyond the " +
-                    "bounds of its 'globals and statics', 'heap', or " +
-                    "'run time stack' region of memory.");
-  }
-
-  // Ensure that the access remains in one region of memory
-  if ((addrDest >= info.reg.start  && 
-       addrDest < info.reg.start + WORDSIZE &&
-       addrDest + sizeDest >= info.reg.start + WORDSIZE) ||
-
-      (addrDest >= info.gas.start && 
-       addrDest < info.gas.start + info.gas.length &&
-       addrDest + sizeDest >= info.gas.start + info.gas.length) ||
-
-      (addrDest >= info.heap.start && 
-       addrDest < info.heap.start + info.heap.length &&
-       addrDest + sizeDest >= info.heap.start + info.heap.length) ||
-
-      (addrDest >= info.rts.start &&
-       addrDest < info.rts.start  + info.rts.length &&
-       addrDest + sizeDest >= info.rts.start + info.rts.length))
-  {
-    throw new Error("Invalid memory access at " + addrDest + ": " +
-                    "Size of object being assigned to causes a write beyond " +
-                    "the bounds of its 'globals and statics', 'heap', or " +
-                    "'run time stack' region of memory.");
+         addrDest < info.rts.start  + info.rts.length &&
+         addrDest + sizeDest >= info.rts.start + info.rts.length))
+    {
+      throw new Error("Invalid memory access at " + addrDest + ": " +
+                      "Size of object being assigned to causes a " +
+                      "write beyond " +
+                      "the bounds of its 'globals and statics', 'heap', or " +
+                      "'run time stack' region of memory.");
+    }
   }
 
   // Only values of size one can be at odd addresses
-  if (addrSrc % 1 == 0 && typeSrc != "char" && typeSrc != "unsigned char")
+  if (addrSrc % 2 != 0 && typeSrc != "char" && typeSrc != "unsigned char")
   {
     throw new Error("Invalid memory access at " + addr + ": " +
                     "only char or unsigned char can be read from " +
@@ -199,7 +207,7 @@ Memory.prototype.move = function(addrSrc, typeSrc, addrDest, typeDest)
   }
 
   // Only values of size one can be at odd addresses
-  if (addrDest % 1 == 0 && typeDest != "char" && typeDest != "unsigned char")
+  if (addrDest % 2 != 0 && typeDest != "char" && typeDest != "unsigned char")
   {
     throw new Error("Invalid memory access at " + addr + ": " +
                     "only char or unsigned char can be written to " +
@@ -302,9 +310,18 @@ Memory.prototype._getByType = function(type, addr)
 
 
 /**
- * Create a displayable representation of memory.
+ * Create a normal, JavaScript array representation of a region of memory.
+ *
+ * @param startAddr {Number}
+ *   The starting address to be represented in the array
+ *
+ * @param length {Number}
+ *   The number of bytes of data to be represented in the array
+ *
+ * @return {Array}
+ *   An array of bytes copied from the simulated machine's memory
  */
-Memory.prototype.toDisplayArray = function(startAddr, length)
+Memory.prototype.toArray = function(startAddr, length)
 {
   var             i;
   var             mem;
@@ -320,7 +337,7 @@ Memory.prototype.toDisplayArray = function(startAddr, length)
 
 
 /**
- * Display a region of memory
+ * Display a region of memory in a pretty format
  *
  * @param startAddr
  *   The starting address to display
@@ -328,9 +345,9 @@ Memory.prototype.toDisplayArray = function(startAddr, length)
  * @param length
  *   The number of bytes of data to display
  */
-Memory.prototype.debugDisplay = function(message, startAddr, length)
+Memory.prototype.prettyPrint = function(message, startAddr, length)
 {
-  var data = instance.toDisplayArray(startAddr, length);
+  var data = instance.toArray(startAddr, length);
   
   // Display the message
   sys.print(message + "\n");

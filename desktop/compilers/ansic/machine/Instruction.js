@@ -7,7 +7,9 @@
  *   GPL Version 2: http://www.gnu.org/licenses/gpl-2.0.html 
  */
 
-var mem = require("./Memory");
+var sys = require("sys");
+var Memory = require("./Memory");
+var mem = Memory.getInstance();
 
 /*
  * Machine Instructions
@@ -19,9 +21,11 @@ var mem = require("./Memory");
  * Bits 28-31 : opcode
  * Bits  0-30 : as documented for each function
  *
- * The second word contains debugging information for the instruction. The
- * low-order 16 bits contain the line number. The high-order 16 bits are
- * reserved for future use, to possibly include a file name index.
+ * The second word contains, in its high-order 3 bits, the number of
+ * additional words of instruction data which follow this second word. The
+ * remaining bits of this second word contain debugging information for the
+ * instruction. The low-order 16 bits contain the line number. The remaining
+ * 13 bits are reserved for future use, to possibly include a file name index.
  */
 var Instruction =
   {
@@ -32,9 +36,9 @@ var Instruction =
      * operation. Store the result into register R1.
      *
      * @param instruction {Number}
-     *   Bits 28-31 contain the opcode.
+     *   Bits 29-31 contain the opcode.
      *
-     *   Bits 24-27 contain the binary operation to be performed:
+     *   Bits 24-28 contain the binary operation to be performed:
      *     00 : ">>"
      *     01 : "<<"
      *     02 : "&&"
@@ -70,13 +74,14 @@ var Instruction =
      *     0A : "float"
      *     0B : "double"
      *     0C : "pointer"
-     *   Bit patterns 0D-0E are reserved for future use
+     *   Bit patterns 0D-0F are reserved for future use
      *
-     * @param line {Number}
-     *   The line number in the source code from which this instruction
-     *   derives.
+     * @param instrAddr {Number}
+     *   The address at which the instruction was found. This allows
+     *   instructions that require additional words of information (following
+     *   the debug data) to be retrieved.
      */
-    binaryOp : function(instruction, line)
+    binaryOp : function(instruction, instrAddr)
     {
       var             f;
       var             type1;
@@ -106,7 +111,7 @@ var Instruction =
         ];
       
       // Determine which binary operation is to be performed
-      binOp = operations[(instruction >>> 16) & 0x1f];
+      binOp = operations[(instruction >>> 24) & 0x1f];
       
       // Extract the types of the two operands
       type1  = indexToType((instruction >>> 20) & 0x0f);
@@ -158,7 +163,9 @@ var Instruction =
       // Create a funciton that will calculate the result
       f = new Function(
         "return " +
-          "mem.getReg('R1', type1) " + binOp + " mem.getReg('R2', type2)");
+          "mem.getReg('R1', type1) " + 
+          binOp +
+          " mem.getReg('R2', type2)");
       
       // Call that function, and store the result back into register R1.
       mem.setReg('R1', typeCoerceTo, f());
@@ -170,9 +177,9 @@ var Instruction =
      * Store the result into register R1.
      *
      * @param instruction {Number}
-     *   Bits 28-31 contain the opcode.
+     *   Bits 29-31 contain the opcode.
      *
-     *   Bits 24-27 contain the unary operation to be performed:
+     *   Bits 24-28 contain the unary operation to be performed:
      *     00 : "~"
      *     01 : "!"
      *     02 : "cast"
@@ -193,7 +200,7 @@ var Instruction =
      *     0A : "float"
      *     0B : "double"
      *     0C : "pointer"
-     *   Bit patterns 0D-0E are reserved for future use
+     *   Bit patterns 0D-0F are reserved for future use
      *
      *   If the unary operation is "cast" then:
      *     Bits 16-19 contain the type to cast to
@@ -210,14 +217,14 @@ var Instruction =
      *       0A : "float"
      *       0B : "double"
      *       0C : "pointer"
-     *     Bit patterns 0D-0E are reserved for future use
+     *     Bit patterns 0D-0F are reserved for future use
      *
-     *
-     * @param line {Number}
-     *   The line number in the source code from which this instruction
-     *   derives.
+     * @param instrAddr {Number}
+     *   The address at which the instruction was found. This allows
+     *   instructions that require additional words of information (following
+     *   the debug data) to be retrieved.
      */
-    unaryOp : function(instruction, line)
+    unaryOp : function(instruction, instrAddr)
     {
       var             op;
       var             value;
@@ -225,7 +232,7 @@ var Instruction =
       var             typeDest;
       
       // Extract the operation to be executed
-      op = (instruction >>> 24) & 0x0f;
+      op = (instruction >>> 24) & 0x1f;
       
       // Extract the type of the source operand
       typeSrc  = indexToType((instruction >>> 20) & 0x0f);
@@ -300,28 +307,29 @@ var Instruction =
      * after this one.
      *
      * @param instruction {Number}
-     *   Bits 28-31 contain the opcode.
+     *   Bits 29-31 contain the opcode.
      * 
-     *   Bits 16-20 contain the condition on which to jump
+     *   Bits 24-28 contain the condition on which to jump
      *     00 : no comparison; unconditional jump
      *     01 : true
-     *   Bit patterns 03-1F are reserved for future use
+     *   Bit patterns 03-0F are reserved for future use
      *
      *   Bits 0-15 contain the address to which to jump, if the conditional
      *   test succeeds
      *
-     * @param line {Number}
-     *   The line number in the source code from which this instruction
-     *   derives.
+     * @param instrAddr {Number}
+     *   The address at which the instruction was found. This allows
+     *   instructions that require additional words of information (following
+     *   the debug data) to be retrieved.
      */
-    jumpConditionally : function(instruction, line)
+    jumpConditionally : function(instruction, instrAddr)
     {
       var             addr;
       var             value;
       var             condition;
       
       // Extract the condition
-      condition = (instruction >>> 16) & 0x0f;
+      condition = (instruction >>> 24) & 0x1f;
       
       // Extract the address to which we'll jump
       addr = instruction & 0xffff;
@@ -357,12 +365,20 @@ var Instruction =
     },
 
     /**
-     * Push a value onto the stack.
+     * Memory operations (including stack)
      *
      * @param instruction
-     *   Bits 28-31 contain the opcode.
+     *   Bits 29-31 contain the opcode.
      *
-     *   Bits 24-27 contain the type of the source operand;
+     *   Bits 24-28 contain an indication of whether this is a push or a pop
+     *     00 : store from R1
+     *     01 : store immediate
+     *     02 : retrieve to R1
+     *     03 : push
+     *     04 : pop
+     *     05 : swap R1, R2
+     *
+     *   Bits 20-23 contain the type of the source operand (for push)
      *     00 : "char"
      *     01 : "unsigned char"
      *     02 : "short"
@@ -376,171 +392,353 @@ var Instruction =
      *     0A : "float"
      *     0B : "double"
      *     0C : "pointer"
-     *   Bit patterns 0D-0E are reserved for future use
+     *   Bit patterns 0D-0F are reserved for future use
+     *
+     *   Bits 16-19 contain the type of the destination operand (for pop)
+     *     00 : "char"
+     *     01 : "unsigned char"
+     *     02 : "short"
+     *     03 : "unsigned short"
+     *     04 : "int"
+     *     05 : "unsigned int"
+     *     06 : "long"
+     *     07 : "unsigned long"
+     *     08 : "long long"
+     *     09 : "unsigned long long"
+     *     0A : "float"
+     *     0B : "double"
+     *     0C : "pointer"
+     *   Bit patterns 0D-0F are reserved for future use
      *
      *   Bits 0-15 contain the address of the value to be pushed onto the
-     *   stack.
+     *   stack, or popped from the stack into.
      *
-     * @param line {Number}
-     *   The line number in the source code from which this instruction
-     *   derives.
+     * @param instrAddr {Number}
+     *   The address at which the instruction was found. This allows
+     *   instructions that require additional words of information (following
+     *   the debug data) to be retrieved.
      */
-    push : function(instruction, line)
+    memory : function(instruction, instrAddr)
     {
+      var             op;
       var             value;
       var             addr;
       var             type;
       var             sp;
       
-      // Extract the source address
+      // Extract the sub-code specifying whether we are to push or pop
+      op = (instruction >>> 24) & 0x1f;
+      
+      // Extract the source or destination address
       addr = instruction & 0xffff;
-      
-      // Extract the source type
-      type = (instruction >>> 24) & 0xffff;
-      
-      // Get the stack pointer address
-      sp = mem.getReg("SP", "unsigned int");
-      
-      // Decrement the stack pointer so it's pointing to the first unused
-      // location on the stack
-      sp -= mem.WORDSIZE;
-      
-      // Store the new value back into the stack pointer
-      mem.setReg("SP", "unsigned int", sp);
 
-      // Retrieve the value from the specified address, and store it at the
-      // location pointed to by the stack pointer.
-      mem.move(addr, type, sp, "unsigned int");
+      switch(op)
+      {
+      case 0 :                  // store from R1 to memory
+        // Extract the source type
+        type = (instruction >>> 20) & 0x0f;
+
+        // Extract the destination address
+        addr = instruction & 0xffff;
+
+        // Store the value in R1 to the specified address
+        mem.move(Memory.register.R1, type, addr, type);
+        break;
+        
+      case 1 :                  // store immediate to memory
+        // Extract the source type
+        type = (instruction >>> 20) & 0x0f;
+
+        // Extract the destination address
+        addr = instruction & 0xffff;
+
+        // Increment the address instruction past the debug word, to the
+        // immediate value to be stored.
+        instrAddr += Memory.WORDSIZE * 2;
+
+        // Store the value in to the specified address
+        mem.move(instrAddr, type, addr, type);
+        break;
+        
+      case 2 :                  // retrieve from memory into R1
+        // Extract the source type
+        type = (instruction >>> 20) & 0x0f;
+
+        // Extract the source address
+        addr = instruction & 0xffff;
+
+        // Retrieve the value at the specified address into R1
+        mem.move(addr, type, Memory.register.R1, type);
+        break;
+
+      case 3 :                  // push
+        // Extract the source type
+        type = (instruction >>> 20) & 0x0f;
+
+        // Get the stack pointer address
+        sp = mem.getReg("SP", "unsigned int");
+
+        // Decrement the stack pointer so it's pointing to the first unused
+        // location on the stack
+        sp -= Memory.WORDSIZE;
+
+        // Store the new value back into the stack pointer
+        mem.setReg("SP", "unsigned int", sp);
+
+        // Retrieve the value from the specified address, and store it at the
+        // location pointed to by the stack pointer.
+        mem.move(addr, type, sp, "unsigned int");
+        break;
+        
+      case 4 :                  // pop
+        // Extract the destination type
+        type = (instruction >>> 16) & 0x0f;
+
+        // Get the stack pointer address
+        sp = mem.getReg("SP", "unsigned int");
+
+        // Retrieve the value from the address pointed to by the stack pointer,
+        // and store it at the specified address.
+        mem.move(sp, "unsigned int", addr, type);
+
+        // Increment the stack pointer so it's pointing to the next in-use
+        // location on the stack
+        sp += Memory.WORDSIZE;
+
+        // Store the new value back into the stack pointer
+        mem.setReg("SP", "unsigned int", sp);
+        break;
+        
+      case 5 :                  // swap R1, R2
+        // Retrieve the value from register R1
+        value = mem.getReg("R1", "unsigned int");
+        
+        // Save the value from R2 in R1
+        mem.setReg("R1", "unsigned int", mem.getReg("R2", "unsigned int"));
+        
+        // Store the former R1 value into R2
+        mem.setReg("R2", "unsigned int", value);
+        break;
+
+      default :
+        throw new Error("Unrecognized stack operation: " + op);
+        break;
+      }
     },
 
     /**
-     * Pop a value off of the stack and store it at the specified address
+     * Call, or return from a function. To call a function, we push the
+     * current program counter onto the stack, and jump to the function at the
+     * specified address. To return from a function, we pop the return address
+     * from the top of the stack, and jump to that address.
      *
-     * @param instruction
-     *   Bits 28-31 contain the opcode.
-     *
-     *   Bits 24-27 contain the type of the destination operand;
-     *     00 : "char"
-     *     01 : "unsigned char"
-     *     02 : "short"
-     *     03 : "unsigned short"
-     *     04 : "int"
-     *     05 : "unsigned int"
-     *     06 : "long"
-     *     07 : "unsigned long"
-     *     08 : "long long"
-     *     09 : "unsigned long long"
-     *     0A : "float"
-     *     0B : "double"
-     *     0C : "pointer"
-     *   Bit patterns 0D-0E are reserved for future use
-     *
-     *   Bits 0-15 contain the address at which the value popped from the
-     *   stack is to be saved.
-     *
-     * @param line {Number}
-     *   The line number in the source code from which this instruction
-     *   derives.
-     */
-    popAndStore : function(instruction, line)
-    {
-      var             value;
-      var             addr;
-      var             type;
-      var             sp;
-      
-      // Extract the destination address
-      addr = instruction & 0xffff;
-      
-      // Extract the destination type
-      type = (instruction >>> 24) & 0xffff;
-      
-      // Get the stack pointer address
-      sp = mem.getReg("SP", "unsigned int");
-      
-      // Retrieve the value from the address pointed to by the stack pointer,
-      // and store it at the specified address.
-      mem.move(sp, "unsigned int", addr, type);
-
-      // Increment the stack pointer so it's pointing to the next in-use
-      // location on the stack
-      sp += mem.WORDSIZE;
-      
-      // Store the new value back into the stack pointer
-      mem.setReg("SP", "unsigned int", sp);
-    },
-
-    /**
-     * Push the current program counter onto the stack, and jump to the
-     * function at the specified address.
      *
      * @param instruction {Number}
-     *   Bits 28-31 contain the opcode.
-     *   Bits 0-15 contain the address to which to jump.
+     *   Bits 29-31 contain the opcode.
      *
-     * @param line {Number}
-     *   The line number in the source code from which this instruction
-     *   derives.
+     *   Bits 24-28 dictate the function operation to be performed:
+     *     00 : call a function
+     *     01 : return from a function
+     *
+     *   Bits 0-15 contain the address to which to jump (when calling a
+     *   function)
+     *
+     * @param instrAddr {Number}
+     *   The address at which the instruction was found. This allows
+     *   instructions that require additional words of information (following
+     *   the debug data) to be retrieved.
      */
-    callFunction : function(instruction, line)
+    functionOp : function(instruction, instrAddr)
     {
+      var             op;
       var             value;
       var             addr;
       var             sp;
       
-      // Extract the address to jump to
-      addr = instruction & 0xffff;
+      // Extract the sub-code that indicates whether to call or return from a
+      // function.
+      op = (instruction >>> 24) & 0x1f;
       
-      // Get the stack pointer address
-      sp = mem.getReg("SP", "unsigned int");
-      
-      // Decrement the stack pointer so it's pointing to the first unused
-      // location on the stack
-      sp -= mem.WORDSIZE;
-      
-      // Store the  value back into the stack pointer
-      mem.setReg("SP", "unsigned int", sp);
+      switch(op)
+      {
+      case 0 :                  // call a function
+        // Extract the address to jump to
+        addr = instruction & 0xffff;
 
-      // Store the program counter's value into the new bottom of the stack
-      mem.move(mem.register.PC, "unsigned int", sp, "unsigned int");
-      
-      // Store the new address into the program counter
-      mem.setReg("PC", "unsigned int", addr);
-    },
+        // Get the stack pointer address
+        sp = mem.getReg("SP", "unsigned int");
 
-    /**
-     * Pop the return address from the top of the stack, and jump to that
-     * address.
-     *
-     * @param instruction {Number}
-     *   Bits 28-31 contain the opcode.
-     *   No additional information is encoded in any other bits.
-     * 
-     * @param line {Number}
-     *   The line number in the source code from which this instruction
-     *   derives.
-     */
-    returnFromFunction : function(instruction, line)
-    {
-      var             addr;
-      var             type;
-      var             sp;
-      
-      // Get the stack pointer address
-      sp = mem.getReg("SP", "unsigned int");
-      
-      // Retrieve the return address from the address pointed to by the stack
-      // pointer, and store it in the program counter
-      mem.move(sp, "unsigned int", mem.register.PC, "unsigned int");
+        // Decrement the stack pointer so it's pointing to the first unused
+        // location on the stack
+        sp -= Memory.WORDSIZE;
 
-      // Increment the stack pointer so it's pointing to the next in-use
-      // location on the stack
-      sp += mem.WORDSIZE;
-      
-      // Store the new value back into the stack pointer
-      mem.setReg("SP", "unsigned int", sp);
+        // Store the  value back into the stack pointer
+        mem.setReg("SP", "unsigned int", sp);
+
+        // Store the program counter's value into the new bottom of the stack
+        mem.move(Memory.register.PC, "unsigned int", sp, "unsigned int");
+
+        // Store the new address into the program counter
+        mem.setReg("PC", "unsigned int", addr);
+        break;
+        
+      case 1 :                  // return from a function
+        // Get the stack pointer address
+        sp = mem.getReg("SP", "unsigned int");
+
+        // Retrieve the return address from the address pointed to by the stack
+        // pointer, and store it in the program counter
+        mem.move(sp, "unsigned int", Memory.register.PC, "unsigned int");
+
+        // Increment the stack pointer so it's pointing to the next in-use
+        // location on the stack
+        sp += Memory.WORDSIZE;
+
+        // Store the new value back into the stack pointer
+        mem.setReg("SP", "unsigned int", sp);
+        break;
+        
+      default :
+        throw new Error("Unrecognized function operation: " + op);
+        break;
+      }
     }
 };
+
+/**
+ * Assemble an instruction give its constituate parts
+ *
+ * @param opName {String}
+ *   The name of the instruction which indictes the opcode to be assigned
+ *
+ * @param subcode {Number}
+ *   The opcode-specific subcode of the instruction
+ *
+ * @param typeSrc {Number}
+ *   The type index of the source argument of the instruction
+ *
+ * @param typeDest {Number}
+ *   The type index of the destination argument of the instruction
+ *
+ * @param addr {Number}
+ *   The address argument of the instruction
+ *
+ * @return {Number}
+ *   The word to place in memory, containing the assembled instruction.
+ */
+var assemble = function(opName, subcode, typeSrc, typeDest, addr)
+{
+  var             opcode;
+  var             instr;
+  
+  // Convert the opcode name to its actual opcode
+  opcode = nameToOpcode(opName);
+  
+  // Were we able to convert it?
+  if (typeof opcode == "undefined")
+  {
+    // Nope.
+    throw new Error("Unrecognized op name: " + opName);
+  }
+  
+  // The caller is encouraged to pass null for irrelevant arguments, to make
+  // it clear that they are unused. We'll convert them to zeros, here.
+  typeSrc  = typeSrc  || 0x00;
+  typeDest = typeDest || 0x00;
+  addr     = addr     || 0;
+  
+  sys.print("opcode=" + opcode.toString(2) + "\n" +
+            "subcode=" + subcode.toString(2) + "\n" +
+            "typeSrc=" + typeSrc.toString(2) + "\n" +
+            "typeDest=" + typeDest.toString(2) + "\n" +
+            "addr=" + addr.toString(2) + "\n");
+
+  // Combine all of the pieces into a complete instruction
+  instr = (((opcode & 0x07) << 29) |
+           ((subcode & 0x1f) << 24) |
+           ((typeSrc & 0x0f) << 20) |
+           ((typeDest & 0x0f) << 16) |
+           (addr & 0xffff)) >>> 0;
+  
+  sys.print("Returning " + instr.toString(2) + "\n\n");
+
+  // Give 'em what they came for!
+  return instr;
+};
+
+/**
+ * Assemble an instruction and write it to program memory.
+ *
+ * @param addrInfo {Map}
+ *   A map containing a member "addr", which is the address to which the
+ *   assembled instruction is to be written.
+ *
+ * @param line {Number}
+ *   The source code line number from which this instruction derives
+ *
+ * @param destReg {String}
+ *   The name of a register containing the address to which the instruction
+ *   should be written
+ *
+ * @param opName {String}
+ *   The name of the instruction which indictes the opcode to be assigned
+ *
+ * @param subcode {Number}
+ *   The opcode-specific subcode of the instruction
+ *
+ * @param typeSrc {Number}
+ *   The type index of the source argument of the instruction
+ *
+ * @param typeDest {Number}
+ *   The type index of the destination argument of the instruction
+ *
+ * @param addr {Number}
+ *   The address argument of the instruction
+ */
+var write = function(addrInfo, line,
+                     opName, subcode, typeSrc, typeDest, addr,
+                     data)
+{
+  var             instr;
+
+  // Assemble the instruction
+  instr = assemble(opName, subcode, typeSrc, typeDest, addr);
+
+  // We'll use register R3 to hold the instruction. Put the instruction there,
+  // and then move it to its requested address.
+  mem.setReg("R3", "unsigned int", instr);
+  mem.move(Memory.register.R3, "unsigned int", 
+           addrInfo.addr, "unsigned int", true);
+  
+  // Increment the instruction address to where the line number will go
+  addrInfo.addr += Memory.WORDSIZE;
+  
+  // Ensure we have an array (possibly empty) of extra data for this instruction
+  data = data || [];
+
+  // Write the debug information. The source code line number of this
+  // instruction goes in the lower 16 bits. Encode the number of words of
+  // extra data into the high-order three bits.
+  mem.setReg("R3", "unsigned int",
+             (((data.length << 29) | (line & 0xffff)) >>> 0));
+  mem.move(Memory.register.R3, "unsigned int",
+              addrInfo.addr, "unsigned int", 
+              true);
+  
+  // Add any extra data after the debug information
+  data.forEach(
+    function(datum)
+    {
+      // Increment to the next word
+      addrInfo.addr += Memory.WORDSIZE;
+      
+      // Write this piece of extra data
+      mem.setReg("R3", "unsigned int", datum);
+      mem.move(Memory.register.R3, "unsigned int",
+                  addrInfo.addr, "unsigned int", 
+                  true);
+    });
+}
 
 var indexToType =
   [
@@ -631,6 +829,21 @@ var cast = function(register, typeFrom, typeTo)
   mem.setReg(register, typeTo, value);
 };
 
+// There are only three bits for the opcode, so the maximum is 7.
+var nameToOpcode = function(name)
+{
+  return (
+  {
+    "binaryOp"           : 0,
+    "unaryOp"            : 1,
+    "jumpConditionally"  : 2,
+    "memory"             : 3,
+    "functionOp"         : 4
+//    "unused1"            : 5,
+//    "unused2"            : 6,
+//    "unused3"            : 7
+  }[name]);
+};
 
 exports.processOpcode =
   [
@@ -643,16 +856,6 @@ exports.processOpcode =
     Instruction["returnFromFunction"]
   ];
 
-exports.nameToOpcode = function(name)
-{
-  return (
-  {
-    "binaryOp"           : 0,
-    "unaryOp"            : 1,
-    "jumpConditionally"  : 2,
-    "push"               : 3,
-    "popAndStore"        : 4,
-    "callFunction"       : 5,
-    "returnFromFunction" : 6
-  }[name]);
-};
+exports.nameToOpcode = nameToOpcode;
+exports.assemble = assemble;
+exports.write = write;
