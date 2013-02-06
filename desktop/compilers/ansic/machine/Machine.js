@@ -1,5 +1,5 @@
 /**
- * The virtual machine, and facilities for executing statements thereon
+ * The virtual machine, and facilities for executing instructions thereon
  *
  * Copyright (c) 2013 Derrell Lipman
  * 
@@ -7,6 +7,7 @@
  *   GPL Version 2: http://www.gnu.org/licenses/gpl-2.0.html 
  */
 
+var qx = require("qooxdoo");
 var sys = require("sys");
 var Memory = require("./Memory");
 var Instruction = require("./Instruction");

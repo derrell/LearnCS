@@ -818,7 +818,7 @@ var write = function(addrInfo, line,
       // Increment to the next word
       addrInfo.addr += Memory.WORDSIZE;
     });
-}
+};
 
 var indexToType =
   [
