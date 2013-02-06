@@ -9,88 +9,90 @@
 
 var qx = require("qooxdoo");
 var sys = require("sys");
-var Memory = require("./Memory");
-var Instruction = require("./Instruction");
+require("./Memory");
+require("./Instruction");
 
-var mem = Memory.getInstance();
+var mem = csthinker.machine.Memory.getInstance();
+var Memory = csthinker.machine.Memory;
+var Instruction = csthinker.machine.Instruction;
 
 
-function Machine()
+qx.Class.define("csthinker.machine.Machine",
 {
-  // Initialize the registers
-  mem.setReg("PC", 
-             "unsigned int",
-             0);
-  mem.setReg("SP", 
-             "unsigned int",
-             Memory.info.rts.start + Memory.info.rts.length);
-  mem.setReg("FP", 
-             "unsigned int",
-             Memory.info.rts.start + Memory.info.rts.length);
-}
+  type      : "singleton",
+  extend    : qx.core.Object,
 
-Machine.prototype.execute = function()
-{
-  var             pc;
-  var             instr;
-  var             instrAddr;
-  var             opcode;
-  var             numDataWords;
-  var             debugInfo;
-
-  try
+  construct : function()
   {
-    for (;;)
+    // Initialize the registers
+    mem.setReg("PC", 
+               "unsigned int",
+               0);
+    mem.setReg("SP", 
+               "unsigned int",
+               Memory.info.rts.start + Memory.info.rts.length);
+    mem.setReg("FP", 
+               "unsigned int",
+               Memory.info.rts.start + Memory.info.rts.length);
+  },
+  
+  members :
+  {
+    execute : function()
     {
-      // Get the program counter value
-      pc = mem.getReg("PC", "unsigned int");
+      var             pc;
+      var             instr;
+      var             instrAddr;
+      var             opcode;
+      var             numDataWords;
+      var             debugInfo;
 
-      // Retrieve an instruction from that address
-      instr = mem.get(pc, "unsigned int");
+      try
+      {
+        for (;;)
+        {
+          // Get the program counter value
+          pc = mem.getReg("PC", "unsigned int");
 
-      // The high-order three bits determine the primary opcode
-      opcode = instr >>> 29;
-      
-      // Retrieve the debug info that immediately follows the instruction
-      debugInfo = mem.get(pc + Memory.WORDSIZE, "unsigned int");
-      
-      // Determine how many extra words this instruction uses
-      numDataWords = debugInfo >>> 29;
+          // Retrieve an instruction from that address
+          instr = mem.get(pc, "unsigned int");
 
-      // Save the address from which we retrieved this instruction
-      instrAddr = pc;
-      
-      // Update the program counter. It is incremented by 1 word for the
-      // instruction itself, plus 1 word for the debug info, plus however many
-      // extra words this instruction requires.
-      pc += Memory.WORDSIZE * (2 + numDataWords);
+          // The high-order three bits determine the primary opcode
+          opcode = instr >>> 29;
 
-      // Save the new program counter now. It may get altered when we process
-      // the instruction.
-      mem.setReg("PC", "unsigned int", pc);
+          // Retrieve the debug info that immediately follows the instruction
+          debugInfo = mem.get(pc + Memory.WORDSIZE, "unsigned int");
 
-      // Call the appropriate function to process this reuqest
-      Instruction.processOpcode[opcode](instr, instrAddr);
+          // Determine how many extra words this instruction uses
+          numDataWords = debugInfo >>> 29;
+
+          // Save the address from which we retrieved this instruction
+          instrAddr = pc;
+
+          // Update the program counter. It is incremented by 1 word for the
+          // instruction itself, plus 1 word for the debug info, plus however
+          // many extra words this instruction requires.
+          pc += Memory.WORDSIZE * (2 + numDataWords);
+
+          // Save the new program counter now. It may get altered when we
+          // process the instruction.
+          mem.setReg("PC", "unsigned int", pc);
+
+          // Call the appropriate function to process this reuqest
+          csthinker.machine.Instruction.processOpcode[opcode](instr, instrAddr);
+        }
+      }
+      catch (e)
+      {
+        if (e.toString().match(/Normal program exit/))
+        {
+          sys.print("Normal program exit.\n");
+        }
+        else
+        {
+          sys.print("Program halted: " + e + "\n" + e.stack + "\n");
+        }
+      }
     }
   }
-  catch (e)
-  {
-    sys.print("Program halted: " + e + "\n\n");
-  }
-}
-
-// This is a singleton. Export its getInstance() method.
-var singleton;
-exports.getInstance = function()
-{
-  // If we haven't yet generated the singleton instance of memory...
-  if (! singleton)
-  {
-    // ... then do so now.
-    singleton = new Machine();
-  }
-
-  // Return that singleton.
-  return singleton;
-};
-
+});

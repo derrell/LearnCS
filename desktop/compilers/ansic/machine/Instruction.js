@@ -7,10 +7,11 @@
  *   GPL Version 2: http://www.gnu.org/licenses/gpl-2.0.html 
  */
 
+var qx = require("qooxdoo");
 var sys = require("sys");
-var Memory = require("./Memory");
+require("./Memory");
 
-var mem = Memory.getInstance();
+var mem = csthinker.machine.Memory.getInstance();
 
 /*
  * Machine Instructions
@@ -28,8 +29,61 @@ var mem = Memory.getInstance();
  * instruction. The low-order 16 bits contain the line number. The remaining
  * 13 bits are reserved for future use, to possibly include a file name index.
  */
-var Instruction =
+qx.Class.define("csthinker.machine.Instruction",
+{
+  type    : "static",
+  extend  : Object,
+
+  statics :
   {
+    /**
+     *  Conversion of type number to its string representation
+     */
+    __indexToType :
+      [
+        "char",
+        "unsigned char",
+        "short",
+        "unsigned short",
+        "int",
+        "unsigned int",
+        "long",
+        "unsigned long",
+        "long long",
+        "unsigned long long",
+        "float",
+        "double",
+        "pointer"
+      ],
+
+    /**
+     * Convert an instruction name to its corresponding number.
+     * There are only three bits for the opcode, so the maximum is 7.
+     */
+    __nameToOpcode : function(name)
+    {
+      return (
+      {
+        "binaryOp"           : 0,
+        "unaryOp"            : 1,
+        "jumpConditionally"  : 2,
+        "memory"             : 3,
+        "functionOp"         : 4
+    //    "unused1"            : 5,
+    //    "unused2"            : 6,
+    //    "unused3"            : 7
+      }[name]);
+    },
+
+    /**
+     * Conversion of an opcode value to the function that processes it.
+     */
+    processOpcode : null,
+
+    //////////////////////////////////////////////////////////////////////////
+    // Code execution functions
+    //////////////////////////////////////////////////////////////////////////
+
     /**
      * Compute the result of a binary operation.  The value in register R1 is
      * the left operand of the binary operation. The value in register R2 is
@@ -117,9 +171,13 @@ var Instruction =
       binOp = operations[(instruction >>> 24) & 0x1f];
       
       // Extract the types of the two operands
-      type1  = indexToType[(instruction >>> 20) & 0x0f];
-      type2 = indexToType[(instruction >>> 16) & 0x0f];
+      type1 = (instruction >>> 20) & 0x0f;
+      type2 = (instruction >>> 16) & 0x0f;
       
+      // Convert them to their string representations
+      type1 = csthinker.machine.Instruction.__indexToType[type1];
+      type2 = csthinker.machine.Instruction.__indexToType[type2];
+
       // Certain binary operations require that both arguments be unsigned
       // integral types.  (ISO/IEC 9899:TC2 section 6.5(4))
       switch(binOp)
@@ -147,20 +205,20 @@ var Instruction =
       }
 
       // Calculate the type to which both operands should be implicitly cast
-      typeCoerceTo = coerce(type1, type2);
+      typeCoerceTo = csthinker.machine.Instruction.__coerce(type1, type2);
       
       // If the source is not already of the coerce-to type...
       if (type1 != typeCoerceTo)
       {
         // ... then cast it
-        cast("R1", type1, typeCoerceTo);
+        csthinker.machine.Instruction.__cast("R1", type1, typeCoerceTo);
       }
 
       // If the destination is not already of the coerce-to type...
       if (type2 != typeCoerceTo)
       {
         // ... then cast it
-        cast("R2", type2, typeCoerceTo);
+        csthinker.machine.Instruction.__cast("R2", type2, typeCoerceTo);
       }
 
       // Retrieve the two operands
@@ -313,7 +371,10 @@ var Instruction =
       op = (instruction >>> 24) & 0x1f;
       
       // Extract the type of the source operand
-      typeSrc  = indexToType((instruction >>> 20) & 0x0f);
+      typeSrc  = (instruction >>> 20) & 0x0f;
+    
+      // Convert it to its string representation
+      typeSrc = csthinker.machine.Instruction.__indexToType[typeSrc];
 
       // Do operation-specific processing
       switch(op)
@@ -355,13 +416,16 @@ var Instruction =
         
       case 2:                   // cast
         // Extract the type to cast to
-        typeDest = indexToType((instruction >>> 16) & 0x0f);
+        typeDest = (instruction >>> 16) & 0x0f;
+        
+        // Convert it to its string representation
+        typeDest = csthinker.machine.Instruction.__indexToType[typeDest];
 
         // If the type is not already of the destination type...
         if (typeSrc != typeDest)
         {
           // ... then cast it
-          cast("R1", typeSrc, typeDest);
+          csthinker.machine.Instruction.__cast("R1", typeSrc, typeDest);
         }
         break;
         
@@ -527,7 +591,7 @@ var Instruction =
         addr = instruction & 0xffff;
 
         // Store the value in R1 to the specified address
-        mem.move(Memory.register.R1, type, addr, type);
+        mem.move(csthinker.machine.Memory.register.R1, type, addr, type);
         break;
         
       case 1 :                  // store immediate to memory
@@ -539,7 +603,7 @@ var Instruction =
 
         // Increment the address instruction past the debug word, to the
         // immediate value to be stored.
-        instrAddr += Memory.WORDSIZE * 2;
+        instrAddr += csthinker.machine.Memory.WORDSIZE * 2;
 
         // Store the value in to the specified address
         mem.move(instrAddr, type, addr, type);
@@ -553,7 +617,7 @@ var Instruction =
         addr = instruction & 0xffff;
 
         // Retrieve the value at the specified address into R1
-        mem.move(addr, type, Memory.register.R1, type);
+        mem.move(addr, type, csthinker.machine.Memory.register.R1, type);
         break;
 
       case 3 :                  // push
@@ -565,7 +629,7 @@ var Instruction =
 
         // Decrement the stack pointer so it's pointing to the first unused
         // location on the stack
-        sp -= Memory.WORDSIZE;
+        sp -= csthinker.machine.Memory.WORDSIZE;
 
         // Store the new value back into the stack pointer
         mem.setReg("SP", "unsigned int", sp);
@@ -588,7 +652,7 @@ var Instruction =
 
         // Increment the stack pointer so it's pointing to the next in-use
         // location on the stack
-        sp += Memory.WORDSIZE;
+        sp += csthinker.machine.Memory.WORDSIZE;
 
         // Store the new value back into the stack pointer
         mem.setReg("SP", "unsigned int", sp);
@@ -655,13 +719,14 @@ var Instruction =
 
         // Decrement the stack pointer so it's pointing to the first unused
         // location on the stack
-        sp -= Memory.WORDSIZE;
+        sp -= csthinker.machine.Memory.WORDSIZE;
 
         // Store the  value back into the stack pointer
         mem.setReg("SP", "unsigned int", sp);
 
         // Store the program counter's value into the new bottom of the stack
-        mem.move(Memory.register.PC, "unsigned int", sp, "unsigned int");
+        mem.move(csthinker.machine.Memory.register.PC, "unsigned int", 
+                 sp, "unsigned int");
 
         // Store the new address into the program counter
         mem.setReg("PC", "unsigned int", addr);
@@ -673,11 +738,12 @@ var Instruction =
 
         // Retrieve the return address from the address pointed to by the stack
         // pointer, and store it in the program counter
-        mem.move(sp, "unsigned int", Memory.register.PC, "unsigned int");
+        mem.move(sp, "unsigned int",
+                 csthinker.machine.Memory.register.PC, "unsigned int");
 
         // Increment the stack pointer so it's pointing to the next in-use
         // location on the stack
-        sp += Memory.WORDSIZE;
+        sp += csthinker.machine.Memory.WORDSIZE;
 
         // Store the new value back into the stack pointer
         mem.setReg("SP", "unsigned int", sp);
@@ -687,256 +753,233 @@ var Instruction =
         throw new Error("Unrecognized function operation: " + op);
         break;
       }
-    }
-};
+    },
 
-/**
- * Assemble an instruction give its constituate parts
- *
- * @param opName {String}
- *   The name of the instruction which indictes the opcode to be assigned
- *
- * @param subcode {Number}
- *   The opcode-specific subcode of the instruction
- *
- * @param typeSrc {Number}
- *   The type index of the source argument of the instruction
- *
- * @param typeDest {Number}
- *   The type index of the destination argument of the instruction
- *
- * @param addr {Number}
- *   The address argument of the instruction
- *
- * @return {Number}
- *   The word to place in memory, containing the assembled instruction.
- */
-var assemble = function(opName, subcode, typeSrc, typeDest, addr)
-{
-  var             opcode;
-  var             instr;
-  
-  // Convert the opcode name to its actual opcode
-  opcode = nameToOpcode(opName);
-  
-  // Were we able to convert it?
-  if (typeof opcode == "undefined")
-  {
-    // Nope.
-    throw new Error("Unrecognized op name: " + opName);
-  }
-  
-  // The caller is encouraged to pass null for irrelevant arguments, to make
-  // it clear that they are unused. We'll convert them to zeros, here.
-  typeSrc  = typeSrc  || 0x00;
-  typeDest = typeDest || 0x00;
-  addr     = addr     || 0;
-  
-  // Combine all of the pieces into a complete instruction
-  instr = (((opcode & 0x07) << 29) |
-           ((subcode & 0x1f) << 24) |
-           ((typeSrc & 0x0f) << 20) |
-           ((typeDest & 0x0f) << 16) |
-           (addr & 0xffff)) >>> 0;
 
-  // Give 'em what they came for!
-  return instr;
-};
+    //////////////////////////////////////////////////////////////////////////
+    // Code generator functions
+    //////////////////////////////////////////////////////////////////////////
 
-/**
- * Assemble an instruction and write it to program memory.
- *
- * @param addrInfo {Map}
- *   A map containing a member "addr", which is the address to which the
- *   assembled instruction is to be written.
- *
- * @param line {Number}
- *   The source code line number from which this instruction derives
- *
- * @param destReg {String}
- *   The name of a register containing the address to which the instruction
- *   should be written
- *
- * @param opName {String}
- *   The name of the instruction which indictes the opcode to be assigned
- *
- * @param subcode {Number}
- *   The opcode-specific subcode of the instruction
- *
- * @param typeSrc {Number}
- *   The type index of the source argument of the instruction
- *
- * @param typeDest {Number}
- *   The type index of the destination argument of the instruction
- *
- * @param addr {Number}
- *   The address argument of the instruction
- */
-var write = function(addrInfo, line,
+    /**
+     * Assemble an instruction give its constituate parts
+     *
+     * @param opName {String}
+     *   The name of the instruction which indictes the opcode to be assigned
+     *
+     * @param subcode {Number}
+     *   The opcode-specific subcode of the instruction
+     *
+     * @param typeSrc {Number}
+     *   The type index of the source argument of the instruction
+     *
+     * @param typeDest {Number}
+     *   The type index of the destination argument of the instruction
+     *
+     * @param addr {Number}
+     *   The address argument of the instruction
+     *
+     * @return {Number}
+     *   The word to place in memory, containing the assembled instruction.
+     */
+    _assemble : function(opName, subcode, typeSrc, typeDest, addr)
+    {
+      var             opcode;
+      var             instr;
+
+      // Convert the opcode name to its actual opcode
+      opcode = csthinker.machine.Instruction.__nameToOpcode(opName);
+
+      // Were we able to convert it?
+      if (typeof opcode == "undefined")
+      {
+        // Nope.
+        throw new Error("Unrecognized op name: " + opName);
+      }
+
+      // The caller is encouraged to pass null for irrelevant arguments, to make
+      // it clear that they are unused. We'll convert them to zeros, here.
+      typeSrc  = typeSrc  || 0x00;
+      typeDest = typeDest || 0x00;
+      addr     = addr     || 0;
+
+      // Combine all of the pieces into a complete instruction
+      instr = (((opcode & 0x07) << 29) |
+               ((subcode & 0x1f) << 24) |
+               ((typeSrc & 0x0f) << 20) |
+               ((typeDest & 0x0f) << 16) |
+               (addr & 0xffff)) >>> 0;
+
+      // Give 'em what they came for!
+      return instr;
+    },
+
+    /**
+     * Assemble an instruction and write it to program memory.
+     *
+     * @param addrInfo {Map}
+     *   A map containing a member "addr", which is the address to which the
+     *   assembled instruction is to be written.
+     *
+     * @param line {Number}
+     *   The source code line number from which this instruction derives
+     *
+     * @param destReg {String}
+     *   The name of a register containing the address to which the instruction
+     *   should be written
+     *
+     * @param opName {String}
+     *   The name of the instruction which indictes the opcode to be assigned
+     *
+     * @param subcode {Number}
+     *   The opcode-specific subcode of the instruction
+     *
+     * @param typeSrc {Number}
+     *   The type index of the source argument of the instruction
+     *
+     * @param typeDest {Number}
+     *   The type index of the destination argument of the instruction
+     *
+     * @param addr {Number}
+     *   The address argument of the instruction
+     */
+    write : function(addrInfo, line,
                      opName, subcode, typeSrc, typeDest, addr,
                      data)
-{
-  var             instr;
-
-  // Assemble the instruction
-  instr = assemble(opName, subcode, typeSrc, typeDest, addr);
-
-  // We'll use register R3 to hold the instruction. Put the instruction there,
-  // and then move it to its requested address.
-  mem.setReg("R3", "unsigned int", instr);
-  mem.move(Memory.register.R3, "unsigned int", 
-           addrInfo.addr, "unsigned int", true);
-  
-  // Increment the instruction address to where the line number will go
-  addrInfo.addr += Memory.WORDSIZE;
-  
-  // Ensure we have an array (possibly empty) of extra data for this instruction
-  data = data || [];
-
-  // Write the debug information. The source code line number of this
-  // instruction goes in the lower 16 bits. Encode the number of words of
-  // extra data into the high-order three bits.
-  mem.setReg("R3", "unsigned int",
-             (((data.length << 29) | (line & 0xffff)) >>> 0));
-  mem.move(Memory.register.R3, "unsigned int",
-              addrInfo.addr, "unsigned int", 
-              true);
-  
-  // Increment to the next word
-  addrInfo.addr += Memory.WORDSIZE;
-
-  // Add any extra data after the debug information
-  data.forEach(
-    function(datum)
     {
-      // Write this piece of extra data
-      mem.setReg("R3", "unsigned int", datum);
-      mem.move(Memory.register.R3, "unsigned int",
+      var             instr;
+
+      // Assemble the instruction
+      instr = this._assemble(opName, subcode, typeSrc, typeDest, addr);
+
+      // We'll use register R3 to hold the instruction. Put the instruction
+      // there, and then move it to its requested address.
+      mem.setReg("R3", "unsigned int", instr);
+      mem.move(csthinker.machine.Memory.register.R3, "unsigned int", 
+               addrInfo.addr, "unsigned int", true);
+
+      // Increment the instruction address to where the line number will go
+      addrInfo.addr += csthinker.machine.Memory.WORDSIZE;
+
+      // Ensure we have an array (possibly empty) of extra data for this
+      // instruction
+      data = data || [];
+
+      // Write the debug information. The source code line number of this
+      // instruction goes in the lower 16 bits. Encode the number of words of
+      // extra data into the high-order three bits.
+      mem.setReg("R3", "unsigned int",
+                 (((data.length << 29) | (line & 0xffff)) >>> 0));
+      mem.move(csthinker.machine.Memory.register.R3, "unsigned int",
                   addrInfo.addr, "unsigned int", 
                   true);
 
       // Increment to the next word
-      addrInfo.addr += Memory.WORDSIZE;
-    });
-};
+      addrInfo.addr += csthinker.machine.Memory.WORDSIZE;
 
-var indexToType =
-  [
-    "char",
-    "unsigned char",
-    "short",
-    "unsigned short",
-    "int",
-    "unsigned int",
-    "long",
-    "unsigned long",
-    "long long",
-    "unsigned long long",
-    "float",
-    "double",
-    "pointer"
-  ];
+      // Add any extra data after the debug information
+      data.forEach(
+        function(datum)
+        {
+          // Write this piece of extra data
+          mem.setReg("R3", "unsigned int", datum);
+          mem.move(csthinker.machine.Memory.register.R3, "unsigned int",
+                      addrInfo.addr, "unsigned int", 
+                      true);
 
+          // Increment to the next word
+          addrInfo.addr += csthinker.machine.Memory.WORDSIZE;
+        });
+    },
+    
+    //////////////////////////////////////////////////////////////////////////
+    // Utility functions
+    //////////////////////////////////////////////////////////////////////////
 
-/**
- * Given two original operand types, determine the type to which to coerce
- * both operands.
- *
- * @param type1 {String}
- *   One of the C types (or "pointer")
- *
- * @param type2 {String}
- *   One of the C types (or "pointer")
- *
- * @return {String}
- *   The C type to which to coerce the operands of an operation between
- *   operands originally of type1 and type2.
- */
-var coerce = function(type1, type2)
-{
-  // First, test for the common and easy case: both types are already the same.
-  if (type1 == type2)
-  {
-    return type1;
-  }
+    /**
+     * Given two original operand types, determine the type to which to coerce
+     * both operands.
+     *
+     * @param type1 {String}
+     *   One of the C types (or "pointer")
+     *
+     * @param type2 {String}
+     *   One of the C types (or "pointer")
+     *
+     * @return {String}
+     *   The C type to which to coerce the operands of an operation between
+     *   operands originally of type1 and type2.
+     */
+    __coerce : function(type1, type2)
+    {
+      // First, test for the common and easy case: both types are already the
+      // same.
+      if (type1 == type2)
+      {
+        return type1;
+      }
 
-  // If one of the operands is double, then coerce to double
-  if (type1 == "double" || type2 == "double")
-  {
-    return "double";
-  }
+      // If one of the operands is double, then coerce to double
+      if (type1 == "double" || type2 == "double")
+      {
+        return "double";
+      }
 
-  // If one of the operands is float, then coerce to float
-  if (type1 == "float" || type2 == "float")
-  {
-    return "float";
-  }
+      // If one of the operands is float, then coerce to float
+      if (type1 == "float" || type2 == "float")
+      {
+        return "float";
+      }
+
+      // If one of the operands is unsigned long long, then coerce to
+      // unsigned long long.
+
+      if (type1 == "unsigned long long" || type2 == "unsigned long long")
+      {
+        return "unsigned long long";
+      }
+
+      // If one of the operands is unsigned long, then coerce to unsigned long.
+      if (type1 == "unsigned long" || type2 == "unsigned long")
+      {
+        return "unsigned long";
+      }
+
+      // If one of the operands is long, then coerce to long.
+      if (type1 == "long" || type2 == "long")
+      {
+        return "long";
+      }
+
+      // If one of the operands is unsigned int, then coerce to unsigned int.
+      if (type1 == "unsigned int" || type2 == "unsigned int")
+      {
+        return "unsigned int";
+      }
+
+      // In any other case, coerce to int.
+      return "int";
+    },
+
+    __cast : function(register, typeFrom, typeTo)
+    {
+      var value = mem.getReg(register, typeFrom);
+      mem.setReg(register, typeTo, value);
+    }
+  },
   
-  // If one of the operands is unsigned long long, then coerce to
-  // unsigned long long.
-
-  if (type1 == "unsigned long long" || type2 == "unsigned long long")
+  defer : function(statics)
   {
-    return "unsigned long long";
+    statics.processOpcode =
+      [
+        statics["binaryOp"],
+        statics["unaryOp"],
+        statics["jumpConditionally"],
+        statics["memory"],
+        statics["functionOp"],
+        null,
+        null,
+        null
+      ];
   }
-  
-  // If one of the operands is unsigned long, then coerce to unsigned long.
-  if (type1 == "unsigned long" || type2 == "unsigned long")
-  {
-    return "unsigned long";
-  }
-  
-  // If one of the operands is long, then coerce to long.
-  if (type1 == "long" || type2 == "long")
-  {
-    return "long";
-  }
-  
-  // If one of the operands is unsigned int, then coerce to unsigned int.
-  if (type1 == "unsigned int" || type2 == "unsigned int")
-  {
-    return "unsigned int";
-  }
-  
-  // In any other case, coerce to int.
-  return "int";
-};
+});
 
-
-var cast = function(register, typeFrom, typeTo)
-{
-  var value = mem.getReg(register, typeFrom);
-  mem.setReg(register, typeTo, value);
-};
-
-// There are only three bits for the opcode, so the maximum is 7.
-var nameToOpcode = function(name)
-{
-  return (
-  {
-    "binaryOp"           : 0,
-    "unaryOp"            : 1,
-    "jumpConditionally"  : 2,
-    "memory"             : 3,
-    "functionOp"         : 4
-//    "unused1"            : 5,
-//    "unused2"            : 6,
-//    "unused3"            : 7
-  }[name]);
-};
-
-exports.processOpcode =
-  [
-    Instruction["binaryOp"],
-    Instruction["unaryOp"],
-    Instruction["jumpConditionally"],
-    Instruction["memory"],
-    Instruction["functionOp"],
-    null,
-    null,
-    null
-  ];
-
-exports.nameToOpcode = nameToOpcode;
-exports.assemble = assemble;
-exports.write = write;

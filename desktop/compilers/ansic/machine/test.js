@@ -1,7 +1,13 @@
+var qx = require("qooxdoo");
 var sys = require("sys");
-var Memory = require("./Memory");
-var Instr = require("./Instruction");
-var Machine = require("./Machine");
+require("./Memory");
+require("./Instruction");
+require("./Machine");
+
+// Get quick access to classes
+var Memory = csthinker.machine.Memory;
+var Machine = csthinker.machine.Machine;
+var Instr = csthinker.machine.Instruction;
 
 // Get singleton instances
 var mem = Memory.getInstance();
