@@ -1,5 +1,5 @@
 /**
- * Opcodes (implemented as function calls) for this virtual machine
+ * Instructions (implemented as function calls) for this virtual machine
  *
  * Copyright (c) 2013 Derrell Lipman
  * 
@@ -9,6 +9,7 @@
 
 var sys = require("sys");
 var Memory = require("./Memory");
+
 var mem = Memory.getInstance();
 
 /*
@@ -83,11 +84,13 @@ var Instruction =
      */
     binaryOp : function(instruction, instrAddr)
     {
-      var             f;
       var             type1;
       var             type2;
       var             typeCoerceTo;
       var             binOp;
+      var             operand1;
+      var             operand2;
+      var             result;
       var             operations =
         [
           ">>",                 // 0
@@ -114,8 +117,8 @@ var Instruction =
       binOp = operations[(instruction >>> 24) & 0x1f];
       
       // Extract the types of the two operands
-      type1  = indexToType((instruction >>> 20) & 0x0f);
-      type2 = indexToType((instruction >>> 16) & 0x0f);
+      type1  = indexToType[(instruction >>> 20) & 0x0f];
+      type2 = indexToType[(instruction >>> 16) & 0x0f];
       
       // Certain binary operations require that both arguments be unsigned
       // integral types.  (ISO/IEC 9899:TC2 section 6.5(4))
@@ -144,7 +147,7 @@ var Instruction =
       }
 
       // Calculate the type to which both operands should be implicitly cast
-      typeCoerceTo = coerse(type1, type2);
+      typeCoerceTo = coerce(type1, type2);
       
       // If the source is not already of the coerce-to type...
       if (type1 != typeCoerceTo)
@@ -160,15 +163,90 @@ var Instruction =
         cast("R2", type2, typeCoerceTo);
       }
 
-      // Create a funciton that will calculate the result
-      f = new Function(
-        "return " +
-          "mem.getReg('R1', type1) " + 
-          binOp +
-          " mem.getReg('R2', type2)");
-      
-      // Call that function, and store the result back into register R1.
-      mem.setReg('R1', typeCoerceTo, f());
+      // Retrieve the two operands
+      operand1 = mem.getReg('R1', type1);
+      operand2 = mem.getReg('R2', type2);
+
+      switch(binOp)
+      {
+      case ">>" :
+        result = operand1 >> operand2;
+        break;
+        
+      case "<<" :
+        result = operand1 << operand2;
+        break;
+        
+      case "&&" :
+        result = operand1 && operand2;
+        break;
+        
+      case "||" :
+        result = operand1 || operand2;
+        break;
+        
+      case "<" :
+        result = operand1 < operand2;
+        break;
+        
+      case "<=" :
+        result = operand1 <= operand2;
+        break;
+        
+      case "==" :
+        result = operand1 == operand2;
+        break;
+        
+      case "!=" :
+        result = operand1 != operand2;
+        break;
+        
+      case ">=" :
+        result = operand1 >= operand2;
+        break;
+        
+      case ">" :
+        result = operand1 > operand2;
+        break;
+        
+      case "&" :
+        result = operand1 & operand2;
+        break;
+        
+      case "|" :
+        result = operand1 | operand2;
+        break;
+        
+      case "^" :
+        result = operand1 ^ operand2;
+        break;
+        
+      case "+" :
+        result = operand1 + operand2;
+        break;
+        
+      case "-" :
+        result = operand1 - operand2;
+        break;
+        
+      case "*" :
+        result = operand1 * operand2;
+        break;
+        
+      case "/" :
+        result = operand1 / operand2;
+        break;
+        
+      case "%" :
+        result = operand1 % operand2;
+        break;
+        
+      default :
+        throw new Error("Unrecognized binary operator: " + binOp);
+      }
+
+      // Store the result back into register R1.
+      mem.setReg('R1', typeCoerceTo, result);
     },
 
     /**
@@ -339,6 +417,13 @@ var Instruction =
       {
       case 0 :                  // jump unconditionally
         // Nothing special to do
+        
+        // TEMPORARY: If the jump-to address is 0xffff, throw an error to exit
+        // the program.
+        if (addr === 0xffff)
+        {
+          throw new Error("Normal program exit.");
+        }
         break;
         
       case 1 :                  // R1 must be true to jump
@@ -647,20 +732,12 @@ var assemble = function(opName, subcode, typeSrc, typeDest, addr)
   typeDest = typeDest || 0x00;
   addr     = addr     || 0;
   
-  sys.print("opcode=" + opcode.toString(2) + "\n" +
-            "subcode=" + subcode.toString(2) + "\n" +
-            "typeSrc=" + typeSrc.toString(2) + "\n" +
-            "typeDest=" + typeDest.toString(2) + "\n" +
-            "addr=" + addr.toString(2) + "\n");
-
   // Combine all of the pieces into a complete instruction
   instr = (((opcode & 0x07) << 29) |
            ((subcode & 0x1f) << 24) |
            ((typeSrc & 0x0f) << 20) |
            ((typeDest & 0x0f) << 16) |
            (addr & 0xffff)) >>> 0;
-  
-  sys.print("Returning " + instr.toString(2) + "\n\n");
 
   // Give 'em what they came for!
   return instr;
@@ -725,18 +802,21 @@ var write = function(addrInfo, line,
               addrInfo.addr, "unsigned int", 
               true);
   
+  // Increment to the next word
+  addrInfo.addr += Memory.WORDSIZE;
+
   // Add any extra data after the debug information
   data.forEach(
     function(datum)
     {
-      // Increment to the next word
-      addrInfo.addr += Memory.WORDSIZE;
-      
       // Write this piece of extra data
       mem.setReg("R3", "unsigned int", datum);
       mem.move(Memory.register.R3, "unsigned int",
                   addrInfo.addr, "unsigned int", 
                   true);
+
+      // Increment to the next word
+      addrInfo.addr += Memory.WORDSIZE;
     });
 }
 
@@ -850,10 +930,11 @@ exports.processOpcode =
     Instruction["binaryOp"],
     Instruction["unaryOp"],
     Instruction["jumpConditionally"],
-    Instruction["push"],
-    Instruction["popAndStore"],
-    Instruction["callFunction"],
-    Instruction["returnFromFunction"]
+    Instruction["memory"],
+    Instruction["functionOp"],
+    null,
+    null,
+    null
   ];
 
 exports.nameToOpcode = nameToOpcode;

@@ -8,13 +8,30 @@
  */
 
 var sys = require("sys");
-var DataValue = require("./DataValue");
+
+// Create a map of number sizes
+var typeSize =
+  {
+    "char"               : 1,
+    "unsigned char"      : 1,
+    "short"              : 2,
+    "unsigned short"     : 2,
+    "int"                : 4,
+    "unsigned int"       : 4,
+    "long"               : 4,
+    "unsigned long"      : 4,
+    "long long"          : 4,
+    "unsigned long long" : 4,
+    "float"              : 4,
+    "double"             : 4,
+    "pointer"            : 2
+  };
 
 // The number of registers
 var NUM_REGS = 6;
 
 // The size of one word
-var WORDSIZE = DataValue.size["int"];
+var WORDSIZE = typeSize["int"];
 
 var info =
   {
@@ -89,15 +106,48 @@ function Memory()
 //    uint8Arr[i] = Math.floor(Math.random() * 256);
     uint8Arr[i] = 0xa5;
   }
-  
-  // Initialize the registers
-  this.setReg("PC", "unsigned int", 0); // Begin executing at address 0
-  this.setReg("SP", "unsigned int", info.rts.start + info.rts.length);
-  this.setReg("FP", "unsigned int", info.rts.start + info.rts.length);
 }
 
 /**
+ * Retrieve a value directly from memory. It is converted to the requested
+ * type.
  *
+ * @param addr {Number}
+ *   The address from which the value should be retrieved
+ *
+ * @param type {String}
+ *   The C type with which the data at the source address should be
+ *   interpreted.
+ *
+ * @return {Number}
+ *   The value retrieved from memory, converted to the specified type.
+ */
+Memory.prototype.get = function(addr, type)
+{
+  // Get an appropriate view into the memory, based on the type, and return
+  // that value.
+  return this._getByType(type, addr)[0];
+};
+
+/**
+ * Move data from one address to another.
+ *
+ * @param addrSrc {Number}
+ *   The source address
+ *
+ * @param typeSrc {String}
+ *   The C type with which the data at the source address should be
+ *   interpreted.
+ *
+ * @param addrDest {Number}
+ *   The destination address
+ *
+ * @param typeDest {String}
+ *   The C type to assume when writing the data to the destination address
+ *
+ * @param bForce {Boolean}
+ *   Allow writing to Instruction memory. All error checking is disabled, so
+ *   caller beware.
  */
 Memory.prototype.move = function(addrSrc, typeSrc,
                                  addrDest, typeDest,
@@ -110,38 +160,22 @@ Memory.prototype.move = function(addrSrc, typeSrc,
   var             sizeDest;
 
   // Determine size to be moved
-  sizeSrc = DataValue.size[typeSrc];
-  sizeDest = DataValue.size[typeDest];
-
+  sizeSrc = typeSize[typeSrc];
+  sizeDest = typeSize[typeDest];
+  
   // Forcing is for internal writes to code space, when we really, really know
   // exactly what we're doing. It bypasses all of the error checks.
   if (! bForce)
   {
-    // Ensure that access is from the correct region of memory
-    if (! (addrSrc >= info.reg.start  && 
-           addrSrc < info.reg.start + info.reg.length) ||
-          (addrSrc >= info.gas.start && 
-           addrSrc < info.gas.start + info.gas.length) ||
-          (addrSrc >= info.heap.start && 
-           addrSrc < info.heap.start + info.heap.length) ||
-          (addrSrc >= info.rts.start &&
-           addrSrc < info.rts.start  + info.rts.length))
-    {
-      throw new Error("Invalid memory access at " + addrDest + ": " +
-                      "ASSIGN FROM address is not within the " +
-                      "'globals and statics', 'heap', or " +
-                      "'run time stack' regions of memory.");
-    }
-
-    // Ensure that access is to the correct region of memory
-    if (! (addrDest >= info.reg.start  && 
-           addrDest < info.reg.start + info.reg.length) ||
-          (addrDest >= info.gas.start && 
-           addrDest < info.gas.start + info.gas.length) ||
-          (addrDest >= info.heap.start && 
-           addrDest < info.heap.start + info.heap.length) ||
-          (addrDest >= info.rts.start &&
-           addrDest < info.rts.start  + info.rts.length))
+    // Ensure we are writing to a valid region of memory
+    if (! ((addrDest >= info.reg.start  && 
+            addrDest < info.reg.start + info.reg.length) ||
+           (addrDest >= info.gas.start && 
+            addrDest < info.gas.start + info.gas.length) ||
+           (addrDest >= info.heap.start && 
+            addrDest < info.heap.start + info.heap.length) ||
+           (addrDest >= info.rts.start &&
+            addrDest < info.rts.start  + info.rts.length)))
     {
       throw new Error("Invalid memory access at " + addrDest + ": " +
                       "ASSIGN TO address is not within the " +
@@ -273,35 +307,57 @@ Memory.prototype._getByType = function(type, addr)
 {
   switch(type)
   {
+  case 0x00 :
   case "char" :
     return new Int8Array(this._memory, addr, 1);
 
+  case 0x01 :
   case "unsigned char" :
     return new Uint8Array(this._memory, addr, 1);
 
+  case 0x02 :
   case "short" :
     return new Int16Array(this._memory, addr, 1);
 
+  case 0x03 :
   case "unsigned short" :
     return new Unt16Array(this._memory, addr, 1);
 
+  case 0x04 :
   case "int" :
     return new Int32Array(this._memory, addr, 1);
 
+  case 0x05 :
   case "unsigned int" :
     return new Uint32Array(this._memory, addr, 1);
 
+  case 0x06 :
   case "long" :
+    return new Int32Array(this._memory, addr, 1);
+    
+  case 0x07 :
+  case "unsigned long" :
+    return new Uint32Array(this._memory, addr, 1);
+    
+  case 0x08 :
   case "long long" :
     return new Int32Array(this._memory, addr, 1);
 
-  case "unsigned long" :
+  case 0x09 :
   case "unsigned long long" :
     return new Uint32Array(this._memory, addr, 1);
 
+  case 0x0A :
   case "float" :
+    return new Float32Array(this._memory, addr, 1);
+    
+  case 0x0B :
   case "double" :
     return new Float32Array(this._memory, addr, 1);
+
+  case 0x0C :
+  case "pointer" :
+    return new Uint32Array(this._memory, addr, 1);
 
   default:
     throw new Error("Unrecognized destination type: " + type);
@@ -374,7 +430,7 @@ Memory.prototype.prettyPrint = function(message, startAddr, length)
 
 
 
-// Export the constructor and information object
+// This is a singleton. Export its getInstance() method.
 var singleton;
 exports.getInstance = function()
 {
