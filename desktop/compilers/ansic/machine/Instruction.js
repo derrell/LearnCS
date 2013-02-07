@@ -421,7 +421,6 @@ qx.Class.define("learncs.machine.Instruction",
       case 0:                   // ~
         // Ensure that the operand is of a legal type. It must be an unsigned
         // integer type. (ISO/IEC 9899:TC2 section 6.5(4)
-sys.print("typeSrc=" + typeSrc + "\n");
         if (typeSrc.match(/^unsigned /) === null)
         {
           throw new Error("Illegal operand for ~ operation. " +

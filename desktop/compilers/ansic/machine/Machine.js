@@ -24,20 +24,28 @@ qx.Class.define("learncs.machine.Machine",
 
   construct : function()
   {
-    // Initialize the registers
-    mem.setReg("PC", 
-               "unsigned int",
-               0);
-    mem.setReg("SP", 
-               "unsigned int",
-               Memory.info.rts.start + Memory.info.rts.length);
-    mem.setReg("FP", 
-               "unsigned int",
-               Memory.info.rts.start + Memory.info.rts.length);
+    this.base(arguments);
+
+    // Initialize the machine
+    this.initAll();
   },
   
   members :
   {
+    initAll : function()
+    {
+      // Initialize the registers
+      mem.setReg("PC", 
+                 "unsigned int",
+                 0);
+      mem.setReg("SP", 
+                 "unsigned int",
+                 Memory.info.rts.start + Memory.info.rts.length);
+      mem.setReg("FP", 
+                 "unsigned int",
+                 Memory.info.rts.start + Memory.info.rts.length);
+    },
+
     /**
      * Execute a program in virtual memory.
      * 

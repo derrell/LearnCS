@@ -25,6 +25,10 @@ qx.Class.define("Tester",
         return (Memory.info.gas.start + (Memory.WORDSIZE * index));
       };
 
+      // Reinitialize the machine and memory
+      learncs.machine.Memory.getInstance().initAll();
+      learncs.machine.Machine.getInstance().initAll();
+
       // Initialize address info. It is updated by Instr.write()
       addrInfo =
         {

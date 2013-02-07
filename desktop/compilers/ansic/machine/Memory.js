@@ -20,27 +20,10 @@ qx.Class.define("learncs.machine.Memory",
    */
   construct : function()
   {
-    var             i;
-    var             memSize;
-    var             uint8Arr;
+    this.base(arguments);
 
-    // Ascertain the size of memory
-    memSize = 
-      learncs.machine.Memory.info.rts.start + 
-      learncs.machine.Memory.info.rts.length;
-
-    // Our simulated machine's memory
-    this._memory = new ArrayBuffer(memSize);
-
-    // Access the memory array as unsigned chars (octets)
-    uint8Arr = new Uint8Array(this._memory);
-
-    // Initialize the memory with random data
-    for (i = 0; i < memSize; i++)
-    {
-  //    uint8Arr[i] = Math.floor(Math.random() * 256);
-      uint8Arr[i] = 0xa5;
-    }
+    // Initialize memory
+    this.initAll();
   },
   
   statics :
@@ -120,6 +103,31 @@ qx.Class.define("learncs.machine.Memory",
   
   members :
   {
+    initAll : function()
+    {
+      var             i;
+      var             memSize;
+      var             uint8Arr;
+
+      // Ascertain the size of memory
+      memSize = 
+        learncs.machine.Memory.info.rts.start + 
+        learncs.machine.Memory.info.rts.length;
+
+      // Our simulated machine's memory
+      this._memory = new ArrayBuffer(memSize);
+
+      // Access the memory array as unsigned chars (octets)
+      uint8Arr = new Uint8Array(this._memory);
+
+      // Initialize the memory with random data
+      for (i = 0; i < memSize; i++)
+      {
+    //    uint8Arr[i] = Math.floor(Math.random() * 256);
+        uint8Arr[i] = 0xa5;
+      }
+    },
+
     /**
      * Retrieve an accessor to typed value from memory
      *
@@ -279,19 +287,19 @@ qx.Class.define("learncs.machine.Memory",
         // Ensure that the access remains in one region of memory
         if ((addrSrc >= info.reg.start  && 
              addrSrc < info.reg.start + WORDSIZE &&
-             addrSrc + sizeSrc >= info.reg.start + WORDSIZE) ||
+             addrSrc + sizeSrc > info.reg.start + WORDSIZE) ||
 
             (addrSrc >= info.gas.start && 
              addrSrc < info.gas.start + info.gas.length &&
-             addrSrc + sizeSrc >= info.gas.start + info.gas.length) ||
+             addrSrc + sizeSrc > info.gas.start + info.gas.length) ||
 
             (addrSrc >= info.heap.start && 
              addrSrc < info.heap.start + info.heap.length &&
-             addrSrc + sizeSrc >= info.heap.start + info.heap.length) ||
+             addrSrc + sizeSrc > info.heap.start + info.heap.length) ||
 
             (addrSrc >= info.rts.start &&
              addrSrc < info.rts.start  + info.rts.length &&
-             addrSrc + sizeSrc >= info.rts.start + info.rts.length))
+             addrSrc + sizeSrc > info.rts.start + info.rts.length))
         {
           throw new Error("Invalid memory access at " + addrSrc + ": " +
                           "Size of object being assigned causes a " +
@@ -303,19 +311,19 @@ qx.Class.define("learncs.machine.Memory",
         // Ensure that the access remains in one region of memory
         if ((addrDest >= info.reg.start  && 
              addrDest < info.reg.start + WORDSIZE &&
-             addrDest + sizeDest >= info.reg.start + WORDSIZE) ||
+             addrDest + sizeDest > info.reg.start + WORDSIZE) ||
 
             (addrDest >= info.gas.start && 
              addrDest < info.gas.start + info.gas.length &&
-             addrDest + sizeDest >= info.gas.start + info.gas.length) ||
+             addrDest + sizeDest > info.gas.start + info.gas.length) ||
 
             (addrDest >= info.heap.start && 
              addrDest < info.heap.start + info.heap.length &&
-             addrDest + sizeDest >= info.heap.start + info.heap.length) ||
+             addrDest + sizeDest > info.heap.start + info.heap.length) ||
 
             (addrDest >= info.rts.start &&
              addrDest < info.rts.start  + info.rts.length &&
-             addrDest + sizeDest >= info.rts.start + info.rts.length))
+             addrDest + sizeDest > info.rts.start + info.rts.length))
         {
           throw new Error("Invalid memory access at " + addrDest + ": " +
                           "Size of object being assigned to causes a " +
