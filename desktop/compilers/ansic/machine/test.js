@@ -45,50 +45,6 @@ var program =
 program.forEach(
   function(instr, line)
   {
-/*
-    var             args;
-    var             pseudoop;
-    var             op;
-    var             data;
-    
-    // Make a copy of the program line, so we can prepend and append arguments
-    args = instr.split(" ");
-    
-    // If there's an address provided...
-    if (args.length > 3)
-    {
-      // ... then evaluate it. It may be a function call.
-      if (! args[3].match(/^WORD[(]|[0-9]/))
-      {
-        throw new Error("Line " + line + ": " +
-                        "Illegal address specified (" + instr + ")");
-      }
-      args[3] = eval(args[3]);
-    }
-    
-    // Convert any arguments after the address into a data array, remove those
-    // elements from the arguments array, and then add the data array onto the
-    // end of the arguments.
-    if (args.length > 4)
-    {
-      data = args.slice(4);
-      args = args.slice(0, 4);
-      args.push(data);
-    }
-    
-    // Prepend the line number and the address info reference
-    args.unshift(line);
-    args.unshift(addrInfo);
-    
-    // Append nulls to fill in the required arguments to Instr.write()
-    while (args.length < 7)
-    {
-      args.push(null);
-    }
-    
-    // Assemble this instruction
-    Instr.write.apply(Instr, args);
-*/
     Instr.write(instr, addrInfo, line);
   });
 
