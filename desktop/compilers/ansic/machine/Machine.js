@@ -95,7 +95,7 @@ qx.Class.define("learncs.machine.Machine",
       {
         if (e.toString().match(/Normal program exit/))
         {
-          sys.print("Normal program exit.\n");
+//          sys.print("Exit code: " + mem.getReg("R1", "unsigned char") + "\n");
         }
         else
         {

@@ -1,0 +1,54 @@
+var qx = require("qooxdoo");
+var sys = require("sys");
+require("./Memory");
+require("./Instruction");
+require("./Machine");
+
+qx.Class.define("Tester",
+{
+  extend : qx.core.Object,
+  
+  statics :
+  {
+    test : function(program, testSuccess)
+    {
+      var name;
+      var Memory = learncs.machine.Memory;
+      var Machine = learncs.machine.Machine;
+      var Instr = learncs.machine.Instruction;
+      var mem = Memory.getInstance();
+      var machine = Machine.getInstance();
+      var addrInfo;
+      var GLOBAL = function(index)
+      {
+        return (Memory.info.gas.start + (Memory.WORDSIZE * index));
+      };
+
+      // Initialize address info. It is updated by Instr.write()
+      addrInfo =
+        {
+          addr : 0
+        };
+
+      // Assemble the program
+      program.forEach(
+        function(instr, line)
+        {
+          // The first line of the program is its name
+          if (! name)
+          {
+            name = instr;
+            return;
+          }
+          Instr.write(instr, addrInfo, line);
+        });
+
+      // Run the program, beginning at address zero
+      machine.execute(0);
+
+      // Display success or failure
+      console.log(name + ": " +
+                  (testSuccess(mem, GLOBAL) ? "passed" : "FAILED"));
+    }
+  }
+});

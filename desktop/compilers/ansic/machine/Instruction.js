@@ -938,7 +938,8 @@ qx.Class.define("learncs.machine.Instruction",
       var             op;
       var             Memory = learncs.machine.Memory;
 
-      var WORD = function(index)
+      // Function to retrieve a word address in the globals&statics area
+      var GLOBAL = function(index)
       {
         return (Memory.info.gas.start + (Memory.WORDSIZE * index));
       };
@@ -950,7 +951,7 @@ qx.Class.define("learncs.machine.Instruction",
       if (args.length > 3)
       {
         // ... then evaluate it. It may be a function call.
-        if (! args[3].match(/^WORD[(]|[0-9]/))
+        if (! args[3].match(/^GLOBAL[(]|[0-9]/))
         {
           throw new Error("Line " + line + ": " +
                           "Illegal address specified (" + instr + ")");
@@ -973,8 +974,6 @@ qx.Class.define("learncs.machine.Instruction",
       typeSrc = (typeof args[1] == "undefined" ? null : args[1]);
       typeDest = (typeof args[2] == "undefined" ? null : args[2]);
       addr = (typeof args[3] == "undefined" ? null : args[3]);
-
-sys.print("write(" + opName + ", " + typeSrc + ", " + typeDest + ", " + addr + ", [ " + (data ? data.join(", ") : "") + " ])\n");
 
       // Assemble the instruction
       instr = this._assemble(opName, typeSrc, typeDest, addr);

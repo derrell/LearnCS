@@ -143,6 +143,7 @@ qx.Class.define("learncs.machine.Memory",
 
       case 0x01 :
       case "unsigned char" :
+      case "uchar" :
         return new Uint8Array(this._memory, addr, 1);
 
       case 0x02 :
@@ -151,6 +152,7 @@ qx.Class.define("learncs.machine.Memory",
 
       case 0x03 :
       case "unsigned short" :
+      case "ushort" :
         return new Unt16Array(this._memory, addr, 1);
 
       case 0x04 :
@@ -159,6 +161,7 @@ qx.Class.define("learncs.machine.Memory",
 
       case 0x05 :
       case "unsigned int" :
+      case "uint" :
         return new Uint32Array(this._memory, addr, 1);
 
       case 0x06 :
@@ -167,14 +170,18 @@ qx.Class.define("learncs.machine.Memory",
 
       case 0x07 :
       case "unsigned long" :
+      case "ulong" :
+      case "null" :
         return new Uint32Array(this._memory, addr, 1);
 
       case 0x08 :
       case "long long" :
+      case "llong" :
         return new Int32Array(this._memory, addr, 1);
 
       case 0x09 :
       case "unsigned long long" :
+      case "ullong" :
         return new Uint32Array(this._memory, addr, 1);
 
       case 0x0A :
