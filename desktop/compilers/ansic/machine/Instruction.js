@@ -786,9 +786,6 @@ qx.Class.define("learncs.machine.Instruction",
      * @param opName {String}
      *   The name of the instruction which indictes the opcode to be assigned
      *
-     * @param subcode {Number}
-     *   The opcode-specific subcode of the instruction
-     *
      * @param typeSrc {Number}
      *   The type index of the source argument of the instruction
      *
@@ -801,20 +798,64 @@ qx.Class.define("learncs.machine.Instruction",
      * @return {Number}
      *   The word to place in memory, containing the assembled instruction.
      */
-    _assemble : function(opName, subcode, typeSrc, typeDest, addr)
+    _assemble : function(opName, typeSrc, typeDest, addr)
     {
+      var             op;
       var             opcode;
+      var             subcode;
       var             instr;
+      var             pseudoops =
+        {
+          ">>"   : [ "binaryOp", 0x00 ],
+          "<<"   : [ "binaryOp", 0x01 ],
+          "&&"   : [ "binaryOp", 0x02 ],
+          "||"   : [ "binaryOp", 0x03 ],
+          ">"    : [ "binaryOp", 0x04 ],
+          "<="   : [ "binaryOp", 0x05 ],
+          "=="   : [ "binaryOp", 0x06 ],
+          "!="   : [ "binaryOp", 0x07 ],
+          ">="   : [ "binaryOp", 0x08 ],
+          ">"    : [ "binaryOp", 0x09 ],
+          "&"    : [ "binaryOp", 0x0A ],
+          "|"    : [ "binaryOp", 0x0B ],
+          "^"    : [ "binaryOp", 0x0C ],
+          "+"    : [ "binaryOp", 0x0D ],
+          "-"    : [ "binaryOp", 0x0E ],
+          "*"    : [ "binaryOp", 0x0F ],
+          "/"    : [ "binaryOp", 0x10 ],
+          "%"    : [ "binaryOp", 0x11 ],
 
-      // Convert the opcode name to its actual opcode
-      opcode = learncs.machine.Instruction.__nameToOpcode(opName);
+          "~"    : [ "unaryOp", 0x00 ],
+          "!"    : [ "unaryOp", 0x01 ],
+          "cast" : [ "unaryOp", 0x02 ],
+          "test" : [ "unaryOp", 0x03 ],
 
-      // Were we able to convert it?
-      if (typeof opcode == "undefined")
+          "jump" : [ "jumpConditionally", 0x00 ],
+          "jit"  : [ "jumpConditionally", 0x01 ],
+
+          "put"  : [ "memory", 0x00 ],
+          "puti" : [ "memory", 0x01 ],
+          "get"  : [ "memory", 0x02 ],
+          "push" : [ "memory", 0x03 ],
+          "pop"  : [ "memory", 0x04 ],
+          "swap" : [ "memory", 0x05 ],
+
+          "call" : [ "functionOp", 0x00 ],
+          "ret"  : [ "functionOp", 0x01 ]
+        };
+
+      // Convert the pseudo operation into its opcode and subcode parts
+      op = pseudoops[opName];
+
+      // Ensure it exists
+      if (typeof op == "undefined")
       {
-        // Nope.
-        throw new Error("Unrecognized op name: " + opName);
+        throw new Error("Unrecognized op name");
       }
+
+      // Convert the opcode name to its actual opcode, and retrieve the subcode
+      opcode = learncs.machine.Instruction.__nameToOpcode(op[0]);
+      subcode = op[1];
 
       // If we're given string type names, convert them to indexes
       if (typeof typeSrc == "string")
@@ -869,9 +910,6 @@ qx.Class.define("learncs.machine.Instruction",
      * @param opName {String}
      *   The name of the instruction which indictes the opcode to be assigned
      *
-     * @param subcode {Number}
-     *   The opcode-specific subcode of the instruction
-     *
      * @param typeSrc {Number}
      *   The type index of the source argument of the instruction
      *
@@ -882,15 +920,15 @@ qx.Class.define("learncs.machine.Instruction",
      *   The address argument of the instruction
      */
     write : function(addrInfo, line,
-                     opName, subcode, typeSrc, typeDest, addr,
+                     opName, typeSrc, typeDest, addr,
                      data)
     {
       var             instr;
 
-sys.print("write(" + opName + ", " + subcode + ", " + typeSrc + ", " + typeDest + ", " + addr + ", [ " + (data ? data.join(", ") : "") + " ]\n");
+sys.print("write(" + opName + ", " + typeSrc + ", " + typeDest + ", " + addr + ", [ " + (data ? data.join(", ") : "") + " ]\n");
 
       // Assemble the instruction
-      instr = this._assemble(opName, subcode, typeSrc, typeDest, addr);
+      instr = this._assemble(opName, typeSrc, typeDest, addr);
 
       // We'll use register R3 to hold the instruction. Put the instruction
       // there, and then move it to its requested address.
