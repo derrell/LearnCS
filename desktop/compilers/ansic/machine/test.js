@@ -30,41 +30,51 @@ function WORD(index)
 
 var program =
   [
-    // Assign 8 to the first word in the globals&statics area
-    [ "puti", "unsigned int", null, WORD(0), [ 8 ] ],
-    
-    // Assign 9 to the second word in the globals&statics area
-    [ "puti", "unsigned int", null, WORD(1), [ 9 ] ],
-    
-    // Get the second word of globals&statics area into register R1
-    [ "get", "unsigned int", "unsigned int", WORD(1)],
-
-    // Swap R1 into R2
-    [ "swap", "unsigned int" ],
-    
-    // Get the first word from globals&statics into register R1
-    [ "get", "unsigned int", "unsigned int", WORD(0) ],
-    
-    // Add the values in R1 and R2, storing the result back into R1
-    [ "+", "unsigned int", "unsigned int" ],
-    
-    // Store the result of the add into the third word of globals&statics
-    [ "put", "unsigned int", "unsigned int", WORD(2) ],
-    
-    // Exit the program by jumping (unconditional) to adrress 0xffff
-    [ "jump", null, null, 0xffff ]
+    "puti uint null WORD(0) 8", // assign 8 to word 0
+    "puti uint null WORD(1) 9", // assign 9 to word 1
+    "get uint uint WORD(1)",    // retrieve word 1 into R1
+    "swap uint",                // swap R1 into R2
+    "get uint uint WORD(0)",    // retrieve word 0 into R1
+    "+ uint uint",              // R1 = R1 + R2
+    "put uint uint WORD(2)",    // write R1 to word 2
+    "jump null null 0xffff"     // exit
   ];
+
 
 // Assemble the program
 program.forEach(
   function(instr, line)
   {
+/*
     var             args;
     var             pseudoop;
     var             op;
+    var             data;
     
     // Make a copy of the program line, so we can prepend and append arguments
-    args = instr.slice(0);
+    args = instr.split(" ");
+    
+    // If there's an address provided...
+    if (args.length > 3)
+    {
+      // ... then evaluate it. It may be a function call.
+      if (! args[3].match(/^WORD[(]|[0-9]/))
+      {
+        throw new Error("Line " + line + ": " +
+                        "Illegal address specified (" + instr + ")");
+      }
+      args[3] = eval(args[3]);
+    }
+    
+    // Convert any arguments after the address into a data array, remove those
+    // elements from the arguments array, and then add the data array onto the
+    // end of the arguments.
+    if (args.length > 4)
+    {
+      data = args.slice(4);
+      args = args.slice(0, 4);
+      args.push(data);
+    }
     
     // Prepend the line number and the address info reference
     args.unshift(line);
@@ -78,6 +88,8 @@ program.forEach(
     
     // Assemble this instruction
     Instr.write.apply(Instr, args);
+*/
+    Instr.write(instr, addrInfo, line);
   });
 
 

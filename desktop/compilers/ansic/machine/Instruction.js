@@ -62,17 +62,36 @@ qx.Class.define("learncs.machine.Instruction",
     __typeToIndex :
       {
         "char"               : 0,
+
         "unsigned char"      : 1,
+        "uchar"              : 1,
+
         "short"              : 2,
+
         "unsigned short"     : 3,
+        "ushort"             : 3,
+
         "int"                : 4,
+
         "unsigned int"       : 5,
+        "uint"               : 5,
+        "null"               : 5, // assume unsigned int for any unspecified
+
         "long"               : 6,
+
         "unsigned long"      : 7,
+        "ulong"              : 7,
+
         "long long"          : 8,
+        "llong"              : 8,
+
         "unsigned long long" : 9,
+        "ullong"             : 9,
+
         "float"              : 10,
+
         "double"             : 11,
+
         "pointer"            : 12
       },
 
@@ -896,36 +915,66 @@ qx.Class.define("learncs.machine.Instruction",
     /**
      * Assemble an instruction and write it to program memory.
      *
+     * @param instruction {String}
+     *   A text description of the instruction to be assembled and written
+     *
      * @param addrInfo {Map}
      *   A map containing a member "addr", which is the address to which the
      *   assembled instruction is to be written.
      *
      * @param line {Number}
      *   The source code line number from which this instruction derives
-     *
-     * @param destReg {String}
-     *   The name of a register containing the address to which the instruction
-     *   should be written
-     *
-     * @param opName {String}
-     *   The name of the instruction which indictes the opcode to be assigned
-     *
-     * @param typeSrc {Number}
-     *   The type index of the source argument of the instruction
-     *
-     * @param typeDest {Number}
-     *   The type index of the destination argument of the instruction
-     *
-     * @param addr {Number}
-     *   The address argument of the instruction
      */
-    write : function(addrInfo, line,
-                     opName, typeSrc, typeDest, addr,
-                     data)
+    write : function(instruction, addrInfo, line)
     {
       var             instr;
+      var             opName;
+      var             typeSrc;
+      var             typeDest;
+      var             addr;
+      var             data;
+      var             args;
+      var             pseudoop;
+      var             op;
+      var             Memory = learncs.machine.Memory;
 
-sys.print("write(" + opName + ", " + typeSrc + ", " + typeDest + ", " + addr + ", [ " + (data ? data.join(", ") : "") + " ]\n");
+      var WORD = function(index)
+      {
+        return (Memory.info.gas.start + (Memory.WORDSIZE * index));
+      };
+      
+      // Make a copy of the program line, so we can prepend and append arguments
+      args = instruction.split(" ");
+
+      // If there's an address provided...
+      if (args.length > 3)
+      {
+        // ... then evaluate it. It may be a function call.
+        if (! args[3].match(/^WORD[(]|[0-9]/))
+        {
+          throw new Error("Line " + line + ": " +
+                          "Illegal address specified (" + instr + ")");
+        }
+        args[3] = eval(args[3]);
+      }
+
+      // Convert any arguments after the address into a data array, remove those
+      // elements from the arguments array, and then add the data array onto the
+      // end of the arguments.
+      if (args.length > 4)
+      {
+        data = args.slice(4);
+        args = args.slice(0, 4);
+        args.push(data);
+      }
+
+      // Retrieve the individual arguments
+      opName = args[0];
+      typeSrc = (typeof args[1] == "undefined" ? null : args[1]);
+      typeDest = (typeof args[2] == "undefined" ? null : args[2]);
+      addr = (typeof args[3] == "undefined" ? null : args[3]);
+
+sys.print("write(" + opName + ", " + typeSrc + ", " + typeDest + ", " + addr + ", [ " + (data ? data.join(", ") : "") + " ])\n");
 
       // Assemble the instruction
       instr = this._assemble(opName, typeSrc, typeDest, addr);
