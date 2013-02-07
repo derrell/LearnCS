@@ -10,7 +10,7 @@
 var qx = require("qooxdoo");
 var sys = require("sys");
 
-qx.Class.define("csthinker.machine.Memory",
+qx.Class.define("learncs.machine.Memory",
 {
   type      : "singleton",
   extend    : qx.core.Object,
@@ -26,8 +26,8 @@ qx.Class.define("csthinker.machine.Memory",
 
     // Ascertain the size of memory
     memSize = 
-      csthinker.machine.Memory.info.rts.start + 
-      csthinker.machine.Memory.info.rts.length;
+      learncs.machine.Memory.info.rts.start + 
+      learncs.machine.Memory.info.rts.length;
 
     // Our simulated machine's memory
     this._memory = new ArrayBuffer(memSize);
@@ -242,12 +242,12 @@ qx.Class.define("csthinker.machine.Memory",
       var             memDest;
       var             sizeSrc;
       var             sizeDest;
-      var             info = csthinker.machine.Memory.info;
-      var             WORDSIZE = csthinker.machine.Memory.WORDSIZE;
+      var             info = learncs.machine.Memory.info;
+      var             WORDSIZE = learncs.machine.Memory.WORDSIZE;
 
       // Determine size to be moved
-      sizeSrc = csthinker.machine.Memory._typeSize[typeSrc];
-      sizeDest = csthinker.machine.Memory._typeSize[typeDest];
+      sizeSrc = learncs.machine.Memory._typeSize[typeSrc];
+      sizeDest = learncs.machine.Memory._typeSize[typeDest];
 
       // Forcing is for internal writes to code space, when we really, really
       // know exactly what we're doing. It bypasses all of the error checks.
@@ -356,7 +356,7 @@ qx.Class.define("csthinker.machine.Memory",
 
       // Get an appropriate view into the memory, based on the destination types
       mem = this._getByType(type, 
-                            csthinker.machine.Memory.register[registerName]);
+                            learncs.machine.Memory.register[registerName]);
 
       // Set the register value
       mem[0] = value;
@@ -371,7 +371,7 @@ qx.Class.define("csthinker.machine.Memory",
 
       // Get an appropriate view into the memory, based on the destination type
       mem = this._getByType(type, 
-                            csthinker.machine.Memory.register[registerName]);
+                            learncs.machine.Memory.register[registerName]);
 
       // Retrieve the register value
       return mem[0];

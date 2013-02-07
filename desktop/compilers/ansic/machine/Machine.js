@@ -12,12 +12,12 @@ var sys = require("sys");
 require("./Memory");
 require("./Instruction");
 
-var mem = csthinker.machine.Memory.getInstance();
-var Memory = csthinker.machine.Memory;
-var Instruction = csthinker.machine.Instruction;
+var mem = learncs.machine.Memory.getInstance();
+var Memory = learncs.machine.Memory;
+var Instruction = learncs.machine.Instruction;
 
 
-qx.Class.define("csthinker.machine.Machine",
+qx.Class.define("learncs.machine.Machine",
 {
   type      : "singleton",
   extend    : qx.core.Object,
@@ -38,14 +38,23 @@ qx.Class.define("csthinker.machine.Machine",
   
   members :
   {
-    execute : function()
+    /**
+     * Execute a program in virtual memory.
+     * 
+     * @param pc {Number}
+     *   The initial program counter value, i.e., the instruction address at
+     *   which to begin the program.
+     */
+    execute : function(pc)
     {
-      var             pc;
       var             instr;
       var             instrAddr;
       var             opcode;
       var             numDataWords;
       var             debugInfo;
+
+      // Initialize the program counter
+      mem.setReg("PC", "unsigned int", pc);
 
       try
       {
@@ -79,7 +88,7 @@ qx.Class.define("csthinker.machine.Machine",
           mem.setReg("PC", "unsigned int", pc);
 
           // Call the appropriate function to process this reuqest
-          csthinker.machine.Instruction.processOpcode[opcode](instr, instrAddr);
+          learncs.machine.Instruction.processOpcode[opcode](instr, instrAddr);
         }
       }
       catch (e)

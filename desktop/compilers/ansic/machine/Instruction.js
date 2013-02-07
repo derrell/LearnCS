@@ -11,7 +11,7 @@ var qx = require("qooxdoo");
 var sys = require("sys");
 require("./Memory");
 
-var mem = csthinker.machine.Memory.getInstance();
+var mem = learncs.machine.Memory.getInstance();
 
 /*
  * Machine Instructions
@@ -29,7 +29,7 @@ var mem = csthinker.machine.Memory.getInstance();
  * instruction. The low-order 16 bits contain the line number. The remaining
  * 13 bits are reserved for future use, to possibly include a file name index.
  */
-qx.Class.define("csthinker.machine.Instruction",
+qx.Class.define("learncs.machine.Instruction",
 {
   type    : "static",
   extend  : Object,
@@ -55,6 +55,26 @@ qx.Class.define("csthinker.machine.Instruction",
         "double",
         "pointer"
       ],
+
+    /**
+     *  Conversion of type name to its numeric index
+     */
+    __typeToIndex :
+      {
+        "char"               : 0,
+        "unsigned char"      : 1,
+        "short"              : 2,
+        "unsigned short"     : 3,
+        "int"                : 4,
+        "unsigned int"       : 5,
+        "long"               : 6,
+        "unsigned long"      : 7,
+        "long long"          : 8,
+        "unsigned long long" : 9,
+        "float"              : 10,
+        "double"             : 11,
+        "pointer"            : 12
+      },
 
     /**
      * Convert an instruction name to its corresponding number.
@@ -175,8 +195,8 @@ qx.Class.define("csthinker.machine.Instruction",
       type2 = (instruction >>> 16) & 0x0f;
       
       // Convert them to their string representations
-      type1 = csthinker.machine.Instruction.__indexToType[type1];
-      type2 = csthinker.machine.Instruction.__indexToType[type2];
+      type1 = learncs.machine.Instruction.__indexToType[type1];
+      type2 = learncs.machine.Instruction.__indexToType[type2];
 
       // Certain binary operations require that both arguments be unsigned
       // integral types.  (ISO/IEC 9899:TC2 section 6.5(4))
@@ -205,20 +225,20 @@ qx.Class.define("csthinker.machine.Instruction",
       }
 
       // Calculate the type to which both operands should be implicitly cast
-      typeCoerceTo = csthinker.machine.Instruction.__coerce(type1, type2);
+      typeCoerceTo = learncs.machine.Instruction.__coerce(type1, type2);
       
       // If the source is not already of the coerce-to type...
       if (type1 != typeCoerceTo)
       {
         // ... then cast it
-        csthinker.machine.Instruction.__cast("R1", type1, typeCoerceTo);
+        learncs.machine.Instruction.__cast("R1", type1, typeCoerceTo);
       }
 
       // If the destination is not already of the coerce-to type...
       if (type2 != typeCoerceTo)
       {
         // ... then cast it
-        csthinker.machine.Instruction.__cast("R2", type2, typeCoerceTo);
+        learncs.machine.Instruction.__cast("R2", type2, typeCoerceTo);
       }
 
       // Retrieve the two operands
@@ -374,7 +394,7 @@ qx.Class.define("csthinker.machine.Instruction",
       typeSrc  = (instruction >>> 20) & 0x0f;
     
       // Convert it to its string representation
-      typeSrc = csthinker.machine.Instruction.__indexToType[typeSrc];
+      typeSrc = learncs.machine.Instruction.__indexToType[typeSrc];
 
       // Do operation-specific processing
       switch(op)
@@ -416,16 +436,16 @@ qx.Class.define("csthinker.machine.Instruction",
         
       case 2:                   // cast
         // Extract the type to cast to
-        typeDest = (instruction >>> 16) & 0x0f;
+        typeDest = (instruction >>> 20) & 0x0f;
         
         // Convert it to its string representation
-        typeDest = csthinker.machine.Instruction.__indexToType[typeDest];
+        typeDest = learncs.machine.Instruction.__indexToType[typeDest];
 
         // If the type is not already of the destination type...
         if (typeSrc != typeDest)
         {
           // ... then cast it
-          csthinker.machine.Instruction.__cast("R1", typeSrc, typeDest);
+          learncs.machine.Instruction.__cast("R1", typeSrc, typeDest);
         }
         break;
         
@@ -519,7 +539,7 @@ qx.Class.define("csthinker.machine.Instruction",
      * @param instruction
      *   Bits 29-31 contain the opcode.
      *
-     *   Bits 24-28 contain an indication of whether this is a push or a pop
+     *   Bits 24-28 have the subcode indicating the specific memory operation 
      *     00 : store from R1
      *     01 : store immediate
      *     02 : retrieve to R1
@@ -527,7 +547,7 @@ qx.Class.define("csthinker.machine.Instruction",
      *     04 : pop
      *     05 : swap R1, R2
      *
-     *   Bits 20-23 contain the type of the source operand (for push)
+     *   Bits 20-23 contain the type of the source (or only) operand
      *     00 : "char"
      *     01 : "unsigned char"
      *     02 : "short"
@@ -543,7 +563,7 @@ qx.Class.define("csthinker.machine.Instruction",
      *     0C : "pointer"
      *   Bit patterns 0D-0F are reserved for future use
      *
-     *   Bits 16-19 contain the type of the destination operand (for pop)
+     *   Bits 16-19 contain the type of the destination operand
      *     00 : "char"
      *     01 : "unsigned char"
      *     02 : "short"
@@ -591,7 +611,7 @@ qx.Class.define("csthinker.machine.Instruction",
         addr = instruction & 0xffff;
 
         // Store the value in R1 to the specified address
-        mem.move(csthinker.machine.Memory.register.R1, type, addr, type);
+        mem.move(learncs.machine.Memory.register.R1, type, addr, type);
         break;
         
       case 1 :                  // store immediate to memory
@@ -603,7 +623,7 @@ qx.Class.define("csthinker.machine.Instruction",
 
         // Increment the address instruction past the debug word, to the
         // immediate value to be stored.
-        instrAddr += csthinker.machine.Memory.WORDSIZE * 2;
+        instrAddr += learncs.machine.Memory.WORDSIZE * 2;
 
         // Store the value in to the specified address
         mem.move(instrAddr, type, addr, type);
@@ -617,7 +637,7 @@ qx.Class.define("csthinker.machine.Instruction",
         addr = instruction & 0xffff;
 
         // Retrieve the value at the specified address into R1
-        mem.move(addr, type, csthinker.machine.Memory.register.R1, type);
+        mem.move(addr, type, learncs.machine.Memory.register.R1, type);
         break;
 
       case 3 :                  // push
@@ -629,7 +649,7 @@ qx.Class.define("csthinker.machine.Instruction",
 
         // Decrement the stack pointer so it's pointing to the first unused
         // location on the stack
-        sp -= csthinker.machine.Memory.WORDSIZE;
+        sp -= learncs.machine.Memory.WORDSIZE;
 
         // Store the new value back into the stack pointer
         mem.setReg("SP", "unsigned int", sp);
@@ -640,8 +660,8 @@ qx.Class.define("csthinker.machine.Instruction",
         break;
         
       case 4 :                  // pop
-        // Extract the destination type
-        type = (instruction >>> 16) & 0x0f;
+        // Extract the type of the value
+        type = (instruction >>> 20) & 0x0f;
 
         // Get the stack pointer address
         sp = mem.getReg("SP", "unsigned int");
@@ -652,7 +672,7 @@ qx.Class.define("csthinker.machine.Instruction",
 
         // Increment the stack pointer so it's pointing to the next in-use
         // location on the stack
-        sp += csthinker.machine.Memory.WORDSIZE;
+        sp += learncs.machine.Memory.WORDSIZE;
 
         // Store the new value back into the stack pointer
         mem.setReg("SP", "unsigned int", sp);
@@ -719,13 +739,13 @@ qx.Class.define("csthinker.machine.Instruction",
 
         // Decrement the stack pointer so it's pointing to the first unused
         // location on the stack
-        sp -= csthinker.machine.Memory.WORDSIZE;
+        sp -= learncs.machine.Memory.WORDSIZE;
 
         // Store the  value back into the stack pointer
         mem.setReg("SP", "unsigned int", sp);
 
         // Store the program counter's value into the new bottom of the stack
-        mem.move(csthinker.machine.Memory.register.PC, "unsigned int", 
+        mem.move(learncs.machine.Memory.register.PC, "unsigned int", 
                  sp, "unsigned int");
 
         // Store the new address into the program counter
@@ -739,11 +759,11 @@ qx.Class.define("csthinker.machine.Instruction",
         // Retrieve the return address from the address pointed to by the stack
         // pointer, and store it in the program counter
         mem.move(sp, "unsigned int",
-                 csthinker.machine.Memory.register.PC, "unsigned int");
+                 learncs.machine.Memory.register.PC, "unsigned int");
 
         // Increment the stack pointer so it's pointing to the next in-use
         // location on the stack
-        sp += csthinker.machine.Memory.WORDSIZE;
+        sp += learncs.machine.Memory.WORDSIZE;
 
         // Store the new value back into the stack pointer
         mem.setReg("SP", "unsigned int", sp);
@@ -787,13 +807,32 @@ qx.Class.define("csthinker.machine.Instruction",
       var             instr;
 
       // Convert the opcode name to its actual opcode
-      opcode = csthinker.machine.Instruction.__nameToOpcode(opName);
+      opcode = learncs.machine.Instruction.__nameToOpcode(opName);
 
       // Were we able to convert it?
       if (typeof opcode == "undefined")
       {
         // Nope.
         throw new Error("Unrecognized op name: " + opName);
+      }
+
+      // If we're given string type names, convert them to indexes
+      if (typeof typeSrc == "string")
+      {
+        typeSrc = learncs.machine.Instruction.__typeToIndex[typeSrc];
+        if (typeof typeSrc == "undefined")
+        {
+          throw new Error("Programmer error: Unrecognized source type");
+        }
+      }
+
+      if (typeof typeDest == "string")
+      {
+        typeDest = learncs.machine.Instruction.__typeToIndex[typeDest];
+        if (typeof typeDest == "undefined")
+        {
+          throw new Error("Programmer error: Unrecognized destination type");
+        }
       }
 
       // The caller is encouraged to pass null for irrelevant arguments, to make
@@ -848,17 +887,19 @@ qx.Class.define("csthinker.machine.Instruction",
     {
       var             instr;
 
+sys.print("write(" + opName + ", " + subcode + ", " + typeSrc + ", " + typeDest + ", " + addr + ", [ " + (data ? data.join(", ") : "") + " ]\n");
+
       // Assemble the instruction
       instr = this._assemble(opName, subcode, typeSrc, typeDest, addr);
 
       // We'll use register R3 to hold the instruction. Put the instruction
       // there, and then move it to its requested address.
       mem.setReg("R3", "unsigned int", instr);
-      mem.move(csthinker.machine.Memory.register.R3, "unsigned int", 
+      mem.move(learncs.machine.Memory.register.R3, "unsigned int", 
                addrInfo.addr, "unsigned int", true);
 
       // Increment the instruction address to where the line number will go
-      addrInfo.addr += csthinker.machine.Memory.WORDSIZE;
+      addrInfo.addr += learncs.machine.Memory.WORDSIZE;
 
       // Ensure we have an array (possibly empty) of extra data for this
       // instruction
@@ -869,12 +910,12 @@ qx.Class.define("csthinker.machine.Instruction",
       // extra data into the high-order three bits.
       mem.setReg("R3", "unsigned int",
                  (((data.length << 29) | (line & 0xffff)) >>> 0));
-      mem.move(csthinker.machine.Memory.register.R3, "unsigned int",
+      mem.move(learncs.machine.Memory.register.R3, "unsigned int",
                   addrInfo.addr, "unsigned int", 
                   true);
 
       // Increment to the next word
-      addrInfo.addr += csthinker.machine.Memory.WORDSIZE;
+      addrInfo.addr += learncs.machine.Memory.WORDSIZE;
 
       // Add any extra data after the debug information
       data.forEach(
@@ -882,12 +923,12 @@ qx.Class.define("csthinker.machine.Instruction",
         {
           // Write this piece of extra data
           mem.setReg("R3", "unsigned int", datum);
-          mem.move(csthinker.machine.Memory.register.R3, "unsigned int",
+          mem.move(learncs.machine.Memory.register.R3, "unsigned int",
                       addrInfo.addr, "unsigned int", 
                       true);
 
           // Increment to the next word
-          addrInfo.addr += csthinker.machine.Memory.WORDSIZE;
+          addrInfo.addr += learncs.machine.Memory.WORDSIZE;
         });
     },
     
