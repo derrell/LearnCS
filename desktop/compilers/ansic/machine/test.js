@@ -23,30 +23,33 @@ addrInfo =
   };
 
 
-var globals = Memory.info.gas.start;
+function WORD(index)
+{
+  return Memory.info.gas.start + (Memory.WORDSIZE * index);
+}
 
 var program =
   [
     // Assign 8 to the first word in the globals&statics area
-    [ "puti", "unsigned int", null, globals + Memory.WORDSIZE * 0, [ 8 ] ],
+    [ "puti", "unsigned int", null, WORD(0), [ 8 ] ],
     
     // Assign 9 to the second word in the globals&statics area
-    [ "puti", "unsigned int", null, globals + Memory.WORDSIZE * 1, [ 9 ] ],
+    [ "puti", "unsigned int", null, WORD(1), [ 9 ] ],
     
     // Get the second word of globals&statics area into register R1
-    [ "get", "unsigned int", "unsigned int", globals + Memory.WORDSIZE * 1],
+    [ "get", "unsigned int", "unsigned int", WORD(1)],
 
     // Swap R1 into R2
     [ "swap", "unsigned int" ],
     
     // Get the first word from globals&statics into register R1
-    [ "get", "unsigned int", "unsigned int", globals + Memory.WORDSIZE * 0 ],
+    [ "get", "unsigned int", "unsigned int", WORD(0) ],
     
     // Add the values in R1 and R2, storing the result back into R1
     [ "+", "unsigned int", "unsigned int" ],
     
     // Store the result of the add into the third word of globals&statics
-    [ "put", "unsigned int", "unsigned int", globals + Memory.WORDSIZE * 2 ],
+    [ "put", "unsigned int", "unsigned int", WORD(2) ],
     
     // Exit the program by jumping (unconditional) to adrress 0xffff
     [ "jump", null, null, 0xffff ]
