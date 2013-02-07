@@ -12,13 +12,14 @@ qx.Class.define("Tester",
   {
     test : function(program, testSuccess)
     {
-      var name;
-      var Memory = learncs.machine.Memory;
-      var Machine = learncs.machine.Machine;
-      var Instr = learncs.machine.Instruction;
-      var mem = Memory.getInstance();
-      var machine = Machine.getInstance();
-      var addrInfo;
+      var             name;
+      var             Memory = learncs.machine.Memory;
+      var             Machine = learncs.machine.Machine;
+      var             Instr = learncs.machine.Instruction;
+      var             mem = Memory.getInstance();
+      var             machine = Machine.getInstance();
+      var             addrInfo;
+      var             bSuccess;
       var GLOBAL = function(index)
       {
         return (Memory.info.gas.start + (Memory.WORDSIZE * index));
@@ -47,8 +48,15 @@ qx.Class.define("Tester",
       machine.execute(0);
 
       // Display success or failure
-      console.log(name + ": " +
-                  (testSuccess(mem, GLOBAL) ? "passed" : "FAILED"));
+      bSuccess = testSuccess(mem, GLOBAL);
+      console.log((bSuccess ? "passed" : "FAILED") + ": " + name);
+      
+      if (! bSuccess)
+      {
+        mem.prettyPrint("Failed test", 
+                        Memory.info.gas.start,
+                        Memory.info.gas.length);
+      }
     }
   }
 });

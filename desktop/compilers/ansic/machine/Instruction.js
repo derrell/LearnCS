@@ -829,7 +829,7 @@ qx.Class.define("learncs.machine.Instruction",
           "<<"   : [ "binaryOp", 0x01 ],
           "&&"   : [ "binaryOp", 0x02 ],
           "||"   : [ "binaryOp", 0x03 ],
-          ">"    : [ "binaryOp", 0x04 ],
+          "<"    : [ "binaryOp", 0x04 ],
           "<="   : [ "binaryOp", 0x05 ],
           "=="   : [ "binaryOp", 0x06 ],
           "!="   : [ "binaryOp", 0x07 ],
@@ -964,7 +964,7 @@ qx.Class.define("learncs.machine.Instruction",
       // end of the arguments.
       if (args.length > 4)
       {
-        data = args.slice(4);
+        data = args.slice(4).map(function(datum) { return eval(datum); } );
         args = args.slice(0, 4);
         args.push(data);
       }
