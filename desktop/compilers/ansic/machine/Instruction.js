@@ -421,6 +421,7 @@ qx.Class.define("learncs.machine.Instruction",
       case 0:                   // ~
         // Ensure that the operand is of a legal type. It must be an unsigned
         // integer type. (ISO/IEC 9899:TC2 section 6.5(4)
+sys.print("typeSrc=" + typeSrc + "\n");
         if (typeSrc.match(/^unsigned /) === null)
         {
           throw new Error("Illegal operand for ~ operation. " +
@@ -440,7 +441,7 @@ qx.Class.define("learncs.machine.Instruction",
         // integer type. (ISO/IEC 9899:TC2 section 6.5(4)
         if (typeSrc.match(/^unsigned /) === null)
         {
-          throw new Error("Illegal operand for ~ operation. " +
+          throw new Error("Illegal operand for ! operation. " +
                           "Type must be of some unsigned integral type, " +
                           "but found " + typeSrc);
         }
@@ -493,6 +494,7 @@ qx.Class.define("learncs.machine.Instruction",
      *   Bits 24-28 contain the condition on which to jump
      *     00 : no comparison; unconditional jump
      *     01 : true
+     *     02 : false
      *   Bit patterns 03-0F are reserved for future use
      *
      *   Bits 0-15 contain the address to which to jump, if the conditional
@@ -535,6 +537,18 @@ qx.Class.define("learncs.machine.Instruction",
         
         // If it's zero...
         if (! value)
+        {
+          // ... then we do NOT want to jump. See ya!
+          return;
+        }
+        break;
+        
+      case 2 :                  // R1 must be false to jump
+        // Retrieve the value in register R1
+        value = mem.getReg("R1", "unsigned int");
+        
+        // If it's non-zero...
+        if (value)
         {
           // ... then we do NOT want to jump. See ya!
           return;
@@ -851,6 +865,7 @@ qx.Class.define("learncs.machine.Instruction",
 
           "jump" : [ "jumpConditionally", 0x00 ],
           "jit"  : [ "jumpConditionally", 0x01 ],
+          "jif"  : [ "jumpConditionally", 0x02 ],
 
           "put"  : [ "memory", 0x00 ],
           "puti" : [ "memory", 0x01 ],

@@ -44,6 +44,13 @@ qx.Class.define("Tester",
           Instr.write(instr, addrInfo, line);
         });
 
+      if (false)
+      {
+        mem.prettyPrint("Program memory", 
+                        Memory.info.prog.start,
+                        Memory.info.prog.length);
+      }
+
       // Run the program, beginning at address zero
       machine.execute(0);
 

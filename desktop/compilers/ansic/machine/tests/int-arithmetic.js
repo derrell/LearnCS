@@ -1,3 +1,12 @@
+/**
+ * Tests for integer arithmetic operations
+ *
+ * Copyright (c) 2013 Derrell Lipman
+ * 
+ * License:
+ *   GPL Version 2: http://www.gnu.org/licenses/gpl-2.0.html 
+ */
+
 require("../Tester");
 
 var program;
