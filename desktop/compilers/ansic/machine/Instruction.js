@@ -124,10 +124,11 @@ qx.Class.define("learncs.machine.Instruction",
     //////////////////////////////////////////////////////////////////////////
 
     /**
-     * Compute the result of a binary operation.  The value in register R1 is
-     * the left operand of the binary operation. The value in register R2 is
-     * the right operand of the binary operation. Apply the specified
-     * operation. Store the result into register R1.
+     * Compute the result of a binary operation.  The value at the top of the
+     * expression stack is the right operand of the binary operation. The
+     * second value from the top of the expression stack is the left operand
+     * of the binary operation. Apply the specified operation. Push the result
+     * back onto the expression stack.
      *
      * @param instruction {Number}
      *   Bits 29-31 contain the opcode.
@@ -232,7 +233,6 @@ qx.Class.define("learncs.machine.Instruction",
                           "Must be of an unsigned integral type, " +
                           "but left operand has type " + type1);
         }
-        break;
 
         if (type2.match(/^unsigned /) === null)
         {
@@ -261,8 +261,8 @@ qx.Class.define("learncs.machine.Instruction",
       }
 
       // Retrieve the two operands
-      operand1 = mem.getReg('R1', type1);
-      operand2 = mem.getReg('R2', type2);
+      operand2 = learncs.machine.Instruction.__epop(type1, "R2");
+      operand1 = learncs.machine.Instruction.__epop(type1, "R1");
 
       switch(binOp)
       {
@@ -342,8 +342,9 @@ qx.Class.define("learncs.machine.Instruction",
         throw new Error("Unrecognized binary operator: " + binOp);
       }
 
-      // Store the result back into register R1.
-      mem.setReg('R1', typeCoerceTo, result);
+      // Push the result back onto the expression stack
+      mem.setReg("R1", typeCoerceTo, result);
+      learncs.machine.Instruction.__epush(typeCoerceTo, "R1");
     },
 
     /**
@@ -428,11 +429,12 @@ qx.Class.define("learncs.machine.Instruction",
                           "but found " + typeSrc);
         }
 
-        // Retrieve the value in register R1
-        value = mem.getReg("R1", typeSrc);
+        // Retrieve the value from the top of the expression stack
+        value = learncs.machine.Instruction.__epop(typeSrc, "R1");
         
-        // Invert the bits and save the result back into register R1
+        // Invert the bits and push the result back onto the expression stack
         mem.setReg("R1", typeSrc, ~value);
+        learncs.machine.Instruction.__epush(typeSrc, "R1");
         break;
         
       case 1:                   // !
@@ -445,12 +447,13 @@ qx.Class.define("learncs.machine.Instruction",
                           "but found " + typeSrc);
         }
 
-        // Retrieve the value in register R1
-        value = mem.getReg("R1", typeSrc);
+        // Retrieve the value from the top of the expression stack
+        value = learncs.machine.Instruction.__epop(typeSrc, "R1");
         
-        // Take the logical not of the value, and save the results back into
-        // register R1.
+        // Take the logical not of the value, and save the results back onto
+        // the expression stack
         mem.setReg("R1", typeSrc, !value);
+        learncs.machine.Instruction.__epush(typeSrc, "R1");
         break;
         
       case 2:                   // cast
@@ -469,8 +472,9 @@ qx.Class.define("learncs.machine.Instruction",
         break;
         
       case 3:                   // test
-        // Retrieve the value in register R1
-        value = mem.getReg("R1", typeSrc);
+        // Retrieve the value from the top of the expression stack, into
+        // register R1
+        value = learncs.machine.Instruction.__epop(typeSrc, "R1");
         
         // Store into register R1 the value 0 if what we retrieved from
         // register R1 was 0; otherwise store 1.
@@ -482,14 +486,12 @@ qx.Class.define("learncs.machine.Instruction",
     },
 
     /**
-     * Compare the values in registers R1 and R2, using the specified
-     * comparison condition. If the specified condition is met, jump to the
-     * specified address. Otherwise, execution continues at the statement
-     * after this one.
+     * Jump to a specified address, optionally after checking that R1 is
+     * either true or false.
      *
      * @param instruction {Number}
      *   Bits 29-31 contain the opcode.
-     * 
+     *
      *   Bits 24-28 contain the condition on which to jump
      *     00 : no comparison; unconditional jump
      *     01 : true
@@ -578,6 +580,8 @@ qx.Class.define("learncs.machine.Instruction",
      *     03 : push
      *     04 : pop
      *     05 : swap R1, R2
+     *     06 : epush
+     *     07 : epop
      *
      *   Bits 20-23 contain the type of the source (or only) operand
      *     00 : "char"
@@ -721,6 +725,14 @@ qx.Class.define("learncs.machine.Instruction",
         mem.setReg("R2", "unsigned int", value);
         break;
 
+      case 6 :                  // epush (push onto expression stack)
+        learncs.machine.Instruction.__epush((instruction >>> 20) & 0x0f, addr);
+        break;
+        
+      case 7 :                  // epop (pop from expression stack)
+        learncs.machine.Instruction.__epop((instruction >>> 20) & 0x0f, addr);
+        break;
+        
       default :
         throw new Error("Unrecognized stack operation: " + op);
         break;
@@ -838,43 +850,45 @@ qx.Class.define("learncs.machine.Instruction",
       var             instr;
       var             pseudoops =
         {
-          ">>"   : [ "binaryOp", 0x00 ],
-          "<<"   : [ "binaryOp", 0x01 ],
-          "&&"   : [ "binaryOp", 0x02 ],
-          "||"   : [ "binaryOp", 0x03 ],
-          "<"    : [ "binaryOp", 0x04 ],
-          "<="   : [ "binaryOp", 0x05 ],
-          "=="   : [ "binaryOp", 0x06 ],
-          "!="   : [ "binaryOp", 0x07 ],
-          ">="   : [ "binaryOp", 0x08 ],
-          ">"    : [ "binaryOp", 0x09 ],
-          "&"    : [ "binaryOp", 0x0A ],
-          "|"    : [ "binaryOp", 0x0B ],
-          "^"    : [ "binaryOp", 0x0C ],
-          "+"    : [ "binaryOp", 0x0D ],
-          "-"    : [ "binaryOp", 0x0E ],
-          "*"    : [ "binaryOp", 0x0F ],
-          "/"    : [ "binaryOp", 0x10 ],
-          "%"    : [ "binaryOp", 0x11 ],
+          ">>"    : [ "binaryOp", 0x00 ],
+          "<<"    : [ "binaryOp", 0x01 ],
+          "&&"    : [ "binaryOp", 0x02 ],
+          "||"    : [ "binaryOp", 0x03 ],
+          "<"     : [ "binaryOp", 0x04 ],
+          "<="    : [ "binaryOp", 0x05 ],
+          "=="    : [ "binaryOp", 0x06 ],
+          "!="    : [ "binaryOp", 0x07 ],
+          ">="    : [ "binaryOp", 0x08 ],
+          ">"     : [ "binaryOp", 0x09 ],
+          "&"     : [ "binaryOp", 0x0A ],
+          "|"     : [ "binaryOp", 0x0B ],
+          "^"     : [ "binaryOp", 0x0C ],
+          "+"     : [ "binaryOp", 0x0D ],
+          "-"     : [ "binaryOp", 0x0E ],
+          "*"     : [ "binaryOp", 0x0F ],
+          "/"     : [ "binaryOp", 0x10 ],
+          "%"     : [ "binaryOp", 0x11 ],
 
-          "~"    : [ "unaryOp", 0x00 ],
-          "!"    : [ "unaryOp", 0x01 ],
-          "cast" : [ "unaryOp", 0x02 ],
-          "test" : [ "unaryOp", 0x03 ],
+          "~"     : [ "unaryOp", 0x00 ],
+          "!"     : [ "unaryOp", 0x01 ],
+          "cast"  : [ "unaryOp", 0x02 ],
+          "test"  : [ "unaryOp", 0x03 ],
 
-          "jump" : [ "jumpConditionally", 0x00 ],
-          "jit"  : [ "jumpConditionally", 0x01 ],
-          "jif"  : [ "jumpConditionally", 0x02 ],
+          "jump"  : [ "jumpConditionally", 0x00 ],
+          "jit"   : [ "jumpConditionally", 0x01 ],
+          "jif"   : [ "jumpConditionally", 0x02 ],
 
-          "put"  : [ "memory", 0x00 ],
-          "puti" : [ "memory", 0x01 ],
-          "get"  : [ "memory", 0x02 ],
-          "push" : [ "memory", 0x03 ],
-          "pop"  : [ "memory", 0x04 ],
-          "swap" : [ "memory", 0x05 ],
+          "put"   : [ "memory", 0x00 ],
+          "puti"  : [ "memory", 0x01 ],
+          "get"   : [ "memory", 0x02 ],
+          "push"  : [ "memory", 0x03 ],
+          "pop"   : [ "memory", 0x04 ],
+          "swap"  : [ "memory", 0x05 ],
+          "epush" : [ "memory", 0x06 ],
+          "epop"  : [ "memory", 0x07 ],
 
-          "call" : [ "functionOp", 0x00 ],
-          "ret"  : [ "functionOp", 0x01 ]
+          "call"  : [ "functionOp", 0x00 ],
+          "ret"   : [ "functionOp", 0x01 ]
         };
 
       // Convert the pseudo operation into its opcode and subcode parts
@@ -990,7 +1004,8 @@ qx.Class.define("learncs.machine.Instruction",
       addr = (typeof args[3] == "undefined" ? null : args[3]);
 
       // Assemble the instruction
-      instr = this._assemble(opName, typeSrc, typeDest, addr);
+      instr = learncs.machine.Instruction._assemble(
+        opName, typeSrc, typeDest, addr);
 
       // We'll use register R3 to hold the instruction. Put the instruction
       // there, and then move it to its requested address.
@@ -1105,6 +1120,75 @@ qx.Class.define("learncs.machine.Instruction",
     {
       var value = mem.getReg(register, typeFrom);
       mem.setReg(register, typeTo, value);
+    },
+    
+    __epush : function(type, addr)
+    {
+      var             esp;
+      
+      // If the address given is a string...
+      if (typeof addr == "string")
+      {
+        // ... then it's a register name. Convert it to an address
+        addr = learncs.machine.Memory.register[addr];
+      }
+      
+      // Get the stack pointer address
+      esp = mem.getReg("ESP", "unsigned int");
+
+      // Decrement the stack pointer so it's pointing to the first unused
+      // location on the stack
+      esp -= learncs.machine.Memory.WORDSIZE;
+
+      // Store the new value back into the stack pointer
+      mem.setReg("ESP", "unsigned int", esp);
+
+      // Retrieve the value from the specified address, and store it at the
+      // location pointed to by the stack pointer.
+      mem.move(addr, type, esp, "unsigned int");
+    },
+
+    /**
+     * Pop a value off of the expression stack. It gets popped into the
+     * specified address, and also returned by this function.
+     *
+     * @param type {String}
+     *   The C type of which the value is written to the specified address
+     *
+     * @param addr {Number}
+     *   The destination address.
+     *
+     * @return {Number}
+     *   The value that was popped
+     *
+     */
+    __epop : function(type, addr)
+    {
+      var             esp;
+
+      // If the address given is a string...
+      if (typeof addr == "string")
+      {
+        // ... then it's a register name. Convert it to an address
+        addr = learncs.machine.Memory.register[addr];
+      }
+      
+      // Get the stack pointer address
+      esp = mem.getReg("ESP", "unsigned int");
+
+      // Retrieve the value from the address pointed to by the stack pointer,
+      // and store it at the specified address.
+      mem.move(esp, "unsigned int", addr, type);
+
+      // Increment the stack pointer so it's pointing to the next in-use
+      // location on the stack
+      esp += learncs.machine.Memory.WORDSIZE;
+
+      // Store the new value back into the stack pointer
+      mem.setReg("ESP", "unsigned int", esp);
+      
+      // Return the value we just stored
+      return mem.get(addr, type);
     }
   },
   

@@ -20,11 +20,10 @@ program =
 
     "puti uint null GLOBAL(0) 0x1", // assign 0x1 to global word 0
     "puti uint null GLOBAL(1) 0x2", // assign 0x2 to global word 1
-    "get uint uint GLOBAL(1)",      // retrieve global word 1 into R1
-    "swap uint",                    // swap R1 into R2
-    "get uint uint GLOBAL(0)",      // retrieve global word 0 into R1
-    "&& uint uint",                 // R1 = R1 && R2
-    "put uint uint GLOBAL(2)",      // write R1 to global word 2
+    "epush uint null GLOBAL(0)",    // push global word 0 onto the estack
+    "epush uint null GLOBAL(1)",    // push global word 1 onto the estack
+    "&& uint uint",                 // epush(epop() && epop())
+    "epop uint null GLOBAL(2)",     // pop estack into global word 2
     "jump null null 0xffff"         // exit
   ];
 
@@ -45,11 +44,10 @@ program =
 
     "puti uint null GLOBAL(0) 0x0", // assign 0x0 to global word 0
     "puti uint null GLOBAL(1) 0x2", // assign 0x2 to global word 1
-    "get uint uint GLOBAL(1)",      // retrieve global word 1 into R1
-    "swap uint",                    // swap R1 into R2
-    "get uint uint GLOBAL(0)",      // retrieve global word 0 into R1
-    "&& uint uint",                 // R1 = R1 && R2
-    "put uint uint GLOBAL(2)",      // write R1 to global word 2
+    "epush uint null GLOBAL(0)",    // push global word 0 onto the estack
+    "epush uint null GLOBAL(1)",    // push global word 1 onto the estack
+    "&& uint uint",                 // epush(epop() && epop())
+    "epop uint null GLOBAL(2)",     // pop estack into global word 2
     "jump null null 0xffff"         // exit
   ];
 
@@ -70,11 +68,10 @@ program =
 
     "puti uint null GLOBAL(0) 0x2", // assign 0x2 to global word 0
     "puti uint null GLOBAL(1) 0x0", // assign 0x0 to global word 1
-    "get uint uint GLOBAL(1)",      // retrieve global word 1 into R1
-    "swap uint",                    // swap R1 into R2
-    "get uint uint GLOBAL(0)",      // retrieve global word 0 into R1
-    "&& uint uint",                 // R1 = R1 && R2
-    "put uint uint GLOBAL(2)",      // write R1 to global word 2
+    "epush uint null GLOBAL(0)",    // push global word 0 onto the estack
+    "epush uint null GLOBAL(1)",    // push global word 1 onto the estack
+    "&& uint uint",                 // epush(epop() && epop())
+    "epop uint null GLOBAL(2)",     // pop estack into global word 2
     "jump null null 0xffff"         // exit
   ];
 
@@ -95,11 +92,10 @@ program =
 
     "puti uint null GLOBAL(0) 0x0", // assign 0x0 to global word 0
     "puti uint null GLOBAL(1) 0x0", // assign 0x0 to global word 1
-    "get uint uint GLOBAL(1)",      // retrieve global word 1 into R1
-    "swap uint",                    // swap R1 into R2
-    "get uint uint GLOBAL(0)",      // retrieve global word 0 into R1
-    "&& uint uint",                 // R1 = R1 && R2
-    "put uint uint GLOBAL(2)",      // write R1 to global word 2
+    "epush uint null GLOBAL(0)",    // push global word 0 onto the estack
+    "epush uint null GLOBAL(1)",    // push global word 1 onto the estack
+    "&& uint uint",                 // epush(epop() && epop())
+    "epop uint null GLOBAL(2)",     // pop estack into global word 2
     "jump null null 0xffff"         // exit
   ];
 
@@ -120,11 +116,10 @@ program =
 
     "puti uint null GLOBAL(0) 0x2", // assign 0x2 to global word 0
     "puti uint null GLOBAL(1) 0x1", // assign 0x1 to global word 1
-    "get uint uint GLOBAL(1)",      // retrieve global word 1 into R1
-    "swap uint",                    // swap R1 into R2
-    "get uint uint GLOBAL(0)",      // retrieve global word 0 into R1
-    "|| uint uint",                 // R1 = R1 || R2
-    "put uint uint GLOBAL(2)",      // write R1 to global word 2
+    "epush uint null GLOBAL(0)",    // push global word 0 onto the estack
+    "epush uint null GLOBAL(1)",    // push global word 1 onto the estack
+    "|| uint uint",                 // epush(epop() || epop())
+    "epop uint null GLOBAL(2)",     // pop estack into global word 2
     "jump null null 0xffff"         // exit
   ];
 
@@ -145,11 +140,10 @@ program =
 
     "puti uint null GLOBAL(0) 0x0", // assign 0x0 to global word 0
     "puti uint null GLOBAL(1) 0x2", // assign 0x2 to global word 1
-    "get uint uint GLOBAL(1)",      // retrieve global word 1 into R1
-    "swap uint",                    // swap R1 into R2
-    "get uint uint GLOBAL(0)",      // retrieve global word 0 into R1
-    "|| uint uint",                 // R1 = R1 || R2
-    "put uint uint GLOBAL(2)",      // write R1 to global word 2
+    "epush uint null GLOBAL(0)",    // push global word 0 onto the estack
+    "epush uint null GLOBAL(1)",    // push global word 1 onto the estack
+    "|| uint uint",                 // epush(epop() || epop())
+    "epop uint null GLOBAL(2)",     // pop estack into global word 2
     "jump null null 0xffff"         // exit
   ];
 
@@ -170,11 +164,10 @@ program =
 
     "puti uint null GLOBAL(0) 0x2", // assign 0x2 to global word 0
     "puti uint null GLOBAL(1) 0x0", // assign 0x0 to global word 1
-    "get uint uint GLOBAL(1)",      // retrieve global word 1 into R1
-    "swap uint",                    // swap R1 into R2
-    "get uint uint GLOBAL(0)",      // retrieve global word 0 into R1
-    "|| uint uint",                 // R1 = R1 || R2
-    "put uint uint GLOBAL(2)",      // write R1 to global word 2
+    "epush uint null GLOBAL(0)",    // push global word 0 onto the estack
+    "epush uint null GLOBAL(1)",    // push global word 1 onto the estack
+    "|| uint uint",                 // epush(epop() || epop())
+    "epop uint null GLOBAL(2)",     // pop estack into global word 2
     "jump null null 0xffff"         // exit
   ];
 
@@ -195,11 +188,10 @@ program =
 
     "puti uint null GLOBAL(0) 0x0", // assign 0x0 to global word 0
     "puti uint null GLOBAL(1) 0x0", // assign 0x0 to global word 1
-    "get uint uint GLOBAL(1)",      // retrieve global word 1 into R1
-    "swap uint",                    // swap R1 into R2
-    "get uint uint GLOBAL(0)",      // retrieve global word 0 into R1
-    "|| uint uint",                 // R1 = R1 || R2
-    "put uint uint GLOBAL(2)",      // write R1 to global word 2
+    "epush uint null GLOBAL(0)",    // push global word 0 onto the estack
+    "epush uint null GLOBAL(1)",    // push global word 1 onto the estack
+    "|| uint uint",                 // epush(epop() || epop())
+    "epop uint null GLOBAL(2)",     // pop estack into global word 2
     "jump null null 0xffff"         // exit
   ];
 

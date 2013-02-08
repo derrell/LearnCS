@@ -41,6 +41,9 @@ qx.Class.define("learncs.machine.Machine",
       mem.setReg("SP", 
                  "unsigned int",
                  Memory.info.rts.start + Memory.info.rts.length);
+      mem.setReg("ESP", 
+                 "unsigned int",
+                 Memory.info.es.start + Memory.info.es.length);
       mem.setReg("FP", 
                  "unsigned int",
                  Memory.info.rts.start + Memory.info.rts.length);
@@ -96,6 +99,7 @@ qx.Class.define("learncs.machine.Machine",
           mem.setReg("PC", "unsigned int", pc);
 
           // Call the appropriate function to process this reuqest
+//          this.__displayInstruction(instr);
           learncs.machine.Instruction.processOpcode[opcode](instr, instrAddr);
         }
       }
@@ -103,13 +107,37 @@ qx.Class.define("learncs.machine.Machine",
       {
         if (e.toString().match(/Normal program exit/))
         {
-//          sys.print("Exit code: " + mem.getReg("R1", "unsigned char") + "\n");
+          if (false)
+          {
+            sys.print("Exit code: " + 
+                      mem.getReg("R1", "unsigned char").toString(16) +
+                      "\n");
+          }
         }
         else
         {
           sys.print("Program halted: " + e + "\n" + e.stack + "\n");
         }
       }
+    },
+    
+    __displayInstruction : function(instr)
+    {
+      var             p;
+      var             parts;
+      
+      p = "00000000000000000000000000000000" + instr.toString(2);
+      p = p.substr(-32);
+      
+      parts = /(\d{3})(\d{5})(\d{4})(\d{4})(\d{16})/.exec(p);
+      parts.shift();
+      
+      parts.forEach(
+        function(part)
+        {
+          sys.print(part + " ");
+        });
+      sys.print("\n");
     }
   }
 });

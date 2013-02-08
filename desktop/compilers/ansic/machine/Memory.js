@@ -60,7 +60,7 @@ qx.Class.define("learncs.machine.Memory",
         "prog" :                    // Program memory
         {
           start  : 0,
-          length : 1 * 1024
+          length : 1024
         },
 
         "reg" :                     // Registers
@@ -69,9 +69,15 @@ qx.Class.define("learncs.machine.Memory",
           length : null // initialized in defer()
         },
 
-        "gas" :                     // Globals and Statics
+        "es" :                      // Expression stack
         {
           start  : 8 * 1024,
+          length : 1024
+        },
+
+        "gas" :                     // Globals and Statics
+        {
+          start  : 10 * 1024,
           length : 64
         },
 
@@ -91,12 +97,13 @@ qx.Class.define("learncs.machine.Memory",
       register :
       {
         // Assigned here, but not yet actually valid; initialized in defer()
-        "PC" : null,
-        "SP" : null,
-        "FP" : null,
-        "R1" : null,
-        "R2" : null,
-        "R3" : null
+        "PC"  : null,
+        "SP"  : null,
+        "ESP" : null,
+        "FP"  : null,
+        "R1"  : null,
+        "R2"  : null,
+        "R3"  : null
       }
 
   },
@@ -271,6 +278,8 @@ qx.Class.define("learncs.machine.Memory",
         // Ensure we are writing to a valid region of memory
         if (! ((addrDest >= info.reg.start  && 
                 addrDest < info.reg.start + info.reg.length) ||
+               (addrDest >= info.es.start && 
+                addrDest < info.es.start + info.es.length) ||
                (addrDest >= info.gas.start && 
                 addrDest < info.gas.start + info.gas.length) ||
                (addrDest >= info.heap.start && 
@@ -278,7 +287,8 @@ qx.Class.define("learncs.machine.Memory",
                (addrDest >= info.rts.start &&
                 addrDest < info.rts.start  + info.rts.length)))
         {
-          throw new Error("Invalid memory access at " + addrDest + ": " +
+          throw new Error("Invalid memory access at " + 
+                          addrDest.toString(16) + ": " +
                           "ASSIGN TO address is not within the " +
                           "'globals and statics', 'heap', or " +
                           "'run time stack' regions of memory.");
@@ -288,6 +298,10 @@ qx.Class.define("learncs.machine.Memory",
         if ((addrSrc >= info.reg.start  && 
              addrSrc < info.reg.start + WORDSIZE &&
              addrSrc + sizeSrc > info.reg.start + WORDSIZE) ||
+
+            (addrSrc >= info.es.start && 
+             addrSrc < info.es.start + info.es.length &&
+             addrSrc + sizeSrc > info.es.start + info.es.length) ||
 
             (addrSrc >= info.gas.start && 
              addrSrc < info.gas.start + info.gas.length &&
@@ -301,7 +315,8 @@ qx.Class.define("learncs.machine.Memory",
              addrSrc < info.rts.start  + info.rts.length &&
              addrSrc + sizeSrc > info.rts.start + info.rts.length))
         {
-          throw new Error("Invalid memory access at " + addrSrc + ": " +
+          throw new Error("Invalid memory access at " + 
+                          addrSrc.toString(16) + ": " +
                           "Size of object being assigned causes a " +
                           "read beyond the " +
                           "bounds of its 'globals and statics', 'heap', or " +
@@ -312,6 +327,10 @@ qx.Class.define("learncs.machine.Memory",
         if ((addrDest >= info.reg.start  && 
              addrDest < info.reg.start + WORDSIZE &&
              addrDest + sizeDest > info.reg.start + WORDSIZE) ||
+
+            (addrDest >= info.es.start && 
+             addrDest < info.es.start + info.es.length &&
+             addrDest + sizeDest > info.es.start + info.es.length) ||
 
             (addrDest >= info.gas.start && 
              addrDest < info.gas.start + info.gas.length &&
@@ -325,7 +344,8 @@ qx.Class.define("learncs.machine.Memory",
              addrDest < info.rts.start  + info.rts.length &&
              addrDest + sizeDest > info.rts.start + info.rts.length))
         {
-          throw new Error("Invalid memory access at " + addrDest + ": " +
+          throw new Error("Invalid memory access at " + 
+                          addrDest.toString(16) + ": " +
                           "Size of object being assigned to causes a " +
                           "write beyond " +
                           "the bounds of its 'globals and statics', " +
@@ -336,7 +356,8 @@ qx.Class.define("learncs.machine.Memory",
       // Only values of size one can be at odd addresses
       if (addrSrc % 2 != 0 && typeSrc != "char" && typeSrc != "unsigned char")
       {
-        throw new Error("Invalid memory access at " + addr + ": " +
+        throw new Error("Invalid memory access at " +
+                        addr.toString(16) + ": " +
                         "only char or unsigned char can be read from " +
                         "an odd address.");
       }
@@ -346,7 +367,8 @@ qx.Class.define("learncs.machine.Memory",
           typeDest != "char" &&
           typeDest != "unsigned char")
       {
-        throw new Error("Invalid memory access at " + addr + ": " +
+        throw new Error("Invalid memory access at " + 
+                        addr.toString(16) + ": " +
                         "only char or unsigned char can be written to " +
                         "an odd address.");
       }
@@ -462,11 +484,12 @@ qx.Class.define("learncs.machine.Memory",
 
     statics.info.reg.length = statics.NUM_REGS * statics.WORDSIZE;
 
-    statics.register.PC = statics.info.reg.start + (0 * statics.WORDSIZE);
-    statics.register.SP = statics.info.reg.start + (1 * statics.WORDSIZE);
-    statics.register.FP = statics.info.reg.start + (2 * statics.WORDSIZE);
-    statics.register.R1 = statics.info.reg.start + (3 * statics.WORDSIZE);
-    statics.register.R2 = statics.info.reg.start + (4 * statics.WORDSIZE);
-    statics.register.R3 = statics.info.reg.start + (4 * statics.WORDSIZE);
+    statics.register.PC  = statics.info.reg.start + (0 * statics.WORDSIZE);
+    statics.register.SP  = statics.info.reg.start + (1 * statics.WORDSIZE);
+    statics.register.ESP = statics.info.reg.start + (2 * statics.WORDSIZE);
+    statics.register.FP  = statics.info.reg.start + (3 * statics.WORDSIZE);
+    statics.register.R1  = statics.info.reg.start + (4 * statics.WORDSIZE);
+    statics.register.R2  = statics.info.reg.start + (5 * statics.WORDSIZE);
+    statics.register.R3  = statics.info.reg.start + (6 * statics.WORDSIZE);
   }
 });
