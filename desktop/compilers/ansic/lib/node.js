@@ -204,8 +204,14 @@ exports.process = process = function(node, data)
       break;
       
     case "assign" :
-        // Test for left side variable or address (lvalue) in 23 = 42
-        // Produce a *meaningful* error message
+      // TODO: Test for left side variable or address (lvalue) in 23 = 42
+      // Produce a *meaningful* error message
+      
+      /*
+       * assign
+       *   0: unary_expression (lhs)
+       *   1: assignment_expression (rhs)
+       */
       throw new Error("assign");
       break;
       
@@ -756,30 +762,36 @@ exports.process = process = function(node, data)
        *   2: abstract_declarator?
        */
 
-      // Get the identifier name
+      // Prepare to get the identifier name
       declarator = node.children[1];
-      identifier = declarator.children[0].value;
-
-      // It shouldn't exist. Create a symbol table entry for this
-      // variable
-      entry = symtab.add(null, identifier, declarator.line, false);
-
-      if (! entry)
+      
+      // If there is one...
+      if (declarator)
       {
-        entry = symtab.get(null, identifier);
-        node.error("Parameter '" + identifier + "' " +
-                   "was previously declared near line " +
-                   entry.getLine());
-        return;
-      }
+        // ... then extract it.
+        identifier = declarator.children[0].value;
 
-      // Count and save the number of levels of pointers of this variable
-      // e.g., char **p; would call incrementPointerCount() twice.
-      for (pointer = declarator.children[1];
-           pointer;
-           pointer = pointer.children[0])
-      {
-        entry.incrementPointerCount();
+        // It shouldn't exist. Create a symbol table entry for this
+        // variable
+        entry = symtab.add(null, identifier, declarator.line, false);
+
+        if (! entry)
+        {
+          entry = symtab.get(null, identifier);
+          node.error("Parameter '" + identifier + "' " +
+                     "was previously declared near line " +
+                     entry.getLine());
+          return;
+        }
+
+        // Count and save the number of levels of pointers of this variable
+        // e.g., char **p; would call incrementPointerCount() twice.
+        for (pointer = declarator.children[1];
+             pointer;
+             pointer = pointer.children[0])
+        {
+          entry.incrementPointerCount();
+        }
       }
       
       // Apply the declaration specifiers to each of this entry
@@ -819,7 +831,15 @@ exports.process = process = function(node, data)
       break;
       
     case "postfix_expression" :
-      throw new Error("postfix_expression");
+      /*
+       * postfix_expression
+       *   0: primary_expression |
+       *      array_expression | 
+       *      structure_reference |
+       *      pointer_access
+       *   ...
+       */
+      processSubnodes(node, data);
       break;
       
     case "post_increment_op" :
@@ -1075,6 +1095,62 @@ exports.process = process = function(node, data)
     // It's null. Display a representation of a null value.
     throw new Error("attempt to process <null>");
   }
+};
+
+
+/**
+ * After parsing, the line number for a node is the line at which that node's
+ * code completed. What we really want is the line at which that node's code
+ * began. Search each node for its children's minimum line number, and
+ * recursively set each node to have that minimum as its own line number.
+ * 
+ * @param node {Map|Null}
+ *   A Node object, along with, recursively, all of its children
+ */
+exports.fixLineNumbers = function(node)
+{
+  var             minLine = Number.MAX_VALUE;
+  var             line;
+  
+  // If this node is null, there's nothing to do.
+  if (! node)
+  {
+    return null;
+  }
+
+  // If there are children of this node...
+  if (node.children)
+  {
+    // ... then calculate the minimum line number of each of this node's
+    // chidlren.
+    node.children.forEach(
+      function(subnode)
+      {
+        // Get the minimum line number for this child node
+        line = exports.fixLineNumbers(subnode) || node.line;
+        
+        // Is it less than our previous minimum?
+        if (line < minLine)
+        {
+          // Yup. Save this one.
+          minLine = line;
+        }
+      });
+  }
+  
+  // If this node's own line number is less than the minimum so far...
+  if (node.line < minLine)
+  {
+    // ... then save this one.
+    minLine = line;
+  }
+  
+  // This node's line number becomes the minimum of all of its children's line
+  // numbers and its own line number.
+  node.line = minLine;
+  
+  // Return the (possibly new) line number of this node
+  return node.line;
 };
 
 

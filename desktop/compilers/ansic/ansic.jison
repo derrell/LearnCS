@@ -33,7 +33,13 @@ start_sym
     {
       var data = {};
 
+      // Correct line numbers
+      node.fixLineNumbers($1);
+
+      // Display the abstract syntax tree
       node.display($1);
+
+      // Display the symbol table
       symtab.display();
 
       // Reset the symbol table to a clean state

@@ -481,8 +481,6 @@ qx.Class.define("learncs.machine.Instruction",
         mem.setReg("R1", "int", value != 0);
         break;
       }
-      
-
     },
 
     /**
