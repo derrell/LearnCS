@@ -1,4 +1,5 @@
 void foo(void)
 {
-    int bar = 23;
+    short bar = 23;
+    int baz = 42;
 }

@@ -97,7 +97,7 @@ var Entry = function(name, bIsType, symtab, line)
 
       // offset from the base pointer (in activation record, at the beginning
       // of automatic local variable portion)
-      offset       : 0,
+      offset       : symtab.nextOffset,
 
       // line number on which this symbol was defined
       line         : line
@@ -169,6 +169,7 @@ var Entry = function(name, bIsType, symtab, line)
   
   entry.setType = function(type)
   {
+    // Error checking
     switch(type)
     {
     case "char" :
@@ -214,7 +215,7 @@ var Entry = function(name, bIsType, symtab, line)
       return;
     }
 
-    // Now set the appropriate bit
+    // Now set the appropriate bit, the size, and the next offset
     switch(type)
     {
     case "char" :
@@ -302,6 +303,14 @@ var Entry = function(name, bIsType, symtab, line)
       entry.size = 0;
       break;
     }
+
+    // Specify the next symbol's (tentative) offset based on this one's size
+    // (It's tentative, because this function can be called multiple times:
+    // once for each modifier, e.g. for "unsigned long int" it will be called
+    // three times.)
+    //
+    // Every new symbol begins on a multiple of 4 bytes, for easy display
+    symtab.nextOffset = Math.floor((entry.offset + entry.size + 3) / 4);
   };
   
   entry.getIsUnsigned = function()
@@ -741,6 +750,8 @@ exports.display = function(message)
       {
         sys.print("*");
       }
+      
+      entry.display();
       sys.print("\n");
     }
   }
