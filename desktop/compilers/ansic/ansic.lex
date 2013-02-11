@@ -58,7 +58,8 @@ SQ                      ("'")
 {L}({L}|{D})*		{
                           var             sym;
 
-                          sym = symtab.get(symtab.getCurrent(), yytext);
+                          sym = learncs.lib.Symtab.getCurrent().get(
+                              yytext, false);
                           return (sym && sym.getIsType()
                                   ? parser.symbols_.TYPE_NAME
                                   : parser.symbols_.IDENTIFIER);

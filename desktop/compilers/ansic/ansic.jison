@@ -34,25 +34,25 @@ start_sym
       var data = {};
 
       // Correct line numbers
-      node.fixLineNumbers($1);
+      $1.fixLineNumbers();
 
       // Display the abstract syntax tree
-      node.display($1);
+      $1.display();
 
       // Display the symbol table
-      symtab.display();
+      learncs.lib.Symtab.display();
 
       // Reset the symbol table to a clean state
-      symtab.reset();
+      learncs.lib.Symtab.reset();
 
       // Re-create the root-level symbol table
-      symtab.create(null, null, 0);
+      new learncs.lib.Symtab(null, null, 0);
 
       // Process the abstract syntax tree.
-      node.process($1, data);
+      $1.process(data);
 
       sys.print("\n\nAfter processing...");
-      symtab.display();
+      learncs.lib.Symtab.display();
     }
 
     sys.print("\nErrors encountered: " + error.errorCount + "\n\n");
@@ -86,7 +86,7 @@ postfix_expression
   : primary_expression
     {
       R("postfix_expression : primary_expression");
-      $$ = node.create("postfix_expression", yytext, yylineno);
+      $$ = new learncs.lib.Node("postfix_expression", yytext, yylineno);
       $$.children.push($1);
     }
   | postfix_expression '[' expression ']'
@@ -96,7 +96,7 @@ postfix_expression
       var             array_expression;
 
       $$ = $1;
-      array_expression = node.create("array_expression", yytext, yylineno);
+      array_expression = new learncs.lib.Node("array_expression", yytext, yylineno);
       array_expression.children.push($1);
       array_expression.children.push($3);
       $$.children.push(array_expression);
@@ -104,7 +104,7 @@ postfix_expression
   | postfix_expression '(' ')'
     {
       R("postfix_expression : postfix_expression '(' ')'");
-      $$ = node.create("function_call", yytext, yylineno);
+      $$ = new learncs.lib.Node("function_call", yytext, yylineno);
       $$.children.push($1);
       $$.children.push(null);   // no argument_expression_list
     }
@@ -112,7 +112,7 @@ postfix_expression
     {
       R("postfix_expression : " +
         "postfix_expression '(' argument_expression_list ')'");
-      $$ = node.create("function_call", yytext, yylineno);
+      $$ = new learncs.lib.Node("function_call", yytext, yylineno);
       $$.children.push($1);
       $$.children.push($3);
     }
@@ -124,7 +124,7 @@ postfix_expression
 
       $$ = $1;
       structure_reference =
-        node.create("structure_reference", yytext, yylineno);
+        new learncs.lib.Node("structure_reference", yytext, yylineno);
       structure_reference.children.push($3);
       $$.children.push(structure_reference);
     }
@@ -135,20 +135,20 @@ postfix_expression
       var             pointer_access;
 
       $$ = $1;
-      pointer_access = node.create("pointer_access", yytext, yylineno);
+      pointer_access = new learncs.lib.Node("pointer_access", yytext, yylineno);
       pointer_access.children.push($3);
       $$.children.push(pointer_access);
     }
   | postfix_expression INC_OP
     {
       R("postfix_expression : postfix_expression INC_OP");
-      $$ = node.create("post_increment_op", yytext, yylineno);
+      $$ = new learncs.lib.Node("post_increment_op", yytext, yylineno);
       $$.children.push($1);
     }
   | postfix_expression DEC_OP
     {
       R("postfix_expression : postfix_expression DEC_OP");
-      $$ = node.create("post_decrement_op", yytext, yylineno);
+      $$ = new learncs.lib.Node("post_decrement_op", yytext, yylineno);
       $$.children.push($1);
     }
   ;
@@ -157,7 +157,7 @@ argument_expression_list
   : assignment_expression
   {
     R("argument_expression_list : assignment_expression");
-    $$ = node.create("argument_expression_list", yytext, yylineno);
+    $$ = new learncs.lib.Node("argument_expression_list", yytext, yylineno);
     $$.children.push($1);
   }
   | argument_expression_list ',' assignment_expression
@@ -178,13 +178,13 @@ unary_expression
   | INC_OP unary_expression
   {
     R("unary_expression : INC_OP unary_expression");
-    $$ = node.create("pre_increment_op", yytext, yylineno);
+    $$ = new learncs.lib.Node("pre_increment_op", yytext, yylineno);
     $$.children.push($2);
   }
   | DEC_OP unary_expression
   {
     R("unary_expression : DEC_OP unary_expression");
-    $$ = node.create("pre_decrement_op", yytext, yylineno);
+    $$ = new learncs.lib.Node("pre_decrement_op", yytext, yylineno);
     $$.children.push($2);
   }
   | unary_operator cast_expression
@@ -196,13 +196,13 @@ unary_expression
   | SIZEOF unary_expression
   {
     R("unary_expression : SIZEOF unary_expression");
-    $$ = node.create("sizeof", yytext, yylineno);
+    $$ = new learncs.lib.Node("sizeof", yytext, yylineno);
     $$.children.push($2);
   }
   | SIZEOF '(' type_name ')'
   {
     R("unary_expression : SIZEOF '(' type_name ')'");
-    $$ = node.create("sizeof", yytext, yylineno);
+    $$ = new learncs.lib.Node("sizeof", yytext, yylineno);
     $$.children.push($3);
   }
   ;
@@ -211,32 +211,32 @@ unary_operator
   : '&'
   {
     R("unary_operator : '&'");
-    $$ = node.create("address_of", yytext, yylineno);
+    $$ = new learncs.lib.Node("address_of", yytext, yylineno);
   }
   | '*'
   {
     R("unary_operator : '*'");
-    $$ = node.create("dereference", yytext, yylineno);
+    $$ = new learncs.lib.Node("dereference", yytext, yylineno);
   }
   | '+'
   {
     R("unary_operator : '+'");
-    $$ = node.create("positive", yytext, yylineno);
+    $$ = new learncs.lib.Node("positive", yytext, yylineno);
   }
   | '-'
   {
     R("unary_operator : '-'");
-    $$ = node.create("negative", yytext, yylineno);
+    $$ = new learncs.lib.Node("negative", yytext, yylineno);
   }
   | '~'
   {
     R("unary_operator : '~'");
-    $$ = node.create("bit_invert", yytext, yylineno);
+    $$ = new learncs.lib.Node("bit_invert", yytext, yylineno);
   }
   | '!'
   {
     R("unary_operator : '!'");
-    $$ = node.create("not", yytext, yylineno);
+    $$ = new learncs.lib.Node("not", yytext, yylineno);
   }
   ;
 
@@ -249,7 +249,7 @@ cast_expression
   | '(' type_name ')' cast_expression
   {
     R("cast_expression : '(' type_name ')' cast_expression");
-    $$ = node.create("cast_expression", yytext, yylineno);
+    $$ = new learncs.lib.Node("cast_expression", yytext, yylineno);
     $$.children.push($2);
     $$.children.push($4);
   }
@@ -265,7 +265,7 @@ multiplicative_expression
   {
     R("multiplicative_expression : " +
       "multiplicative_expression '*' cast_expression");
-    $$ = node.create("multiply", yytext, yylineno);
+    $$ = new learncs.lib.Node("multiply", yytext, yylineno);
     $$.children.push($1);
     $$.children.push($3);
   }
@@ -273,7 +273,7 @@ multiplicative_expression
   {
     R("multiplicative_expression : " +
       "multiplicative_expression '/' cast_expression");
-    $$ = node.create("divide", yytext, yylineno);
+    $$ = new learncs.lib.Node("divide", yytext, yylineno);
     $$.children.push($1);
     $$.children.push($3);
   }
@@ -281,7 +281,7 @@ multiplicative_expression
   {
     R("multiplicative_expression : " +
       "multiplicative_expression '%' cast_expression");
-    $$ = node.create("mod", yytext, yylineno);
+    $$ = new learncs.lib.Node("mod", yytext, yylineno);
     $$.children.push($1);
     $$.children.push($3);
   }
@@ -297,7 +297,7 @@ additive_expression
   {
     R("additive_expression : " +
       "additive_expression '+' multiplicative_expression");
-    $$ = node.create("add", yytext, yylineno);
+    $$ = new learncs.lib.Node("add", yytext, yylineno);
     $$.children.push($1);
     $$.children.push($3);
   }
@@ -305,7 +305,7 @@ additive_expression
   {
     R("additive_expression : " +
       "additive_expression '-' multiplicative_expression");
-    $$ = node.create("subtract", yytext, yylineno);
+    $$ = new learncs.lib.Node("subtract", yytext, yylineno);
     $$.children.push($1);
     $$.children.push($3);
   }
@@ -320,14 +320,14 @@ shift_expression
   | shift_expression LEFT_OP additive_expression
   {
     R("shift_expression : shift_expression LEFT_OP additive_expression");
-    $$ = node.create("left-shift", yytext, yylineno);
+    $$ = new learncs.lib.Node("left-shift", yytext, yylineno);
     $$.children.push($1);
     $$.children.push($3);
   }
   | shift_expression RIGHT_OP additive_expression
   {
     R("shift_expression : shift_expression RIGHT_OP additive_expression");
-    $$ = node.create("right-shift", yytext, yylineno);
+    $$ = new learncs.lib.Node("right-shift", yytext, yylineno);
     $$.children.push($1);
     $$.children.push($3);
   }
@@ -342,28 +342,28 @@ relational_expression
   | relational_expression '<' shift_expression
   {
     R("relational_expression : relational_expression '<' shift_expression");
-    $$ = node.create("less-than", yytext, yylineno);
+    $$ = new learncs.lib.Node("less-than", yytext, yylineno);
     $$.children.push($1);
     $$.children.push($3);
   }
   | relational_expression '>' shift_expression
   {
     R("relational_expression : relational_expression '>' shift_expression");
-    $$ = node.create("greater-than", yytext, yylineno);
+    $$ = new learncs.lib.Node("greater-than", yytext, yylineno);
     $$.children.push($1);
     $$.children.push($3);
   }
   | relational_expression LE_OP shift_expression
   {
     R("relational_expression : relational_expression LE_OP shift_expression");
-    $$ = node.create("less-equal", yytext, yylineno);
+    $$ = new learncs.lib.Node("less-equal", yytext, yylineno);
     $$.children.push($1);
     $$.children.push($3);
   }
   | relational_expression GE_OP shift_expression
   {
     R("relational_expression : relational_expression GE_OP shift_expression");
-    $$ = node.create("greater-equal", yytext, yylineno);
+    $$ = new learncs.lib.Node("greater-equal", yytext, yylineno);
     $$.children.push($1);
     $$.children.push($3);
   }
@@ -378,14 +378,14 @@ equality_expression
   | equality_expression EQ_OP relational_expression
   {
     R("equality_expression : equality_expression EQ_OP relational_expression");
-    $$ = node.create("equal", yytext, yylineno);
+    $$ = new learncs.lib.Node("equal", yytext, yylineno);
     $$.children.push($1);
     $$.children.push($3);
   }
   | equality_expression NE_OP relational_expression
   {
     R("equality_expression : equality_expression NE_OP relational_expression");
-    $$ = node.create("not-equal", yytext, yylineno);
+    $$ = new learncs.lib.Node("not-equal", yytext, yylineno);
     $$.children.push($1);
     $$.children.push($3);
   }
@@ -400,7 +400,7 @@ and_expression
   | and_expression '&' equality_expression
   {
     R("and_expression : and_expression '&' equality_expression");
-    $$ = node.create("bit-and", yytext, yylineno);
+    $$ = new learncs.lib.Node("bit-and", yytext, yylineno);
     $$.children.push($1);
     $$.children.push($3);
   }
@@ -415,7 +415,7 @@ exclusive_or_expression
   | exclusive_or_expression '^' and_expression
   {
     R("exclusive_or_expression : exclusive_or_expression '^' and_expression");
-    $$ = node.create("exclusive-or", yytext, yylineno);
+    $$ = new learncs.lib.Node("exclusive-or", yytext, yylineno);
     $$.children.push($1);
     $$.children.push($3);
   }
@@ -431,7 +431,7 @@ inclusive_or_expression
   {
     R("inclusive_or_expression : " +
       "inclusive_or_expression '|' exclusive_or_expression");
-    $$ = node.create("bit-or", yytext, yylineno);
+    $$ = new learncs.lib.Node("bit-or", yytext, yylineno);
     $$.children.push($1);
     $$.children.push($3);
   }
@@ -446,7 +446,7 @@ logical_and_expression
   | logical_and_expression AND_OP inclusive_or_expression
   {
     R("logical_and_expression : logical_and_expression AND_OP inclusive_or_expression");
-    $$ = node.create("and", yytext, yylineno);
+    $$ = new learncs.lib.Node("and", yytext, yylineno);
     $$.children.push($1);
     $$.children.push($3);
   }
@@ -462,7 +462,7 @@ logical_or_expression
   {
     R("logical_or_expression : " +
       "logical_or_expression OR_OP logical_and_expression");
-    $$ = node.create("or", yytext, yylineno);
+    $$ = new learncs.lib.Node("or", yytext, yylineno);
     $$.children.push($1);
     $$.children.push($3);
   }
@@ -478,7 +478,7 @@ conditional_expression
   {
     R("conditional_expression : " +
       "logical_or_expression '?' expression ':' conditional_expression");
-    $$ = node.create("trinary", yytext, yylineno);
+    $$ = new learncs.lib.Node("trinary", yytext, yylineno);
     $$.children.push($1);
     $$.children.push($3);
     $$.children.push($5);
@@ -504,57 +504,57 @@ assignment_operator
   : '='
   {
     R("assignment_operator : '='");
-    $$ = node.create("assign", yytext, yylineno);
+    $$ = new learncs.lib.Node("assign", yytext, yylineno);
   }
   | MUL_ASSIGN
   {
     R("assignment_operator : MUL_ASSIGN");
-    $$ = node.create("multiply-assign", yytext, yylineno);
+    $$ = new learncs.lib.Node("multiply-assign", yytext, yylineno);
   }
   | DIV_ASSIGN
   {
     R("assignment_operator : DIV_ASSIGN");
-    $$ = node.create("divide-assign", yytext, yylineno);
+    $$ = new learncs.lib.Node("divide-assign", yytext, yylineno);
   }
   | MOD_ASSIGN
   {
     R("assignment_operator : MOD_ASSIGN");
-    $$ = node.create("mod-assign", yytext, yylineno);
+    $$ = new learncs.lib.Node("mod-assign", yytext, yylineno);
   }
   | ADD_ASSIGN
   {
     R("assignment_operator : ADD_ASSIGN");
-    $$ = node.create("add-assign", yytext, yylineno);
+    $$ = new learncs.lib.Node("add-assign", yytext, yylineno);
   }
   | SUB_ASSIGN
   {
     R("assignment_operator : SUB_ASSIGN");
-    $$ = node.create("subtract-assign", yytext, yylineno);
+    $$ = new learncs.lib.Node("subtract-assign", yytext, yylineno);
   }
   | LEFT_ASSIGN
   {
     R("assignment_operator : LEFT_ASSIGN");
-    $$ = node.create("left-shift-assign", yytext, yylineno);
+    $$ = new learncs.lib.Node("left-shift-assign", yytext, yylineno);
   }
   | RIGHT_ASSIGN
   {
     R("assignment_operator : RIGHT_ASSIGN");
-    $$ = node.create("right-shift-assign", yytext, yylineno);
+    $$ = new learncs.lib.Node("right-shift-assign", yytext, yylineno);
   }
   | AND_ASSIGN
   {
     R("assignment_operator : AND_ASSIGN");
-    $$ = node.create("bit-and-assign", yytext, yylineno);
+    $$ = new learncs.lib.Node("bit-and-assign", yytext, yylineno);
   }
   | XOR_ASSIGN
   {
     R("assignment_operator : XOR_ASSIGN");
-    $$ = node.create("xor-assign", yytext, yylineno);
+    $$ = new learncs.lib.Node("xor-assign", yytext, yylineno);
   }
   | OR_ASSIGN
   {
     R("assignment_operator : OR_ASSIGN");
-    $$ = node.create("bit-or-assign", yytext, yylineno);
+    $$ = new learncs.lib.Node("bit-or-assign", yytext, yylineno);
   }
   ;
 
@@ -567,7 +567,7 @@ expression
   | expression ',' assignment_expression
   {
     R("expression : expression ',' assignment_expression");
-    $$ = node.create("expression", yytext, yylineno);
+    $$ = new learncs.lib.Node("expression", yytext, yylineno);
     $$.children.push($3);
   }
   ;
@@ -592,7 +592,7 @@ declaration
     // condition.
     lexer.begin("INITIAL");
 
-    $$ = node.create("declaration", yytext, yylineno);
+    $$ = new learncs.lib.Node("declaration", yytext, yylineno);
     $$.children.push($1);
   }
   | declaration_specifiers init_declarator_list ';'
@@ -603,7 +603,7 @@ declaration
     // condition.
     lexer.begin("INITIAL");
 
-    $$ = node.create("declaration", yytext, yylineno);
+    $$ = new learncs.lib.Node("declaration", yytext, yylineno);
     $$.children.push($1);
     $$.children.push($2);
   }
@@ -613,7 +613,7 @@ declaration_specifiers
   : storage_class_specifier
   {
     R("declaration_specifiers : storage_class_specifier");
-    $$ = node.create("declaration_specifiers", yytext, yylineno);
+    $$ = new learncs.lib.Node("declaration_specifiers", yytext, yylineno);
     $$.children.unshift($1);
   }
   | storage_class_specifier declaration_specifiers
@@ -626,7 +626,7 @@ declaration_specifiers
   | type_specifier
   {
     R("declaration_specifiers : type_specifier");
-    $$ = node.create("declaration_specifiers", yytext, yylineno);
+    $$ = new learncs.lib.Node("declaration_specifiers", yytext, yylineno);
     $$.children.unshift($1);
   }
   | type_specifier declaration_specifiers
@@ -638,7 +638,7 @@ declaration_specifiers
   | type_qualifier
   {
     R("declaration_specifiers : type_qualifier");
-    $$ = node.create("declaration_specifiers", yytext, yylineno);
+    $$ = new learncs.lib.Node("declaration_specifiers", yytext, yylineno);
     $$.children.unshift($1);
   }
   | type_qualifier declaration_specifiers
@@ -653,7 +653,7 @@ init_declarator_list
   : init_declarator
   {
     R("init_declarator_list : init_declarator");
-    $$ = node.create("init_declarator_list", yytext, yylineno);
+    $$ = new learncs.lib.Node("init_declarator_list", yytext, yylineno);
     $$.children.push($1);
   }
   | init_declarator_list ',' init_declarator
@@ -683,27 +683,27 @@ storage_class_specifier
   {
     R("storage_class_specifier : TYPEDEF");
     lexer.begin("typedef_mode");
-    $$ = node.create("typedef", yytext, yylineno);
+    $$ = new learncs.lib.Node("typedef", yytext, yylineno);
   }
   | EXTERN
   {
     R("storage_class_specifier : EXTERN");
-    $$ = node.create("extern", yytext, yylineno);
+    $$ = new learncs.lib.Node("extern", yytext, yylineno);
   }
   | STATIC
   {
     R("storage_class_specifier : STATIC");
-    $$ = node.create("static", yytext, yylineno);
+    $$ = new learncs.lib.Node("static", yytext, yylineno);
   }
   | AUTO
   {
     R("storage_class_specifier : AUTO");
-    $$ = node.create("auto", yytext, yylineno);
+    $$ = new learncs.lib.Node("auto", yytext, yylineno);
   }
   | REGISTER
   {
     R("storage_class_specifier : REGISTER");
-    $$ = node.create("register", yytext, yylineno);
+    $$ = new learncs.lib.Node("register", yytext, yylineno);
   }
   ;
 
@@ -711,47 +711,47 @@ type_specifier
   : VOID
   {
     R("type_specifier : VOID");
-    $$ = node.create("void", yytext, yylineno);
+    $$ = new learncs.lib.Node("void", yytext, yylineno);
   }
   | CHAR
   {
     R("type_specifier : CHAR");
-    $$ = node.create("char", yytext, yylineno);
+    $$ = new learncs.lib.Node("char", yytext, yylineno);
   }
   | SHORT
   {
     R("type_specifier : SHORT");
-    $$ = node.create("short", yytext, yylineno);
+    $$ = new learncs.lib.Node("short", yytext, yylineno);
   }
   | INT
   {
     R("type_specifier : INT");
-    $$ = node.create("int", yytext, yylineno);
+    $$ = new learncs.lib.Node("int", yytext, yylineno);
   }
   | LONG
   {
     R("type_specifier : LONG");
-    $$ = node.create("long", yytext, yylineno);
+    $$ = new learncs.lib.Node("long", yytext, yylineno);
   }
   | FLOAT
   {
     R("type_specifier : FLOAT");
-    $$ = node.create("float", yytext, yylineno);
+    $$ = new learncs.lib.Node("float", yytext, yylineno);
   }
   | DOUBLE
   {
     R("type_specifier : DOUBLE");
-    $$ = node.create("double", yytext, yylineno);
+    $$ = new learncs.lib.Node("double", yytext, yylineno);
   }
   | SIGNED
   {
     R("type_specifier : SIGNED");
-    $$ = node.create("signed", yytext, yylineno);
+    $$ = new learncs.lib.Node("signed", yytext, yylineno);
   }
   | UNSIGNED
   {
     R("type_specifier : UNSIGNED");
-    $$ = node.create("unsigned", yytext, yylineno);
+    $$ = new learncs.lib.Node("unsigned", yytext, yylineno);
   }
   | struct_or_union_specifier
   {
@@ -784,7 +784,7 @@ struct_or_union_specifier
     $$.children.push($2);
 
     // Add a symbol table entry for this struct (a type)
-    symtab.add(null, $2.value, yylineno, true);
+    learncs.lib.Symtab.getCurrent().add($2.value, yylineno, true);
   }
   | struct_or_union lbrace struct_declaration_list rbrace
   {
@@ -795,7 +795,8 @@ struct_or_union_specifier
     $$.children.push(null);     // no identifier
 
     // Add a symbol table entry for this struct (a type)
-    symtab.add(null, "struct#" + symtab.getUniqueId(), yylineno, true);
+    learncs.lib.Symtab.getCurrent().add(
+      "struct#" + learncs.lib.Symtab.getUniqueId(), yylineno, true);
   }
   | struct_or_union identifier
   {
@@ -809,7 +810,7 @@ struct_or_union_specifier
     $$.children.push($2);
 
     // Add a symbol table entry for this struct (a type)
-    symtab.add(null, $2.value, yylineno, true);
+    leancs.lib.Symtab.getCurrent().add($2.value, yylineno, true);
   }
   ;
 
@@ -817,12 +818,12 @@ struct_or_union
   : STRUCT
   {
     R("struct_or_union : STRUCT");
-    $$ = node.create("struct", yytext, yylineno);
+    $$ = new learncs.lib.Node("struct", yytext, yylineno);
   }
   | UNION
   {
     R("struct_or_union : UNION");
-    $$ = node.create("union", yytext, yylineno);
+    $$ = new learncs.lib.Node("union", yytext, yylineno);
   }
   ;
 
@@ -830,7 +831,7 @@ struct_declaration_list
   : struct_declaration
   {
     R("struct_declaration_list : struct_declaration");
-    $$ = node.create("struct_declaration_list", yytext, yylineno);
+    $$ = new learncs.lib.Node("struct_declaration_list", yytext, yylineno);
     $$.children.push($1);
   }
   | struct_declaration_list struct_declaration
@@ -846,7 +847,7 @@ struct_declaration
   {
     R("struct_declaration : " +
       "specifier_qualifier_list struct_declarator_list ';'");
-    $$ = node.create("struct_declaration", yytext, yylineno);
+    $$ = new learncs.lib.Node("struct_declaration", yytext, yylineno);
     $$.children.push($1);
     $$.children.push($2);
   }
@@ -862,7 +863,7 @@ specifier_qualifier_list
   | type_specifier
   {
     R("specifier_qualifier_list : type_specifier");
-    $$ = node.create("specifier_qualifier_list", yytext, yylineno);
+    $$ = new learncs.lib.Node("specifier_qualifier_list", yytext, yylineno);
     $$.children.unshift($1);
   }
   | type_qualifier specifier_qualifier_list
@@ -874,7 +875,7 @@ specifier_qualifier_list
   | type_qualifier
   {
     R("specifier_qualifier_list : type_qualifier");
-    $$ = node.create("specifier_qualifier_list", yytext, yylineno);
+    $$ = new learncs.lib.Node("specifier_qualifier_list", yytext, yylineno);
     $$.children.unshift($1);
   }
   ;
@@ -883,7 +884,7 @@ struct_declarator_list
   : struct_declarator
   {
     R("struct_declarator_list : struct_declarator");
-    $$ = node.create("struct_declarator_list", yytext, yylineno);
+    $$ = new learncs.lib.Node("struct_declarator_list", yytext, yylineno);
     $$.children.push($1);
   }
   | struct_declarator_list ',' struct_declarator
@@ -898,20 +899,20 @@ struct_declarator
   : declarator
   {
     R("struct_declarator : declarator");
-    $$ = node.create("struct_declarator", yytext, yylineno);
+    $$ = new learncs.lib.Node("struct_declarator", yytext, yylineno);
     $$.children.push($1);
   }
   | ':' constant_expression
   {
     R("struct_declarator : ':' constant_expression");
-    $$ = node.create("struct_declarator", yytext, yylineno);
+    $$ = new learncs.lib.Node("struct_declarator", yytext, yylineno);
     $$.children.push(null);     // no declarator
     $$.children.push($2);
   }
   | declarator ':' constant_expression
   {
     R("struct_declarator : declarator ':' constant_expression");
-    $$ = node.create("struct_declarator", yytext, yylineno);
+    $$ = new learncs.lib.Node("struct_declarator", yytext, yylineno);
     $$.children.push($1);
     $$.children.push($3);
   }
@@ -921,21 +922,21 @@ enum_specifier
   : ENUM lbrace enumerator_list rbrace
   {
     R("enum_specifier : ENUM lbrace enumerator_list rbrace");
-    $$ = node.create("enum_specifier", yytext, yylineno);
+    $$ = new learncs.lib.Node("enum_specifier", yytext, yylineno);
     $$.children.push($3);
     $$.children.push(null);     // no identifier
   }
   | ENUM identifier lbrace enumerator_list rbrace
   {
     R("enum_specifier : ENUM identifier lbrace enumerator_list rbrace");
-    $$ = node.create("enum_specifier", yytext, yylineno);
+    $$ = new learncs.lib.Node("enum_specifier", yytext, yylineno);
     $$.children.push($4);
     $$.children.push($2);
   }
   | ENUM identifier
   {
     R("enum_specifier : ENUM identifier");
-    $$ = node.create("enum_specifier", yytext, yylineno);
+    $$ = new learncs.lib.Node("enum_specifier", yytext, yylineno);
     $$.children.push(null);     // no enumerator list
     $$.children.push($2);
   }
@@ -945,7 +946,7 @@ enumerator_list
   : enumerator
   {
     R("enumerator_list : enumerator");
-    $$ = node.create("enumerator_list", yytext, yylineno);
+    $$ = new learncs.lib.Node("enumerator_list", yytext, yylineno);
     $$.children.push($1);
   }
   | enumerator_list ',' enumerator
@@ -974,12 +975,12 @@ type_qualifier
   : CONST
   {
     R("type_qualifier : CONST");
-    $$ = node.create("const", yytext, yylineno);
+    $$ = new learncs.lib.Node("const", yytext, yylineno);
   }
   | VOLATILE
   {
     R("type_qualifier : VOLATILE");
-    $$ = node.create("volatile", yytext, yylineno);
+    $$ = new learncs.lib.Node("volatile", yytext, yylineno);
   }
   ;
 
@@ -987,14 +988,14 @@ declarator
   : pointer direct_declarator
   {
     R("declarator : pointer direct_declarator");
-    $$ = node.create("declarator", yytext, yylineno);
+    $$ = new learncs.lib.Node("declarator", yytext, yylineno);
     $$.children.push($2);
     $$.children.push($1);
   }
   | direct_declarator
   {
     R("declarator : direct_declarator");
-    $$ = node.create("declarator", yytext, yylineno);
+    $$ = new learncs.lib.Node("declarator", yytext, yylineno);
     $$.children.push($1);
     $$.children.push(null);
   }
@@ -1018,7 +1019,7 @@ direct_declarator
     var             array_decl;
 
     $$ = $1;
-    array_decl = node.create("array_decl", yytext, yylineno);
+    array_decl = new learncs.lib.Node("array_decl", yytext, yylineno);
     array_decl.children.push($3);
     $$.children.push(array_decl);
   }
@@ -1029,7 +1030,7 @@ direct_declarator
     var             array_decl;
 
     $$ = $1;
-    array_decl = node.create("array_decl", yytext, yylineno);
+    array_decl = new learncs.lib.Node("array_decl", yytext, yylineno);
     $$.children.push(array_decl);
   }
   | direct_declarator function_scope '(' parameter_type_list ')'
@@ -1037,7 +1038,7 @@ direct_declarator
     R("direct_declarator : " +
       "direct_declarator '(' parameter_type_list ')'");
     
-    $$ = node.create("function_decl", yytext, yylineno);
+    $$ = new learncs.lib.Node("function_decl", yytext, yylineno);
     $$.children.push($1);
     $$.children.push($4);
     $$.children.push(null);     // no identifier_list
@@ -1047,7 +1048,7 @@ direct_declarator
     R("direct_declarator : " +
       "direct_declarator '(' identifier_list ')'");
 
-    $$ = node.create("function_decl", yytext, yylineno);
+    $$ = new learncs.lib.Node("function_decl", yytext, yylineno);
     $$.children.push($1);
     $$.children.push(null);     // no parameter_type_list
     $$.children.push($4);
@@ -1056,7 +1057,7 @@ direct_declarator
   {
     R("direct_declarator : direct_declarator '(' ')'");
     
-    $$ = node.create("function_decl", yytext, yylineno);
+    $$ = new learncs.lib.Node("function_decl", yytext, yylineno);
     $$.children.push($1);
     $$.children.push(null);     // no parameter_type_list
     $$.children.push(null);     // no identifier_list
@@ -1067,24 +1068,24 @@ pointer
   : '*'
   {
     R("pointer : '*'");
-    $$ = node.create("pointer", yytext, yylineno);
+    $$ = new learncs.lib.Node("pointer", yytext, yylineno);
   }
   | '*' type_qualifier_list
   {
     R("pointer : '*' type_qualifier_list");
-    $$ = node.create("pointer", yytext, yylineno);
+    $$ = new learncs.lib.Node("pointer", yytext, yylineno);
     $$.children.push($2);
   }
   | '*' pointer
   {
     R("pointer : '*' pointer");
-    $$ = node.create("pointer", yytext, yylineno);
+    $$ = new learncs.lib.Node("pointer", yytext, yylineno);
     $$.children.push($2);
   }
   | '*' type_qualifier_list pointer
   {
     R("pointer : '*' type_qualifier_list pointer");
-    $$ = node.create("pointer", yytext, yylineno);
+    $$ = new learncs.lib.Node("pointer", yytext, yylineno);
     $$.children.push($2);
     $$.children.push($3);
   }
@@ -1094,7 +1095,7 @@ type_qualifier_list
   : type_qualifier
   {
     R("type_qualifier_list : type_qualifier");
-    $$ = node.create("type_qualifier_list", yytext, yylineno);
+    $$ = new learncs.lib.Node("type_qualifier_list", yytext, yylineno);
     $$.children.push($1);
   }
   | type_qualifier_list type_qualifier
@@ -1124,7 +1125,7 @@ parameter_list
   : parameter_declaration
   {
     R("parameter_list : parameter_declaration");
-    $$ = node.create("parameter_list", yytext, yylineno);
+    $$ = new learncs.lib.Node("parameter_list", yytext, yylineno);
     $$.children.push($1);
   }
   | parameter_list ',' parameter_declaration
@@ -1139,7 +1140,7 @@ parameter_declaration
   : declaration_specifiers declarator
   {
     R("parameter_declaration : declaration_specifiers declarator");
-    $$ = node.create("parameter_declaration", yytext, yylineno);
+    $$ = new learncs.lib.Node("parameter_declaration", yytext, yylineno);
     $$.children.push($1);
     $$.children.push($2);
     $$.children.push(null);     // no abstract declarator
@@ -1147,7 +1148,7 @@ parameter_declaration
   | declaration_specifiers abstract_declarator
   {
     R("parameter_declaration : declaration_specifiers abstract_declarator");
-    $$ = node.create("parameter_declaration", yytext, yylineno);
+    $$ = new learncs.lib.Node("parameter_declaration", yytext, yylineno);
     $$.children.push($1);
     $$.children.push(null);     // no declarator
     $$.children.push($2);
@@ -1155,7 +1156,7 @@ parameter_declaration
   | declaration_specifiers
   {
     R("parameter_declaration : declaration_specifiers");
-    $$ = node.create("parameter_declaration", yytext, yylineno);
+    $$ = new learncs.lib.Node("parameter_declaration", yytext, yylineno);
     $$.children.push($1);
     $$.children.push(null);     // no declarator
     $$.children.push(null);     // no abstract declarator
@@ -1166,7 +1167,7 @@ identifier_list
   : identifier
   {
     R("identifier_list : identifier");
-    $$ = node.create("identifier_list", yytext, yylineno);
+    $$ = new learncs.lib.Node("identifier_list", yytext, yylineno);
     $$.children.push($1);
   }
   | identifier_list ',' identifier
@@ -1181,13 +1182,13 @@ type_name
   : specifier_qualifier_list
   {
     R("type_name : specifier_qualifier_list");
-    $$ = node.create("type_name", yytext, yylineno);
+    $$ = new learncs.lib.Node("type_name", yytext, yylineno);
     $$.children.push($1);
   }
   | specifier_qualifier_list abstract_declarator
   {
     R("type_name : specifier_qualifier_list abstract_declarator");
-    $$ = node.create("type_name", yytext, yylineno);
+    $$ = new learncs.lib.Node("type_name", yytext, yylineno);
     $$.children.push($1);
     $$.children.push($2);
   }
@@ -1197,20 +1198,20 @@ abstract_declarator
   : pointer
   {
     R("abstract_declarator : pointer");
-    $$ = node.create("abstract_declarator", yytext, yylineno);
+    $$ = new learncs.lib.Node("abstract_declarator", yytext, yylineno);
     $$.children.push($1);
   }
   | direct_abstract_declarator
   {
     R("abstract_declarator : direct_abstract_declarator");
-    $$ = node.create("abstract_declarator", yytext, yylineno);
+    $$ = new learncs.lib.Node("abstract_declarator", yytext, yylineno);
     $$.children.push(null);     // no pointer
     $$.children.push($1);
   }
   | pointer direct_abstract_declarator
   {
     R("abstract_declarator : pointer direct_abstract_declarator");
-    $$ = node.create("abstract_declarator", yytext, yylineno);
+    $$ = new learncs.lib.Node("abstract_declarator", yytext, yylineno);
     $$.children.push($1);
     $$.children.push($2);
   }
@@ -1220,7 +1221,7 @@ direct_abstract_declarator
   : '(' abstract_declarator ')'
   {
     R("direct_abstract_declarator : '(' abstract_declarator ')'");
-    $$ = node.create("direct_abstract_declarator", yytext, yylineno);
+    $$ = new learncs.lib.Node("direct_abstract_declarator", yytext, yylineno);
     $$.children.push($2);
   }
   | '[' ']'
@@ -1229,8 +1230,8 @@ direct_abstract_declarator
     
     var             array_decl;
 
-    $$ = node.create("direct_abstract_declarator", yytext, yylineno);
-    array_decl = node.create("array_decl", yytext, yylineno);
+    $$ = new learncs.lib.Node("direct_abstract_declarator", yytext, yylineno);
+    array_decl = new learncs.lib.Node("array_decl", yytext, yylineno);
     $$.children.push(array_decl);
   }
   | '[' constant_expression ']'
@@ -1239,8 +1240,8 @@ direct_abstract_declarator
     
     var             array_decl;
 
-    $$ = node.create("direct_abstract_declarator", yytext, yylineno);
-    array_decl = node.create("array_decl", yytext, yylineno);
+    $$ = new learncs.lib.Node("direct_abstract_declarator", yytext, yylineno);
+    array_decl = new learncs.lib.Node("array_decl", yytext, yylineno);
     array_decl.children.push($2);
     $$.children.push(array_decl);
   }
@@ -1252,8 +1253,8 @@ direct_abstract_declarator
     var             child;
 
     $$ = $1;
-    child = node.create("direct_abstract_declarator", yytext, yylineno);
-    array_decl = node.create("array_decl", yytext, yylineno);
+    child = new learncs.lib.Node("direct_abstract_declarator", yytext, yylineno);
+    array_decl = new learncs.lib.Node("array_decl", yytext, yylineno);
     child.children.push(array_decl);
     $$.children.push(child);
   }
@@ -1266,8 +1267,8 @@ direct_abstract_declarator
     var             child;
 
     $$ = $1;
-    child = node.create("direct_abstract_declarator", yytext, yylineno);
-    array_decl = node.create("array_decl", yytext, yylineno);
+    child = new learncs.lib.Node("direct_abstract_declarator", yytext, yylineno);
+    array_decl = new learncs.lib.Node("array_decl", yytext, yylineno);
     array_decl.children.push($3);
     child.children.push(array_decl);
     $$.children.push(child);
@@ -1275,12 +1276,12 @@ direct_abstract_declarator
   | '(' ')'
   {
     R("direct_abstract_declarator : '(' ')'");
-    $$ = node.create("direct_abstract_declarator", yytext, yylineno);
+    $$ = new learncs.lib.Node("direct_abstract_declarator", yytext, yylineno);
   }
   | '(' parameter_type_list ')'
   {
     R("direct_abstract_declarator : '(' parameter_type_list ')'");
-    $$ = node.create("direct_abstract_declarator", yytext, yylineno);
+    $$ = new learncs.lib.Node("direct_abstract_declarator", yytext, yylineno);
     $$.children.push($2);
   }
   | direct_abstract_declarator '(' ')'
@@ -1290,7 +1291,7 @@ direct_abstract_declarator
     var             child;
 
     $$ = $1;
-    child = node.create("direct_abstract_declarator", yytext, yylineno);
+    child = new learncs.lib.Node("direct_abstract_declarator", yytext, yylineno);
     $$.children.push(child);
   }
   | direct_abstract_declarator '(' parameter_type_list ')'
@@ -1301,7 +1302,7 @@ direct_abstract_declarator
     var             child;
 
     $$ = $1;
-    child = node.create("direct_abstract_declarator", yytext, yylineno);
+    child = new learncs.lib.Node("direct_abstract_declarator", yytext, yylineno);
     child.children.push($2);
     $$.children.push(child);
   }
@@ -1329,7 +1330,7 @@ initializer_list
   : initializer
   {
     R("initializer_list : initializer");
-    $$ = node.create("initializer_list", yytext, yylineno);
+    $$ = new learncs.lib.Node("initializer_list", yytext, yylineno);
     $$.children.push($1);
   }
   | initializer_list ',' initializer
@@ -1381,21 +1382,21 @@ labeled_statement
   : identifier ':' statement
   {
     R("labeled_statement : identifier ':' statement");
-    $$ = node.create("label", yytext, yylineno);
+    $$ = new learncs.lib.Node("label", yytext, yylineno);
     $$.children.push($1);
     $$.children.push($3);
   }
   | CASE constant_expression ':' statement
   {
     R("labeled_statement : CASE constant_expression ':' statement");
-    $$ = node.create("case", yytext, yylineno);
+    $$ = new learncs.lib.Node("case", yytext, yylineno);
     $$.children.push($2);
     $$.children.push($4);
   }
   | DEFAULT ':' statement
   {
     R("labeled_statement : DEFAULT ':' statement");
-    $$ = node.create("default", yytext, yylineno);
+    $$ = new learncs.lib.Node("default", yytext, yylineno);
     $$.children.push($3);
   }
   ;
@@ -1404,26 +1405,26 @@ compound_statement
   : lbrace_scope rbrace_scope
   {
     R("compound_statement : lbrace_scope rbrace_scope");
-    $$ = node.create("compound_statement", yytext, yylineno);
+    $$ = new learncs.lib.Node("compound_statement", yytext, yylineno);
   }
   | lbrace_scope statement_list rbrace_scope
   {
     R("compound_statement : lbrace_scope statement_list rbrace_scope");
-    $$ = node.create("compound_statement", yytext, yylineno);
+    $$ = new learncs.lib.Node("compound_statement", yytext, yylineno);
     $$.children.push(null);     // no declaration_list
     $$.children.push($2);
   }
   | lbrace_scope declaration_list rbrace_scope
   {
     R("compound_statement : lbrace_scope declaration_list rbrace_scope");
-    $$ = node.create("compound_statement", yytext, yylineno);
+    $$ = new learncs.lib.Node("compound_statement", yytext, yylineno);
     $$.children.push($2);
     $$.children.push(null);     // no statement list
   }
   | lbrace_scope declaration_list statement_list rbrace_scope
   {
     R("compound_statement : lbrace_scope declaration_list statement_list rbrace_scope");
-    $$ = node.create("compound_statement", yytext, yylineno);
+    $$ = new learncs.lib.Node("compound_statement", yytext, yylineno);
     $$.children.push($2);
     $$.children.push($3);
   }
@@ -1433,7 +1434,7 @@ declaration_list
   : declaration
   {
     R("declaration_list : declaration");
-    $$ = node.create("declaration_list", yytext, yylineno);
+    $$ = new learncs.lib.Node("declaration_list", yytext, yylineno);
     $$.children.push($1);
   }
   | declaration_list declaration
@@ -1448,7 +1449,7 @@ statement_list
   : statement
   {
     R("statement_list : statement");
-    $$ = node.create("statement_list", yytext, yylineno);
+    $$ = new learncs.lib.Node("statement_list", yytext, yylineno);
     $$.children.push($1);
   }
   | statement_list statement
@@ -1463,7 +1464,7 @@ expression_statement
   : ';'
   {
     R("expression_statement : ';'");
-    $$ = node.create("expression", yytext, yylineno);
+    $$ = new learncs.lib.Node("expression", yytext, yylineno);
   }
   | expression ';'
   {
@@ -1476,14 +1477,14 @@ selection_statement
   : IF '(' expression ')' statement
   {
     R("selection_statement : IF '(' expression ')' statement");
-    $$ = node.create("if", yytext, yylineno);
+    $$ = new learncs.lib.Node("if", yytext, yylineno);
     $$.children.push($3);
     $$.children.push($5);
   }
   | IF '(' expression ')' statement ELSE statement
   {
     R("selection_statement : IF '(' expression ')' statement ELSE statement");
-    $$ = node.create("if", yytext, yylineno);
+    $$ = new learncs.lib.Node("if", yytext, yylineno);
     $$.children.push($3);
     $$.children.push($5);
     $$.children.push($7);
@@ -1491,7 +1492,7 @@ selection_statement
   | SWITCH '(' expression ')' statement
   {
     R("selection_statement : SWITCH '(' expression ')' statement");
-    $$ = node.create("switch", yytext, yylineno);
+    $$ = new learncs.lib.Node("switch", yytext, yylineno);
     $$.children.push($3);
     $$.children.push($5);
   }
@@ -1501,7 +1502,7 @@ iteration_statement
   : WHILE '(' expression ')' statement
   {
     R("iteration_statement : WHILE '(' expression ')' statement");
-    $$ = node.create("for", yytext, yylineno);
+    $$ = new learncs.lib.Node("for", yytext, yylineno);
     $$.children.push(null);     // initialization
     $$.children.push($3);       // while condition
     $$.children.push($5);       // statement block
@@ -1510,14 +1511,14 @@ iteration_statement
   | DO statement WHILE '(' expression ')' ';'
   {
     R("iteration_statement : DO statement WHILE '(' expression ')' ';'");
-    $$ = node.create("do-while", yytext, yylineno);
+    $$ = new learncs.lib.Node("do-while", yytext, yylineno);
     $$.children.push($2);       // statement
     $$.children.push($4);       // while condition
   }
   | FOR '(' expression_statement expression_statement ')' statement
   {
     R("iteration_statement : FOR '(' expression_statement expression_statement ')' statement");
-    $$ = node.create("for", yytext, yylineno);
+    $$ = new learncs.lib.Node("for", yytext, yylineno);
     $$.children.push($3);       // initialization
     $$.children.push($4);       // while condition
     $$.children.push($6);       // statement block
@@ -1528,7 +1529,7 @@ iteration_statement
     R("iteration_statement : " +
       "FOR '(' expression_statement expression_statement expression ')' " +
       "statement");
-    $$ = node.create("for", yytext, yylineno);
+    $$ = new learncs.lib.Node("for", yytext, yylineno);
     $$.children.push($3);       // initialization
     $$.children.push($4);       // while condition
     $$.children.push($7);       // statement block
@@ -1540,28 +1541,28 @@ jump_statement
   : GOTO identifier ';'
   {
     R("jump_statement : GOTO identifier ';'");
-    $$ = node.create("goto", yytext, yylineno);
+    $$ = new learncs.lib.Node("goto", yytext, yylineno);
     $$.children.push($2);
   }
   | CONTINUE ';'
   {
     R("jump_statement : CONTINUE ';'");
-    $$ = node.create("continue", yytext, yylineno);
+    $$ = new learncs.lib.Node("continue", yytext, yylineno);
   }
   | BREAK ';'
   {
     R("jump_statement : BREAK ';'");
-    $$ = node.create("break", yytext, yylineno);
+    $$ = new learncs.lib.Node("break", yytext, yylineno);
   }
   | RETURN ';'
   {
     R("jump_statement : RETURN ';'");
-    $$ = node.create("return", yytext, yylineno);
+    $$ = new learncs.lib.Node("return", yytext, yylineno);
   }
   | RETURN expression ';'
   {
     R("jump_statement : RETURN expression ';'");
-    $$ = node.create("return", yytext, yylineno);
+    $$ = new learncs.lib.Node("return", yytext, yylineno);
     $$.children.push($2);
   }
   ;
@@ -1570,7 +1571,7 @@ translation_unit
   : external_declaration
     {
       R("translation_unit : external_declaration");
-      $$ = node.create("translation_unit", yytext, yylineno);
+      $$ = new learncs.lib.Node("translation_unit", yytext, yylineno);
       $$.children.push($1);
     }
   | translation_unit external_declaration
@@ -1588,7 +1589,7 @@ external_declaration
     $$ = $1;
 
     // Pop the symtab created by function_scope from the stack
-    symtab.popStack();
+    learncs.lib.Symtab.popStack();
   }
   | declaration
   {
@@ -1602,7 +1603,7 @@ function_definition
   {
     R("function_definition : " +
       "declaration_specifiers declarator declaration_list compound_statement");
-    $$ = node.create("function_definition", yytext, yylineno);
+    $$ = new learncs.lib.Node("function_definition", yytext, yylineno);
     $$.children.push($1);       // declaration_specifiers
     $$.children.push($2);       // declarator
     $$.children.push($3);       // declaration_list
@@ -1612,7 +1613,7 @@ function_definition
   {
     R("function_definition : " +
       "declaration_specifiers declarator compound_statement");
-    $$ = node.create("function_definition", yytext, yylineno);
+    $$ = new learncs.lib.Node("function_definition", yytext, yylineno);
     $$.children.push($1);       // declaration_specifiers
     $$.children.push($2);       // declarator
     $$.children.push(null);     // declaration_list
@@ -1621,7 +1622,7 @@ function_definition
   | declarator declaration_list compound_statement
   {
     R("function_definition : declarator declaration_list compound_statement");
-    $$ = node.create("function_definition", yytext, yylineno);
+    $$ = new learncs.lib.Node("function_definition", yytext, yylineno);
     $$.children.push(null);     // declaration_specifiers
     $$.children.push($1);       // declarator
     $$.children.push($2);       // declaration_list
@@ -1630,7 +1631,7 @@ function_definition
   | declarator compound_statement
   {
     R("function_definition : declarator compound_statement");
-    $$ = node.create("function_definition", yytext, yylineno);
+    $$ = new learncs.lib.Node("function_definition", yytext, yylineno);
     $$.children.push(null);     // declaration_specifiers
     $$.children.push($1);       // declarator
     $$.children.push(null);     // declaration_list
@@ -1641,7 +1642,7 @@ function_definition
 function_scope
   :
   {
-    symtab.create(symtab.getCurrent(), null, yylineno + 1);
+    new learncs.lib.Symtab(learncs.lib.Symtab.getCurrent(), null, yylineno + 1);
     $$ = $1;
   }
   ;
@@ -1652,14 +1653,14 @@ identifier
     if (lexer.conditionStack[lexer.conditionStack.length - 1] == "typedef_mode")
     {
       R("identifier : TYPE_DEFINITION (" + yytext + ")");
-      $$ = node.create("type_definition", yytext, yylineno);
+      $$ = new learncs.lib.Node("type_definition", yytext, yylineno);
       $$.value = yytext;
-      symtab.add(null, yytext, yylineno, true);
+      learncs.lib.Symtab.getCurrent().add(yytext, yylineno, true);
     }
     else
     {
       R("identifier : IDENTIFIER (" + yytext + ")");
-      $$ = node.create("identifier", yytext, yylineno);
+      $$ = new learncs.lib.Node("identifier", yytext, yylineno);
       $$.value = yytext;
     }
   }
@@ -1669,7 +1670,7 @@ type_name_token
   : TYPE_NAME
   {
     R("identifier : TYPE_NAME (" + yytext + ")");
-    $$ = node.create("type_name", yytext, yylineno);
+    $$ = new learncs.lib.Node("type_name", yytext, yylineno);
     $$.value = yytext;
   }
   ;
@@ -1681,7 +1682,7 @@ constant
     
     var             ch;
 
-    $$ = node.create("constant", yytext, yylineno);
+    $$ = new learncs.lib.Node("constant", yytext, yylineno);
     ch = yytext.charAt(0);
     if (ch == "'" || (ch == "L" && yytext.charAt(1) == "'"))
     {
@@ -1698,7 +1699,7 @@ string_literal
   : STRING_LITERAL
   {
     R("string_literal : STRING_LITERAL");
-    $$ = node.create("string_literal", yytext, yylineno);
+    $$ = new learncs.lib.Node("string_literal", yytext, yylineno);
     $$.value = yytext;
   }
   ;
@@ -1707,7 +1708,7 @@ ellipsis
   : ELLIPSIS
   {
     R("ellipsis : ELLIPSIS");
-    $$ = node.create("ellipsis", yytext, yylineno);
+    $$ = new learncs.lib.Node("ellipsis", yytext, yylineno);
   }
   ;
 
@@ -1717,7 +1718,7 @@ lbrace_scope
     R("lbrace_scope : lbrace");
 
     // Create a symbol table with an arbitrary (for now) name.
-    symtab.create(symtab.getCurrent(), null, yylineno + 1);
+    new learncs.lib.Symtab(learncs.lib.Symtab.getCurrent(), null, yylineno + 1);
   }
   ;
   
@@ -1727,7 +1728,7 @@ rbrace_scope
     R("rbrace_scope : rbrace");
 
     // Pop this block's symbol table from the stack
-    symtab.popStack();
+    learncs.lib.Symtab.popStack();
   }
   ;
   
@@ -1735,7 +1736,7 @@ lbrace
   : LBRACE
   {
     R("lbrace : LBRACE");
-    $$ = node.create("lbrace", yytext, yylineno);
+    $$ = new learncs.lib.Node("lbrace", yytext, yylineno);
   }
   ;
 
@@ -1743,32 +1744,24 @@ rbrace
   : RBRACE
   {
     R("rbrace : RBRACE");
-    $$ = node.create("rbrace", yytext, yylineno);;
+    $$ = new learncs.lib.Node("rbrace", yytext, yylineno);;
   }
   ;
 
 %%
 
 sys = require("sys");                // for sys.print()
-node = require("./lib/node.js");     // Node functionality
 error = require("./lib/error.js");   // parseError, errorCount, etc.
-symtab = require("./lib/symtab.js"); // symbol table functionality
+require("./lib/Symtab.js");          // symbol table functionality
+require("./lib/Node.js");            // Node functionality
 
-modules =
-  {
-    sys    : sys,
-    node   : node,
-    error  : error,
-    symtab : symtab
-  };
-
-error.setParser(parser);                 // provide parser to the error module
+error.setParser(parser);             // provide parser to the error module
 
 // Function called upon each error encountered during parsing
 parser.yy.parseError = error.parseError;
 
 // Create the root-level symbol table
-symtab.create(null, null, 0);
+new learncs.lib.Symtab(null, null, 0);
 
 // Function to display rules as they are parsed
 function R(rule)
