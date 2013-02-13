@@ -90,9 +90,16 @@ qx.Class.define("learncs.lib.Symtab",
   
   statics :
   {
-    __symtabs : null,
-    __symtabStack : null,
-    __symtabStackStruct : null,
+    /** Symbol tables, by name */
+    __symtabs : {},
+    
+    /** Stack of symbol tables, during parsing */
+    __symtabStack : [],
+    
+    /** Stack of local symbol tabales for a structure definition */
+    __symtabStackStruct : [],
+    
+    /** Next id to assign when getUniqueId() is called */
     __nextUniqueId : 0,
 
     /**
@@ -347,13 +354,17 @@ qx.Class.define("learncs.lib.Symtab",
       
       // Call recursively for the parent
       return this.__parent.get(symName, false);
+    },
+    
+    /**
+     * Provide the parent symbol table.
+     * 
+     * @return {learncs.lib.Symtab}
+     *   The parent symbol table
+     */
+    getParent : function()
+    {
+      return this.__parent;
     }
-  },
-  
-  defer : function(statics)
-  {
-    statics.__symtabs = {};
-    statics.__symtabStack = [];
-    statics.__symtabStackStruct = [];
   }
 });

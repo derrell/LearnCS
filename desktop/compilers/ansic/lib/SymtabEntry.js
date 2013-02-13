@@ -107,12 +107,11 @@ qx.Class.define("learncs.lib.SymtabEntry",
       // First, determine if this is a global/static, or an automatic variable.
       // We know it's a global/static if it's in the root symbol table, which
       // has no parent.
-      bGlobal = (! this.__symtab.parent);
+      bGlobal = (! this.__symtab.getParent());
       
       // If it's global, then the address is the entry's offset.
       if (bGlobal)
       {
-console.log("returning global offset " + this.__offset);
         return this.__offset;
       }
       
@@ -120,49 +119,11 @@ console.log("returning global offset " + this.__offset);
       // pointer. Retrieve the frame pointer.
       fp = learncs.lib.SymtabEntry.__mem.getReg("FP", "unsigned int");
       
-      // Return the address found by adding the offset to the frame pointer 
-console.log("return fp (" + fp + ") offset " + this.__offset);
-      return fp + this.__offset;
-    },
-
-    types : function(checkTypes, thisType, otherTypes)
-    {
-      var             typeList = [];
-      var             TF = learncs.lib.SymtabEntry.TypeFlags;
-
-      // List previously-added types
-      if ((checkTypes & TF.Char) && (otherTypes & TF.Char))
-      {
-        typeList.push("char");
-      }
-
-      if ((checkTypes & TF.Short) && (otherTypes & TF.Short))
-      {
-        typeList.push("short");
-      }
-
-      if ((checkTypes & TF.Int) && (otherTypes & TF.Int))
-      {
-        typeList.push("int");
-      }
-
-      if ((checkTypes & TF.Long) && (otherTypes & TF.Long))
-      {
-        typeList.push("long");
-      }
-
-      if ((checkTypes & TF.Float) && (otherTypes & TF.Float))
-      {
-        typeList.push("float");
-      }
-
-      if ((checkTypes & TF.Double) && (otherTypes & TF.Double))
-      {
-        typeList.push("double");
-      }
-
-      // Give 'em a string listing all of those, and the new type
-      return typeList.join(", ") + " with " + thisType;
+      // The frame pointer points to the return address. Therefore, the first
+      // automatic local variable -- the one with offset 0 -- is actually a
+      // four less than the frame pointer. Calculate and return the actual
+      // address of this symbol, based on the frame pointer.
+      return fp - (4 + this.__offset);
     },
 
     getName : function()
@@ -247,8 +208,8 @@ console.log("return fp (" + fp + ") offset " + this.__offset);
         if (this.__typeFlags & (TF.Char | TF.Short | TF.Float | TF.Double))
         {
           this.error("Incompatible type combination: " +
-                      this.types(TF.Char | TF.Short | TF.Float | TF.Double,
-                            type, this.__typeFlags));
+                     this.__types(TF.Char | TF.Short | TF.Float | TF.Double,
+                                  type, this.__typeFlags));
           return;
         }
 
@@ -256,7 +217,8 @@ console.log("return fp (" + fp + ") offset " + this.__offset);
             ((this.__typeFlags & TF.Long) || (this.__typeFlags & TF.Int)))
         {
           this.error("Incompatible type combination: " +
-                      this.types(TF.Float | TF.Double, type, this.__typeFlags));
+                     this.__types(TF.Float | TF.Double, type,
+                                  this.__typeFlags));
           return;
         }
         break;
@@ -265,7 +227,8 @@ console.log("return fp (" + fp + ") offset " + this.__offset);
         if (this.__typeFlags & (TF.Float | TF.Double))
         {
           this.error("Incompatible type combination: " +
-                      this.types(TF.Float | TF.Double, type, this.__typeFlags));
+                     this.__types(TF.Float | TF.Double,
+                                  type, this.__typeFlags));
           return;
         }
         break;
@@ -379,8 +342,7 @@ console.log("return fp (" + fp + ") offset " + this.__offset);
       // three times.)
       //
       // Every new symbol begins on a multiple of 4 bytes, for easy display
-      this.__symtab.nextOffset =
-        Math.floor((this.__offset + this.__size + 3) / 4);
+      this.__symtab.nextOffset += this.__size + ((4 - this.__size) % 4);
     },
 
     getIsUnsigned : function()
@@ -479,6 +441,46 @@ console.log("return fp (" + fp + ") offset " + this.__offset);
           sys.print("\t" + key + " = " + this[key] + "\n");
         }
       }
+    },
+    
+    __types : function(checkTypes, thisType, otherTypes)
+    {
+      var             typeList = [];
+      var             TF = learncs.lib.SymtabEntry.TypeFlags;
+
+      // List previously-added types
+      if ((checkTypes & TF.Char) && (otherTypes & TF.Char))
+      {
+        typeList.push("char");
+      }
+
+      if ((checkTypes & TF.Short) && (otherTypes & TF.Short))
+      {
+        typeList.push("short");
+      }
+
+      if ((checkTypes & TF.Int) && (otherTypes & TF.Int))
+      {
+        typeList.push("int");
+      }
+
+      if ((checkTypes & TF.Long) && (otherTypes & TF.Long))
+      {
+        typeList.push("long");
+      }
+
+      if ((checkTypes & TF.Float) && (otherTypes & TF.Float))
+      {
+        typeList.push("float");
+      }
+
+      if ((checkTypes & TF.Double) && (otherTypes & TF.Double))
+      {
+        typeList.push("double");
+      }
+
+      // Give 'em a string listing all of those, and the new type
+      return typeList.join(", ") + " with " + thisType;
     }
   },
   

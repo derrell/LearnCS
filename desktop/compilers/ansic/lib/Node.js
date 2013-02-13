@@ -469,12 +469,9 @@ qx.Class.define("learncs.lib.Node",
             {
               // ... then retrieve its value
               value = init_declarator.children[1].process(data);
-console.log("FP=" + learncs.lib.Node.__mem.getReg("FP", "unsigned int"));
-console.log("entry addr=" + entry.getAddr() + ", type=" + entry.getType() + ", value=" + value);
               learncs.lib.Node.__mem.set(entry.getAddr(), 
                                          entry.getType(),
                                          value);
-learncs.lib.Node.__mem.prettyPrint("after initialization with value=" + value, learncs.machine.Memory.info.rts.start, 16);
             }
 
             // Add this entry to the list of entries for this declaration

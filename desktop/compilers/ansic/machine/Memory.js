@@ -265,7 +265,6 @@ qx.Class.define("learncs.machine.Memory",
      */
     set : function(addr, type, value)
     {
-console.log("setting address " + addr + " to " + value);
       // Get an appropriate view into the memory, based on the type, and save
       // the value at that address
       this._getByType(type, addr)[0] = value;
@@ -499,7 +498,8 @@ console.log("setting address " + addr + " to " + value);
           {
             // We do. Display it, as four hex digits
             sys.print((i == 0 ? "" : "\n") +
-                      ("0000" + (startAddr + i).toString(16)).substr(-4) + ": ");
+                      ("0000" + 
+                       (startAddr + i).toString(16)).substr(-4) + ": ");
           }
 
           // Display this value, as two hex digits

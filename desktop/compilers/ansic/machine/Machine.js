@@ -46,7 +46,7 @@ qx.Class.define("learncs.machine.Machine",
                  Memory.info.es.start + Memory.info.es.length);
       mem.setReg("FP", 
                  "unsigned int",
-                 Memory.info.rts.start);
+                 Memory.info.rts.start + 32);
     },
 
     /**
