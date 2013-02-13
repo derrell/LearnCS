@@ -173,7 +173,7 @@ qx.Class.define("learncs.lib.Node",
       if (this.line < minLine)
       {
         // ... then save this one.
-        minLine = line;
+        minLine = this.line;
       }
 
       // This node's line number becomes the minimum of all of its children's
@@ -651,7 +651,8 @@ qx.Class.define("learncs.lib.Node",
 
         if (! entry)
         {
-          entry = learncs.lib.Symtab.getCurrent().get(function_decl.children[0].value, true);
+          entry = learncs.lib.Symtab.getCurrent().get(
+            function_decl.children[0].value, true);
           this.error("Identifier '" + 
                      function_decl.children[0].value + "' " +
                      "was previously declared near line " +
@@ -663,9 +664,9 @@ qx.Class.define("learncs.lib.Node",
         entry.setType("function");
 
         // Create a symbol table for this function's arguments
-        symtab.create(learncs.lib.Symtab.getCurrent(), 
-                      function_decl.children[0].value,
-                      function_decl.line);
+        new learncs.lib.Symtab(learncs.lib.Symtab.getCurrent(), 
+                               function_decl.children[0].value,
+                               function_decl.line);
 
         // Process the paremeter list
         if (function_decl.children[1])
@@ -1003,7 +1004,7 @@ qx.Class.define("learncs.lib.Node",
         symtabStruct = entry.getStructSymtab();
         if (! symtabStruct)
         {
-          symtabStruct = symtab.create(null, identifier, this.line);
+          symtabStruct = new learncs.lib.Symtab(null, identifier, this.line);
           entry.setStructSymtab(symtabStruct);
         }
 
