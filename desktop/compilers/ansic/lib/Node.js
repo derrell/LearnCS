@@ -54,7 +54,7 @@ qx.Class.define("learncs.lib.Node",
      */
     error : function(message)
     {
-      sys.print("Error: line " + this.line + ": " + message);
+      sys.print("Error: line " + this.line + ": " + message + "\n");
       ++error.errorCount;
     },
 
@@ -70,7 +70,8 @@ qx.Class.define("learncs.lib.Node",
         function(subnode)
         {
           subnode.process(data);
-        });
+        }, 
+        this);
     },
 
     /**
@@ -120,12 +121,13 @@ qx.Class.define("learncs.lib.Node",
             {
               // It's null. Display a representation of a null value.
               // Create the tree lines
-              sys.print(new Array(indent + 1).join("| "));
+              sys.print(new Array(indent + 2).join("| "));
 
-              // Now display the null representation.
-              sys.print("<null>\n");
+              // Now display the (null) representation of this object.
+              sys.print(subnode + "\n");
             }
-          });
+          },
+          this);
       }
     },
     
@@ -166,7 +168,8 @@ qx.Class.define("learncs.lib.Node",
               // Yup. Save this one.
               minLine = line;
             }
-          });
+          },
+          this);
       }
 
       // If this node's own line number is less than the minimum so far...
@@ -351,8 +354,7 @@ qx.Class.define("learncs.lib.Node",
         break;
 
       case "constant" :
-        throw new Error("constant");
-        break;
+        return this.value;
 
       case "continue" :
         throw new Error("continue");
@@ -363,14 +365,14 @@ qx.Class.define("learncs.lib.Node",
          * declaration
          *   0: declaration_specifiers
          *   1: init_declarator_list
-         *      0: declarator
-         *         0: identifier
-         *         1: pointer|<null>
-         *            0: pointer|<null>
-         *               0: etc.
-         *         2: initializer?
-         *            ...
-         *      1: declarator
+         *      0: init_declarator
+         *         0: declarator
+         *            0: identifier
+         *            1: pointer|<null>
+         *               0: pointer|<null>
+         *                  0: etc.
+         *         1: initializer?
+         *      1: init_declarator
          *      ...
          */
 
@@ -401,11 +403,15 @@ qx.Class.define("learncs.lib.Node",
 
         // Create symbol table entries for these identifiers
         this.children[1].children.forEach(
-          function(declarator)
+          function(init_declarator)
           {
             var             entry;
             var             pointer;
             var             identifier;
+            var             declarator;
+
+            // Retrieve this declarator
+            declarator = init_declarator.children[0];
 
             // Get the identifier name
             identifier = declarator.children[0].value;
@@ -449,9 +455,18 @@ qx.Class.define("learncs.lib.Node",
               entry.incrementPointerCount();
             }
 
+            // If there is an initializer...
+            if (init_declarator.children[1])
+            {
+              // ... then retrieve its value
+              console.log("initializer value is " + 
+                          init_declarator.children[1].process(data));
+            }
+
             // Add this entry to the list of entries for this declaration
             entries.push(entry);
-          });
+          },
+          this);
 
         // Apply the declaration specifiers to each of these entries
         entries.forEach(
@@ -461,7 +476,8 @@ qx.Class.define("learncs.lib.Node",
             {
               this.children[0].process( { entry : entry } );
             }
-          });
+          },
+          this);
         break;
 
       case "declaration_list" :
@@ -528,7 +544,8 @@ qx.Class.define("learncs.lib.Node",
               }
               break;
             }
-          });
+          },
+          this);
         break;
 
       case "declarator" :
@@ -914,7 +931,7 @@ qx.Class.define("learncs.lib.Node",
          *      pointer_access
          *   ...
          */
-        this.__processSubnodes(data);
+        return this.children[0].process(data);
         break;
 
       case "post_increment_op" :
@@ -1073,7 +1090,8 @@ qx.Class.define("learncs.lib.Node",
                             ? subnode.value
                             : subnode.type);
             }
-          });
+          },
+          this);
         break;
 
       case "struct_declaration_list" :

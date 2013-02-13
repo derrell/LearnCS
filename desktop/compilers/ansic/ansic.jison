@@ -494,7 +494,8 @@ assignment_expression
   }
   | unary_expression assignment_operator assignment_expression
   {
-    R("assignment_expression : unary_expression assignment_operator assignment_expression");
+    R("assignment_expression : " +
+      "unary_expression assignment_operator assignment_expression");
     $$ = $2;
     $$.children.push($1);
     $$.children.push($3);
@@ -669,12 +670,15 @@ init_declarator
   : declarator
   {
     R("init_declarator : declarator");
-    $$ = $1;
+    $$ = new learncs.lib.Node("init_declarator", yytext, yylineno);
+    $$.children.push($1);
+    $$.children.push(null);     // no initializer
   }
   | declarator '=' initializer
   {
     R("init_declarator : declarator '=' initializer");
-    $$ = $1;
+    $$ = new learncs.lib.Node("init_declarator", yytext, yylineno);
+    $$.children.push($1);
     $$.children.push($3);
   }
   ;
