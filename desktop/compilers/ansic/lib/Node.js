@@ -202,6 +202,8 @@ qx.Class.define("learncs.lib.Node",
     process : function(data)
     {
       var             i;
+      var             fp;
+      var             sp;
       var             subnode;
       var             entry;
       var             entries;
@@ -406,6 +408,7 @@ qx.Class.define("learncs.lib.Node",
           function(init_declarator)
           {
             var             entry;
+            var             value;
             var             pointer;
             var             identifier;
             var             declarator;
@@ -455,27 +458,28 @@ qx.Class.define("learncs.lib.Node",
               entry.incrementPointerCount();
             }
 
-            // If there is an initializer...
-            if (init_declarator.children[1])
-            {
-              // ... then retrieve its value
-              console.log("initializer value is " + 
-                          init_declarator.children[1].process(data));
-            }
-
-            // Add this entry to the list of entries for this declaration
-            entries.push(entry);
-          },
-          this);
-
-        // Apply the declaration specifiers to each of these entries
-        entries.forEach(
-          function(entry)
-          {
+            // Apply the declaration specifiers to this entry
             if (this.children && this.children[0])
             {
               this.children[0].process( { entry : entry } );
             }
+
+            // If there is an initializer...
+            if (init_declarator.children[1])
+            {
+              // ... then retrieve its value
+              value = init_declarator.children[1].process(data);
+console.log("FP=" + learncs.lib.Node.__mem.getReg("FP", "unsigned int"));
+console.log("entry addr=" + entry.getAddr());
+learncs.lib.Node.__mem.prettyPrint("before initialization with value=" + value, learncs.machine.Memory.info.rts.start, 16);
+              learncs.lib.Node.__mem.set(entry.getAddr(), 
+                                         entry.getType(),
+                                         value);
+learncs.lib.Node.__mem.prettyPrint("after initialization with value=" + value, learncs.machine.Memory.info.rts.start, 16);
+            }
+
+            // Add this entry to the list of entries for this declaration
+            entries.push(entry);
           },
           this);
         break;
@@ -674,7 +678,7 @@ qx.Class.define("learncs.lib.Node",
                      function_decl.children[0].value + "' " +
                      "was previously declared near line " +
                      entry.getLine());
-          return;
+          return null;
         }
 
         // Mark this symbol table entry as a function
@@ -873,7 +877,7 @@ qx.Class.define("learncs.lib.Node",
             this.error("Parameter '" + identifier + "' " +
                        "was previously declared near line " +
                        entry.getLine());
-            return;
+            return null;
           }
 
           // Count and save the number of levels of pointers of this variable
@@ -932,7 +936,6 @@ qx.Class.define("learncs.lib.Node",
          *   ...
          */
         return this.children[0].process(data);
-        break;
 
       case "post_increment_op" :
         throw new Error("post_increment_op");
@@ -1060,7 +1063,7 @@ qx.Class.define("learncs.lib.Node",
           entry = symtabStruct.get(identifier, false);
           this.error("Structure member '" + identifier + "' " +
                      "was previously declared near line " + entry.getLine());
-          return;
+          return null;
         }
 
         // Process the specifier qualifier list to add this declaration's
@@ -1184,6 +1187,18 @@ qx.Class.define("learncs.lib.Node",
         sys.print("Unexpected node type: " + this.type);
         break;
       }
+      
+      return null;
     }
+  },
+  
+  statics :
+  {
+    __mem : null
+  },
+  
+  defer : function(statics)
+  {
+    learncs.lib.Node.__mem = learncs.machine.Memory.getInstance();
   }
 });

@@ -8,6 +8,7 @@
  */
 
 var qx = require("qooxdoo");
+require("../machine/Memory");
 
 qx.Class.define("learncs.lib.SymtabEntry",
 {
@@ -55,6 +56,9 @@ qx.Class.define("learncs.lib.SymtabEntry",
     /** Next entry id, assigned to every symbol table entry */
     __nextEntryId : 0,
 
+    /** Retained reference to memory (initialized in defer()) */
+    __mem : null,
+
     /** Bit fields in the typeFlags field of an Entry */
     TypeFlags :
       {
@@ -95,6 +99,30 @@ qx.Class.define("learncs.lib.SymtabEntry",
   
   members :
   {
+    getAddr : function()
+    {
+      var             fp;
+      var             bGlobal;
+
+      // First, determine if this is a global/static, or an automatic variable.
+      // We know it's a global/static if it's in the root symbol table, which
+      // has no parent.
+      bGlobal = (! this.__symtab.parent);
+      
+      // If it's global, then the address is the entry's offset.
+      if (bGlobal)
+      {
+        return this.__offset;
+      }
+      
+      // It's not global, so its address is based on the frame
+      // pointer. Retrieve the frame pointer.
+      fp = learncs.lib.SymtabEntry.__mem.getReg("FP", "unsigned int");
+      
+      // Return the address found by adding the offset to the frame pointer 
+      return fp + this.__offset;
+    },
+
     types : function(checkTypes, thisType, otherTypes)
     {
       var             typeList = [];
@@ -106,17 +134,17 @@ qx.Class.define("learncs.lib.SymtabEntry",
         typeList.push("char");
       }
 
-      if ((checkTypes && TF.Short) && (otherTypes & TF.Short))
+      if ((checkTypes & TF.Short) && (otherTypes & TF.Short))
       {
         typeList.push("short");
       }
 
-      if ((checkTypes && TF.Int) && (otherTypes & TF.Int))
+      if ((checkTypes & TF.Int) && (otherTypes & TF.Int))
       {
         typeList.push("int");
       }
 
-      if ((checkTypes && TF.Long) && (otherTypes & TF.Long))
+      if ((checkTypes & TF.Long) && (otherTypes & TF.Long))
       {
         typeList.push("long");
       }
@@ -160,6 +188,47 @@ qx.Class.define("learncs.lib.SymtabEntry",
       return this.__typeFlags;
     },
 
+    getType : function()
+    {
+      var             types = this.__typeFlags;
+      var             typeList = [];
+      var             TF = learncs.lib.SymtabEntry.TypeFlags;
+
+      // List previously-added types
+      if (types & TF.Char)
+      {
+        typeList.push("char");
+      }
+
+      if (types & TF.Short)
+      {
+        typeList.push("short");
+      }
+
+      if (types & TF.Long)
+      {
+        typeList.push("long");
+      }
+
+      if (types & TF.Int && ! (types & TF.Short) && ! (types & TF.Long))
+      {
+        typeList.push("int");
+      }
+
+      if (types & TF.Float)
+      {
+        typeList.push("float");
+      }
+
+      if (types & TF.Double)
+      {
+        typeList.push("double");
+      }
+
+      // Give 'em a string listing all of those, and the new type
+      return typeList.join(" ");
+    },
+
     setType : function(type)
     {
       var             TF  = learncs.lib.SymtabEntry.TypeFlags;
@@ -176,7 +245,7 @@ qx.Class.define("learncs.lib.SymtabEntry",
         if (this.__typeFlags & (TF.Char | TF.Short | TF.Float | TF.Double))
         {
           this.error("Incompatible type combination: " +
-                      types(TF.Char | TF.Short | TF.Float | TF.Double,
+                      this.types(TF.Char | TF.Short | TF.Float | TF.Double,
                             type, this.__typeFlags));
           return;
         }
@@ -185,7 +254,7 @@ qx.Class.define("learncs.lib.SymtabEntry",
             ((this.__typeFlags & TF.Long) || (this.__typeFlags & TF.Int)))
         {
           this.error("Incompatible type combination: " +
-                      types(TF.Float | TF.Double, type, this.__typeFlags));
+                      this.types(TF.Float | TF.Double, type, this.__typeFlags));
           return;
         }
         break;
@@ -194,7 +263,7 @@ qx.Class.define("learncs.lib.SymtabEntry",
         if (this.__typeFlags & (TF.Float | TF.Double))
         {
           this.error("Incompatible type combination: " +
-                      types(TF.Float | TF.Double, type, this.__typeFlags));
+                      this.types(TF.Float | TF.Double, type, this.__typeFlags));
           return;
         }
         break;
@@ -409,5 +478,10 @@ qx.Class.define("learncs.lib.SymtabEntry",
         }
       }
     }
+  },
+  
+  defer : function(statics)
+  {
+    learncs.lib.SymtabEntry.__mem = learncs.machine.Memory.getInstance();
   }
 });

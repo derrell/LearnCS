@@ -46,7 +46,8 @@ qx.Class.define("learncs.machine.Machine",
                  Memory.info.es.start + Memory.info.es.length);
       mem.setReg("FP", 
                  "unsigned int",
-                 Memory.info.rts.start + Memory.info.rts.length);
+                 Memory.info.rts.start);
+console.log("Machine.initAll: set FP to " + mem.getReg("FP", "unsigned int"));
     },
 
     /**

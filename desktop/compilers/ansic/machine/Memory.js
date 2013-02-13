@@ -251,6 +251,26 @@ qx.Class.define("learncs.machine.Memory",
     },
     
     /**
+     * Set a value directly from memory. It is converted to the requested
+     * type.
+     *
+     * @param addr {Number}
+     *   The address to which the value should be saved
+     *
+     * @param type {String}
+     *   The C type with which the address should be interpreted.
+     *
+     * @param value {Number}
+     *   The value to be written to the designated address
+     */
+    set : function(addr, type, value)
+    {
+      // Get an appropriate view into the memory, based on the type, and save
+      // the value at that address
+      this._getByType(type, addr)[0] = value;
+    },
+    
+    /**
      * Move data from one address to another.
      *
      * @param addrSrc {Number}

@@ -48,6 +48,9 @@ start_sym
       // Re-create the root-level symbol table
       new learncs.lib.Symtab(null, null, 0);
 
+      // Initialize the machine singleton, which initializes the registers
+      new learncs.machine.Machine();
+
       // Process the abstract syntax tree.
       $1.process(data);
 
@@ -1759,6 +1762,7 @@ sys = require("sys");                // for sys.print()
 error = require("./lib/error.js");   // parseError, errorCount, etc.
 require("./lib/Symtab.js");          // symbol table functionality
 require("./lib/Node.js");            // Node functionality
+require("./machine/Machine.js");     // The virtual machine
 
 error.setParser(parser);             // provide parser to the error module
 
