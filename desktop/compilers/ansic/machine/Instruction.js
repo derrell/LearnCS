@@ -962,7 +962,6 @@ qx.Class.define("learncs.machine.Instruction",
       var             args;
       var             pseudoop;
       var             op;
-      var             arData;
       var             Memory = learncs.machine.Memory;
 
       // Function to retrieve a word address in the globals&statics area
@@ -974,58 +973,69 @@ qx.Class.define("learncs.machine.Instruction",
       // Make a copy of the program line, so we can prepend and append arguments
       args = instruction.split(" ");
 
-      // Is this a pragma? (The first character is an '@')
-      if (args[0].charAt(0) == '@')
+      if (false)
       {
-        // Yes. Handle it specially. Create an activation record data map
-        arData =
-          {
-            type : args[0]
-          };
+        // WRONG! WRONG! WRONG!
+        //
+        // This is the wrong way to do this stuff. The symbol table is
+        // required at run time, not assembly time...
 
-        switch(args[0])
+        var             arData;
+
+        // Is this a pragma? (The first character is an '@')
+        if (args[0].charAt(0) == '@')
         {
-        case "@global" :        // assign a name to a global or static variable
-          arData.name    = args[1];
-          arData.address = args[2];
-          arData.size    = args[3];
-          break;
-          
-        case "@newAR" :         // create a new activation record
-          // Nothing required other than the type, already in arData
-          break;
+          // Yes. Handle it specially. Create an activation record data map
+          arData =
+            {
+              type : args[0]
+            };
 
-        case "@param" :         // assign a name to a parameter
-          arData.name    = args[1];
-          arData.offset  = args[2];
-          arData.size    = args[3];
-          break;
-          
-        case "@returnTo" :      // indicate the return-to address (line)
-          arData.address = args[1];
-          break;
-          
-        case "@auto" :          // assign a name to an automatic variable
-          arData.name    = args[1];
-          arData.offset  = args[2];
-          arData.size    = args[3];
-          break;
-          
-        case "@popAR" :         // pop the current activation record
-          do
+          switch(args[0])
           {
-            arData = learncs.machine.Memory.activationRecordData.pop();
-          } while (arData.type != "@newAR");
-          break;
+          case "@global" :        // assign a name to a global|static variable
+            arData.name    = args[1];
+            arData.address = args[2];
+            arData.size    = args[3];
+            break;
 
-        default:
-          throw new Error("Line " + line + ": " +
-                          "Unrecognized pragma (" + instruction + ")");
+          case "@newAR" :         // create a new activation record
+            // Nothing required other than the type, already in arData
+            break;
+
+          case "@param" :         // assign a name to a parameter
+            arData.name    = args[1];
+            arData.offset  = args[2];
+            arData.size    = args[3];
+            break;
+
+          case "@returnTo" :      // indicate the return-to address (line)
+            arData.address = args[1];
+            break;
+
+          case "@auto" :          // assign a name to an automatic variable
+            arData.name    = args[1];
+            arData.offset  = args[2];
+            arData.size    = args[3];
+            break;
+
+          case "@popAR" :         // pop the current activation record
+            do
+            {
+              arData = learncs.machine.Memory.activationRecordData.pop();
+            } while (arData.type != "@newAR");
+            break;
+
+          default:
+            throw new Error("Line " + line + ": " +
+                            "Unrecognized pragma (" + instruction + ")");
+          }
+
+          // Give this activation record data to Memory, for later pretty
+          // display
+          learncs.machine.Memory.activationRecordData.push(arData);
+          return;
         }
-
-        // Give this activation record data to Memory, for later pretty display
-        learncs.machine.Memory.activationRecordData.push(arData);
-        return;
       }
 
       // If there's an address provided...
