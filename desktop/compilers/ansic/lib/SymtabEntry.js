@@ -112,6 +112,7 @@ qx.Class.define("learncs.lib.SymtabEntry",
       // If it's global, then the address is the entry's offset.
       if (bGlobal)
       {
+console.log("returning global offset " + this.__offset);
         return this.__offset;
       }
       
@@ -120,6 +121,7 @@ qx.Class.define("learncs.lib.SymtabEntry",
       fp = learncs.lib.SymtabEntry.__mem.getReg("FP", "unsigned int");
       
       // Return the address found by adding the offset to the frame pointer 
+console.log("return fp (" + fp + ") offset " + this.__offset);
       return fp + this.__offset;
     },
 
