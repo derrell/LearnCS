@@ -84,7 +84,7 @@ qx.Class.define("learncs.machine.Machine",
           debugInfo = mem.get(pc + Memory.WORDSIZE, "unsigned int");
 
           // Determine how many extra words this instruction uses
-          numDataWords = debugInfo >>> 29;
+          numDataWords = debugInfo >>> 24;
 
           // Save the address from which we retrieved this instruction
           instrAddr = pc;
@@ -101,6 +101,8 @@ qx.Class.define("learncs.machine.Machine",
           // Call the appropriate function to process this reuqest
 //          this.__displayInstruction(instr);
           learncs.machine.Instruction.processOpcode[opcode](instr, instrAddr);
+
+          mem.displayAsMemTemplate(instrAddr.toString(16));
         }
       }
       catch (e)

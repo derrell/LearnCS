@@ -28,6 +28,7 @@ qx.Class.define("learncs.machine.Memory",
   
   statics :
   {
+    /** The array buffer containing the bytes of the machine's memory */
     _memory : null,
     
     /** The number of registers */
@@ -38,78 +39,90 @@ qx.Class.define("learncs.machine.Memory",
 
     /** Map of sizes of values, according to their C type */
     _typeSize :
+    {
+      "char"               : 1,
+      "unsigned char"      : 1,
+      "short"              : 2,
+      "unsigned short"     : 2,
+      "int"                : 4,
+      "unsigned int"       : 4,
+      "long"               : 4,
+      "unsigned long"      : 4,
+      "long long"          : 4,
+      "unsigned long long" : 4,
+      "float"              : 4,
+      "double"             : 4,
+      "pointer"            : 2
+    },
+
+    /** Ranges of memory */
+    info :
+    {
+      "prog" :                    // Program memory
       {
-        "char"               : 1,
-        "unsigned char"      : 1,
-        "short"              : 2,
-        "unsigned short"     : 2,
-        "int"                : 4,
-        "unsigned int"       : 4,
-        "long"               : 4,
-        "unsigned long"      : 4,
-        "long long"          : 4,
-        "unsigned long long" : 4,
-        "float"              : 4,
-        "double"             : 4,
-        "pointer"            : 2
+        start  : 0,
+        length : 1024
       },
-    
-      /** Ranges of memory */
-      info :
+
+      "reg" :                     // Registers
       {
-        "prog" :                    // Program memory
-        {
-          start  : 0,
-          length : 1024
-        },
-
-        "reg" :                     // Registers
-        {
-          start  : 7 * 1024,
-          length : null // initialized in defer()
-        },
-
-        "es" :                      // Expression stack
-        {
-          start  : 8 * 1024,
-          length : 1024
-        },
-
-        "gas" :                     // Globals and Statics
-        {
-          start  : 10 * 1024,
-          length : 64
-        },
-
-        "heap" :                    // Heap
-        {
-          start  : 12 * 1024,
-          length : 64
-        },
-
-        "rts" :                     // Run-time Stack
-        {
-          start  : 16 * 1024,
-          length : 1024
-        }
+        start  : 7 * 1024,
+        length : null // initialized in defer()
       },
-    
-      register :
+
+      "es" :                      // Expression stack
       {
-        // Assigned here, but not yet actually valid; initialized in defer()
-        "PC"  : null,
-        "SP"  : null,
-        "ESP" : null,
-        "FP"  : null,
-        "R1"  : null,
-        "R2"  : null,
-        "R3"  : null
+        start  : 8 * 1024,
+        length : 1024
+      },
+
+      "gas" :                     // Globals and Statics
+      {
+        start  : 10 * 1024,
+        length : 64
+      },
+
+      "heap" :                    // Heap
+      {
+        start  : 12 * 1024,
+        length : 64
+      },
+
+      "rts" :                     // Run-time Stack
+      {
+        start  : 16 * 1024,
+        length : 1024
       }
+    },
 
+    /** The register names, and their locations in memory */
+    register :
+    {
+      // Assigned here, but not yet actually valid; initialized in defer()
+      "PC"  : null,
+      "SP"  : null,
+      "ESP" : null,
+      "FP"  : null,
+      "R1"  : null,
+      "R2"  : null,
+      "R3"  : null
+    },
+    
+    /**
+     * Array of maps of activation record data, containing:
+     *   - type (one of "newAR", "global", "param", "returnTo", "auto", "popAR")
+     *   - name
+     *   - address (if global or returnTo)
+     *   - offset (if param or auto)
+     *   - size (in bytes)
+     */
+    activationRecordData : []
   },
   
   members :
   {
+    __memSize : 0,
+
     initAll : function()
     {
       var             i;
@@ -117,12 +130,12 @@ qx.Class.define("learncs.machine.Memory",
       var             uint8Arr;
 
       // Ascertain the size of memory
-      memSize = 
+      this.__memSize = 
         learncs.machine.Memory.info.rts.start + 
         learncs.machine.Memory.info.rts.length;
 
       // Our simulated machine's memory
-      this._memory = new ArrayBuffer(memSize);
+      this._memory = new ArrayBuffer(this.__memSize);
 
       // Access the memory array as unsigned chars (octets)
       uint8Arr = new Uint8Array(this._memory);
@@ -474,6 +487,21 @@ qx.Class.define("learncs.machine.Memory",
 
       // Terminate the display with a newline
       sys.print("\n\n");
+    },
+    
+    displayAsMemTemplate : function(message)
+    {
+      var memory = this.toArray(0, this.__memSize);
+      var arData = learncs.machine.Memory.activationRecordData;
+      
+      // Display the message
+      sys.print(message + "\n");
+
+      arData.forEach(
+        function(datum)
+        {
+          sys.print("  type=" + datum.type + "\n");
+        });
     }
   },
   

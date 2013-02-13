@@ -48,7 +48,7 @@ qx.Class.define("Tester",
           Instr.write(instr, addrInfo, line);
         });
 
-      if (false)
+      if (true)
       {
         mem.prettyPrint("Program memory", 
                         Memory.info.prog.start,
