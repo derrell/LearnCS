@@ -12,7 +12,7 @@ require("./NodeArray");
 
 qx.Class.define("learncs.lib.Node",
 {
-  extend : Object,
+  extend : qx.core.Object,
   
   /**
    * Create a new node.
@@ -38,14 +38,29 @@ qx.Class.define("learncs.lib.Node",
    */
   construct : function(type, text, line, filename)
   {
+    this.base(arguments);
+    
     this.type = type;
     this.children = new learncs.lib.NodeArray(this);
     this.line = line + 1;
     this.filename = filename;
   },
 
+  statics :
+  {
+    __mem : null,
+    
+    NumberType :
+    {
+      Integer : "integer",
+      Float   : "float"
+    }
+  },
+  
   members :
   {
+    __symtab : null,
+
     /**
      * Display an error message regarding this node
      * 
@@ -64,12 +79,12 @@ qx.Class.define("learncs.lib.Node",
      * @param node
      *   The node whose sub-nodes (children) are to be processed
      */
-    __processSubnodes : function(data)
+    __processSubnodes : function(data, bExecuting)
     {
       this.children.forEach(
         function(subnode)
         {
-          subnode.process(data);
+          subnode.process(data, bExecuting);
         }, 
         this);
     },
@@ -103,7 +118,13 @@ qx.Class.define("learncs.lib.Node",
       // Display its type and line number, then call its children recursively.
       if (typeof this.value !== "undefined")
       {
-        sys.print(this.type + ": " + this.value + "\n");
+        // We have a value, so display it, and its type
+        sys.print(this.type + ": " + this.value);
+        if (typeof this.numberType != "undefined")
+        {
+          sys.print(" (" + this.numberType + ")");
+        }
+        sys.print("\n");
       }
       else
       {
@@ -191,28 +212,29 @@ qx.Class.define("learncs.lib.Node",
      * Process, recursively, the abstract syntax tree beginning at the specified
      * node.
      *
-     * @param node {Map|String|Null}
-     *   One of:
-     *    - A Node object to be processed, along with, recursively, all of its
-     *      children.
-     *    - A string, representing the value of the parent node. This is used
-     *      for the names of identifiers, values of integers, etc.
-     *    - null, to indicate lack of an optional child of the parent node
+     * @param data {Map}
+     *   Data used for sub-node processing, as required per node type
+     *
+     * @param bExecuting {Boolean}
+     *   false when the code is initially being compiled (symbol tables being
+     *   built); true when the code is executing.
      */
-    process : function(data)
+    process : function(data, bExecuting)
     {
       var             i;
       var             fp;
       var             sp;
       var             subnode;
       var             entry;
-      var             entries;
       var             bExists;
       var             identifier;
+      var             symtab;
       var             symtabStruct;
       var             declarator;
       var             function_decl;
       var             pointer;
+      var             value1;
+      var             value2;
       var             process = learncs.lib.Node.process;
 
       // Yup. See what type it is.
@@ -244,7 +266,7 @@ qx.Class.define("learncs.lib.Node",
          *   0: assignment_expression
          *   ...
          */
-        this.__processSubnodes(data);
+        this.__processSubnodes(data, bExecuting);
         break;
 
       case "array_decl" :
@@ -280,7 +302,18 @@ qx.Class.define("learncs.lib.Node",
          *   0: unary_expression (lhs)
          *   1: assignment_expression (rhs)
          */
-        throw new Error("assign");
+        
+        // Only applicable when executing
+        if (! bExecuting)
+        {
+          break;
+        }
+
+        // Retrieve the lvalue
+        value1 = this.children[0].process(data, true);
+        value2 = this.children[1].process(data, true);
+        learncs.lib.Node.__mem.set(value1.value, value2.type, value2.value);
+
         break;
 
       case "auto" :
@@ -330,21 +363,43 @@ qx.Class.define("learncs.lib.Node",
          *   1: statement_list
          */
 
-        // Create a new scope for this compound statement
-        new learncs.lib.Symtab(learncs.lib.Symtab.getCurrent(),
-                               "compound@" + this.line,
-                               this.line);
+        // Determine if we're executing, or generating symbol tables
+        if (bExecuting)
+        {
+          // We're executing. Retrieve the symbol table from the node
+          symtab = this.__symtab;
+          if (! symtab)
+          {
+            throw new Error("Programmer error: Expected to find symtab entry");
+          }
+          
+          // Push this symbol table onto the stack, as if we'd just created it.
+          learncs.lib.Symtab.pushStack(symtab);
+        }
+        else
+        {
+          // Create a new scope for this compound statement
+          symtab = new learncs.lib.Symtab(learncs.lib.Symtab.getCurrent(),
+                                          "compound@" + this.line,
+                                          this.line);
+          // Save the symbol table for when we're executing
+          this.__symtab = symtab;
+        }
 
         // Process the declaration list
         if (this.children[0])
         {
-          this.children[0].process(data);
+          this.children[0].process(data, bExecuting);
         }
 
-        // Process the statement_list
-        if (this.children[1])
+        // If we're executing...
+        if (bExecuting)
         {
-          this.children[1].process(data);
+          // ... then process the statement_list
+          if (this.children[1])
+          {
+            this.children[1].process(data, bExecuting);
+          }
         }
 
         // Revert to the prior scope
@@ -356,7 +411,7 @@ qx.Class.define("learncs.lib.Node",
         break;
 
       case "constant" :
-        return this.value;
+        return { value : this.value, type : this.numberType };
 
       case "continue" :
         throw new Error("continue");
@@ -378,9 +433,60 @@ qx.Class.define("learncs.lib.Node",
          *      ...
          */
 
-        // We'll want to keep track of symbol table entries in this
-        // declaration
-        entries = [];
+        // Determine if we're executing, or generating symbol tables
+        if (bExecuting)
+        {
+          // Are there identifiers to apply these declaration specifieres to?
+          if (! this.children[1])
+          {
+            // Nope. We have nothing to do while executing.
+            break;
+          }
+          
+          // Process any variable initializers
+          this.children[1].children.forEach(
+            function(init_declarator)
+            {
+              var             entry;
+              var             value;
+              var             pointer;
+              var             identifier;
+              var             declarator;
+
+              // Retrieve this declarator
+              declarator = init_declarator.children[0];
+
+              // Get the identifier name
+              identifier = declarator.children[0].value;
+
+              // Retrieve the symbol table entry
+              entry = learncs.lib.Symtab.getCurrent().get(identifier);
+
+              if (! entry)
+              {
+                this.error("Programmer error: name should have existed");
+                return;
+              }
+
+              // If there is an initializer...
+              if (init_declarator.children[1])
+              {
+                // ... then retrieve its value
+                value = init_declarator.children[1].process(data, bExecuting);
+                learncs.lib.Node.__mem.set(entry.getAddr(), 
+                                           entry.getType(),
+                                           value);
+              }
+            },
+            this);
+          
+          // Nothing more to do if we're executing.
+          break;
+        }
+
+        //
+        // The remainder of this case is for !bExecuting
+        //
 
         // Assume we do not expect the entry to already exist in the symbol
         // table
@@ -399,7 +505,7 @@ qx.Class.define("learncs.lib.Node",
         if (! this.children[1])
         {
           // Nope. Just process the declaration_specifiers.
-          this.children[0].process( {} );
+          this.children[0].process( {}, bExecuting );
           break;
         }
 
@@ -461,21 +567,8 @@ qx.Class.define("learncs.lib.Node",
             // Apply the declaration specifiers to this entry
             if (this.children && this.children[0])
             {
-              this.children[0].process( { entry : entry } );
+              this.children[0].process( { entry : entry }, bExecuting );
             }
-
-            // If there is an initializer...
-            if (init_declarator.children[1])
-            {
-              // ... then retrieve its value
-              value = init_declarator.children[1].process(data);
-              learncs.lib.Node.__mem.set(entry.getAddr(), 
-                                         entry.getType(),
-                                         value);
-            }
-
-            // Add this entry to the list of entries for this declaration
-            entries.push(entry);
           },
           this);
         break;
@@ -486,7 +579,7 @@ qx.Class.define("learncs.lib.Node",
          *   0: declaration
          *   ...
          */
-        this.__processSubnodes(data);
+        this.__processSubnodes(data, bExecuting);
         break;
 
       case "declaration_specifiers" :
@@ -526,7 +619,7 @@ qx.Class.define("learncs.lib.Node",
 
             case "struct" :
               // Handle declaration of the struct, if necessary
-              subnode.process(data);
+              subnode.process(data, bExecuting);
 
               // We received back the structure symtab entry. Our entry's
               // type, if we were given an entry, is its name.
@@ -662,77 +755,102 @@ qx.Class.define("learncs.lib.Node",
         // Create a symbol table entry for the function name
         declarator = this.children[1];
         function_decl = declarator.children[0];
-        entry = learncs.lib.Symtab.getCurrent().add(
-          function_decl.children[0].value, 
-          function_decl.line, false);
 
-        if (! entry)
+        // If we're executing...
+        if (bExecuting)
         {
-          entry = learncs.lib.Symtab.getCurrent().get(
-            function_decl.children[0].value, true);
-          this.error("Identifier '" + 
-                     function_decl.children[0].value + "' " +
-                     "was previously declared near line " +
-                     entry.getLine());
-          return null;
-        }
+          // ... then the symbol table entry for this function must
+          // exist. Retrieve it from the node where we saved it.
+          symtab = this.__symtab;
+          
+          // Push it onto the symbol table stack as if we'd just created it
+          learncs.lib.Symtab.pushStack(symtab);
 
-        // Mark this symbol table entry as a function
-        entry.setType("function");
-
-        // Create a symbol table for this function's arguments
-        new learncs.lib.Symtab(learncs.lib.Symtab.getCurrent(), 
-                               function_decl.children[0].value,
-                               function_decl.line);
-
-        // Process the paremeter list
-        if (function_decl.children[1])
-        {
-          function_decl.children[1].process(data);
-        }
-
-        // Look for specially-handled type specifiers.
-        switch(this.children[0].type)
-        {
-        case "struct" :
-          this.children[0].process(data);
-          break;
-
-        case "enum_specifier" :
-          break;
-
-        default:
-          // Count and save the number of levels of pointers of this variable
-          // e.g., char **p; would call incrementPointerCount() twice.
-          for (pointer = declarator.children[1];
-               pointer;
-               pointer = pointer.children[0])
+          // Process the paremeter list
+          if (function_decl.children[1])
           {
-            entry.incrementPointerCount();
+            function_decl.children[1].process(data, bExecuting);
+          }
+        }
+        else
+        {
+          entry = learncs.lib.Symtab.getCurrent().add(
+            function_decl.children[0].value, 
+            function_decl.line, false);
+
+          if (! entry)
+          {
+            entry = learncs.lib.Symtab.getCurrent().get(
+              function_decl.children[0].value, true);
+            this.error("Identifier '" + 
+                       function_decl.children[0].value + "' " +
+                       "was previously declared near line " +
+                       entry.getLine());
+            return null;
           }
 
-          // Add this declaration's types to each of those symtab entries
-          for (subnode = this.children[0];
-               subnode;
-               subnode = subnode.children ? subnode.children[0] : null)
+          // Mark this symbol table entry as a function and save this node, to
+          // later execute it
+          entry.setType("function", this);
+
+          // Create a symbol table for this function's arguments
+          symtab = new learncs.lib.Symtab(learncs.lib.Symtab.getCurrent(), 
+                                          function_decl.children[0].value,
+                                          function_decl.line);
+
+          // Save the symbol table for when we're executing
+          this.__symtab = symtab;
+
+          // Process the paremeter list
+          if (function_decl.children[1])
           {
-            // ... add this declared type
-            entry.setType(subnode.type == "type_name"
-                          ? subnode.value
-                          : subnode.type);
+            function_decl.children[1].process(data, bExecuting);
           }
 
-          // I have no idea what this declaration list is, in children[2]
-          if (this.children[2])
+          // Look for specially-handled type specifiers.
+          switch(this.children[0].type)
           {
-            throw new Error("What is a declaration_list??? " +
-                            "K&R-style declarations?");
-          }
+          case "struct" :
+            this.children[0].process(data, bExecuting);
+            break;
 
-          // Process the compound statement
-          this.children[3].process(data);
-          break;
+          case "enum_specifier" :
+            throw new Error("enum_specifier not yet implemented");
+            break;
+
+          default:
+            // Count and save the number of levels of pointers of this variable
+            // e.g., char **p; would call incrementPointerCount() twice.
+            for (pointer = declarator.children[1];
+                 pointer;
+                 pointer = pointer.children[0])
+            {
+              entry.incrementPointerCount();
+            }
+
+            // Add this declaration's types to each of those symtab entries
+            for (subnode = this.children[0];
+                 subnode;
+                 subnode = subnode.children ? subnode.children[0] : null)
+            {
+              // ... add this declared type
+              entry.setType(subnode.type == "type_name"
+                            ? subnode.value
+                            : subnode.type);
+            }
+
+            // I have no idea what this declaration list is, in children[2]
+            if (this.children[2])
+            {
+              throw new Error("What is a declaration_list??? " +
+                              "K&R-style declarations?");
+            }
+          }
         }
+
+        // Process the compound statement
+        this.children[3].process(data, bExecuting);
+        break;
 
         // Pop this function's symbol table from the stack
         learncs.lib.Symtab.popStack();
@@ -761,7 +879,7 @@ qx.Class.define("learncs.lib.Node",
          *   0: identifier
          *   ...
          */
-        this.__processSubnodes(data);
+        this.__processSubnodes(data, bExecuting);
         break;
 
       case "if" :
@@ -774,7 +892,7 @@ qx.Class.define("learncs.lib.Node",
          *   0: init_declarator
          *   ...
          */
-        this.__processSubnodes(data);
+        this.__processSubnodes(data, bExecuting);
         break;
 
       case "initializer" :
@@ -862,37 +980,50 @@ qx.Class.define("learncs.lib.Node",
           // ... then extract it.
           identifier = declarator.children[0].value;
 
-          // It shouldn't exist. Create a symbol table entry for this
-          // variable
-          entry = learncs.lib.Symtab.getCurrent().add(
-            identifier, declarator.line, false);
-
-          if (! entry)
+          // If we're executing...
+          if (bExecuting)
           {
+            // ... then retrieve the existing symbol table entry
             entry = learncs.lib.Symtab.getCurrent().get(identifier, true);
-            this.error("Parameter '" + identifier + "' " +
-                       "was previously declared near line " +
-                       entry.getLine());
-            return null;
+            if (! entry)
+            {
+              throw new Error("Programmer error: entry should exist");
+            }
           }
-
-          // Count and save the number of levels of pointers of this variable
-          // e.g., char **p; would call incrementPointerCount() twice.
-          for (pointer = declarator.children[1];
-               pointer;
-               pointer = pointer.children[0])
+          else
           {
-            entry.incrementPointerCount();
+            // It shouldn't exist. Create a symbol table entry for this
+            // variable
+            entry = learncs.lib.Symtab.getCurrent().add(
+              identifier, declarator.line, false);
+
+            if (! entry)
+            {
+              entry = learncs.lib.Symtab.getCurrent().get(identifier, true);
+              this.error("Parameter '" + identifier + "' " +
+                         "was previously declared near line " +
+                         entry.getLine());
+              return null;
+            }
+
+            // Count and save the number of levels of pointers of this variable
+            // e.g., char **p; would call incrementPointerCount() twice.
+            for (pointer = declarator.children[1];
+                 pointer;
+                 pointer = pointer.children[0])
+            {
+              entry.incrementPointerCount();
+            }
           }
         }
 
         // Apply the declaration specifiers to each of this entry
-        this.children[0].process( { entry : entry } );
+        this.children[0].process( { entry : entry }, bExecuting );
 
         // Process abstract declarators
         if (this.children[2])
         {
-          this.children[2].process( { entry : entry } );
+          this.children[2].process( { entry : entry }, bExecuting );
         }
         break;
 
@@ -903,7 +1034,7 @@ qx.Class.define("learncs.lib.Node",
          *   ...
          *   n: ellipsis?
          */
-        this.__processSubnodes(data);
+        this.__processSubnodes(data, bExecuting);
         break;
 
       case "pointer" :
@@ -931,7 +1062,7 @@ qx.Class.define("learncs.lib.Node",
          *      pointer_access
          *   ...
          */
-        return this.children[0].process(data);
+        return this.children[0].process(data, bExecuting);
 
       case "post_increment_op" :
         throw new Error("post_increment_op");
@@ -983,7 +1114,7 @@ qx.Class.define("learncs.lib.Node",
          *   0: statement
          *   ...
          */
-        this.__processSubnodes(data);
+        this.__processSubnodes(data, bExecuting);
         break;
 
       case "static" :
@@ -1000,6 +1131,12 @@ qx.Class.define("learncs.lib.Node",
          *   0 : struct_declaration_list
          *   1 : identifier
          */
+        
+        // We are not expecting to get here while executing
+        if (bExecuting)
+        {
+          throw new Error("Programmer error? Did not expect to get here.");
+        }
 
         // Is there an identifier?
         if (this.children.length > 1 && this.children[1])
@@ -1027,7 +1164,7 @@ qx.Class.define("learncs.lib.Node",
         // Add each of the members to the entry's symbol table
         if (this.children[0])
         {
-          this.children[0].process( { entry : entry } );
+          this.children[0].process( { entry : entry }, bExecuting );
         }
 
         // Add the symbol table entry to the data so it's available to our
@@ -1076,12 +1213,12 @@ qx.Class.define("learncs.lib.Node",
                *   0: struct_declaration_list
                *   1: identifier
                */
-              subnode.process(data);
+              subnode.process(data, bExecuting);
               entry.setType(subnode.children[1].value);
             }
             else if (subnode.type == "enum_specifier")
             {
-
+              throw new Error("enum_specifier not yet implemented");
             }
             else
             {
@@ -1099,7 +1236,7 @@ qx.Class.define("learncs.lib.Node",
          *   0: struct_declaration
          *   ...
          */
-        this.__processSubnodes(data);
+        this.__processSubnodes(data, bExecuting);
         break;
 
       case "struct_declarator" :
@@ -1132,7 +1269,7 @@ qx.Class.define("learncs.lib.Node",
          *   0: external_declaration
          *   ...
          */
-        this.__processSubnodes(data);
+        this.__processSubnodes(data, bExecuting);
         break;
 
       case "trinary" :
@@ -1186,11 +1323,6 @@ qx.Class.define("learncs.lib.Node",
       
       return null;
     }
-  },
-  
-  statics :
-  {
-    __mem : null
   },
   
   defer : function(statics)

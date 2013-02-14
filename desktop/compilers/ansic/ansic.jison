@@ -7,7 +7,8 @@
  *   GPL Version 2: http://www.gnu.org/licenses/gpl-2.0.html 
  */
 
-%token IDENTIFIER CONSTANT STRING_LITERAL SIZEOF
+%token CONSTANT_HEX CONSTANT_OCTAL CONSTANT_DECIMAL CONSTANT_CHAR CONSTANT_FLOAT
+%token IDENTIFIER STRING_LITERAL SIZEOF
 %token PTR_OP INC_OP DEC_OP LEFT_OP RIGHT_OP LE_OP GE_OP EQ_OP NE_OP
 %token AND_OP OR_OP MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN ADD_ASSIGN
 %token SUB_ASSIGN LEFT_ASSIGN RIGHT_ASSIGN AND_ASSIGN
@@ -51,11 +52,19 @@ start_sym
       // Initialize the machine singleton, which initializes the registers
       new learncs.machine.Machine();
 
-      // Process the abstract syntax tree.
-      $1.process(data);
+      // Process the abstract syntax tree to create symbol tables
+      $1.process(data, false);
 
       sys.print("\n\nAfter processing...");
       learncs.lib.Symtab.display();
+
+      // Process the abstract syntax tree to run the program
+      $1.process(data, true);
+
+      learncs.machine.Memory.getInstance().prettyPrint(
+        "Stack",
+        learncs.machine.Memory.info.rts.start,
+        64);
     }
 
     sys.print("\nErrors encountered: " + error.errorCount + "\n\n");
@@ -1684,21 +1693,133 @@ type_name_token
   ;
 
 constant
-  : CONSTANT
+  : CONSTANT_HEX
+  {
+    R("constant : CONSTANT_HEX (" + yytext + ")");
+    
+    $$ = new learncs.lib.Node("constant", yytext, yylineno);
+    $$.numberType = learncs.lib.Node.NumberType.Integer;
+    $$.value = parseInt(yytext, 16);
+    }
+  }
+  | CONSTANT_OCTAL
+  {
+    R("constant : CONSTANT_OCTAL (" + yytext + ")");
+    
+    $$ = new learncs.lib.Node("constant", yytext, yylineno);
+    $$.numberType = learncs.lib.Node.NumberType.Integer;
+    $$.value = parseInt(yytext, 8);
+  }
+  | CONSTANT_DECIMAL
+  {
+    R("constant : CONSTANT_DECIMAL (" + yytext + ")");
+    
+    $$ = new learncs.lib.Node("constant", yytext, yylineno);
+    $$.numberType = learncs.lib.Node.NumberType.Integer;
+    $$.value = parseInt(yytext, 10);
+  }
+  | CONSTANT_CHAR
+  {
+    var             value;
+    var             match;
+
+    R("constant : CONSTANT_CHAR (" + yytext + ")");
+    
+    // We don't support long characters, at present
+    if (yytext.charAt(0) == "L")
+    {
+      throw new Error("Line " + yylineno + ": " +
+                      "Long characters (characters of the form L'x') " +
+                      "are not currently supported.");
+    }
+
+    $$ = new learncs.lib.Node("constant", yytext, yylineno);
+
+    // If the length is exactly 3, we have a simple character
+    if (yytext.length == 3)
+    {
+      value = yytext.charCodeAt(1);
+    }
+
+    // Try to match against the possible special escape sequences
+    if (typeof value == "undefined")
+    {
+      [
+        [ /'\\a'/,  7 ],                    // bell (alert)
+        [ /'\\b'/,  8 ],                    // backspace
+        [ /'\\f'/, 12 ],                    // formfeed
+        [ /'\\n'/, 10 ],                    // newline
+        [ /'\\r'/, 13 ],                    // carriage return
+        [ /'\\t'/,  9 ],                    // tab
+        [ /'\\v'/, 11 ],                    // vertical tab
+        [ /'\\''/, 39 ],                    // single quote
+        [ /'\\"/,  34 ],                    // double quote
+        [ /'\\\\/, 92 ],                    // backslash
+        [ /'\\\?/, 63 ]                     // literal question mark
+      ].forEach(
+        function(escape)
+        {
+          if (escape[0].test(yytext))
+          {
+            value = escape[1];
+          }
+        });
+    }
+
+    // If it wasn't special, then see if it's an octal character
+    if (typeof value == "undefined" &&
+        (match = /'\\([0-7]{3})'/.exec(yytext)))
+    {
+      value = parseInt(match[1], 8);
+    }
+
+    // If it wasn't special or octal, see if it's a hex character
+    if (typeof value == "undefined" &&
+        (match = /'\\([0-9a-fA-F]{2})'/.exec(yytext)))
+    {
+      value = parseInt(match[1], 16);
+    }
+
+    // If it wasn't special or octal or hex, see if it's a long hex character
+    // NOT IMPLEMENTED
+    if (false &&
+        typeof value == "undefined" &&
+        (match = /'\\([0-9a-fA-F]{4})'/.exec(yytext)))
+    {
+      value = parseInt(match[1], 16);
+    }
+
+    // If it's none of those, and the length is exactly 4, (a single quote, a
+    // backslash, some character, and another single quote), then convert the
+    // "some character" to its ASCII value.
+    if (typeof value == "undefined" &&
+        yytext.length === 4)
+    {
+      value = yytext.charCodeAt(2);
+    }
+
+    // If we still haven't converted it, there's something wrong
+    if (typeof value != "undefined")
+    {
+      // Save the converted value
+      $$.numberType = learncs.lib.Node.NumberType.Integer;
+      $$.value = value;
+    }
+    else
+    {
+      error.parseError("Unrecognized single-quoted character (" + yytext + ")",
+                       { line : yylineno });
+    }
+  }
+  | CONSTANT_FLOAT
   {
     R("constant : CONSTANT (" + yytext + ")");
     
     var             ch;
 
     $$ = new learncs.lib.Node("constant", yytext, yylineno);
-    ch = yytext.charAt(0);
-    if (ch == "'" || (ch == "L" && yytext.charAt(1) == "'"))
-    {
-      $$.value = yytext;
-    }
-    else
-    {
-      $$.value = parseInt(yytext);
+    $$.numberType = learncs.lib.Node.NumberType.Float;
+    $$.value = parseFloat(yytext);
     }
   }
   ;

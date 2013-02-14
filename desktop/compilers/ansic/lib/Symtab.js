@@ -37,6 +37,8 @@ qx.Class.define("learncs.lib.Symtab",
   {
     var             symtab;
 
+    this.base(arguments);
+
     // Was a name provided?
     if (! name)
     {
@@ -114,6 +116,14 @@ qx.Class.define("learncs.lib.Symtab",
     },
 
     /**
+     * Push a symbol table onto the stack
+     */
+    pushStack : function(symtab)
+    {
+      learncs.lib.Symtab.__symtabStack.push(symtab);
+    },
+
+    /**
      * Get the symbol table at the top of the stack
      *
      * @return
@@ -167,6 +177,7 @@ qx.Class.define("learncs.lib.Symtab",
       var             symtabName;
       var             symbolName;
       var             sym;
+      var             TF = learncs.lib.SymtabEntry.TypeFlags;
 
       sys.print("\n");
       if (message)
@@ -179,10 +190,10 @@ qx.Class.define("learncs.lib.Symtab",
         symtab = learncs.lib.Symtab.__symtabs[symtabName];
         sys.print("Symbol table " + symtab.__name + "...\n");
 
-        for (symbolName in this.__symbols)
+        for (symbolName in symtab.__symbols)
         {
           // Get quick reference to this symbol table entry
-          entry = this.__symbols[symbolName];
+          entry = symtab.__symbols[symbolName];
 
           sys.print("  '" + symbolName + "':");
           if (entry.getIsType())
@@ -234,7 +245,7 @@ qx.Class.define("learncs.lib.Symtab",
           }
 
           sys.print(" ");
-          for (i = this.__symbols[symbolName].getPointerCount(); i > 0; i--)
+          for (i = symtab.__symbols[symbolName].getPointerCount(); i > 0; i--)
           {
             sys.print("*");
           }
@@ -267,11 +278,11 @@ qx.Class.define("learncs.lib.Symtab",
      * @param symName
      *   The symbol name
      *
-     * @param bIsType
-     *   Whether this is a type (via typedef) or a variable
-     *
      * @param line
      *   The line number at which this symbol is defined
+     *
+     * @param bIsType
+     *   Whether this is a type (via typedef) or a variable
      *
      * @return {Map|null}
      *   The symbol table entry, if the symbol was successfully added to the

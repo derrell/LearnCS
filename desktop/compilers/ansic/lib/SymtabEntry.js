@@ -16,11 +16,13 @@ qx.Class.define("learncs.lib.SymtabEntry",
   
   construct : function(name, bIsType, symtab, line)
   {
+    this.base(arguments);
+
     // this symbol's name
     this.__name = name;
 
     // identifier for this entry
-    this.id = learncs.lib.SymtabEntry.nextEntryId++;
+    this.id = learncs.lib.SymtabEntry.__nextEntryId++;
 
     // whether this entry is a type definition
     this.__bIsType = bIsType;
@@ -46,6 +48,9 @@ qx.Class.define("learncs.lib.SymtabEntry",
     // offset from the base pointer (in activation record, at the beginning
     // of automatic local variable portion)
     this.__offset = symtab.nextOffset;
+
+    // node to process, for functions
+    this.__node = null;
 
     // line number on which this symbol was defined
     this.__line = line;
@@ -103,11 +108,18 @@ qx.Class.define("learncs.lib.SymtabEntry",
     {
       var             fp;
       var             bGlobal;
+      var             TF  = learncs.lib.SymtabEntry.TypeFlags;
 
       // First, determine if this is a global/static, or an automatic variable.
       // We know it's a global/static if it's in the root symbol table, which
       // has no parent.
       bGlobal = (! this.__symtab.getParent());
+      
+      // If it's a function, its node is stored specially
+      if (this.__typeFlags & TF.Function)
+      {
+        return this.__node;
+      }
       
       // If it's global, then the address is the entry's offset.
       if (bGlobal)
@@ -192,7 +204,7 @@ qx.Class.define("learncs.lib.SymtabEntry",
       return typeList.join(" ");
     },
 
-    setType : function(type)
+    setType : function(type, node)
     {
       var             TF  = learncs.lib.SymtabEntry.TypeFlags;
       var             SIB = learncs.lib.SymtabEntry.SizeInBytes;
@@ -333,6 +345,7 @@ qx.Class.define("learncs.lib.SymtabEntry",
       case "function" :
         this.__typeFlags |= TF.Function;
         this.__size = 0;
+        this.__node = node;     // save node to process when function is called
         break;
       }
 
@@ -424,7 +437,7 @@ qx.Class.define("learncs.lib.SymtabEntry",
 
     error : function(message)
     {
-      sys.print("Error: line " + this.__line + ": " + message);
+      sys.print("Error: line " + this.__line + ": " + message + "\n");
       ++error.errorCount;
     },
 
@@ -436,7 +449,9 @@ qx.Class.define("learncs.lib.SymtabEntry",
 
       for (key in this)
       {
-        if (typeof this[key] != "function")
+        if (this.hasOwnProperty(key) && 
+            ! key.match(/^\$\$/) &&
+            typeof this[key] != "function")
         {
           sys.print("\t" + key + " = " + this[key] + "\n");
         }

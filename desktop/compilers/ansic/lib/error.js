@@ -48,6 +48,11 @@ exports.parseError = function(str, hash)
       "\n"
       ;
 
+    if (str)
+    {
+      errStr += "\t" + str;
+    }
+
     sys.print(errStr + "\n");
   }
   else
