@@ -767,7 +767,17 @@ console.log("assigning " + value2.value + " to " + value1.value);
         
         // Retrieve the symbol table entry for this function
         value1 = this.children[0].process(data, bExecuting);
+        
+        // Get the address of that entry, which is the node for the called
+        // function.
         value2 = value1.getAddr();
+        
+        // *** TODO:
+        // *** push arguments, push return "address", update FP ***
+        // ***
+
+
+        // Process that function.
         value2.process(data, bExecuting);
         break;
 
