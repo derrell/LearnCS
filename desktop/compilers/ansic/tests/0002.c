@@ -1,4 +1,4 @@
 void foo(void)
 {
-    short bar = '\'';
+    short bar = 23U;
 }

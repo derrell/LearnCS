@@ -1695,27 +1695,92 @@ type_name_token
 constant
   : CONSTANT_HEX
   {
+    var bUnsigned;
+    var bLong;
+
     R("constant : CONSTANT_HEX (" + yytext + ")");
     
     $$ = new learncs.lib.Node("constant", yytext, yylineno);
-    $$.numberType = learncs.lib.Node.NumberType.Integer;
-    $$.value = parseInt(yytext, 16);
+
+    bUnsigned = yytext.toLowerCase().indexOf("u") != -1;
+    bLong     = yytext.toLowerCase().indexOf("l") != -1;
+    if (bUnsigned && bLong)
+    {
+      $$.numberType = learncs.lib.Node.NumberType.ULong;
     }
+    else if (bUnsigned)
+    {
+      $$.numberType = learncs.lib.Node.NumberType.ULong;
+    }
+    else if (bLong)
+    {
+      $$.numberType = learncs.lib.Node.NumberType.Long;
+    }
+    else
+    {
+      $$.numberType = learncs.lib.Node.NumberType.Int;
+    }
+
+    $$.value = parseInt(yytext, 16);
   }
   | CONSTANT_OCTAL
   {
+    var             bUnsigned;
+    var             bLong;
+
     R("constant : CONSTANT_OCTAL (" + yytext + ")");
     
     $$ = new learncs.lib.Node("constant", yytext, yylineno);
-    $$.numberType = learncs.lib.Node.NumberType.Integer;
+
+    bUnsigned = yytext.toLowerCase().indexOf("u") != -1;
+    bLong     = yytext.toLowerCase().indexOf("l") != -1;
+    if (bUnsigned && bLong)
+    {
+      $$.numberType = learncs.lib.Node.NumberType.ULong;
+    }
+    else if (bUnsigned)
+    {
+      $$.numberType = learncs.lib.Node.NumberType.ULong;
+    }
+    else if (bLong)
+    {
+      $$.numberType = learncs.lib.Node.NumberType.Long;
+    }
+    else
+    {
+      $$.numberType = learncs.lib.Node.NumberType.Int;
+    }
+
     $$.value = parseInt(yytext, 8);
   }
   | CONSTANT_DECIMAL
   {
+    var             bUnsigned;
+    var             bLong;
+
     R("constant : CONSTANT_DECIMAL (" + yytext + ")");
     
     $$ = new learncs.lib.Node("constant", yytext, yylineno);
-    $$.numberType = learncs.lib.Node.NumberType.Integer;
+
+    bUnsigned = yytext.toLowerCase().indexOf("u") != -1;
+    bLong     = yytext.toLowerCase().indexOf("l") != -1;
+    if (bUnsigned && bLong)
+    {
+      $$.numberType = learncs.lib.Node.NumberType.ULong;
+    }
+    else if (bUnsigned)
+    {
+      $$.numberType = learncs.lib.Node.NumberType.ULong;
+    }
+    else if (bLong)
+    {
+      $$.numberType = learncs.lib.Node.NumberType.Long;
+    }
+    else
+    {
+      $$.numberType = learncs.lib.Node.NumberType.Int;
+    }
+
     $$.value = parseInt(yytext, 10);
   }
   | CONSTANT_CHAR
@@ -1808,7 +1873,7 @@ constant
     if (typeof value != "undefined")
     {
       // Save the converted value
-      $$.numberType = learncs.lib.Node.NumberType.Integer;
+      $$.numberType = learncs.lib.Node.NumberType.Int;
       $$.value = value;
     }
     else

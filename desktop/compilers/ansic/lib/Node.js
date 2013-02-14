@@ -52,7 +52,10 @@ qx.Class.define("learncs.lib.Node",
     
     NumberType :
     {
-      Integer : "integer",
+      Int     : "int",
+      Uint    : "unsigned int",
+      Long    : "long",
+      ULong   : "unsigned long",
       Float   : "float"
     }
   },
@@ -475,7 +478,7 @@ qx.Class.define("learncs.lib.Node",
                 value = init_declarator.children[1].process(data, bExecuting);
                 learncs.lib.Node.__mem.set(entry.getAddr(), 
                                            entry.getType(),
-                                           value);
+                                           value.value);
               }
             },
             this);
