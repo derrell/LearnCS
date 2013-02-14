@@ -58,8 +58,16 @@ start_sym
       sys.print("\n\nAfter processing...");
       learncs.lib.Symtab.display();
 
-      // Process the abstract syntax tree to run the program
-      $1.process(data, true);
+      // Process the abstract syntax tree from the entry point, if it exists,
+      // to run the program
+      if (learncs.lib.Node.entryNode)
+      {
+        learncs.lib.Node.entryNode.process(data, true);
+      }
+      else
+      {
+        sys.print("Missing main() function\n");
+      } 
 
       learncs.machine.Memory.getInstance().prettyPrint(
         "Stack",

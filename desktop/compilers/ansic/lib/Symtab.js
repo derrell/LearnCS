@@ -376,6 +376,17 @@ qx.Class.define("learncs.lib.Symtab",
     getParent : function()
     {
       return this.__parent;
+    },
+    
+    /**
+     * Provide the name of this symbol table
+     * 
+     * @return {String}
+     *   This symbol table's name
+     */
+    getName : function()
+    {
+      return this.__name;
     }
   }
 });

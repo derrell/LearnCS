@@ -238,7 +238,13 @@ qx.Class.define("learncs.lib.Node",
       var             pointer;
       var             value1;
       var             value2;
+      var             value3;
       var             process = learncs.lib.Node.process;
+
+      if (bExecuting)
+      {
+        console.log("Processing node " + this.type);
+      }
 
       // Yup. See what type it is.
       switch(this.type)
@@ -314,7 +320,30 @@ qx.Class.define("learncs.lib.Node",
 
         // Retrieve the lvalue
         value1 = this.children[0].process(data, true);
-        value2 = this.children[1].process(data, true);
+        
+        // If it was a symbol table entry...
+        if (value1 instanceof learncs.lib.SymtabEntry)
+        {
+          // ... then retrieve the symbol's address
+          value1 = { value : value1.getAddr(), type : value1.getType() };
+        }
+        
+        // Retrieve the value to assign there
+        value3 = this.children[1].process(data, true);
+
+        // We could have a symbol table entry, or a map for a constant or
+        // previously-retrieved value.
+console.log("assign: entry=" + value3);
+        if (value3 instanceof learncs.lib.SymtabEntry)
+        {
+          // It's a symbol table entry. Retrieve the value from memory
+          value2 = learncs.lib.Node.__mem.get(value3.getAddr(), 
+                                              value3.getType());
+console.log("assign: value=" + value2 + ", type=" + value3.getType());
+          value2 = { value : value2, type : value3.getType() };
+        }
+
+console.log("assigning " + value2.value + " to " + value1.value);
         learncs.lib.Node.__mem.set(value1.value, value2.type, value2.value);
 
         break;
@@ -731,7 +760,15 @@ qx.Class.define("learncs.lib.Node",
          *   0: postfix_expression (function to be called)
          *   1: argument_expression_list?
          */
-        throw new Error("function_call");
+        if (! bExecuting)
+        {
+          break;
+        }
+        
+        // Retrieve the symbol table entry for this function
+        value1 = this.children[0].process(data, bExecuting);
+        value2 = value1.getAddr();
+        value2.process(data, bExecuting);
         break;
 
       case "function_decl" :
@@ -801,6 +838,18 @@ qx.Class.define("learncs.lib.Node",
                                           function_decl.children[0].value,
                                           function_decl.line);
 
+          // Is this the main() function?
+console.log("Found function identifier: " + function_decl.children[0].value + " in symbol table " + symtab.getName());
+          if (function_decl.children[0].value == "main" && 
+              symtab.getParent() &&
+              ! symtab.getParent().getParent())
+          {
+            //
+            // We found the program entry point!!!
+            // 
+            learncs.lib.Node.entryNode = this;
+          }
+
           // Save the symbol table for when we're executing
           this.__symtab = symtab;
 
@@ -853,7 +902,6 @@ qx.Class.define("learncs.lib.Node",
 
         // Process the compound statement
         this.children[3].process(data, bExecuting);
-        break;
 
         // Pop this function's symbol table from the stack
         learncs.lib.Symtab.popStack();
@@ -873,7 +921,18 @@ qx.Class.define("learncs.lib.Node",
         break;
 
       case "identifier" :
-        throw new Error("identifer");
+        if (! bExecuting)
+        {
+          break;
+        }
+        
+        entry = learncs.lib.Symtab.getCurrent().get(this.value, false);
+        if (! entry)
+        {
+          throw new Error("Programmer error: entry should exist");
+        }
+console.log("identifier returning " + entry);
+        return entry;
         break;
 
       case "identifier_list" :
@@ -1272,6 +1331,11 @@ qx.Class.define("learncs.lib.Node",
          *   0: external_declaration
          *   ...
          */
+        
+        // Reset the entry point. It's not yet known.
+        learncs.lib.Node.entryNode = null;
+        
+        // Process all subnodes
         this.__processSubnodes(data, bExecuting);
         break;
 
