@@ -1735,7 +1735,8 @@ constant
 
     $$ = new learncs.lib.Node("constant", yytext, yylineno);
 
-    // If the length is exactly 3, we have a simple character
+    // If the length is exactly 3, it's a single quote, simple character, and
+    // another single quote.
     if (yytext.length == 3)
     {
       value = yytext.charCodeAt(1);
@@ -1745,20 +1746,25 @@ constant
     if (typeof value == "undefined")
     {
       [
-        [ /'\\a'/,  7 ],                    // bell (alert)
-        [ /'\\b'/,  8 ],                    // backspace
-        [ /'\\f'/, 12 ],                    // formfeed
-        [ /'\\n'/, 10 ],                    // newline
-        [ /'\\r'/, 13 ],                    // carriage return
-        [ /'\\t'/,  9 ],                    // tab
-        [ /'\\v'/, 11 ],                    // vertical tab
-        [ /'\\''/, 39 ],                    // single quote
-        [ /'\\"/,  34 ],                    // double quote
-        [ /'\\\\/, 92 ],                    // backslash
-        [ /'\\\?/, 63 ]                     // literal question mark
+        [ /^'\\a'$/,   7 ],                    // bell (alert)
+        [ /^'\\b'$/,   8 ],                    // backspace
+        [ /^'\\f'$/,  12 ],                    // formfeed
+        [ /^'\\n'$/,  10 ],                    // newline
+        [ /^'\\r'$/,  13 ],                    // carriage return
+        [ /^'\\t'$/,   9 ],                    // tab
+        [ /^'\\v'$/,  11 ],                    // vertical tab
+        [ /^'\\''$/,  39 ],                    // single quote
+        [ /^'\\"'$/,  34 ],                    // double quote
+        [ /^'\\\\'$/, 92 ],                    // backslash
+        [ /^'\\\?'$/, 63 ]                     // literal question mark
       ].forEach(
         function(escape)
         {
+          if (typeof value != "undefined")
+          {
+            return;
+          }
+          
           if (escape[0].test(yytext))
           {
             value = escape[1];
