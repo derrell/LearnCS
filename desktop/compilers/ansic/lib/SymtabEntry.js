@@ -92,13 +92,14 @@ qx.Class.define("learncs.lib.SymtabEntry",
     /** Size, in bytes, of each type */
     SizeInBytes :
       {
-        Char     : 1,
-        Short    : 2,
-        Int      : 4,
-        Long     : 4,
-        LongLong : 8,
-        Float    : 4,
-        Double   : 8
+        Char     : 0,           // all initialized in defer()
+        Short    : 0,
+        Int      : 0,
+        Long     : 0,
+        LongLong : 0,
+        Float    : 0,
+        Double   : 0,
+        Word     : 0
       }
   },
   
@@ -107,8 +108,11 @@ qx.Class.define("learncs.lib.SymtabEntry",
     getAddr : function()
     {
       var             fp;
+      var             offset;
       var             bGlobal;
+      var             symtab;
       var             TF  = learncs.lib.SymtabEntry.TypeFlags;
+      var             SIB = learncs.lib.SymtabEntry.SizeInBytes;
 
       // First, determine if this is a global/static, or an automatic variable.
       // We know it's a global/static if it's in the root symbol table, which
@@ -133,9 +137,24 @@ qx.Class.define("learncs.lib.SymtabEntry",
       
       // The frame pointer points to the return address. Therefore, the first
       // automatic local variable -- the one with offset 0 -- is actually at
-      // four less than the frame pointer. Calculate and return the actual
-      // address of this symbol, based on the frame pointer.
-      return fp - (4 + this.__offset);
+      // four less than the frame pointer. Calculate the address of this
+      // symbol, based on the frame pointer, assuming that this symbol table
+      // is the inner-most one.
+      offset = SIB.Word + this.__offset;
+
+      // FIXME TODO...
+
+      // If this symbol table isn't the inner-most one, we need to add the
+      // sizes of each subsequent (more inner) symbol table
+      for (symtab = this.__symtab.getParent(); 
+           symtab; 
+           symtab = symtab.getParent())
+      {
+        offset += symtab.getSize();
+      }
+
+      // Return the now-fully-qualified offset from the current frame pointer
+      return fp - offset;
     },
 
     getName : function()
@@ -354,8 +373,10 @@ qx.Class.define("learncs.lib.SymtabEntry",
       // once for each modifier, e.g. for "unsigned long int" it will be called
       // three times.)
       //
-      // Every new symbol begins on a multiple of 4 bytes, for easy display
-      this.__symtab.nextOffset += this.__size + ((4 - this.__size) % 4);
+      // Every new symbol begins on a multiple of WORDSIZE bytes, for easy
+      // display.
+      this.__symtab.nextOffset += 
+        this.__size + ((SIB.Word - this.__size) % SIB.Word);
     },
 
     getIsUnsigned : function()
@@ -501,6 +522,23 @@ qx.Class.define("learncs.lib.SymtabEntry",
   
   defer : function(statics)
   {
-    learncs.lib.SymtabEntry.__mem = learncs.machine.Memory.getInstance();
+    statics.__mem = learncs.machine.Memory.getInstance();
+
+    statics.SizeInBytes.Char =
+      learncs.machine.Memory.typeSize["char"];
+    statics.SizeInBytes.Short = 
+      learncs.machine.Memory.typeSize["short"];
+    statics.SizeInBytes.Int = 
+      learncs.machine.Memory.typeSize["int"];
+    statics.SizeInBytes.Long = 
+      learncs.machine.Memory.typeSize["long"];
+    statics.SizeInBytes.LongLong = 
+      learncs.machine.Memory.typeSize["long long"];
+    statics.SizeInBytes.Float = 
+      learncs.machine.Memory.typeSize["float"];
+    statics.SizeInBytes.Double = 
+      learncs.machine.Memory.typeSize["double"];
+    statics.SizeInBytes.Word = 
+      learncs.machine.Memory.WORDSIZE;
   }
 });

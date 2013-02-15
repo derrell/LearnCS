@@ -240,6 +240,7 @@ qx.Class.define("learncs.lib.Node",
       var             value2;
       var             value3;
       var             process = learncs.lib.Node.process;
+      var             WORDSIZE = learncs.machine.Memory.WORDSIZE;
 
       if (bExecuting)
       {
@@ -289,7 +290,6 @@ qx.Class.define("learncs.lib.Node",
           for (i = this.children.length - 1; i >= 0; --i)
           {
             value1 = this.children[i].process(data, bExecuting);
-console.log("pushing value " + value1.value + ", type " + value1.type);
             learncs.lib.Node.__mem.stackPush(value1.type, value1.value);
           }
         }
@@ -355,10 +355,10 @@ console.log("pushing value " + value1.value + ", type " + value1.type);
           // It's a symbol table entry. Retrieve the value from memory
           value2 = learncs.lib.Node.__mem.get(value3.getAddr(), 
                                               value3.getType());
-          value2 = { value : value2, type : value3.getType() };
+          value3 = { value : value2, type : value3.getType() };
         }
 
-        learncs.lib.Node.__mem.set(value1.value, value2.type, value2.value);
+        learncs.lib.Node.__mem.set(value1.value, value3.type, value3.value);
 
         break;
 
@@ -804,8 +804,6 @@ console.log("pushing value " + value1.value + ", type " + value1.type);
         // after the function call
         sp = learncs.lib.Node.__mem.getReg("SP", "unsigned int");
         fp = learncs.lib.Node.__mem.getReg("FP", "unsigned int");
-console.log("saving sp=" + sp.toString(16));
-console.log("saving fp=" + fp.toString(16));
 
         // Retrieve the symbol table entry for this function
         value1 = this.children[0].process(data, bExecuting);
@@ -817,24 +815,14 @@ console.log("saving fp=" + fp.toString(16));
         // Push the arguments onto the stack
         this.children[1].process(data, bExecuting);
 
-learncs.machine.Memory.getInstance().prettyPrint("After pushing args", learncs.machine.Memory.info.rts.start + learncs.machine.Memory.info.rts.length - 64, 64);
-        
         // Push the return address (our current line number) onto the stack
-console.log("pushing line number " + this.line + " = " + this.line.toString(16));
         learncs.lib.Node.__mem.stackPush("unsigned int", this.line);
-learncs.machine.Memory.getInstance().prettyPrint("After pushing line number", learncs.machine.Memory.info.rts.start + learncs.machine.Memory.info.rts.length - 64, 64);
 
-        // The frame pointer points to the return address, i.e., the current
-        // stack pointer value.
+        // The frame pointer points to the first unused stack location
         learncs.lib.Node.__mem.setReg(
           "FP",
           "unsigned int", 
-          learncs.lib.Node.__mem.getReg("SP", "unsigned int"));
-
-        sp = learncs.lib.Node.__mem.getReg("SP", "unsigned int");
-        fp = learncs.lib.Node.__mem.getReg("FP", "unsigned int");
-console.log("before execute sp=" + sp.toString(16));
-console.log("before execute fp=" + fp.toString(16));
+          learncs.lib.Node.__mem.getReg("SP", "unsigned int") - WORDSIZE);
 
         // Process that function.
         value2.process(data, bExecuting);

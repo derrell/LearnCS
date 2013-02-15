@@ -69,14 +69,10 @@ start_sym
         // after the function call
         sp = learncs.lib.Node.__mem.getReg("SP", "unsigned int");
         fp = learncs.lib.Node.__mem.getReg("FP", "unsigned int");
-console.log("saving sp=" + sp.toString(16));
-console.log("saving fp=" + fp.toString(16));
 
         // Push argv and argc onto the stack
         learncs.lib.Node.__mem.stackPush("pointer", 0xeeeeeeee);
         learncs.lib.Node.__mem.stackPush("unsigned int", 0xdddddddd);
-
-learncs.machine.Memory.getInstance().prettyPrint("After pushing args", learncs.machine.Memory.info.rts.start, 64);
 
         // Push the return address (our current line number) onto the stack
         learncs.lib.Node.__mem.stackPush("unsigned int", 0xcccccccc);
@@ -86,14 +82,15 @@ learncs.machine.Memory.getInstance().prettyPrint("After pushing args", learncs.m
         learncs.lib.Node.__mem.setReg(
           "FP",
           "unsigned int", 
-          learncs.lib.Node.__mem.getReg("SP", "unsigned int"));
+          learncs.lib.Node.__mem.getReg("SP",
+                                        "unsigned int") - Memory.WORDSIZE);
 
-        sp = learncs.lib.Node.__mem.getReg("SP", "unsigned int");
-        fp = learncs.lib.Node.__mem.getReg("FP", "unsigned int");
-console.log("before execute sp=" + sp.toString(16));
-console.log("before execute fp=" + fp.toString(16));
-
+        // Process main()
         learncs.lib.Node.entryNode.process(data, true);
+
+        // Restore the frame pointer and stack pointer
+        learncs.lib.Node.__mem.setReg("FP", "unsigned int", fp);
+        learncs.lib.Node.__mem.setReg("SP", "unsigned int", sp);
       }
       else
       {

@@ -9,4 +9,5 @@ int main(int argc, char * argv[])
 {
     int bing = 42;
     foo(17);
+    bing = 43;
 }

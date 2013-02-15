@@ -38,7 +38,7 @@ qx.Class.define("learncs.machine.Memory",
     WORDSIZE : null,
 
     /** Map of sizes of values, according to their C type */
-    _typeSize :
+    typeSize :
     {
       "char"               : 1,
       "unsigned char"      : 1,
@@ -295,7 +295,6 @@ qx.Class.define("learncs.machine.Memory",
 
       // Store the specified value at the location pointed to by the stack
       // pointer.
-console.log("stackPush: pushing value=" + value + ", type=" + type + " at sp=" + sp.toString(16));
       this.set(sp, type, value);
     },
     
@@ -361,8 +360,8 @@ console.log("stackPush: pushing value=" + value + ", type=" + type + " at sp=" +
       var             WORDSIZE = learncs.machine.Memory.WORDSIZE;
 
       // Determine size to be moved
-      sizeSrc = learncs.machine.Memory._typeSize[typeSrc];
-      sizeDest = learncs.machine.Memory._typeSize[typeDest];
+      sizeSrc = learncs.machine.Memory.typeSize[typeSrc];
+      sizeDest = learncs.machine.Memory.typeSize[typeDest];
 
       // Forcing is for internal writes to code space, when we really, really
       // know exactly what we're doing. It bypasses all of the error checks.
@@ -589,7 +588,7 @@ console.log("stackPush: pushing value=" + value + ", type=" + type + " at sp=" +
   defer : function(statics)
   {
     // A "word" is the native integer size
-    statics.WORDSIZE = statics._typeSize["int"];
+    statics.WORDSIZE = statics.typeSize["int"];
 
     statics.info.reg.length = statics.NUM_REGS * statics.WORDSIZE;
 
