@@ -33,6 +33,7 @@ start_sym
     if (error.errorCount == 0)
     {
       var data = {};
+      var Memory = learncs.machine.Memory;
 
       // Correct line numbers
       $1.fixLineNumbers();
@@ -62,6 +63,36 @@ start_sym
       // to run the program
       if (learncs.lib.Node.entryNode)
       {
+        // Prepare the stack to call main()
+
+        // Save the stack pointer and frame pointer, so we can restore them
+        // after the function call
+        sp = learncs.lib.Node.__mem.getReg("SP", "unsigned int");
+        fp = learncs.lib.Node.__mem.getReg("FP", "unsigned int");
+console.log("saving sp=" + sp.toString(16));
+console.log("saving fp=" + fp.toString(16));
+
+        // Push argv and argc onto the stack
+        learncs.lib.Node.__mem.stackPush("pointer", 0xeeeeeeee);
+        learncs.lib.Node.__mem.stackPush("unsigned int", 0xdddddddd);
+
+learncs.machine.Memory.getInstance().prettyPrint("After pushing args", learncs.machine.Memory.info.rts.start, 64);
+
+        // Push the return address (our current line number) onto the stack
+        learncs.lib.Node.__mem.stackPush("unsigned int", 0xcccccccc);
+
+        // The frame pointer points to the return address, i.e., the current
+        // stack pointer value.
+        learncs.lib.Node.__mem.setReg(
+          "FP",
+          "unsigned int", 
+          learncs.lib.Node.__mem.getReg("SP", "unsigned int"));
+
+        sp = learncs.lib.Node.__mem.getReg("SP", "unsigned int");
+        fp = learncs.lib.Node.__mem.getReg("FP", "unsigned int");
+console.log("before execute sp=" + sp.toString(16));
+console.log("before execute fp=" + fp.toString(16));
+
         learncs.lib.Node.entryNode.process(data, true);
       }
       else
@@ -71,7 +102,7 @@ start_sym
 
       learncs.machine.Memory.getInstance().prettyPrint(
         "Stack",
-        learncs.machine.Memory.info.rts.start,
+        Memory.info.rts.start + Memory.info.rts.length - 64,
         64);
     }
 

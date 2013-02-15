@@ -387,6 +387,17 @@ qx.Class.define("learncs.lib.Symtab",
     getName : function()
     {
       return this.__name;
+    },
+    
+    /**
+     * Provide the total byte count of this symbol table's symbols
+     * 
+     * @return {Number}
+     *   The number of bytes consumed by this symbol table's symbols
+     */
+    getSize : function()
+    {
+      return this.nextOffset;
     }
   }
 });

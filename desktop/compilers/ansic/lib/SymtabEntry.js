@@ -132,7 +132,7 @@ qx.Class.define("learncs.lib.SymtabEntry",
       fp = learncs.lib.SymtabEntry.__mem.getReg("FP", "unsigned int");
       
       // The frame pointer points to the return address. Therefore, the first
-      // automatic local variable -- the one with offset 0 -- is actually a
+      // automatic local variable -- the one with offset 0 -- is actually at
       // four less than the frame pointer. Calculate and return the actual
       // address of this symbol, based on the frame pointer.
       return fp - (4 + this.__offset);

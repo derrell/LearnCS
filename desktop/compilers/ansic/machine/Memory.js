@@ -271,6 +271,66 @@ qx.Class.define("learncs.machine.Memory",
     },
     
     /**
+     * Push a value onto the stack
+     *
+     * @param type {String}
+     *   The C type with which the address should be interpreted.
+     *
+     * @param value {Number}
+     *   The value to be written to the designated address
+     */
+    stackPush : function(type, value)
+    {
+      var             sp;
+      
+      // Get the stack pointer address
+      sp = this.getReg("SP", "unsigned int");
+
+      // Decrement the stack pointer so it's pointing to the first unused
+      // location on the stack
+      sp -= learncs.machine.Memory.WORDSIZE;
+
+      // Store the new stack pointer value back into the stack pointer register
+      this.setReg("SP", "unsigned int", sp);
+
+      // Store the specified value at the location pointed to by the stack
+      // pointer.
+console.log("stackPush: pushing value=" + value + ", type=" + type + " at sp=" + sp.toString(16));
+      this.set(sp, type, value);
+    },
+    
+    /**
+     * Pop a value off of the stack
+     *
+     * @param type {String}
+     *   The C type with which the stack value should be interpreted.
+     *
+     * @return {Number}
+     *   The value popped from the top of the stack
+     */
+    stackPop : function(type)
+    {
+      var             sp;
+      var             value;
+
+      // Get the stack pointer address
+      sp = this.getReg("SP", "unsigned int");
+
+      // Retrieve the value from the address pointed to by the stack pointer
+      value = this.get(addr, type);
+
+      // Increment the stack pointer so it's pointing to the next in-use
+      // location on the stack
+      sp += learncs.machine.Memory.WORDSIZE;
+
+      // Store the new value back into the stack pointer
+      this.setReg("SP", "unsigned int", sp);
+      
+      // Return the value we just stored
+      return value;
+    },
+
+    /**
      * Move data from one address to another.
      *
      * @param addrSrc {Number}

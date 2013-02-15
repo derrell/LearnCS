@@ -1,4 +1,4 @@
-void foo(void)
+void foo(int x)
 {
     short bar = 23U;
     short baz;
@@ -8,5 +8,5 @@ void foo(void)
 int main(int argc, char * argv[])
 {
     int bing = 42;
-    foo();
+    foo(17);
 }

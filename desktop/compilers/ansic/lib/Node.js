@@ -243,7 +243,7 @@ qx.Class.define("learncs.lib.Node",
 
       if (bExecuting)
       {
-        console.log("Processing node " + this.type);
+//        console.log("Processing node " + this.type);
       }
 
       // Yup. See what type it is.
@@ -275,7 +275,24 @@ qx.Class.define("learncs.lib.Node",
          *   0: assignment_expression
          *   ...
          */
-        this.__processSubnodes(data, bExecuting);
+        
+        if (! bExecuting)
+        {
+          // Likely there's nothing to do when not executing, but call
+          // subnodes just in case.
+          this.__processSubnodes(data, bExecuting);
+        }
+        else
+        {
+          // When we're executing, we ened to push the expression values onto
+          // the stack in reverse order.
+          for (i = this.children.length - 1; i >= 0; --i)
+          {
+            value1 = this.children[i].process(data, bExecuting);
+console.log("pushing value " + value1.value + ", type " + value1.type);
+            learncs.lib.Node.__mem.stackPush(value1.type, value1.value);
+          }
+        }
         break;
 
       case "array_decl" :
@@ -333,17 +350,14 @@ qx.Class.define("learncs.lib.Node",
 
         // We could have a symbol table entry, or a map for a constant or
         // previously-retrieved value.
-console.log("assign: entry=" + value3);
         if (value3 instanceof learncs.lib.SymtabEntry)
         {
           // It's a symbol table entry. Retrieve the value from memory
           value2 = learncs.lib.Node.__mem.get(value3.getAddr(), 
                                               value3.getType());
-console.log("assign: value=" + value2 + ", type=" + value3.getType());
           value2 = { value : value2, type : value3.getType() };
         }
 
-console.log("assigning " + value2.value + " to " + value1.value);
         learncs.lib.Node.__mem.set(value1.value, value2.type, value2.value);
 
         break;
@@ -512,6 +526,21 @@ console.log("assigning " + value2.value + " to " + value1.value);
             },
             this);
           
+          // Adjust the stack pointer to take automatic local variables into
+          // account. First, get the current symbol table
+          symtab = learncs.lib.Symtab.getCurrent();
+          
+          // Get the stack pointer's current value
+          sp = learncs.lib.Node.__mem.getReg("SP", "unsigned int");
+          
+          // Subtract the symbol table's size from the stack pointer, so that
+          // subsequent function calls don't overwrite the automatic local
+          // variables
+          sp -= symtab.getSize();
+          
+          // Write the new stack pointer value
+          learncs.lib.Node.__mem.setReg("SP", "unsigned int", sp);
+
           // Nothing more to do if we're executing.
           break;
         }
@@ -626,6 +655,12 @@ console.log("assigning " + value2.value + " to " + value1.value);
          *      enum
          *      struct
          */
+
+        // We don't need to do this if we're executing
+        if (bExecuting)
+        {
+          break;
+        }
 
         // For each declaration specifier...
         this.children.forEach(
@@ -765,6 +800,13 @@ console.log("assigning " + value2.value + " to " + value1.value);
           break;
         }
         
+        // Save the stack pointer and frame pointer, so we can restore them
+        // after the function call
+        sp = learncs.lib.Node.__mem.getReg("SP", "unsigned int");
+        fp = learncs.lib.Node.__mem.getReg("FP", "unsigned int");
+console.log("saving sp=" + sp.toString(16));
+console.log("saving fp=" + fp.toString(16));
+
         // Retrieve the symbol table entry for this function
         value1 = this.children[0].process(data, bExecuting);
         
@@ -772,13 +814,34 @@ console.log("assigning " + value2.value + " to " + value1.value);
         // function.
         value2 = value1.getAddr();
         
-        // *** TODO:
-        // *** push arguments, push return "address", update FP ***
-        // ***
+        // Push the arguments onto the stack
+        this.children[1].process(data, bExecuting);
 
+learncs.machine.Memory.getInstance().prettyPrint("After pushing args", learncs.machine.Memory.info.rts.start + learncs.machine.Memory.info.rts.length - 64, 64);
+        
+        // Push the return address (our current line number) onto the stack
+console.log("pushing line number " + this.line + " = " + this.line.toString(16));
+        learncs.lib.Node.__mem.stackPush("unsigned int", this.line);
+learncs.machine.Memory.getInstance().prettyPrint("After pushing line number", learncs.machine.Memory.info.rts.start + learncs.machine.Memory.info.rts.length - 64, 64);
+
+        // The frame pointer points to the return address, i.e., the current
+        // stack pointer value.
+        learncs.lib.Node.__mem.setReg(
+          "FP",
+          "unsigned int", 
+          learncs.lib.Node.__mem.getReg("SP", "unsigned int"));
+
+        sp = learncs.lib.Node.__mem.getReg("SP", "unsigned int");
+        fp = learncs.lib.Node.__mem.getReg("FP", "unsigned int");
+console.log("before execute sp=" + sp.toString(16));
+console.log("before execute fp=" + fp.toString(16));
 
         // Process that function.
         value2.process(data, bExecuting);
+        
+        // Restore the frame pointer and stack pointer
+        learncs.lib.Node.__mem.setReg("FP", "unsigned int", fp);
+        learncs.lib.Node.__mem.setReg("SP", "unsigned int", sp);
         break;
 
       case "function_decl" :
@@ -849,7 +912,6 @@ console.log("assigning " + value2.value + " to " + value1.value);
                                           function_decl.line);
 
           // Is this the main() function?
-console.log("Found function identifier: " + function_decl.children[0].value + " in symbol table " + symtab.getName());
           if (function_decl.children[0].value == "main" && 
               symtab.getParent() &&
               ! symtab.getParent().getParent())
@@ -941,7 +1003,6 @@ console.log("Found function identifier: " + function_decl.children[0].value + " 
         {
           throw new Error("Programmer error: entry should exist");
         }
-console.log("identifier returning " + entry);
         return entry;
         break;
 
