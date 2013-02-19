@@ -76,6 +76,20 @@ qx.Class.define("learncs.lib.Node",
       ++error.errorCount;
     },
 
+    getExpressionValue : function(value)
+    {
+        // If it was a symbol table entry...
+        if (value instanceof learncs.lib.SymtabEntry)
+        {
+          // ... then retrieve the symbol's address
+          value = { value : value.getAddr(), type : value.getType() };
+          value.value = learncs.lib.Node.__mem.get(value.value, value.type);
+        }
+
+console.log("getExpressionValue: returning { value : " + value.value + ", type : " + value.type + "}");
+        return value;
+    },
+
     /**
      * Process all sub-nodes of a node
      * 
@@ -244,7 +258,7 @@ qx.Class.define("learncs.lib.Node",
 
       if (bExecuting)
       {
-//        console.log("Processing node " + this.type);
+        console.log("Processing node " + this.type);
       }
 
       // Yup. See what type it is.
@@ -255,7 +269,22 @@ qx.Class.define("learncs.lib.Node",
         break;
 
       case "add" :
-        throw new Error("add");
+        /*
+         * add :
+         *   0 : additive_expression
+         *   1 : multiplicative_expression
+         */
+        if (bExecuting)
+        {
+          // We're executing. Get the value of the left and right expressions
+          value1 = 
+            this.getExpressionValue(this.children[0].process(data, bExecuting));
+          value2 = 
+            this.getExpressionValue(this.children[1].process(data, bExecuting));
+          
+          // TODO: convert types as necessary
+          return { value : value1.value + value2.value, type : value1.type };
+        }
         break;
 
       case "add-assign" :
@@ -342,27 +371,12 @@ qx.Class.define("learncs.lib.Node",
         if (value1 instanceof learncs.lib.SymtabEntry)
         {
           // ... then retrieve the symbol's address
-console.log("Node:assign: retrieving address of value1");
           value1 = { value : value1.getAddr(), type : value1.getType() };
-console.log("Node:assign: symbol's address = " + value1.value.toString(16));
         }
         
         // Retrieve the value to assign there
-        value3 = this.children[1].process(data, true);
+        value3 = this.getExpressionValue(this.children[1].process(data, true));
 
-        // We could have a symbol table entry, or a map for a constant or
-        // previously-retrieved value.
-        if (value3 instanceof learncs.lib.SymtabEntry)
-        {
-          // It's a symbol table entry. Retrieve the value from memory
-console.log("Node:assign: found symtab entry on RHS:");
-value3.display();
-          value2 = learncs.lib.Node.__mem.get(value3.getAddr(), 
-                                              value3.getType());
-          value3 = { value : value2, type : value3.getType() };
-        }
-
-console.log("Node:assign: address=" + value1.value.toString(16) + ", value=" + value3.value);
         // Save the value at its new address
         learncs.lib.Node.__mem.set(value1.value, value3.type, value3.value);
         break;
@@ -448,15 +462,15 @@ console.log("Node:assign: address=" + value1.value.toString(16) + ", value=" + v
           this.children[0].process(data, bExecuting);
         }
 
+        // Process the statement_list
+        if (this.children[1])
+        {
+          this.children[1].process(data, bExecuting);
+        }
+          
         // If we're executing...
         if (bExecuting)
         {
-          // ... then process the statement_list
-          if (this.children[1])
-          {
-            this.children[1].process(data, bExecuting);
-          }
-          
           // Restore the previous frame pointer
           symtab.restoreFramePointer();
         }
@@ -787,20 +801,12 @@ console.log("Node:assign: address=" + value1.value.toString(16) + ", value=" + v
         throw new Error("expression");
         break;
 
-      case "expression" :
-        throw new Error("expression");
-        break;
-
       case "extern" :
         throw new Error("extern");
         break;
 
       case "float" :
         throw new Error("float");
-        break;
-
-      case "for" :
-        throw new Error("for");
         break;
 
       case "for" :
@@ -1022,7 +1028,40 @@ console.log("function_call: sp before parameter list=" + learncs.lib.Node.__mem.
         break;
 
       case "if" :
-        throw new Error("if");
+        /*
+         * if
+         *   0: expression
+         *   1: statement (if)
+         *   2: statement (else)
+         */
+        
+        // If we're not executing...
+        if (! bExecuting)
+        {
+          // ... then just process each of the subnodes
+          this.__processSubnodes(data, bExecuting);
+          break;
+        }
+        
+        // We're executing. Get the value of the expression
+        value1 = 
+          this.getExpressionValue(this.children[0].process(data, bExecuting));
+        
+        // If the retrieved value is non-zero...
+        if (value1.value)
+        {
+          // ... then process child 1
+          this.children[1].process(data, bExecuting);
+        }
+        else
+        {
+          // otherwise process child 2 (if it exists)
+          if (this.children.length > 2)
+          {
+            this.children[2].process(data, bExecuting);
+          }
+        }
+
         break;
 
       case "init_declarator_list" :
