@@ -77,32 +77,70 @@ qx.Class.define("learncs.lib.Symtab",
     this.nextOffset = 0;
 
     // Allow finding a symbol table by its name
-    learncs.lib.Symtab.__symtabs[name] = this;
+    learncs.lib.Symtab._symtabs[name] = this;
 
     // Push it onto the appropriate stack
     if (name.match(/^struct#/))
     {
-      learncs.lib.Symtab.__symtabStackStruct.push(this);
+      learncs.lib.Symtab._symtabStackStruct.push(this);
     }
     else
     {
-      learncs.lib.Symtab.__symtabStack.push(this);
+      learncs.lib.Symtab._symtabStack.push(this);
     }
   },
   
   statics :
   {
     /** Symbol tables, by name */
-    __symtabs : {},
+    _symtabs : {},
     
     /** Stack of symbol tables, during parsing */
-    __symtabStack : [],
+    _symtabStack : [],
     
     /** Stack of local symbol tabales for a structure definition */
-    __symtabStackStruct : [],
+    _symtabStackStruct : [],
     
     /** Next id to assign when getUniqueId() is called */
     __nextUniqueId : 0,
+
+    /** Stack of frame pointers */
+    framePointers : [],
+
+    /**
+     * Push a frame pointer onto its own stack
+     * 
+     * @param fp {Number}
+     *   The frame pointer to be pushed
+     */
+    pushFramePointer : function(fp)
+    {
+console.log("pushFramePointer: pushing fp=" + fp.toString(16));
+      learncs.lib.Symtab.framePointers.unshift(fp);
+    },
+    
+    /**
+     * Pop a frame pointer from its own stack
+     * 
+     * @return {Number}
+     *   The frame pointer just popped
+     */
+    popFramePointer : function()
+    {
+      var             fp = learncs.lib.Symtab.framePointers.shift();
+      
+console.log("popFramePointer: popped fp=" + fp.toString(16));
+      return fp;
+    },
+
+    /**
+     * Push a symbol table onto the stack
+     */
+    pushStack : function(symtab)
+    {
+console.log("pushStack: pushing symtab " + symtab.getName());
+      learncs.lib.Symtab._symtabStack.push(symtab);
+    },
 
     /**
      * Remove the top symbol table from the stack, and return it.
@@ -112,15 +150,9 @@ qx.Class.define("learncs.lib.Symtab",
      */
     popStack : function()
     {
-      return learncs.lib.Symtab.__symtabStack.pop();
-    },
-
-    /**
-     * Push a symbol table onto the stack
-     */
-    pushStack : function(symtab)
-    {
-      learncs.lib.Symtab.__symtabStack.push(symtab);
+      var             symtab = learncs.lib.Symtab._symtabStack.pop();
+console.log("popStack: popping symtab " + symtab.getName());
+      return symtab;
     },
 
     /**
@@ -135,14 +167,14 @@ qx.Class.define("learncs.lib.Symtab",
       var statics = learncs.lib.Symtab;
 
       // Ensure there's something on the stack
-      if (statics.__symtabStack.length === 0)
+      if (statics._symtabStack.length === 0)
       {
           // There's not!
           return null;
       }
 
       /* Give 'em what they came for! */
-      return statics.__symtabStack[statics.__symtabStack.length - 1];
+      return statics._symtabStack[statics._symtabStack.length - 1];
     },
 
     /**
@@ -154,18 +186,13 @@ qx.Class.define("learncs.lib.Symtab",
     },
 
     /**
-     * Prepare for processing by resetting the name creation such that new
-     * calls to symtab.add() will yield the same names as previously.
+     * Prepare for processing by resetting the name creation of symbol tables.
      */
     reset : function()
     {
-      learncs.lib.Symtab.__symtabs = {};
-      learncs.lib.Symtab.__symtabStack.forEach(
-        function(symtab)
-        {
-          this.__nextChild = 1;
-        });
-
+      learncs.lib.Symtab._symtabs = {};
+      learncs.lib.Symtab._symtabStack = [];
+      learncs.lib.Symtab._symtabStackStruct = [];
       learncs.lib.Symtab.__nextUniqueId = 0;
     },
 
@@ -185,9 +212,9 @@ qx.Class.define("learncs.lib.Symtab",
         sys.print(message + "\n");
       }
 
-      for (symtabName in learncs.lib.Symtab.__symtabs)
+      for (symtabName in learncs.lib.Symtab._symtabs)
       {
-        symtab = learncs.lib.Symtab.__symtabs[symtabName];
+        symtab = learncs.lib.Symtab._symtabs[symtabName];
         sys.print("Symbol table " + symtab.__name + "...\n");
 
         for (symbolName in symtab.__symbols)

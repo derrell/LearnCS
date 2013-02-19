@@ -65,31 +65,26 @@ start_sym
       {
         // Prepare the stack to call main()
 
-        // Save the stack pointer and frame pointer, so we can restore them
-        // after the function call
+        // Save the stack pointer, so we can restore it after the function call
         sp = learncs.lib.Node.__mem.getReg("SP", "unsigned int");
-        fp = learncs.lib.Node.__mem.getReg("FP", "unsigned int");
+console.log("ansic.jison: original sp=" + sp.toString(16));
 
         // Push argv and argc onto the stack
         learncs.lib.Node.__mem.stackPush("pointer", 0xeeeeeeee);
         learncs.lib.Node.__mem.stackPush("unsigned int", 0xdddddddd);
 
+        // Save this frame pointer
+        learncs.lib.Symtab.pushFramePointer(
+          learncs.lib.Node.__mem.getReg("SP", "unsigned int"));
+
         // Push the return address (our current line number) onto the stack
         learncs.lib.Node.__mem.stackPush("unsigned int", 0xcccccccc);
-
-        // The frame pointer points to the return address, i.e., the current
-        // stack pointer value.
-        learncs.lib.Node.__mem.setReg(
-          "FP",
-          "unsigned int", 
-          learncs.lib.Node.__mem.getReg("SP",
-                                        "unsigned int") - Memory.WORDSIZE);
 
         // Process main()
         learncs.lib.Node.entryNode.process(data, true);
 
         // Restore the frame pointer and stack pointer
-        learncs.lib.Node.__mem.setReg("FP", "unsigned int", fp);
+        learncs.lib.Symtab.popFramePointer();
         learncs.lib.Node.__mem.setReg("SP", "unsigned int", sp);
       }
       else

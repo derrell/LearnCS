@@ -107,6 +107,7 @@ qx.Class.define("learncs.lib.SymtabEntry",
   {
     getAddr : function()
     {
+      var             i;
       var             fp;
       var             offset;
       var             bGlobal;
@@ -132,29 +133,28 @@ qx.Class.define("learncs.lib.SymtabEntry",
       }
       
       // It's not global, so its address is based on the frame
-      // pointer. Retrieve the frame pointer.
-      fp = learncs.lib.SymtabEntry.__mem.getReg("FP", "unsigned int");
-      
-      // The frame pointer points to the return address. Therefore, the first
-      // automatic local variable -- the one with offset 0 -- is actually at
-      // four less than the frame pointer. Calculate the address of this
-      // symbol, based on the frame pointer, assuming that this symbol table
-      // is the inner-most one.
-      offset = SIB.Word + this.__offset;
-
-      // FIXME TODO...
-
-      // If this symbol table isn't the inner-most one, we need to add the
-      // sizes of each subsequent (more inner) symbol table
-      for (symtab = this.__symtab.getParent(); 
+      // pointer. Find the appropriate frame pointer for this symbol table.
+      for (i = -1, symtab = this.__symtab.getParent(); 
            symtab; 
-           symtab = symtab.getParent())
+           ++i, symtab = symtab.getParent())
       {
-        offset += symtab.getSize();
+        // nothing to do; just looping until we hit the end of the symtab list.
       }
 
+      // We know which frame pointer to use now. Retrieve it.
+      fp = learncs.lib.Symtab.framePointers[i];
+(function()
+ {
+   var x = 0;
+   for (x = 0; x < learncs.lib.Symtab._symtabStack.length; x++)
+   {
+     console.log("symtabStack[" + x + "] = " + learncs.lib.Symtab._symtabStack[x].getName());
+   }
+ })();
+console.log("getAddr: found i=" + i + ", fp=" + fp.toString(16) + ", offset=" + this.__offset);
+
       // Return the now-fully-qualified offset from the current frame pointer
-      return fp - offset;
+      return fp - this.__offset;
     },
 
     getName : function()

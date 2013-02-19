@@ -421,6 +421,11 @@ qx.Class.define("learncs.lib.Node",
           
           // Push this symbol table onto the stack, as if we'd just created it.
           learncs.lib.Symtab.pushStack(symtab);
+
+          // Save the new frame pointer
+          learncs.lib.Symtab.pushFramePointer(
+            learncs.lib.Node.__mem.getReg("SP", "unsigned int") - 
+              symtab.getSize());
         }
         else
         {
@@ -446,6 +451,9 @@ qx.Class.define("learncs.lib.Node",
           {
             this.children[1].process(data, bExecuting);
           }
+          
+          // We're finished with this frame
+          learncs.lib.Symtab.popFramePointer();
         }
 
         // Revert to the prior scope
@@ -803,8 +811,7 @@ qx.Class.define("learncs.lib.Node",
         // Save the stack pointer and frame pointer, so we can restore them
         // after the function call
         sp = learncs.lib.Node.__mem.getReg("SP", "unsigned int");
-        fp = learncs.lib.Node.__mem.getReg("FP", "unsigned int");
-
+        
         // Retrieve the symbol table entry for this function
         value1 = this.children[0].process(data, bExecuting);
         
@@ -815,20 +822,18 @@ qx.Class.define("learncs.lib.Node",
         // Push the arguments onto the stack
         this.children[1].process(data, bExecuting);
 
+        // Save this frame pointer
+        learncs.lib.Symtab.pushFramePointer(
+          learncs.lib.Node.__mem.getReg("SP", "unsigned int"));
+
         // Push the return address (our current line number) onto the stack
         learncs.lib.Node.__mem.stackPush("unsigned int", this.line);
-
-        // The frame pointer points to the first unused stack location
-        learncs.lib.Node.__mem.setReg(
-          "FP",
-          "unsigned int", 
-          learncs.lib.Node.__mem.getReg("SP", "unsigned int") - WORDSIZE);
 
         // Process that function.
         value2.process(data, bExecuting);
         
         // Restore the frame pointer and stack pointer
-        learncs.lib.Node.__mem.setReg("FP", "unsigned int", fp);
+        learncs.lib.Symtab.popFramePointer();
         learncs.lib.Node.__mem.setReg("SP", "unsigned int", sp);
         break;
 
@@ -866,6 +871,11 @@ qx.Class.define("learncs.lib.Node",
           
           // Push it onto the symbol table stack as if we'd just created it
           learncs.lib.Symtab.pushStack(symtab);
+
+          // Save the new frame pointer
+          learncs.lib.Symtab.pushFramePointer(
+            learncs.lib.Node.__mem.getReg("SP", "unsigned int") - 
+              symtab.getSize());
 
           // Process the paremeter list
           if (function_decl.children[1])
