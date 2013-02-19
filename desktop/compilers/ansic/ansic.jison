@@ -91,6 +91,9 @@ console.log("main call: sp before parameter list=" + learncs.lib.Node.__mem.getR
         // Process main()
         learncs.lib.Node.entryNode.process(data, true);
 
+        // Restore the previous frame pointer
+        symtab.restoreFramePointer();
+
         // Restore the stack pointer
         learncs.lib.Node.__mem.setReg("SP", "unsigned int", sp);
       }
@@ -98,6 +101,11 @@ console.log("main call: sp before parameter list=" + learncs.lib.Node.__mem.getR
       {
         sys.print("Missing main() function\n");
       } 
+
+      learncs.machine.Memory.getInstance().prettyPrint(
+        "Globals",
+        Memory.info.gas.start,
+        Memory.info.gas.length);
 
       learncs.machine.Memory.getInstance().prettyPrint(
         "Stack",

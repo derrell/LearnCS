@@ -72,7 +72,9 @@ qx.Class.define("learncs.lib.Symtab",
     this.__symbolOrder = [];
     this.__nextChild = 1;
     this.__line = line;
-    this.__framePointer = 0;
+    
+    // The frame pointer is assumed to be global
+    this.__framePointer = [ learncs.machine.Memory.info.gas.start ];
 
     // Next offset for a symbol, manipulated by class SymtabEntry
     this.nextOffset = 0;
@@ -420,7 +422,7 @@ console.log("popStack: popping symtab " + symtab.getName());
     setFramePointer : function(fp)
     {
 console.log("setFramePointer: name=" + this.__name + ", fp=" + fp.toString(16));
-      this.__fp = fp;
+      this.__framePointer.unshift(fp);
     },
     
     /**
@@ -428,8 +430,16 @@ console.log("setFramePointer: name=" + this.__name + ", fp=" + fp.toString(16));
      */
     getFramePointer : function()
     {
-console.log("getFramePointer: name=" + this.__name + ", fp=" + this.__fp.toString(16));
-      return this.__fp;
+console.log("getFramePointer: name=" + this.__name + ", fp=" + this.__framePointer[0].toString(16));
+      return this.__framePointer[0];
+    },
+
+    /**
+     * Restore this symbol table to its prior frame pointer
+     */
+    restoreFramePointer : function()
+    {
+      this.__framePointer.shift();
     },
 
     /**

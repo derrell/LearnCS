@@ -1,12 +1,17 @@
-/* Here's a typedef! */
-typedef char CH;
-int a, ***c;
-unsigned long long int ** b;
-double f;
-CH ch;
+int glob = 3;
 
-char foo(int bar)
+void foo(int x)
 {
-    int foo1 = 19;
-    a = 42;
+    short bar = 23U;
+    short baz;
+    baz = bar;
+    baz = x;
+    glob = 4;
+}
+
+int main(int argc, char * argv[])
+{
+    int bing = 42;
+    foo(17);
+    bing = 43;
 }

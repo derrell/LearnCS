@@ -456,6 +456,9 @@ console.log("Node:assign: address=" + value1.value.toString(16) + ", value=" + v
           {
             this.children[1].process(data, bExecuting);
           }
+          
+          // Restore the previous frame pointer
+          symtab.restoreFramePointer();
         }
 
         // Revert to the prior scope
@@ -835,6 +838,9 @@ console.log("function_call: sp before parameter list=" + learncs.lib.Node.__mem.
         // Process that function.
         value2.process(data, bExecuting);
         
+        // Restore the previous frame pointer
+        value2._symtab.restoreFramePointer();
+
         // Restore the stack pointer
         learncs.lib.Node.__mem.setReg("SP", "unsigned int", sp);
         break;
