@@ -275,6 +275,7 @@ qx.Class.define("learncs.machine.Memory",
     {
       // Get an appropriate view into the memory, based on the type, and save
       // the value at that address
+console.log("mem.set: setting address " + addr.toString(16) + " to " + value.toString(16));
       this._getByType(type, addr)[0] = value;
     },
     

@@ -6,7 +6,6 @@ void foo(int x)
     short baz;
     baz = bar;
     baz = x;
-    glob = 4;
 }
 
 int main(int argc, char * argv[])

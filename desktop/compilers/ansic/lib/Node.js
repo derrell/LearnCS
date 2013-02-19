@@ -493,7 +493,100 @@ console.log("Node:assign: address=" + value1.value.toString(16) + ", value=" + v
          */
 
         // Determine if we're executing, or generating symbol tables
-        if (bExecuting)
+        if (!bExecuting)
+        {
+          // Assume we do not expect the entry to already exist in the symbol
+          // table
+          bExists = false;
+
+          // If this is a typedef, it's already been added to the symbol table
+          if (this.children[0].children &&
+              this.children[0].children.length > 0 &&
+              this.children[0].children[0].type == "typedef")
+          {
+            // If it's a type, then it will exist already
+            bExists = true;
+          }
+
+          // Are there identifiers to apply these declaration specifieres to?
+          if (! this.children[1])
+          {
+            // Nope. Just process the declaration_specifiers.
+            this.children[0].process( {}, bExecuting );
+            break;
+          }
+
+          // Create symbol table entries for these identifiers
+          this.children[1].children.forEach(
+            function(init_declarator)
+            {
+              var             entry;
+              var             value;
+              var             pointer;
+              var             identifier;
+              var             declarator;
+
+              // Retrieve this declarator
+              declarator = init_declarator.children[0];
+
+              // Get the identifier name
+              identifier = declarator.children[0].value;
+
+              // If the symbol table should already exist...
+              if (bExists)
+              {
+                // ... then retrieve the entry
+                entry = learncs.lib.Symtab.getCurrent().get(identifier);
+
+                if (! entry)
+                {
+                  this.error("Programmer error: type name should have existed");
+                  return;
+                }
+              }
+              else
+              {
+                // It shouldn't exist. Create a symbol table entry for this
+                // variable
+                entry = learncs.lib.Symtab.getCurrent().add(
+                  identifier, declarator.line, false);
+
+                if (! entry)
+                {
+                  entry = learncs.lib.Symtab.getCurrent().get(identifier, true);
+                  this.error("Variable '" + identifier + "' " +
+                             "was previously declared near line " +
+                             entry.getLine());
+                  return;
+                }
+              }
+
+              // Count and save the number of levels of pointers of this
+              // variable e.g., char **p; would call incrementPointerCount()
+              // twice.
+              for (pointer = declarator.children[1];
+                   pointer;
+                   pointer = pointer.children[0])
+              {
+                entry.incrementPointerCount();
+              }
+
+              // Apply the declaration specifiers to this entry
+              if (this.children && this.children[0])
+              {
+                this.children[0].process( { entry : entry }, bExecuting );
+              }
+            },
+            this);
+        }
+        
+        // We enter this next block in various cases:
+        //   (1) We are executing, so we need to initialize variables
+        //   (2) We're not yet exeucting, but we're at the global scope. In
+        //       that case, we need to initialize the global variables.
+        //   TODO (maybe):
+        //   (3) There are static variables which need initialization
+        if (bExecuting || ! learncs.lib.Symtab.getCurrent().getParent())
         {
           // Are there identifiers to apply these declaration specifieres to?
           if (! this.children[1])
@@ -557,94 +650,6 @@ console.log("Node:assign: address=" + value1.value.toString(16) + ", value=" + v
           // Nothing more to do if we're executing.
           break;
         }
-
-        //
-        // The remainder of this case is for !bExecuting
-        //
-
-        // Assume we do not expect the entry to already exist in the symbol
-        // table
-        bExists = false;
-
-        // If this is a typedef, it's already been added to the symbol table
-        if (this.children[0].children &&
-            this.children[0].children.length > 0 &&
-            this.children[0].children[0].type == "typedef")
-        {
-          // If it's a type, then it will exist already
-          bExists = true;
-        }
-
-        // Are there identifiers to apply these declaration specifieres to?
-        if (! this.children[1])
-        {
-          // Nope. Just process the declaration_specifiers.
-          this.children[0].process( {}, bExecuting );
-          break;
-        }
-
-        // Create symbol table entries for these identifiers
-        this.children[1].children.forEach(
-          function(init_declarator)
-          {
-            var             entry;
-            var             value;
-            var             pointer;
-            var             identifier;
-            var             declarator;
-
-            // Retrieve this declarator
-            declarator = init_declarator.children[0];
-
-            // Get the identifier name
-            identifier = declarator.children[0].value;
-
-            // If the symbol table should already exist...
-            if (bExists)
-            {
-              // ... then retrieve the entry
-              entry = learncs.lib.Symtab.getCurrent().get(identifier);
-
-              if (! entry)
-              {
-                this.error("Programmer error: type name should have existed");
-                return;
-              }
-            }
-            else
-            {
-              // It shouldn't exist. Create a symbol table entry for this
-              // variable
-              entry = learncs.lib.Symtab.getCurrent().add(
-                identifier, declarator.line, false);
-
-              if (! entry)
-              {
-                entry = learncs.lib.Symtab.getCurrent().get(identifier, true);
-                this.error("Variable '" + identifier + "' " +
-                           "was previously declared near line " +
-                           entry.getLine());
-                return;
-              }
-            }
-
-            // Count and save the number of levels of pointers of this
-            // variable e.g., char **p; would call incrementPointerCount()
-            // twice.
-            for (pointer = declarator.children[1];
-                 pointer;
-                 pointer = pointer.children[0])
-            {
-              entry.incrementPointerCount();
-            }
-
-            // Apply the declaration specifiers to this entry
-            if (this.children && this.children[0])
-            {
-              this.children[0].process( { entry : entry }, bExecuting );
-            }
-          },
-          this);
         break;
 
       case "declaration_list" :
