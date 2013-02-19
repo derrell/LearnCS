@@ -72,6 +72,7 @@ qx.Class.define("learncs.lib.Symtab",
     this.__symbolOrder = [];
     this.__nextChild = 1;
     this.__line = line;
+    this.__framePointer = 0;
 
     // Next offset for a symbol, manipulated by class SymtabEntry
     this.nextOffset = 0;
@@ -178,6 +179,21 @@ console.log("popStack: popping symtab " + symtab.getName());
     },
 
     /**
+     * Get a symbol table by its name
+     * 
+     * @param name {String}
+     *   The name of the symbol table to retrieve
+     * 
+     * @return {learncs.lib.Symtab|null}
+     *   The symbol table with the given name, if it is found;
+     *   null otherwise.
+     */
+    getByName : function(name)
+    {
+      return learncs.lib.Symtab._symtabs[name] || null;
+    },
+
+    /**
      * Retrieve a unique id for a symbol table name
      */
     getUniqueId : function()
@@ -215,7 +231,7 @@ console.log("popStack: popping symtab " + symtab.getName());
       for (symtabName in learncs.lib.Symtab._symtabs)
       {
         symtab = learncs.lib.Symtab._symtabs[symtabName];
-        sys.print("Symbol table " + symtab.__name + "...\n");
+        sys.print("Symbol table " + symtab + " (" + symtab.__name + ")...\n");
 
         for (symbolName in symtab.__symbols)
         {
@@ -394,6 +410,28 @@ console.log("popStack: popping symtab " + symtab.getName());
       return this.__parent.get(symName, false);
     },
     
+    /**
+     * Set the frame pointer for this symbol table
+     * 
+     * @param fp {Number}
+     *   The frame pointer to associated with this symbol table, for the
+     *   current activation record.
+     */
+    setFramePointer : function(fp)
+    {
+console.log("setFramePointer: name=" + this.__name + ", fp=" + fp.toString(16));
+      this.__fp = fp;
+    },
+    
+    /**
+     * Retrieve the frame pointer for this symbol table
+     */
+    getFramePointer : function()
+    {
+console.log("getFramePointer: name=" + this.__name + ", fp=" + this.__fp.toString(16));
+      return this.__fp;
+    },
+
     /**
      * Provide the parent symbol table.
      * 

@@ -88,11 +88,19 @@ qx.Class.define("learncs.machine.Memory",
         length : 64
       },
 
+      "rts" :
+      {
+        start : 0x9EA4,
+        length : 68
+      }
+
+/*
       "rts" :                     // Run-time Stack
       {
         start  : 16 * 1024,
         length : 1024
       }
+*/
     },
 
     /** The register names, and their locations in memory */
@@ -295,6 +303,7 @@ qx.Class.define("learncs.machine.Memory",
 
       // Store the specified value at the location pointed to by the stack
       // pointer.
+console.log("stackPush: writing " + value.toString(16) + " to " + sp.toString(16));
       this.set(sp, type, value);
     },
     

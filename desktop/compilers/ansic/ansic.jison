@@ -32,7 +32,10 @@ start_sym
     R("start_sym : translation_unit");
     if (error.errorCount == 0)
     {
+      var sp;
       var data = {};
+      var symtab;
+      var machine;
       var Memory = learncs.machine.Memory;
 
       // Correct line numbers
@@ -51,7 +54,7 @@ start_sym
       new learncs.lib.Symtab(null, null, 0);
 
       // Initialize the machine singleton, which initializes the registers
-      new learncs.machine.Machine();
+      machine = learncs.machine.Machine.getInstance();
 
       // Process the abstract syntax tree to create symbol tables
       $1.process(data, false);
@@ -63,7 +66,8 @@ start_sym
       // to run the program
       if (learncs.lib.Node.entryNode)
       {
-        // Prepare the stack to call main()
+        // Prepare to call main(). Reset the machine.
+        machine.initAll();
 
         // Save the stack pointer, so we can restore it after the function call
         sp = learncs.lib.Node.__mem.getReg("SP", "unsigned int");
@@ -73,8 +77,12 @@ console.log("ansic.jison: original sp=" + sp.toString(16));
         learncs.lib.Node.__mem.stackPush("pointer", 0xeeeeeeee);
         learncs.lib.Node.__mem.stackPush("unsigned int", 0xdddddddd);
 
-        // Save this frame pointer
-        learncs.lib.Symtab.pushFramePointer(
+        // Retrieve the symbol table for main()
+        symtab = learncs.lib.Node.entryNode._symtab;
+
+        // Save the new frame pointer
+console.log("main call: sp before parameter list=" + learncs.lib.Node.__mem.getReg("SP", "unsigned int").toString(16));
+        symtab.setFramePointer(
           learncs.lib.Node.__mem.getReg("SP", "unsigned int"));
 
         // Push the return address (our current line number) onto the stack
@@ -83,8 +91,7 @@ console.log("ansic.jison: original sp=" + sp.toString(16));
         // Process main()
         learncs.lib.Node.entryNode.process(data, true);
 
-        // Restore the frame pointer and stack pointer
-        learncs.lib.Symtab.popFramePointer();
+        // Restore the stack pointer
         learncs.lib.Node.__mem.setReg("SP", "unsigned int", sp);
       }
       else
@@ -94,8 +101,8 @@ console.log("ansic.jison: original sp=" + sp.toString(16));
 
       learncs.machine.Memory.getInstance().prettyPrint(
         "Stack",
-        Memory.info.rts.start + Memory.info.rts.length - 64,
-        64);
+        Memory.info.rts.start,
+        Memory.info.rts.length);
     }
 
     sys.print("\nErrors encountered: " + error.errorCount + "\n\n");

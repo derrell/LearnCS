@@ -109,32 +109,44 @@ qx.Class.define("learncs.lib.SymtabEntry",
     {
       var             i;
       var             fp;
+      var             ret;
       var             offset;
       var             bGlobal;
       var             symtab;
       var             TF  = learncs.lib.SymtabEntry.TypeFlags;
       var             SIB = learncs.lib.SymtabEntry.SizeInBytes;
 
+console.log("getAddr: name=" + this.__name);
+
+      // If it's a function, its node is stored specially
+      if (this.__typeFlags & TF.Function)
+      {
+console.log("getAddr: Return node for function");
+        return this.__node;
+      }
+      
+      ret = this.__symtab.getFramePointer() + this.__offset;
+console.log("getAddr: returning address " + ret.toString(16));
+      return ret;
+
+
+
+
       // First, determine if this is a global/static, or an automatic variable.
       // We know it's a global/static if it's in the root symbol table, which
       // has no parent.
       bGlobal = (! this.__symtab.getParent());
       
-      // If it's a function, its node is stored specially
-      if (this.__typeFlags & TF.Function)
-      {
-        return this.__node;
-      }
-      
       // If it's global, then the address is the entry's offset.
       if (bGlobal)
       {
+console.log("getAddr: Return global offset " + this.__offset);
         return this.__offset;
       }
       
       // It's not global, so its address is based on the frame
       // pointer. Find the appropriate frame pointer for this symbol table.
-      for (i = -1, symtab = this.__symtab.getParent(); 
+      for (i = 0, symtab = this.__symtab.getParent(); 
            symtab; 
            ++i, symtab = symtab.getParent())
       {
@@ -146,15 +158,21 @@ qx.Class.define("learncs.lib.SymtabEntry",
 (function()
  {
    var x = 0;
-   for (x = 0; x < learncs.lib.Symtab._symtabStack.length; x++)
+   for (x = learncs.lib.Symtab._symtabStack.length - 1; x >= 0; x--)
    {
      console.log("symtabStack[" + x + "] = " + learncs.lib.Symtab._symtabStack[x].getName());
+   }
+   for (x = 0; x < learncs.lib.Symtab.framePointers.length; x++)
+   {
+     console.log("framePointers[" + x + "] = " + learncs.lib.Symtab.framePointers[x].toString(16));
    }
  })();
 console.log("getAddr: found i=" + i + ", fp=" + fp.toString(16) + ", offset=" + this.__offset);
 
       // Return the now-fully-qualified offset from the current frame pointer
-      return fp - this.__offset;
+      ret = fp + this.__offset;
+console.log("getAddr: returning address " + ret.toString(16));
+      return ret;
     },
 
     getName : function()

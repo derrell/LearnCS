@@ -62,7 +62,7 @@ qx.Class.define("learncs.lib.Node",
   
   members :
   {
-    __symtab : null,
+    _symtab : null,
 
     /**
      * Display an error message regarding this node
@@ -342,7 +342,9 @@ qx.Class.define("learncs.lib.Node",
         if (value1 instanceof learncs.lib.SymtabEntry)
         {
           // ... then retrieve the symbol's address
+console.log("Node:assign: retrieving address of value1");
           value1 = { value : value1.getAddr(), type : value1.getType() };
+console.log("Node:assign: symbol's address = " + value1.value.toString(16));
         }
         
         // Retrieve the value to assign there
@@ -353,13 +355,16 @@ qx.Class.define("learncs.lib.Node",
         if (value3 instanceof learncs.lib.SymtabEntry)
         {
           // It's a symbol table entry. Retrieve the value from memory
+console.log("Node:assign: found symtab entry on RHS:");
+value3.display();
           value2 = learncs.lib.Node.__mem.get(value3.getAddr(), 
                                               value3.getType());
           value3 = { value : value2, type : value3.getType() };
         }
 
+console.log("Node:assign: address=" + value1.value.toString(16) + ", value=" + value3.value);
+        // Save the value at its new address
         learncs.lib.Node.__mem.set(value1.value, value3.type, value3.value);
-
         break;
 
       case "auto" :
@@ -413,7 +418,7 @@ qx.Class.define("learncs.lib.Node",
         if (bExecuting)
         {
           // We're executing. Retrieve the symbol table from the node
-          symtab = this.__symtab;
+          symtab = this._symtab;
           if (! symtab)
           {
             throw new Error("Programmer error: Expected to find symtab entry");
@@ -423,7 +428,7 @@ qx.Class.define("learncs.lib.Node",
           learncs.lib.Symtab.pushStack(symtab);
 
           // Save the new frame pointer
-          learncs.lib.Symtab.pushFramePointer(
+          symtab.setFramePointer(
             learncs.lib.Node.__mem.getReg("SP", "unsigned int") - 
               symtab.getSize());
         }
@@ -434,7 +439,7 @@ qx.Class.define("learncs.lib.Node",
                                           "compound@" + this.line,
                                           this.line);
           // Save the symbol table for when we're executing
-          this.__symtab = symtab;
+          this._symtab = symtab;
         }
 
         // Process the declaration list
@@ -451,9 +456,6 @@ qx.Class.define("learncs.lib.Node",
           {
             this.children[1].process(data, bExecuting);
           }
-          
-          // We're finished with this frame
-          learncs.lib.Symtab.popFramePointer();
         }
 
         // Revert to the prior scope
@@ -822,8 +824,9 @@ qx.Class.define("learncs.lib.Node",
         // Push the arguments onto the stack
         this.children[1].process(data, bExecuting);
 
-        // Save this frame pointer
-        learncs.lib.Symtab.pushFramePointer(
+        // Save the new frame pointer
+console.log("function_call: sp before parameter list=" + learncs.lib.Node.__mem.getReg("SP", "unsigned int").toString(16));
+        value2._symtab.setFramePointer(
           learncs.lib.Node.__mem.getReg("SP", "unsigned int"));
 
         // Push the return address (our current line number) onto the stack
@@ -832,8 +835,7 @@ qx.Class.define("learncs.lib.Node",
         // Process that function.
         value2.process(data, bExecuting);
         
-        // Restore the frame pointer and stack pointer
-        learncs.lib.Symtab.popFramePointer();
+        // Restore the stack pointer
         learncs.lib.Node.__mem.setReg("SP", "unsigned int", sp);
         break;
 
@@ -867,15 +869,10 @@ qx.Class.define("learncs.lib.Node",
         {
           // ... then the symbol table entry for this function must
           // exist. Retrieve it from the node where we saved it.
-          symtab = this.__symtab;
+          symtab = this._symtab;
           
           // Push it onto the symbol table stack as if we'd just created it
           learncs.lib.Symtab.pushStack(symtab);
-
-          // Save the new frame pointer
-          learncs.lib.Symtab.pushFramePointer(
-            learncs.lib.Node.__mem.getReg("SP", "unsigned int") - 
-              symtab.getSize());
 
           // Process the paremeter list
           if (function_decl.children[1])
@@ -921,7 +918,7 @@ qx.Class.define("learncs.lib.Node",
           }
 
           // Save the symbol table for when we're executing
-          this.__symtab = symtab;
+          this._symtab = symtab;
 
           // Process the paremeter list
           if (function_decl.children[1])
