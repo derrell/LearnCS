@@ -430,8 +430,12 @@ console.log("this=" + this + ", typeFlags=" + this.__typeFlags);
       //
       // Every new symbol begins on a multiple of WORDSIZE bytes, for easy
       // display.
-      this.__symtab.nextOffset += 
-        this.__size + ((SIB.Word - this.__size) % SIB.Word);
+      if (this.__typeFlags & (TF.Function | TF.BuiltIn) == 0)
+      {
+if (! this.__symtab.getParent()) console.log("incrementing nextOffset for symbol " + this.__name + ", size=" + this.__size);
+        this.__symtab.nextOffset += 
+          this.__size + ((SIB.Word - this.__size) % SIB.Word);
+      }
     },
 
     getIsUnsigned : function()

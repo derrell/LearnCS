@@ -26,6 +26,9 @@ qx.Class.define("learncs.AbstractSyntaxTree",
       var machine;
       var Memory = learncs.machine.Memory;
 
+      // Initialize memory
+      Memory.getInstance().initAll();
+
       // Correct line numbers
       root.fixLineNumbers();
 

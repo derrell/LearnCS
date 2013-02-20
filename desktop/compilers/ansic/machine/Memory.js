@@ -134,7 +134,6 @@ qx.Class.define("learncs.machine.Memory",
     initAll : function()
     {
       var             i;
-      var             memSize;
       var             uint8Arr;
 
       // Ascertain the size of memory
@@ -149,10 +148,10 @@ qx.Class.define("learncs.machine.Memory",
       uint8Arr = new Uint8Array(this._memory);
 
       // Initialize the memory with random data
-      for (i = 0; i < memSize; i++)
+      for (i = 0; i < this.__memSize; i++)
       {
     //    uint8Arr[i] = Math.floor(Math.random() * 256);
-        uint8Arr[i] = 0xa5;
+        uint8Arr[i] = 0x5a;
       }
     },
 
@@ -522,8 +521,9 @@ console.log("stackPush: writing " + value.toString(16) + " to " + sp.toString(16
      * @param startAddr {Number}
      *   The starting address to be represented in the array
      *
-     * @param length {Number}
-     *   The number of bytes of data to be represented in the array
+     * @param length {Number?}
+     *   The number of bytes of data to be represented in the array. Defaults
+     *   to the remainder of memory.
      *
      * @return {Array}
      *   An array of bytes copied from the simulated machine's memory
@@ -533,6 +533,12 @@ console.log("stackPush: writing " + value.toString(16) + " to " + sp.toString(16
       var             i;
       var             mem;
       var             ret = [];
+
+      // If length is not specified, set it to the remainder of memory
+      length = (length || 
+                (learncs.machine.Memory.info.rts.start + 
+                 learncs.machine.Memory.info.rts.length -
+                 startAddr));
 
       mem = new Uint8Array(this._memory, startAddr, length);
       for (i = 0; i < length; i++)

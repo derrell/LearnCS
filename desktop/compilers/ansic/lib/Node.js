@@ -317,7 +317,7 @@ console.log("getExpressionValue: returning { value : " + value.value + ", type :
             if (data.args)
             {
               // ... then add this one.
-              data.args.push(value1.value);
+              data.args.unshift(value1.value);
             }
           }
         }
@@ -880,13 +880,13 @@ console.log("function_call: sp before parameter list=" + learncs.lib.Node.__mem.
 
           // Process that function.
           value2.process(data, bExecuting);
+
+          // Restore the previous frame pointer
+          value2._symtab.restoreFramePointer();
         }
         
         // Remove our argument array
         delete data.args;
-
-        // Restore the previous frame pointer
-        value2._symtab.restoreFramePointer();
 
         // Restore the stack pointer
         learncs.lib.Node.__mem.setReg("SP", "unsigned int", sp);
@@ -1504,6 +1504,11 @@ console.log("function_call: sp before parameter list=" + learncs.lib.Node.__mem.
                                          this.value.charCodeAt(i));
             },
             this);
+
+          // Null terminate the string
+          learncs.lib.Node.__mem.set(this._mem + this.value.length, 
+                                     "char",
+                                     0);
         }
         
         // Return the pointer to the string in global memory

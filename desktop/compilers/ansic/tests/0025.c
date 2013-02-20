@@ -2,9 +2,9 @@ void foo(int x)
 {
     short bar = 23U;
     short baz;
-    char * format = "in foo: x=%d\n";
     baz = bar;
     baz = x;
+    printf("in foo: x=%d\n", x);
 
     if (x > 1)
     {
