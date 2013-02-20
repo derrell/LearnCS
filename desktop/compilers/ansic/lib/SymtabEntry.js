@@ -78,7 +78,8 @@ qx.Class.define("learncs.lib.SymtabEntry",
 
         Unsigned : 1 << 7,
 
-        Function : 1 << 8
+        Function : 1 << 8,
+        BuiltIn  : 1 << 9       // a built-in function, e.g., printf
       },
 
     /** Bit fields in the storageFlags field of an Entry */
@@ -116,10 +117,12 @@ qx.Class.define("learncs.lib.SymtabEntry",
       var             TF  = learncs.lib.SymtabEntry.TypeFlags;
       var             SIB = learncs.lib.SymtabEntry.SizeInBytes;
 
-console.log("getAddr: name=" + this.__name);
+console.log("getAddr: name=" + this.__name + ", typeFlags=" + this.__typeFlags);
 
-      // If it's a function, its node is stored specially
-      if (this.__typeFlags & TF.Function)
+      // If it's a function, its node is stored specially.
+      // If it's a built-in function, its JS function reference is stored.
+      if ((this.__typeFlags & TF.Function) ||
+          (this.__typeFlags & TF.BuiltIn))
       {
 console.log("getAddr: Return node for function");
         return this.__node;
@@ -245,6 +248,16 @@ console.log("getAddr: returning address " + ret.toString(16));
       {
         typeList.push("double");
       }
+      
+      if (types & TF.Function)
+      {
+        typeList.push("function");
+      }
+      
+      if (types & TF.BuiltIn)
+      {
+        typeList.push("built-in");
+      }
 
       // Give 'em a string listing all of those, and the new type
       return typeList.join(" ");
@@ -255,6 +268,7 @@ console.log("getAddr: returning address " + ret.toString(16));
       var             TF  = learncs.lib.SymtabEntry.TypeFlags;
       var             SIB = learncs.lib.SymtabEntry.SizeInBytes;
 
+console.log("setType: name=" + this.__name + ", type=" + type + ", node=" + node);
       // Error checking
       switch(type)
       {
@@ -295,6 +309,9 @@ console.log("getAddr: returning address " + ret.toString(16));
         break;
 
       case "function" :
+        break;
+
+      case "built-in" :
         break;
 
       default:
@@ -392,6 +409,17 @@ console.log("getAddr: returning address " + ret.toString(16));
         this.__typeFlags |= TF.Function;
         this.__size = 0;
         this.__node = node;     // save node to process when function is called
+        break;
+
+      case "built-in" :
+        this.__typeFlags |= TF.BuiltIn;
+console.log("this=" + this + ", typeFlags=" + this.__typeFlags);
+        this.__size = 0;
+        this.__node = node;    // save JavaSCript function reference
+        break;
+        
+      default :
+        throw new Error("Unexpected type: " + type);
         break;
       }
 

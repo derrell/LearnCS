@@ -8,6 +8,7 @@
  */
 
 var qx = require("qooxdoo");
+var printf = require("printf");
 require("./SymtabEntry");
 
 qx.Class.define("learncs.lib.Symtab",
@@ -36,6 +37,7 @@ qx.Class.define("learncs.lib.Symtab",
   construct : function(parent, name, line)
   {
     var             symtab;
+    var             entry;
 
     this.base(arguments);
 
@@ -91,6 +93,17 @@ qx.Class.define("learncs.lib.Symtab",
     {
       learncs.lib.Symtab._symtabStack.push(this);
     }
+    
+    // If this is the root symbol table...
+    if (! parent)
+    {
+      // ... then add built-in functions.
+      entry = this.add("printf", 0, false);
+      entry.setType("built-in", printf);
+      
+      // Save this root symbol table for ready access
+      learncs.lib.Symtab._root = this;
+    }
   },
   
   statics :
@@ -109,6 +122,24 @@ qx.Class.define("learncs.lib.Symtab",
 
     /** Stack of frame pointers */
     framePointers : [],
+
+    /**
+     * Allocate global space, e.g., for a literal string
+     */
+    allocGlobalSpace : function(numBytes)
+    {
+      var             symtab = learncs.lib.Symtab._root;
+      var             startOffset;
+
+      // Save the current next offset in this symbol table
+      startOffset = symtab.nextOffset;
+
+      // Increase the next offset by the requested number of bytes
+      symtab.nextOffset += numBytes;
+      
+      // Return the address of the allocated space
+      return learncs.machine.Memory.info.gas.start + startOffset;
+    },
 
     /**
      * Push a frame pointer onto its own stack

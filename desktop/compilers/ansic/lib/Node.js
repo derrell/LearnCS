@@ -8,6 +8,7 @@
  */
 
 var qx = require("qooxdoo");
+var printf = require("printf");
 require("./NodeArray");
 
 qx.Class.define("learncs.lib.Node",
@@ -56,7 +57,8 @@ qx.Class.define("learncs.lib.Node",
       Uint    : "unsigned int",
       Long    : "long",
       ULong   : "unsigned long",
-      Float   : "float"
+      Float   : "float",
+      Address : "pointer"
     }
   },
   
@@ -302,12 +304,21 @@ console.log("getExpressionValue: returning { value : " + value.value + ", type :
         }
         else
         {
-          // When we're executing, we ened to push the expression values onto
+          // When we're executing, we need to push the expression values onto
           // the stack in reverse order.
           for (i = this.children.length - 1; i >= 0; --i)
           {
-            value1 = this.children[i].process(data, bExecuting);
+            value1 = this.getExpressionValue(
+              this.children[i].process(data, bExecuting));
+
             learncs.lib.Node.__mem.stackPush(value1.type, value1.value);
+            
+            // If we were given a JavaScript array in which to place args too...
+            if (data.args)
+            {
+              // ... then add this one.
+              data.args.push(value1.value);
+            }
           }
         }
         break;
@@ -839,23 +850,41 @@ console.log("getExpressionValue: returning { value : " + value.value + ", type :
         value1 = this.children[0].process(data, bExecuting);
         
         // Get the address of that entry, which is the node for the called
-        // function.
+        // function, or the reference of a built-in function.
         value2 = value1.getAddr();
         
+        // Prepare to save arguments in a JS array as well as on the stack, in
+        // case this is a built-in function being called.
+        if (value1.getType().match("built-in"))
+        {
+          data.args = [];
+        }
+
         // Push the arguments onto the stack
         this.children[1].process(data, bExecuting);
 
-        // Save the new frame pointer
+        // Is this a built-in function, or a user-generated one?
+        if (value1.getType().match("built-in"))
+        {
+          console.log(value2.apply(null, data.args));
+        }
+        else
+        {
+          // Save the new frame pointer
 console.log("function_call: sp before parameter list=" + learncs.lib.Node.__mem.getReg("SP", "unsigned int").toString(16));
-        value2._symtab.setFramePointer(
-          learncs.lib.Node.__mem.getReg("SP", "unsigned int"));
+          value2._symtab.setFramePointer(
+            learncs.lib.Node.__mem.getReg("SP", "unsigned int"));
 
-        // Push the return address (our current line number) onto the stack
-        learncs.lib.Node.__mem.stackPush("unsigned int", this.line);
+          // Push the return address (our current line number) onto the stack
+          learncs.lib.Node.__mem.stackPush("unsigned int", this.line);
 
-        // Process that function.
-        value2.process(data, bExecuting);
+          // Process that function.
+          value2.process(data, bExecuting);
+        }
         
+        // Remove our argument array
+        delete data.args;
+
         // Restore the previous frame pointer
         value2._symtab.restoreFramePointer();
 
@@ -1061,7 +1090,6 @@ console.log("function_call: sp before parameter list=" + learncs.lib.Node.__mem.
           throw new Error("Programmer error: entry should exist");
         }
         return entry;
-        break;
 
       case "identifier_list" :
         /*
@@ -1459,8 +1487,31 @@ console.log("function_call: sp before parameter list=" + learncs.lib.Node.__mem.
         break;
 
       case "string_literal" :
-        throw new Error("string_literal");
-        break;
+        // Have we already allocated space for this string?
+        if (! this._mem)
+        {
+          var             chars = [];
+
+          // Nope. Allocate the space now
+          this._mem = learncs.lib.Symtab.allocGlobalSpace(this.value.length);
+          
+          // Write the string, as character codes, into the allocated memory
+          this.value.split("").forEach(
+            function(ch, i)
+            {
+              learncs.lib.Node.__mem.set(this._mem + i, 
+                                         "char",
+                                         this.value.charCodeAt(i));
+            },
+            this);
+        }
+        
+        // Return the pointer to the string in global memory
+        return (
+          {
+            value : this._mem, 
+            type  : learncs.lib.Node.NumberType.Address
+          });
 
       case "struct" :
         /*

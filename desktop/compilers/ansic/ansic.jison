@@ -1870,7 +1870,56 @@ string_literal
   {
     R("string_literal : STRING_LITERAL");
     $$ = new learncs.lib.Node("string_literal", yytext, yylineno);
-    $$.value = yytext;
+        
+    // Borrowed from a patch to node-po by cdauth:
+    // https://github.com/cdauth/node-po/commit/77aa531743234a07c95c04cee0222b2717d85b57
+    $$.value = 
+      (function extract(string)
+       {
+         string = string.replace(
+           /\\([abtnvfr'"\\?]|([0-7]{3})|x([0-9a-fA-F]{2}))/g,
+           function(match, esc, oct, hex, offset, s)
+           {
+             if (oct)
+             {
+               return String.fromCharCode(parseInt(oct, 8));
+             }
+
+             if (hex)
+             {
+               return String.fromCharCode(parseInt(hex, 16));
+             }
+
+             switch(esc)
+             {
+             case 'a':
+               return '\x07';
+
+             case 'b':
+               return '\b';
+
+             case 't': 
+               return '\t';
+
+             case 'n': 
+               return '\n';
+
+             case 'v': 
+               return '\v';
+
+             case 'f': 
+               return '\f';
+
+             case 'r': 
+               return '\r';
+
+             default: 
+               return esc;
+             }
+           });
+
+         return string;
+       }(yytext.substr(1, yytext.length - 2)));
   }
   ;
 
