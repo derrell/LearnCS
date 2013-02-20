@@ -91,22 +91,6 @@ console.log("getExpressionValue: returning { value : " + value.value + ", type :
     },
 
     /**
-     * Process all sub-nodes of a node
-     * 
-     * @param node
-     *   The node whose sub-nodes (children) are to be processed
-     */
-    __processSubnodes : function(data, bExecuting)
-    {
-      this.children.forEach(
-        function(subnode)
-        {
-          subnode.process(data, bExecuting);
-        }, 
-        this);
-    },
-
-    /**
      * Display, recursively, the abstract syntax tree beginning at the
      * specified node
      *
@@ -282,8 +266,12 @@ console.log("getExpressionValue: returning { value : " + value.value + ", type :
           value2 = 
             this.getExpressionValue(this.children[1].process(data, bExecuting));
           
-          // TODO: convert types as necessary
-          return { value : value1.value + value2.value, type : value1.type };
+          // Complete the operation, coercing to the appropriate type
+          return (
+            { 
+              value : value1.value + value2.value,
+              type : this.__coerce(value1.type, value2.type)
+            });
         }
         break;
 
@@ -762,7 +750,26 @@ console.log("getExpressionValue: returning { value : " + value.value + ", type :
         break;
 
       case "divide" :
-        throw new Error("divide");
+        /*
+         * divide :
+         *   0 : multiplicative_expression
+         *   1 : cast_expression
+         */
+        if (bExecuting)
+        {
+          // We're executing. Get the value of the left and right expressions
+          value1 = 
+            this.getExpressionValue(this.children[0].process(data, bExecuting));
+          value2 = 
+            this.getExpressionValue(this.children[1].process(data, bExecuting));
+          
+          // Complete the operation, coercing to the appropriate type
+          return (
+            { 
+              value : value1.value / value2.value,
+              type : this.__coerce(value1.type, value2.type)
+            });
+        }
         break;
 
       case "divide-assign" :
@@ -1110,7 +1117,26 @@ console.log("function_call: sp before parameter list=" + learncs.lib.Node.__mem.
         break;
 
       case "mod" :
-        throw new Error("mod");
+        /*
+         * mod :
+         *   0 : multiplicative_expression
+         *   1 : cast_expression
+         */
+        if (bExecuting)
+        {
+          // We're executing. Get the value of the left and right expressions
+          value1 = 
+            this.getExpressionValue(this.children[0].process(data, bExecuting));
+          value2 = 
+            this.getExpressionValue(this.children[1].process(data, bExecuting));
+          
+          // Complete the operation, coercing to the appropriate type
+          return (
+            { 
+              value : value1.value % value2.value,
+              type : this.__coerce(value1.type, value2.type)
+            });
+        }
         break;
 
       case "mod-assign" :
@@ -1118,7 +1144,26 @@ console.log("function_call: sp before parameter list=" + learncs.lib.Node.__mem.
         break;
 
       case "multiply" :
-        throw new Error("multiply");
+        /*
+         * multiply :
+         *   0 : multiplicative_expression
+         *   1 : cast_expression
+         */
+        if (bExecuting)
+        {
+          // We're executing. Get the value of the left and right expressions
+          value1 = 
+            this.getExpressionValue(this.children[0].process(data, bExecuting));
+          value2 = 
+            this.getExpressionValue(this.children[1].process(data, bExecuting));
+          
+          // Complete the operation, coercing to the appropriate type
+          return (
+            { 
+              value : value1.value * value2.value,
+              type : this.__coerce(value1.type, value2.type)
+            });
+        }
         break;
 
       case "multiply-assign" :
@@ -1430,7 +1475,26 @@ console.log("function_call: sp before parameter list=" + learncs.lib.Node.__mem.
         break;
 
       case "subtract" :
-        throw new Error("subtract");
+        /*
+         * subtract :
+         *   0 : additive_expression
+         *   1 : multiplicative_expression
+         */
+        if (bExecuting)
+        {
+          // We're executing. Get the value of the left and right expressions
+          value1 = 
+            this.getExpressionValue(this.children[0].process(data, bExecuting));
+          value2 = 
+            this.getExpressionValue(this.children[1].process(data, bExecuting));
+          
+          // Complete the operation, coercing to the appropriate type
+          return (
+            { 
+              value : value1.value - value2.value,
+              type : this.__coerce(value1.type, value2.type)
+            });
+        }
         break;
 
       case "subtract-assign" :
@@ -1505,6 +1569,92 @@ console.log("function_call: sp before parameter list=" + learncs.lib.Node.__mem.
       }
       
       return null;
+    },
+
+
+    /**
+     * Process all sub-nodes of a node
+     * 
+     * @param node
+     *   The node whose sub-nodes (children) are to be processed
+     */
+    __processSubnodes : function(data, bExecuting)
+    {
+      this.children.forEach(
+        function(subnode)
+        {
+          subnode.process(data, bExecuting);
+        }, 
+        this);
+    },
+
+    /**
+     * Given two original operand types, determine the type to which to coerce
+     * both operands.
+     *
+     * FIXME: This uses an old method of coersion. Newer compilers use the
+     * "value" method of integer promotions. See, for example, page 48 of
+     * http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf
+     *
+     * @param type1 {String}
+     *   One of the C types (or "pointer")
+     *
+     * @param type2 {String}
+     *   One of the C types (or "pointer")
+     *
+     * @return {String}
+     *   The C type to which to coerce the operands of an operation between
+     *   operands originally of type1 and type2.
+     */
+    __coerce : function(type1, type2)
+    {
+      // First, test for the common and easy case: both types are already the
+      // same.
+      if (type1 == type2)
+      {
+        return type1;
+      }
+
+      // If one of the operands is double, then coerce to double
+      if (type1 == "double" || type2 == "double")
+      {
+        return "double";
+      }
+
+      // If one of the operands is float, then coerce to float
+      if (type1 == "float" || type2 == "float")
+      {
+        return "float";
+      }
+
+      // If one of the operands is unsigned long long, then coerce to
+      // unsigned long long.
+
+      if (type1 == "unsigned long long" || type2 == "unsigned long long")
+      {
+        return "unsigned long long";
+      }
+
+      // If one of the operands is unsigned long, then coerce to unsigned long.
+      if (type1 == "unsigned long" || type2 == "unsigned long")
+      {
+        return "unsigned long";
+      }
+
+      // If one of the operands is long, then coerce to long.
+      if (type1 == "long" || type2 == "long")
+      {
+        return "long";
+      }
+
+      // If one of the operands is unsigned int, then coerce to unsigned int.
+      if (type1 == "unsigned int" || type2 == "unsigned int")
+      {
+        return "unsigned int";
+      }
+
+      // In any other case, coerce to int.
+      return "int";
     }
   },
   
