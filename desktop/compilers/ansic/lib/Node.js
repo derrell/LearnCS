@@ -1004,11 +1004,49 @@ console.log("function_call: sp before parameter list=" + learncs.lib.Node.__mem.
         break;
 
       case "greater-equal" :
-        throw new Error("greater-equal");
+        /*
+         * greater-equal :
+         *   0 : relational_expression
+         *   1 : shift_expression
+         */
+        if (bExecuting)
+        {
+          // We're executing. Get the value of the left and right expressions
+          value1 = 
+            this.getExpressionValue(this.children[0].process(data, bExecuting));
+          value2 = 
+            this.getExpressionValue(this.children[1].process(data, bExecuting));
+          
+          // Complete the operation, coercing to the appropriate type
+          return (
+            { 
+              value : value1.value >= value2.value,
+              type : "int"
+            });
+        }
         break;
 
       case "greater-than" :
-        throw new Error("greater-than");
+        /*
+         * greater-than :
+         *   0 : relational_expression
+         *   1 : shift_expression
+         */
+        if (bExecuting)
+        {
+          // We're executing. Get the value of the left and right expressions
+          value1 = 
+            this.getExpressionValue(this.children[0].process(data, bExecuting));
+          value2 = 
+            this.getExpressionValue(this.children[1].process(data, bExecuting));
+          
+          // Complete the operation, coercing to the appropriate type
+          return (
+            { 
+              value : value1.value > value2.value,
+              type : "int"
+            });
+        }
         break;
 
       case "identifier" :
@@ -1097,7 +1135,26 @@ console.log("function_call: sp before parameter list=" + learncs.lib.Node.__mem.
         break;
 
       case "left-shift" :
-        throw new Error("left-shift");
+        /*
+         * left-shift :
+         *   0 : shift_expression
+         *   1 : additive_expression
+         */
+        if (bExecuting)
+        {
+          // We're executing. Get the value of the left and right expressions
+          value1 = 
+            this.getExpressionValue(this.children[0].process(data, bExecuting));
+          value2 = 
+            this.getExpressionValue(this.children[1].process(data, bExecuting));
+          
+          // Complete the operation, coercing to the appropriate type
+          return (
+            { 
+              value : value1.value << value2.value,
+              type : "int"
+            });
+        }
         break;
 
       case "left-shift-assign" :
@@ -1105,11 +1162,49 @@ console.log("function_call: sp before parameter list=" + learncs.lib.Node.__mem.
         break;
 
       case "less-equal" :
-        throw new Error("less-equal");
+        /*
+         * less-equal :
+         *   0 : relational_expression
+         *   1 : shift_expression
+         */
+        if (bExecuting)
+        {
+          // We're executing. Get the value of the left and right expressions
+          value1 = 
+            this.getExpressionValue(this.children[0].process(data, bExecuting));
+          value2 = 
+            this.getExpressionValue(this.children[1].process(data, bExecuting));
+          
+          // Complete the operation, coercing to the appropriate type
+          return (
+            { 
+              value : value1.value <= value2.value,
+              type : "int"
+            });
+        }
         break;
 
       case "less-than" :
-        throw new Error("less-than");
+        /*
+         * less-than :
+         *   0 : relational_expression
+         *   1 : shift_expression
+         */
+        if (bExecuting)
+        {
+          // We're executing. Get the value of the left and right expressions
+          value1 = 
+            this.getExpressionValue(this.children[0].process(data, bExecuting));
+          value2 = 
+            this.getExpressionValue(this.children[1].process(data, bExecuting));
+          
+          // Complete the operation, coercing to the appropriate type
+          return (
+            { 
+              value : value1.value < value2.value,
+              type : "int"
+            });
+        }
         break;
 
       case "long" :
@@ -1308,7 +1403,26 @@ console.log("function_call: sp before parameter list=" + learncs.lib.Node.__mem.
         break;
 
       case "right-shift" :
-        throw new Error("right-shift");
+        /*
+         * right-shift :
+         *   0 : shift_expression
+         *   1 : additive_expression
+         */
+        if (bExecuting)
+        {
+          // We're executing. Get the value of the left and right expressions
+          value1 = 
+            this.getExpressionValue(this.children[0].process(data, bExecuting));
+          value2 = 
+            this.getExpressionValue(this.children[1].process(data, bExecuting));
+          
+          // Complete the operation, coercing to the appropriate type
+          return (
+            { 
+              value : value1.value >> value2.value,
+              type : "int"
+            });
+        }
         break;
 
       case "right-shift-assign" :

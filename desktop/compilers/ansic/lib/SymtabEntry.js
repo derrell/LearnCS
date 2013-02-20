@@ -206,7 +206,11 @@ console.log("getAddr: returning address " + ret.toString(16));
       var             typeList = [];
       var             TF = learncs.lib.SymtabEntry.TypeFlags;
 
-      // List previously-added types
+      if (types & TF.Unsigned)
+      {
+        typeList.push("unsigned");
+      }
+
       if (types & TF.Char)
       {
         typeList.push("char");
@@ -218,6 +222,11 @@ console.log("getAddr: returning address " + ret.toString(16));
       }
 
       if (types & TF.Long)
+      {
+        typeList.push("long");
+      }
+
+      if (types & TF.LongLong)
       {
         typeList.push("long");
       }

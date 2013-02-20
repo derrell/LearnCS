@@ -4,4 +4,5 @@ int main(int argc, char * argv[])
     int             y;
 
     y = (3 * 2 + x) / 2 % 3 - 4;
+    x = y < 0;
 }
