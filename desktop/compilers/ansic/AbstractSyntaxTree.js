@@ -25,6 +25,7 @@ qx.Class.define("learncs.AbstractSyntaxTree",
       var symtab;
       var machine;
       var Memory = learncs.machine.Memory;
+      var bDebug = false;
 
       // Initialize memory
       Memory.getInstance().initAll();
@@ -32,11 +33,14 @@ qx.Class.define("learncs.AbstractSyntaxTree",
       // Correct line numbers
       root.fixLineNumbers();
 
-      // Display the abstract syntax tree
-      root.display();
+      if (bDebug)
+      {
+        // Display the abstract syntax tree
+        root.display();
 
-      // Display the symbol table
-      learncs.lib.Symtab.display();
+        // Display the symbol table
+        learncs.lib.Symtab.display();
+      }
 
       // Reset the symbol table to a clean state
       learncs.lib.Symtab.reset();
@@ -50,8 +54,11 @@ qx.Class.define("learncs.AbstractSyntaxTree",
       // Process the abstract syntax tree to create symbol tables
       root.process(data, false);
 
-      sys.print("\n\nAfter processing...");
-      learncs.lib.Symtab.display();
+      if (bDebug)
+      {
+        sys.print("\n\nAfter processing...");
+        learncs.lib.Symtab.display();
+      }
 
       // Process the abstract syntax tree from the entry point, if it exists,
       // to run the program
@@ -62,7 +69,6 @@ qx.Class.define("learncs.AbstractSyntaxTree",
 
         // Save the stack pointer, so we can restore it after the function call
         sp = learncs.lib.Node.__mem.getReg("SP", "unsigned int");
-      console.log("ansic.jison: original sp=" + sp.toString(16));
 
         // Push argv and argc onto the stack
         learncs.lib.Node.__mem.stackPush("pointer", 0xeeeeeeee);
@@ -72,7 +78,6 @@ qx.Class.define("learncs.AbstractSyntaxTree",
         symtab = learncs.lib.Node.entryNode._symtab;
 
         // Save the new frame pointer
-      console.log("main call: sp before parameter list=" + learncs.lib.Node.__mem.getReg("SP", "unsigned int").toString(16));
         symtab.setFramePointer(
           learncs.lib.Node.__mem.getReg("SP", "unsigned int"));
 

@@ -8,6 +8,7 @@
  */
 
 var qx = require("qooxdoo");
+var sys = require("sys");
 var printf = require("printf");
 require("./SymtabEntry");
 
@@ -103,7 +104,7 @@ qx.Class.define("learncs.lib.Symtab",
                     function()
                     {
                       var             str = printf.apply(null, arguments);
-                      console.log(str);
+                      sys.print(str);
                       return { value : str, type : "pointer" };
                     });
       
