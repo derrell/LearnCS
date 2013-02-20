@@ -88,7 +88,6 @@ qx.Class.define("learncs.lib.Node",
           value.value = learncs.lib.Node.__mem.get(value.value, value.type);
         }
 
-console.log("getExpressionValue: returning { value : " + value.value + ", type : " + value.type + "}");
         return value;
     },
 
@@ -244,7 +243,7 @@ console.log("getExpressionValue: returning { value : " + value.value + ", type :
 
       if (bExecuting)
       {
-        console.log("Processing node " + this.type);
+//        console.log("Processing node " + this.type);
       }
 
       // Yup. See what type it is.
@@ -866,12 +865,12 @@ console.log("getExpressionValue: returning { value : " + value.value + ", type :
         // Is this a built-in function, or a user-generated one?
         if (value1.getType().match("built-in"))
         {
-          console.log(value2.apply(null, data.args));
+          // Save the return value in register R1
+          value3 = value2.apply(null, data.args);
         }
         else
         {
           // Save the new frame pointer
-console.log("function_call: sp before parameter list=" + learncs.lib.Node.__mem.getReg("SP", "unsigned int").toString(16));
           value2._symtab.setFramePointer(
             learncs.lib.Node.__mem.getReg("SP", "unsigned int"));
 
@@ -879,7 +878,7 @@ console.log("function_call: sp before parameter list=" + learncs.lib.Node.__mem.
           learncs.lib.Node.__mem.stackPush("unsigned int", this.line);
 
           // Process that function.
-          value2.process(data, bExecuting);
+          value3 = value2.process(data, bExecuting);
 
           // Restore the previous frame pointer
           value2._symtab.restoreFramePointer();
@@ -890,7 +889,7 @@ console.log("function_call: sp before parameter list=" + learncs.lib.Node.__mem.
 
         // Restore the stack pointer
         learncs.lib.Node.__mem.setReg("SP", "unsigned int", sp);
-        break;
+        return value3;
 
       case "function_decl" :
         // handled by function_definition

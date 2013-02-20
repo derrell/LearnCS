@@ -99,7 +99,13 @@ qx.Class.define("learncs.lib.Symtab",
     {
       // ... then add built-in functions.
       entry = this.add("printf", 0, false);
-      entry.setType("built-in", printf);
+      entry.setType("built-in", 
+                    function()
+                    {
+                      var             str = printf.apply(null, arguments);
+                      console.log(str);
+                      return { value : str, type : "pointer" };
+                    });
       
       // Save this root symbol table for ready access
       learncs.lib.Symtab._root = this;
@@ -149,7 +155,6 @@ qx.Class.define("learncs.lib.Symtab",
      */
     pushFramePointer : function(fp)
     {
-console.log("pushFramePointer: pushing fp=" + fp.toString(16));
       learncs.lib.Symtab.framePointers.unshift(fp);
     },
     
@@ -163,7 +168,6 @@ console.log("pushFramePointer: pushing fp=" + fp.toString(16));
     {
       var             fp = learncs.lib.Symtab.framePointers.shift();
       
-console.log("popFramePointer: popped fp=" + fp.toString(16));
       return fp;
     },
 
@@ -172,7 +176,6 @@ console.log("popFramePointer: popped fp=" + fp.toString(16));
      */
     pushStack : function(symtab)
     {
-console.log("pushStack: pushing symtab " + symtab.getName());
       learncs.lib.Symtab._symtabStack.push(symtab);
     },
 
@@ -185,7 +188,6 @@ console.log("pushStack: pushing symtab " + symtab.getName());
     popStack : function()
     {
       var             symtab = learncs.lib.Symtab._symtabStack.pop();
-console.log("popStack: popping symtab " + symtab.getName());
       return symtab;
     },
 
@@ -452,7 +454,6 @@ console.log("popStack: popping symtab " + symtab.getName());
      */
     setFramePointer : function(fp)
     {
-console.log("setFramePointer: name=" + this.__name + ", fp=" + fp.toString(16));
       this.__framePointer.unshift(fp);
     },
     
@@ -461,7 +462,6 @@ console.log("setFramePointer: name=" + this.__name + ", fp=" + fp.toString(16));
      */
     getFramePointer : function()
     {
-console.log("getFramePointer: name=" + this.__name + ", fp=" + this.__framePointer[0].toString(16));
       return this.__framePointer[0];
     },
 

@@ -274,7 +274,6 @@ qx.Class.define("learncs.machine.Memory",
     {
       // Get an appropriate view into the memory, based on the type, and save
       // the value at that address
-console.log("mem.set: setting address " + addr.toString(16) + " to " + value.toString(16));
       this._getByType(type, addr)[0] = value;
     },
     
@@ -303,7 +302,6 @@ console.log("mem.set: setting address " + addr.toString(16) + " to " + value.toS
 
       // Store the specified value at the location pointed to by the stack
       // pointer.
-console.log("stackPush: writing " + value.toString(16) + " to " + sp.toString(16));
       this.set(sp, type, value);
     },
     
