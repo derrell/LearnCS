@@ -38,35 +38,36 @@ qx.Class.define("playground.view.Header",
     }, this);
     // /////////
 
-    var version = new qxc.ui.versionlabel.VersionLabel(this.tr("qooxdoo"));
+    var version = 
+      new qxc.ui.versionlabel.VersionLabel(this.tr("learnCS"), 0.001);
     version.setFont("default");
-    var riaButton = new qx.ui.form.RadioButton(this.tr("Desktop"));
-    riaButton.set({
+    
+    var consoleButton = new qx.ui.form.RadioButton(this.tr("Console Mode"));
+    consoleButton.set({
       model: "ria",
       appearance: "modeButton"
     });
-    var mobileButton = new qx.ui.form.RadioButton(this.tr("Mobile"));
+
+/*
+    var mobileButton = new qx.ui.form.RadioButton(this.tr("Phone App"));
     mobileButton.set({
       model: "mobile",
       appearance: "modeButton"
     });
-    var websiteButton = new qx.ui.form.RadioButton(this.tr("Website"));
-    websiteButton.set({
-      model: "website",
-      appearance: "modeButton"
-    });
+*/
 
+    this.__buttons = [consoleButton];
 
-    this.__buttons = [riaButton, mobileButton, websiteButton];
+    this.__group = new qx.ui.form.RadioGroup(consoleButton);
 
-    this.__group = new qx.ui.form.RadioGroup(riaButton, mobileButton, websiteButton);
     this.__group.bind("modelSelection[0]", this, "mode");
 
     this.add(new qx.ui.basic.Label(this.tr("Playground")));
     this.add(new qx.ui.core.Spacer(30));
-    this.add(riaButton);
-    this.add(mobileButton);
-    this.add(websiteButton);
+    
+    this.add(consoleButton);
+//    this.add(mobileButton);
+    
     this.add(new qx.ui.core.Spacer(), { flex : 1 });
     this.add(version);
   },
@@ -77,7 +78,7 @@ qx.Class.define("playground.view.Header",
     mode : {
       event : "changeMode",
       check : "String",
-      init : "RIA",
+      init : "ria",
       apply : "_applyMode"
     }
   },

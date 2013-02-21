@@ -34,7 +34,7 @@ qx.Class.define("playground.Samples",
 
     // initialize the model
     if (!array) {
-      array = new qx.data.Array()
+      array = new qx.data.Array();
     }
     this.setModel(array);
 
@@ -67,7 +67,7 @@ qx.Class.define("playground.Samples",
 
 
   properties : {
-    /** Model property to hald the data array. */
+    /** Model property to hold the data array. */
     model : {}
   },
 

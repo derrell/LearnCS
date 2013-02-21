@@ -206,7 +206,7 @@ qx.Class.define("playground.Application",
       tabview.add(page);
 
       // Create the page for the Source editor
-      page = new qx.ui.tabview.Page("Source");
+      page = new qx.ui.tabview.Page("C Source");
       page.setLayout(new qx.ui.layout.VBox());
       this.__editor = new playground.view.Editor();
       this.__editor.addListener("disableHighlighting", function() {

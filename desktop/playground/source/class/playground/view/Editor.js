@@ -38,7 +38,8 @@ qx.Class.define("playground.view.Editor",
       var resource = [
         "playground/editor/ace.js",
         "playground/editor/theme-eclipse.js",
-        "playground/editor/mode-javascript.js"
+        "playground/editor/mode-c_cpp.js"
+//        "playground/editor/mode-javascript.js"
       ];
       var load = function(list) {
         if (list.length == 0) {
@@ -53,7 +54,7 @@ qx.Class.define("playground.view.Editor",
         };
         loader.open("GET", uri);
         loader.send();
-      }
+      };
       load(resource);
     }
   },
@@ -180,13 +181,24 @@ qx.Class.define("playground.view.Editor",
         var editor = this.__ace = ace.edit(container);
 
         // set javascript mode
-        var JavaScriptMode = require("ace/mode/javascript").Mode;
-        editor.getSession().setMode(new JavaScriptMode());
+//        var JavaScriptMode = require("ace/mode/javascript").Mode;
+//        editor.getSession().setMode(new JavaScriptMode());
 
         // configure the editor
         var session = editor.getSession();
         session.setUseSoftTabs(true);
-        session.setTabSize(2);
+        session.setTabSize(4);
+
+        // set C mode
+        var CMode = require("ace/mode/c_cpp").Mode;
+        session.setMode(new CMode());
+                            
+        // Set the theme
+        editor.setTheme("ace/theme/eclipse");
+                            
+        // Enable special behaviors, e.g., auto-paring of characters
+        editor.setBehavioursEnabled(true);
+        editor.setDisplayIndentGuides(true);
 
         // copy the inital value
         session.setValue(this.__textarea.getValue() || "");
