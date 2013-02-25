@@ -22,6 +22,10 @@
 
 %token LBRACE RBRACE
 
+%nonassoc IF_WITHOUT_ELSE
+%nonassoc ELSE
+
+
 %start start_sym
 
 %%
@@ -1461,7 +1465,7 @@ expression_statement
   ;
 
 selection_statement
-  : IF '(' expression ')' statement
+  : IF '(' expression ')' statement %prec IF_WITHOUT_ELSE
   {
     R("selection_statement : IF '(' expression ')' statement");
     $$ = new learncs.lib.Node("if", yytext, yylineno);
