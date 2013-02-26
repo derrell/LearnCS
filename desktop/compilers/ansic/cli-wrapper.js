@@ -1,8 +1,11 @@
 #!/usr/bin/env node
 
-var JISONDIR = '../jison.git';
-var JISON = require(JISONDIR + '/lib/jison'),
-    IO = require(JISONDIR + '/lib/jison/util/io'),
+// If you copy this script to a project, configure this to point to JISON's
+// lib/jison directory.
+var JISONLIB = '../jison.git/lib/jison';
+
+var JISON = require(JISONLIB),
+    IO = require(JISONLIB + '/util/io'),
     nomnom = require('nomnom');
 
 var opts = {
@@ -84,7 +87,7 @@ function readVersion () {
 function processGrammar (rawGrammar, lex, name) {
     var grammar;
     try {
-        grammar = require(JISONDIR + "/lib/jison/bnf").parse(rawGrammar);
+        grammar = require(JISONLIB + "/bnf").parse(rawGrammar);
     } catch (e) {
         try {
             grammar = JSON.parse(rawGrammar);
@@ -93,7 +96,7 @@ function processGrammar (rawGrammar, lex, name) {
         }
     }
     var opt = grammar.options || {};
-    if (lex) grammar.lex = require(JISONDIR + "/lib/jison/jisonlex").parse(lex);
+    if (lex) grammar.lex = require(JISONLIB + "/jisonlex").parse(lex);
     opt.debug = args.debug;
     if (!opt.moduleType) opt.moduleType = args.moduleType;
     if (!opt.moduleName && name) opt.moduleName = name.replace(/-\w/g, function (match){ return match.charAt(1).toUpperCase(); });
