@@ -310,6 +310,24 @@ qx.Class.define("learncs.lib.Node",
             value1 = this.getExpressionValue(
               this.children[i].process(data, bExecuting));
 
+            // Promote the type, if necessary
+            value1.type =
+            {
+              "char"               : "int",
+              "unsigned char"      : "unsigned int",
+              "short"              : "int",
+              "unsigned short"     : "unsigned int",
+              "int"                : "int",
+              "unsigned int"       : "unsigned int",
+              "long"               : "long",
+              "unsigned long"      : "unsigned long",
+              "long long"          : "long long",
+              "unsigned long long" : "unsigned long long",
+              "float"              : "double",
+              "double"             : "double",
+              "pointer"            : "pointer"
+            }[value1.type];
+
             learncs.lib.Node.__mem.stackPush(value1.type, value1.value);
             
             // If we were given a JavaScript array in which to place args too...
@@ -376,7 +394,8 @@ qx.Class.define("learncs.lib.Node",
         value3 = this.getExpressionValue(this.children[1].process(data, true));
 
         // Save the value at its new address
-        learncs.lib.Node.__mem.set(value1.value, value3.type, value3.value);
+console.log("calling mem.set: loc 1");
+        learncs.lib.Node.__mem.set(value1.value, value1.type, value3.value);
         break;
 
       case "auto" :
@@ -440,8 +459,9 @@ qx.Class.define("learncs.lib.Node",
           learncs.lib.Symtab.pushStack(symtab);
 
           // Save the new frame pointer
+console.log("loc 1: size=" + symtab.getSize());
           symtab.setFramePointer(
-            learncs.lib.Node.__mem.getReg("SP", "unsigned int") - 
+            learncs.lib.Node.__mem.getReg("SP", "unsigned int") -
               symtab.getSize());
         }
         else
@@ -637,27 +657,13 @@ qx.Class.define("learncs.lib.Node",
               {
                 // ... then retrieve its value
                 value = init_declarator.children[1].process(data, bExecuting);
+console.log("calling mem.set: loc 2: addr=" + entry.getAddr().toString(16) + ", type=" + entry.getType() + ", value=" + value.value);
                 learncs.lib.Node.__mem.set(entry.getAddr(), 
                                            entry.getType(),
                                            value.value);
               }
             },
             this);
-          
-          // Adjust the stack pointer to take automatic local variables into
-          // account. First, get the current symbol table
-          symtab = learncs.lib.Symtab.getCurrent();
-          
-          // Get the stack pointer's current value
-          sp = learncs.lib.Node.__mem.getReg("SP", "unsigned int");
-          
-          // Subtract the symbol table's size from the stack pointer, so that
-          // subsequent function calls don't overwrite the automatic local
-          // variables
-          sp -= symtab.getSize();
-          
-          // Write the new stack pointer value
-          learncs.lib.Node.__mem.setReg("SP", "unsigned int", sp);
 
           // Nothing more to do if we're executing.
           break;
@@ -671,6 +677,22 @@ qx.Class.define("learncs.lib.Node",
          *   ...
          */
         this.__processSubnodes(data, bExecuting);
+
+        // Adjust the stack pointer to take automatic local variables into
+        // account. First, get the current symbol table
+        symtab = learncs.lib.Symtab.getCurrent();
+
+        // Get the stack pointer's current value
+        sp = learncs.lib.Node.__mem.getReg("SP", "unsigned int");
+
+        // Subtract the symbol table's size from the stack pointer, so that
+        // subsequent function calls don't overwrite the automatic local
+        // variables
+        sp -= symtab.getSize();
+
+        // Write the new stack pointer value
+console.log("Making space for locals: sp=" + sp.toString(16) + " after making space: " + symtab.getSize());
+        learncs.lib.Node.__mem.setReg("SP", "unsigned int", sp);
         break;
 
       case "declaration_specifiers" :
@@ -865,19 +887,20 @@ qx.Class.define("learncs.lib.Node",
         // Is this a built-in function, or a user-generated one?
         if (value1.getType().match("built-in"))
         {
-          // Save the return value in register R1
+          // Save the return value in value3
           value3 = value2.apply(null, data.args);
         }
         else
         {
           // Save the new frame pointer
+console.log("loc 2");
           value2._symtab.setFramePointer(
             learncs.lib.Node.__mem.getReg("SP", "unsigned int"));
 
           // Push the return address (our current line number) onto the stack
           learncs.lib.Node.__mem.stackPush("unsigned int", this.line);
 
-          // Process that function.
+          // Process that function. Save its return value in value3
           value3 = value2.process(data, bExecuting);
 
           // Restore the previous frame pointer
@@ -923,6 +946,7 @@ qx.Class.define("learncs.lib.Node",
           // exist. Retrieve it from the node where we saved it.
           symtab = this._symtab;
           
+console.log("Entering function: sp=" + learncs.lib.Node.__mem.getReg("SP", "unsigned int").toString(16));
           // Push it onto the symbol table stack as if we'd just created it
           learncs.lib.Symtab.pushStack(symtab);
 

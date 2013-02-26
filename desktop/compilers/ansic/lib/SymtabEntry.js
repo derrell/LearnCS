@@ -125,10 +125,11 @@ qx.Class.define("learncs.lib.SymtabEntry",
         return this.__node;
       }
       
+console.log("getAddr: Returning fp=" + this.__symtab.getFramePointer().toString(16) + ", offset=" + this.__offset.toString(16) + " from symtab " + this.__symtab.getName());
       ret = this.__symtab.getFramePointer() + this.__offset;
       return ret;
 
-
+///// CODE BELOW IS CURRENTLY UNUSED...
 
 
       // First, determine if this is a global/static, or an automatic variable.
@@ -139,6 +140,7 @@ qx.Class.define("learncs.lib.SymtabEntry",
       // If it's global, then the address is the entry's offset.
       if (bGlobal)
       {
+console.log("getAddr: Returning global at " + this.__offset.toString(16));
         return this.__offset;
       }
       
@@ -156,6 +158,7 @@ qx.Class.define("learncs.lib.SymtabEntry",
 
       // Return the now-fully-qualified offset from the current frame pointer
       ret = fp + this.__offset;
+console.log("getAddr: Returning auto at fp=" + fp.toString(16) + ", offset=" + this.__offset.toString(16));
       return ret;
     },
 
@@ -409,7 +412,7 @@ qx.Class.define("learncs.lib.SymtabEntry",
       //
       // Every new symbol begins on a multiple of WORDSIZE bytes, for easy
       // display.
-      if (this.__typeFlags & (TF.Function | TF.BuiltIn) == 0)
+      if ((this.__typeFlags & (TF.Function | TF.BuiltIn)) === 0)
       {
         this.__symtab.nextOffset += 
           this.__size + ((SIB.Word - this.__size) % SIB.Word);

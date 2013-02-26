@@ -177,6 +177,7 @@ qx.Class.define("learncs.lib.Symtab",
      */
     pushStack : function(symtab)
     {
+console.log("Symtab.pushStack: pushing " + symtab.__name);
       learncs.lib.Symtab._symtabStack.push(symtab);
     },
 
@@ -189,6 +190,7 @@ qx.Class.define("learncs.lib.Symtab",
     popStack : function()
     {
       var             symtab = learncs.lib.Symtab._symtabStack.pop();
+console.log("Symtab.popStack: popping " + symtab.__name);
       return symtab;
     },
 
@@ -455,6 +457,7 @@ qx.Class.define("learncs.lib.Symtab",
      */
     setFramePointer : function(fp)
     {
+console.log("setFramePointer: fp=" + fp.toString(16));
       this.__framePointer.unshift(fp);
     },
     

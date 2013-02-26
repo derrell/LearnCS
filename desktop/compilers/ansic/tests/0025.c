@@ -15,6 +15,7 @@ void foo(int x)
 int main(int argc, char * argv[])
 {
     int bing = 42;
-    foo(2);
+    short z = 2;
+    foo(z);
     bing = 43;
 }
