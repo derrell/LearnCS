@@ -7,8 +7,20 @@
  *   GPL Version 2: http://www.gnu.org/licenses/gpl-2.0.html 
  */
 
-var qx = require("qooxdoo");
-var sys = require("sys");
+/*
+#ignore(require)
+ */
+
+/**
+ * Code used during testing with Node; ignored when in playground
+ * 
+ * @lint ignoreUndefined(require)
+ */
+if (typeof qx === 'undefined')
+{
+  var qx = require("qooxdoo");
+}
+
 
 qx.Class.define("learncs.machine.Memory",
 {
@@ -88,19 +100,19 @@ qx.Class.define("learncs.machine.Memory",
         length : 64
       },
 
+/*
       "rts" :
       {
         start : 0x9EA4,
         length : 68
       }
+*/
 
-/*
       "rts" :                     // Run-time Stack
       {
         start  : 16 * 1024,
         length : 1024
       }
-*/
     },
 
     /** The register names, and their locations in memory */
@@ -114,17 +126,7 @@ qx.Class.define("learncs.machine.Memory",
       "R1"  : null,
       "R2"  : null,
       "R3"  : null
-    },
-    
-    /**
-     * Array of maps of activation record data, containing:
-     *   - type (one of "newAR", "global", "param", "returnTo", "auto", "popAR")
-     *   - name
-     *   - address (if global or returnTo)
-     *   - offset (if param or auto)
-     *   - size (in bytes)
-     */
-    activationRecordData : []
+    }
   },
   
   members :
@@ -558,9 +560,10 @@ qx.Class.define("learncs.machine.Memory",
     prettyPrint : function(message, startAddr, length)
     {
       var data = this.toArray(startAddr, length);
+      var parts = [];
 
       // Display the message
-      sys.print(message + "\n");
+      console.log(message);
 
       // For each value to be displayed...
       data.forEach(
@@ -570,32 +573,21 @@ qx.Class.define("learncs.machine.Memory",
           if (i % 16 == 0)
           {
             // We do. Display it, as four hex digits
-            sys.print((i == 0 ? "" : "\n") +
-                      ("0000" + 
-                       (startAddr + i).toString(16)).substr(-4) + ": ");
+            if (i !== 0)
+            {
+              console.log(parts.join(""));
+              parts = [];
+            }
+            parts.push(("0000" + 
+                        (startAddr + i).toString(16)).substr(-4) + ": ");
           }
 
           // Display this value, as two hex digits
-          sys.print(("00" + value.toString(16)).substr(-2) + " ");
+          parts.push(("00" + value.toString(16)).substr(-2) + " ");
         });
 
       // Terminate the display with a newline
-      sys.print("\n\n");
-    },
-    
-    displayAsMemTemplate : function(message)
-    {
-      var memory = this.toArray(0, this.__memSize);
-      var arData = learncs.machine.Memory.activationRecordData;
-      
-      // Display the message
-      sys.print(message + "\n");
-
-      arData.forEach(
-        function(datum)
-        {
-          sys.print("  type=" + datum.type + "\n");
-        });
+      console.log(parts.join("") + "\n");
     }
   },
   

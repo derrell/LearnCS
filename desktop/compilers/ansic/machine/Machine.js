@@ -7,14 +7,21 @@
  *   GPL Version 2: http://www.gnu.org/licenses/gpl-2.0.html 
  */
 
-var qx = require("qooxdoo");
-var sys = require("sys");
-require("./Memory");
-require("./Instruction");
+/*
+#ignore(require)
+ */
 
-var mem = learncs.machine.Memory.getInstance();
-var Memory = learncs.machine.Memory;
-var Instruction = learncs.machine.Instruction;
+/**
+ * Code used during testing with Node; ignored when in playground
+ * 
+ * @lint ignoreUndefined(require)
+ */
+if (typeof qx === 'undefined')
+{
+  var qx = require("qooxdoo");
+  require("./Memory");
+  require("./Instruction");
+}
 
 
 qx.Class.define("learncs.machine.Machine",
@@ -34,6 +41,9 @@ qx.Class.define("learncs.machine.Machine",
   {
     initAll : function()
     {
+      var             Memory = learncs.machine.Memory;
+      var             mem = learncs.machine.Machine.mem;
+
       // Initialize the registers
       mem.setReg("PC", 
                  "unsigned int",
@@ -63,6 +73,9 @@ qx.Class.define("learncs.machine.Machine",
       var             opcode;
       var             numDataWords;
       var             debugInfo;
+      var             Memory = learncs.machine.Memory;
+      var             Instruction = learncs.machine.Instruction;
+      var             mem = learncs.machine.Machine.mem;
 
       // Initialize the program counter
       mem.setReg("PC", "unsigned int", pc);
@@ -101,8 +114,6 @@ qx.Class.define("learncs.machine.Machine",
           // Call the appropriate function to process this reuqest
 //          this.__displayInstruction(instr);
           learncs.machine.Instruction.processOpcode[opcode](instr, instrAddr);
-
-          mem.displayAsMemTemplate(instrAddr.toString(16));
         }
       }
       catch (e)
@@ -111,14 +122,13 @@ qx.Class.define("learncs.machine.Machine",
         {
           if (false)
           {
-            sys.print("Exit code: " + 
-                      mem.getReg("R1", "unsigned char").toString(16) +
-                      "\n");
+            console.log("Exit code: " + 
+                        mem.getReg("R1", "unsigned char").toString(16));
           }
         }
         else
         {
-          sys.print("Program halted: " + e + "\n" + e.stack + "\n");
+          console.log("Program halted: " + e + "\n" + e.stack);
         }
       }
     },
@@ -134,12 +144,12 @@ qx.Class.define("learncs.machine.Machine",
       parts = /(\d{3})(\d{5})(\d{4})(\d{4})(\d{16})/.exec(p);
       parts.shift();
       
-      parts.forEach(
-        function(part)
-        {
-          sys.print(part + " ");
-        });
-      sys.print("\n");
+      console.log(parts.join(" "));
     }
+  },
+  
+  defer : function(statics)
+  {
+    statics.mem = learncs.machine.Memory.getInstance();
   }
 });

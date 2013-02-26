@@ -16,6 +16,7 @@
      * Martin Wittemann (martinwittemann)
 
 ************************************************************************ */
+
 /**
  * Samples data container. This class is responsible for getting the samples
  * stored in textareas in the index.mhtml file into the JavaScript world.

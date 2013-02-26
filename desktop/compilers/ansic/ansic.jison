@@ -1973,14 +1973,66 @@ rbrace
 
 %%
 
-sys = require("sys");                // for sys.print()
-error = require("./lib/error.js");   // parseError, errorCount, etc.
-require("./lib/Symtab.js");          // symbol table functionality
-require("./lib/Node.js");            // Node functionality
-require("./machine/Machine.js");     // The virtual machine
-require("./AbstractSyntaxTree.js");  // Post-processing of the AST
+if (typeof window === "undefined")
+{
+  require("./lib/Symtab.js");          // symbol table functionality
+  require("./lib/Node.js");            // Node functionality
+  require("./machine/Machine.js");     // The virtual machine
+  require("./AbstractSyntaxTree.js");  // Post-processing of the AST
+}
 
-error.setParser(parser);             // provide parser to the error module
+var error =
+{
+  /**
+   * Function called upon each error encountered during parsing
+   * 
+   * @param str {String}
+   *   A pre-defined error string which shows where in the line the error
+   *   occurred.
+   * 
+   * @param hash {Map}
+   *   A map containing details of the error and its location.
+   */
+  parseError : function(str, hash)
+  {
+    var             sys = require("sys");
+
+    if (true)
+    {
+      var errStr =
+        "Parse error on line " +
+        hash.line +
+        ":\n" +
+        parser.lexer.showPosition() +
+        "\n"
+        ;
+
+      if (str)
+      {
+        errStr += "\t" + str;
+      }
+
+      sys.print(errStr + "\n");
+    }
+    else
+    {
+      // For debugging, this code displays all values of hash.
+      sys.print(str + "\n");
+
+      sys.print("Details:\n");
+      for (var x in hash)
+      {
+        sys.print("  " + x + ": " + hash[x] + "\n");
+      }
+    }
+
+    // Increment the number of errors encountered so far.
+    ++exports.errorCount;
+  },
+
+  /** Count of errors encountered so far */
+  errorCount : 0
+};
 
 // Function called upon each error encountered during parsing
 parser.yy.parseError = error.parseError;
@@ -1991,5 +2043,5 @@ new learncs.lib.Symtab(null, null, 0);
 // Function to display rules as they are parsed
 function R(rule)
 {
-//  sys.print("rule: " + rule + "\n");
+//  console.log("rule: " + rule + "\n");
 }

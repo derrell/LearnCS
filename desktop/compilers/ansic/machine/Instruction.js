@@ -7,11 +7,20 @@
  *   GPL Version 2: http://www.gnu.org/licenses/gpl-2.0.html 
  */
 
-var qx = require("qooxdoo");
-var sys = require("sys");
-require("./Memory");
+/*
+#ignore(require)
+ */
 
-var mem = learncs.machine.Memory.getInstance();
+/**
+ * Code used during testing with Node; ignored when in playground
+ * 
+ * @lint ignoreUndefined(require)
+ */
+if (typeof qx === 'undefined')
+{
+  var qx = require("qooxdoo");
+  require("./Memory");
+}
 
 /*
  * Machine Instructions
@@ -36,6 +45,9 @@ qx.Class.define("learncs.machine.Instruction",
 
   statics :
   {
+    /** Reference to the Memory singleton instance */
+    mem : null,
+
     /**
      *  Conversion of type number to its string representation
      */
@@ -185,6 +197,7 @@ qx.Class.define("learncs.machine.Instruction",
       var             operand1;
       var             operand2;
       var             result;
+      var             mem = learncs.machine.Instruction.mem;
       var             operations =
         [
           ">>",                 // 0
@@ -406,6 +419,8 @@ qx.Class.define("learncs.machine.Instruction",
       var             value;
       var             typeSrc;
       var             typeDest;
+      var             mem = learncs.machine.Instruction.mem;
+
       
       // Extract the operation to be executed
       op = (instruction >>> 24) & 0x1f;
@@ -509,6 +524,7 @@ qx.Class.define("learncs.machine.Instruction",
       var             addr;
       var             value;
       var             condition;
+      var             mem = learncs.machine.Instruction.mem;
       
       // Extract the condition
       condition = (instruction >>> 24) & 0x1f;
@@ -628,6 +644,7 @@ qx.Class.define("learncs.machine.Instruction",
       var             addr;
       var             type;
       var             sp;
+      var             mem = learncs.machine.Instruction.mem;
       
       // Extract the sub-code specifying whether we are to push or pop
       op = (instruction >>> 24) & 0x1f;
@@ -765,6 +782,7 @@ qx.Class.define("learncs.machine.Instruction",
       var             value;
       var             addr;
       var             sp;
+      var             mem = learncs.machine.Instruction.mem;
       
       // Extract the sub-code that indicates whether to call or return from a
       // function.
@@ -895,7 +913,7 @@ qx.Class.define("learncs.machine.Instruction",
       // Ensure it exists
       if (typeof op == "undefined")
       {
-        throw new Error("Unrecognized op name");
+        throw new Error("Unrecognized op name: " + opName);
       }
 
       // Convert the opcode name to its actual opcode, and retrieve the subcode
@@ -963,6 +981,7 @@ qx.Class.define("learncs.machine.Instruction",
       var             pseudoop;
       var             op;
       var             Memory = learncs.machine.Memory;
+      var             mem = learncs.machine.Instruction.mem;
 
       // Function to retrieve a word address in the globals&statics area
       var GLOBAL = function(index)
@@ -972,71 +991,6 @@ qx.Class.define("learncs.machine.Instruction",
       
       // Make a copy of the program line, so we can prepend and append arguments
       args = instruction.split(" ");
-
-      if (false)
-      {
-        // WRONG! WRONG! WRONG!
-        //
-        // This is the wrong way to do this stuff. The symbol table is
-        // required at run time, not assembly time...
-
-        var             arData;
-
-        // Is this a pragma? (The first character is an '@')
-        if (args[0].charAt(0) == '@')
-        {
-          // Yes. Handle it specially. Create an activation record data map
-          arData =
-            {
-              type : args[0]
-            };
-
-          switch(args[0])
-          {
-          case "@global" :        // assign a name to a global|static variable
-            arData.name    = args[1];
-            arData.address = args[2];
-            arData.size    = args[3];
-            break;
-
-          case "@newAR" :         // create a new activation record
-            // Nothing required other than the type, already in arData
-            break;
-
-          case "@param" :         // assign a name to a parameter
-            arData.name    = args[1];
-            arData.offset  = args[2];
-            arData.size    = args[3];
-            break;
-
-          case "@returnTo" :      // indicate the return-to address (line)
-            arData.address = args[1];
-            break;
-
-          case "@auto" :          // assign a name to an automatic variable
-            arData.name    = args[1];
-            arData.offset  = args[2];
-            arData.size    = args[3];
-            break;
-
-          case "@popAR" :         // pop the current activation record
-            do
-            {
-              arData = learncs.machine.Memory.activationRecordData.pop();
-            } while (arData.type != "@newAR");
-            break;
-
-          default:
-            throw new Error("Line " + line + ": " +
-                            "Unrecognized pragma (" + instruction + ")");
-          }
-
-          // Give this activation record data to Memory, for later pretty
-          // display
-          learncs.machine.Memory.activationRecordData.push(arData);
-          return;
-        }
-      }
 
       // If there's an address provided...
       if (args.length > 3)
@@ -1181,13 +1135,16 @@ qx.Class.define("learncs.machine.Instruction",
 
     __cast : function(register, typeFrom, typeTo)
     {
-      var value = mem.getReg(register, typeFrom);
+      var             mem = learncs.machine.Instruction.mem;
+      var             value = mem.getReg(register, typeFrom);
+
       mem.setReg(register, typeTo, value);
     },
     
     __epush : function(type, addr)
     {
       var             esp;
+      var             mem = learncs.machine.Instruction.mem;
       
       // If the address given is a string...
       if (typeof addr == "string")
@@ -1228,6 +1185,7 @@ qx.Class.define("learncs.machine.Instruction",
     __epop : function(type, addr)
     {
       var             esp;
+      var             mem = learncs.machine.Instruction.mem;
 
       // If the address given is a string...
       if (typeof addr == "string")
@@ -1268,6 +1226,8 @@ qx.Class.define("learncs.machine.Instruction",
         null,
         null
       ];
+    
+    statics.mem = learncs.machine.Memory.getInstance();
   }
 });
 
