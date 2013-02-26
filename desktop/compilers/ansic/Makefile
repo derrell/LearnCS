@@ -6,18 +6,19 @@
 #
 
 COMMON		= ./ansic.js
+LIBDIR          = ../../playground/source/class/playground/c/lib
 PLAYGROUND	= ../../playground/source/resource/playground/ansic.js
 
 all:	$(COMMON) $(PLAYGROUND)
 
-$(COMMON):	ansic.jison ansic.lex lib/Node.js lib/Symtab.js
+$(COMMON):	ansic.jison ansic.lex $(LIBDIR)/Node.js $(LIBDIR)/Symtab.js
 	nodejs cli-wrapper.js -m commonjs -o $(COMMON) ansic.jison ansic.lex
 	@echo ""
 	@echo "------------------------------"
 	@echo "For testing, run 'nodejs ./ansic.js FILE.c'."
 	@echo "------------------------------"
 
-$(PLAYGROUND):	ansic.jison ansic.lex lib/Node.js lib/Symtab.js
+$(PLAYGROUND):	ansic.jison ansic.lex $(LIBDIR)/Node.js $(LIBDIR)/Symtab.js
 	nodejs cli-wrapper.js -m amd -o $(PLAYGROUND) ansic.jison ansic.lex
 	@echo ""
 	@echo "------------------------------"

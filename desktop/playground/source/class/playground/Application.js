@@ -936,7 +936,13 @@ qx.Class.define("playground.Application",
         this.__modified = true;
       }
 
-      this.__updatePlayground();
+      require(["script/ansic.js"],
+              function(ansic)
+              {
+                var root = ansic.parse(code);
+                root.display(0);
+              });
+//      this.__updatePlayground();
     },
 
 

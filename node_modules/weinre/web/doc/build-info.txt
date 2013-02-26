@@ -1,0 +1,2 @@
+weinre build 2.0.0-pre-H1GCS73N-incubating by Patrick Mueller
+git: 1356753525115913bb755b6695cfe370e8f223a6 [CB-540] [weinre] easily navigate to spot in DOM
