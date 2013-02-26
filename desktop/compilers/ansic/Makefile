@@ -5,12 +5,24 @@
 #   GPL Version 2: http://www.gnu.org/licenses/gpl-2.0.html 
 #
 
-ansic.js:	ansic.jison ansic.lex lib/error.js lib/Node.js lib/Symtab.js
-	nodejs ../jison.git/bin/jison ansic.jison ansic.lex
+COMMON		= ./ansic.js
+PLAYGROUND	= ../../playground/source/resource/playground/ansic.js
+
+all:	$(COMMON) $(PLAYGROUND)
+
+$(COMMON):	ansic.jison ansic.lex lib/error.js lib/Node.js lib/Symtab.js
+	nodejs cli-wrapper.js -m commonjs -o $(COMMON) ansic.jison ansic.lex
 	@echo ""
 	@echo "------------------------------"
-	@echo "Now run 'nodejs ansic.js FILE.c'"
+	@echo "For testing, run 'nodejs ./ansic.js FILE.c'."
+	@echo "------------------------------"
+
+$(PLAYGROUND):	ansic.jison ansic.lex lib/error.js lib/Node.js lib/Symtab.js
+	nodejs cli-wrapper.js -m amd -o $(PLAYGROUND) ansic.jison ansic.lex
+	@echo ""
+	@echo "------------------------------"
+	@echo "requireJS module available in playground's resource directory"
 	@echo "------------------------------"
 
 clean:
-	rm -f ansic.js
+	rm -f $(COMMON) $(PLAYGROUND)
