@@ -125,40 +125,9 @@ qx.Class.define("learncs.lib.SymtabEntry",
         return this.__node;
       }
       
-console.log("getAddr: Returning fp=" + this.__symtab.getFramePointer().toString(16) + ", offset=" + this.__offset.toString(16) + " from symtab " + this.__symtab.getName());
+      // Calculate the address of this symbol from its symbol table's frame
+      // pointer and its own offset.
       ret = this.__symtab.getFramePointer() + this.__offset;
-      return ret;
-
-///// CODE BELOW IS CURRENTLY UNUSED...
-
-
-      // First, determine if this is a global/static, or an automatic variable.
-      // We know it's a global/static if it's in the root symbol table, which
-      // has no parent.
-      bGlobal = (! this.__symtab.getParent());
-      
-      // If it's global, then the address is the entry's offset.
-      if (bGlobal)
-      {
-console.log("getAddr: Returning global at " + this.__offset.toString(16));
-        return this.__offset;
-      }
-      
-      // It's not global, so its address is based on the frame
-      // pointer. Find the appropriate frame pointer for this symbol table.
-      for (i = 0, symtab = this.__symtab.getParent(); 
-           symtab; 
-           ++i, symtab = symtab.getParent())
-      {
-        // nothing to do; just looping until we hit the end of the symtab list.
-      }
-
-      // We know which frame pointer to use now. Retrieve it.
-      fp = learncs.lib.Symtab.framePointers[i];
-
-      // Return the now-fully-qualified offset from the current frame pointer
-      ret = fp + this.__offset;
-console.log("getAddr: Returning auto at fp=" + fp.toString(16) + ", offset=" + this.__offset.toString(16));
       return ret;
     },
 

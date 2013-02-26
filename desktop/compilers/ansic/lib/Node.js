@@ -310,7 +310,7 @@ qx.Class.define("learncs.lib.Node",
             value1 = this.getExpressionValue(
               this.children[i].process(data, bExecuting));
 
-            // Promote the type, if necessary
+            // Promote the argument type, if necessary
             value1.type =
             {
               "char"               : "int",
@@ -328,6 +328,7 @@ qx.Class.define("learncs.lib.Node",
               "pointer"            : "pointer"
             }[value1.type];
 
+            // Push the argument onto the stack
             learncs.lib.Node.__mem.stackPush(value1.type, value1.value);
             
             // If we were given a JavaScript array in which to place args too...
@@ -394,7 +395,6 @@ qx.Class.define("learncs.lib.Node",
         value3 = this.getExpressionValue(this.children[1].process(data, true));
 
         // Save the value at its new address
-console.log("calling mem.set: loc 1");
         learncs.lib.Node.__mem.set(value1.value, value1.type, value3.value);
         break;
 
@@ -459,7 +459,6 @@ console.log("calling mem.set: loc 1");
           learncs.lib.Symtab.pushStack(symtab);
 
           // Save the new frame pointer
-console.log("loc 1: size=" + symtab.getSize());
           symtab.setFramePointer(
             learncs.lib.Node.__mem.getReg("SP", "unsigned int") -
               symtab.getSize());
@@ -657,7 +656,6 @@ console.log("loc 1: size=" + symtab.getSize());
               {
                 // ... then retrieve its value
                 value = init_declarator.children[1].process(data, bExecuting);
-console.log("calling mem.set: loc 2: addr=" + entry.getAddr().toString(16) + ", type=" + entry.getType() + ", value=" + value.value);
                 learncs.lib.Node.__mem.set(entry.getAddr(), 
                                            entry.getType(),
                                            value.value);
@@ -691,7 +689,6 @@ console.log("calling mem.set: loc 2: addr=" + entry.getAddr().toString(16) + ", 
         sp -= symtab.getSize();
 
         // Write the new stack pointer value
-console.log("Making space for locals: sp=" + sp.toString(16) + " after making space: " + symtab.getSize());
         learncs.lib.Node.__mem.setReg("SP", "unsigned int", sp);
         break;
 
@@ -893,7 +890,6 @@ console.log("Making space for locals: sp=" + sp.toString(16) + " after making sp
         else
         {
           // Save the new frame pointer
-console.log("loc 2");
           value2._symtab.setFramePointer(
             learncs.lib.Node.__mem.getReg("SP", "unsigned int"));
 
@@ -946,7 +942,6 @@ console.log("loc 2");
           // exist. Retrieve it from the node where we saved it.
           symtab = this._symtab;
           
-console.log("Entering function: sp=" + learncs.lib.Node.__mem.getReg("SP", "unsigned int").toString(16));
           // Push it onto the symbol table stack as if we'd just created it
           learncs.lib.Symtab.pushStack(symtab);
 
