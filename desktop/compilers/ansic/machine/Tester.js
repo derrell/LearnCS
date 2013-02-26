@@ -1,5 +1,4 @@
 var qx = require("qooxdoo");
-var sys = require("sys");
 require("./Memory");
 require("./Instruction");
 require("./Machine");
@@ -48,7 +47,7 @@ qx.Class.define("Tester",
           Instr.write(instr, addrInfo, line);
         });
 
-      if (true)
+      if (false)
       {
         mem.prettyPrint("Program memory", 
                         Memory.info.prog.start,
