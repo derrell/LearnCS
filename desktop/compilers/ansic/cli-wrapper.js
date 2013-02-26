@@ -1,19 +1,20 @@
 #!/usr/bin/env node
 
-var JISON = require('../jison.git/lib/jison'),
-    IO = require('../jison.git/lib/jison/util/io'),
+var JISONDIR = '../jison.git';
+var JISON = require(JISONDIR + '/lib/jison'),
+    IO = require(JISONDIR + '/lib/jison/util/io'),
     nomnom = require('nomnom');
 
 var opts = {
   file : 
   {
-    position : 0,
-    help     : '\t\t\tGrammar file'
+    position  : 0,
+    help      : '\t\t\tGrammar file'
   },
   lexfile :
   {
-    position : 1,
-    help     : '\t\tLexical grammar file (optional)'
+    position  : 1,
+    help      : '\t\tLexical grammar file (optional)'
   },
   outfile :
   {
@@ -38,7 +39,7 @@ var opts = {
   version :
   {
     abbr      : 'v',
-    help: '\t\tVersion number'
+    help      : '\t\tVersion number'
   }
 };
 
@@ -83,7 +84,7 @@ function readVersion () {
 function processGrammar (rawGrammar, lex, name) {
     var grammar;
     try {
-        grammar = require("../jison.git/lib/jison/bnf").parse(rawGrammar);
+        grammar = require(JISONDIR + "/lib/jison/bnf").parse(rawGrammar);
     } catch (e) {
         try {
             grammar = JSON.parse(rawGrammar);
@@ -92,7 +93,7 @@ function processGrammar (rawGrammar, lex, name) {
         }
     }
     var opt = grammar.options || {};
-    if (lex) grammar.lex = require("../jison.git/lib/jison/jisonlex").parse(lex);
+    if (lex) grammar.lex = require(JISONDIR + "/lib/jison/jisonlex").parse(lex);
     opt.debug = args.debug;
     if (!opt.moduleType) opt.moduleType = args.moduleType;
     if (!opt.moduleName && name) opt.moduleName = name.replace(/-\w/g, function (match){ return match.charAt(1).toUpperCase(); });
