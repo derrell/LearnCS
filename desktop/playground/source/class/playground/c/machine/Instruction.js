@@ -41,7 +41,6 @@ if (typeof qx === 'undefined')
 qx.Class.define("playground.c.machine.Instruction",
 {
   type    : "static",
-  extend  : Object,
 
   statics :
   {
@@ -970,6 +969,8 @@ qx.Class.define("playground.c.machine.Instruction",
      *
      * @param line {Number}
      *   The source code line number from which this instruction derives
+     *
+     * @lint ignoreDeprecated(eval)
      */
     write : function(instruction, addrInfo, line)
     {

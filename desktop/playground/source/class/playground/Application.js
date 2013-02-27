@@ -23,6 +23,7 @@
 /* ************************************************************************
 
 #asset(qx/icon/${qx.icontheme}/*)
+#ignore(require)
 
 ************************************************************************ */
 
@@ -924,6 +925,8 @@ qx.Class.define("playground.Application",
      * Runs the current set sample and checks if it need to be saved to the url.
      *
      * @param e {qx.event.type.Event} A possible events (unused)
+     *
+     * @lint ignoreUndefined(require)
      */
     run : function(e)
     {
@@ -936,10 +939,10 @@ qx.Class.define("playground.Application",
         this.__modified = true;
       }
 
-      require(["script/ansic.js"],
+      require(["resource/playground/script/ansic.js"],
               function(ansic)
               {
-console.log("required ansic=" + ansic);
+                playground.c.AbstractSyntaxTree.main(ansic);
                 var root = ansic.parse(code);
                 root.display(0);
               });

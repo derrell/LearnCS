@@ -7,7 +7,7 @@
 
 COMMON		= ./ansic.js
 LIBDIR          = ../../playground/source/class/playground/c/lib
-PLAYGROUND	= ../../playground/source/resource/playground/ansic.js
+PLAYGROUND	= ../../playground/source/resource/playground/script/ansic.js
 
 all:	$(COMMON) $(PLAYGROUND)
 

@@ -61,8 +61,10 @@ qx.Class.define("playground.c.lib.Node",
 
   statics :
   {
+    /** The Memory singleton instance */
     __mem : null,
     
+    /** Mappings of types of numbers to their types */
     NumberType :
     {
       Int     : "int",
@@ -73,16 +75,36 @@ qx.Class.define("playground.c.lib.Node",
       Address : "pointer"
     },
     
+    /** The error object */
     __error : null,
     
+    /**
+     * Setter for the error object 
+     * 
+     * @param error {Map}
+     *   A map containing a parseError function and an errorCount value.
+     */
     setError : function(error)
     {
       playground.c.lib.Node.__error = error;
+    },
+    
+    /**
+     * Getter for the error object 
+     * 
+     * @return {Map} 
+     *   A map containing a parseError function and an errorCount value, as
+     *   previously saved here by a call to setError().
+     */
+    getError : function()
+    {
+      return playground.c.lib.Node.__error;
     }
   },
   
   members :
   {
+    /** The symbol table associated with this specific node */
     _symtab : null,
 
     /**

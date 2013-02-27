@@ -480,7 +480,7 @@ qx.Class.define("playground.c.lib.SymtabEntry",
     error : function(message)
     {
       console.log("Error: line " + this.__line + ": " + message + "\n");
-      ++error.errorCount;
+      ++playground.c.lib.Node.getError().errorCount;
     },
 
     display : function()

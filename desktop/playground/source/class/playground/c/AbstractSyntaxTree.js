@@ -31,6 +31,84 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
   
   statics :
   {
+    main : function(parser)
+    {
+      if (typeof window === "undefined")
+      {
+        require("./lib/Symtab.js");
+        require("./lib/Node.js");
+        require("./c/machine/Machine.js");
+      }
+
+      var error =
+      {
+        /**
+         * Function called upon each error encountered during parsing
+         * 
+         * @param str {String}
+         *   A pre-defined error string which shows where in the line the error
+         *   occurred.
+         * 
+         * @param hash {Map}
+         *   A map containing details of the error and its location.
+         */
+        parseError : function(str, hash)
+        {
+          var             sys = require("sys");
+
+          if (true)
+          {
+            var errStr =
+              "Parse error on line " +
+              hash.line +
+              ":\n" +
+              parser.lexer.showPosition() +
+              "\n"
+              ;
+
+            if (str)
+            {
+              errStr += "\t" + str;
+            }
+
+            sys.print(errStr + "\n");
+          }
+          else
+          {
+            // For debugging, this code displays all values of hash.
+            sys.print(str + "\n");
+
+            sys.print("Details:\n");
+            for (var x in hash)
+            {
+              sys.print("  " + x + ": " + hash[x] + "\n");
+            }
+          }
+
+          // Increment the number of errors encountered so far.
+          ++exports.errorCount;
+        },
+
+        /** Count of errors encountered so far */
+        errorCount : 0
+      };
+
+      // Function called upon each error encountered during parsing
+      parser.yy.parseError = error.parseError;
+
+      // Give the Node class access to the error object
+      playground.c.lib.Node.setError(error);
+
+      // Create the root-level symbol table
+      new playground.c.lib.Symtab(null, null, 0);
+
+      // Function to display rules as they are parsed
+      parser.yy.R = function(rule)
+      {
+        console.log("rule: " + rule + "\n");
+      };
+    },
+
     process : function(root)
     {
       var sp;
