@@ -86,7 +86,7 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
           }
 
           // Increment the number of errors encountered so far.
-          ++exports.errorCount;
+          ++error.errorCount;
         },
 
         /** Count of errors encountered so far */
@@ -105,7 +105,7 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
       // Function to display rules as they are parsed
       parser.yy.R = function(rule)
       {
-        console.log("rule: " + rule + "\n");
+//        console.log("rule: " + rule);
       };
     },
 

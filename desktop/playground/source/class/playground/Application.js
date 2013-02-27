@@ -943,8 +943,7 @@ qx.Class.define("playground.Application",
               function(ansic)
               {
                 playground.c.AbstractSyntaxTree.main(ansic);
-                var root = ansic.parse(code);
-                root.display(0);
+                ansic.parse(code);
               });
 //      this.__updatePlayground();
     },

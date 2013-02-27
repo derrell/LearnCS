@@ -19,8 +19,8 @@
 if (typeof qx === 'undefined')
 {
   var qx = require("qooxdoo");
-  var printf = require("printf");
   require("./SymtabEntry");
+  require("../Stdio");
 }
 
 qx.Class.define("playground.c.lib.Symtab",
@@ -111,13 +111,23 @@ qx.Class.define("playground.c.lib.Symtab",
     {
       // ... then add built-in functions.
       entry = this.add("printf", 0, false);
-      entry.setType("built-in", 
-                    function()
-                    {
-                      var             str = printf.apply(null, arguments);
-                      console.log(str);
-                      return { value : str, type : "pointer" };
-                    });
+      entry.setType(
+        "built-in", 
+        function()
+        {
+          var str = playground.c.Stdio.printf.apply(null, arguments);
+          
+          // We'll be outputting the string using console.log, which appends a
+          // newline. If the string to be output has a trailing newline, get
+          // rid of it.
+          if (str.charAt(str.length - 1) == "\n")
+          {
+            str = str.substr(0, str.length - 1);
+          }
+          
+          console.log(str);
+          return { value : str, type : "pointer" };
+        });
       
       // Save this root symbol table for ready access
       playground.c.lib.Symtab._root = this;

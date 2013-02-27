@@ -95,7 +95,7 @@ qx.Class.define("playground.c.Stdio",
 
       formatAddr = args.shift();
       var formatter = new playground.c.Stdio(formatAddr);
-      var string = formatter._format.apply(formatter, args);
+      var string = formatter.format.apply(formatter, args);
       
       return string;
     }
@@ -232,7 +232,7 @@ qx.Class.define("playground.c.Stdio",
       }
     },
 
-    _format : function(/*mixed...*/ filler)
+    format : function(/*mixed...*/ filler)
     {
       if (this._mapped && typeof filler != 'object')
       {
