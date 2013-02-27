@@ -25,7 +25,7 @@ program =
 
 test = function(mem, GLOBAL)
 {
-  var Memory = learncs.machine.Memory;
+  var Memory = playground.c.machine.Memory;
 
   return (mem.get(GLOBAL(0), "uint") === 0x13C &&
           mem.get(Memory.register.SP, "uint") === 
@@ -49,7 +49,7 @@ program =
 
 test = function(mem, GLOBAL)
 {
-  var Memory = learncs.machine.Memory;
+  var Memory = playground.c.machine.Memory;
 
   return (mem.get(GLOBAL(0), "uint") === 0x13C &&
           mem.get(GLOBAL(1), "uint") === 0x13C &&

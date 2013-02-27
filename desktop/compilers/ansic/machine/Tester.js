@@ -1,9 +1,9 @@
 var qx = require("qooxdoo");
-require("./Memory");
-require("./Instruction");
-require("./Machine");
+require("../../../playground/source/class/playground/c/machine/Memory");
+require("../../../playground/source/class/playground/c/machine/Instruction");
+require("../../../playground/source/class/playground/c/machine/Machine");
 
-qx.Class.define("playground.c.machine.Tester",
+qx.Class.define("Tester",
 {
   extend : qx.core.Object,
   
