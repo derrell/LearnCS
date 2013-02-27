@@ -87,7 +87,18 @@ qx.Class.define("playground.c.Stdio",
   
   statics :
   {
-    
+    printf : function()
+    {
+      var args = Array.prototype.slice.call(arguments);
+      var stream;
+      var formatAddr;
+
+      formatAddr = args.shift();
+      var formatter = new playground.c.Stdio(formatAddr);
+      var string = formatter._format.apply(formatter, args);
+      
+      return string;
+    }
   },
   
   members :
@@ -221,7 +232,7 @@ qx.Class.define("playground.c.Stdio",
       }
     },
 
-    format : function(/*mixed...*/ filler)
+    _format : function(/*mixed...*/ filler)
     {
       if (this._mapped && typeof filler != 'object')
       {
@@ -416,7 +427,7 @@ qx.Class.define("playground.c.Stdio",
               token.zeroPad = false;
             }
 
-            this.formatInt(token);
+            this._formatInt(token);
           }
           else if (token.isDouble)
           {
@@ -425,9 +436,9 @@ qx.Class.define("playground.c.Stdio",
               token.precision = 6;
             }
 
-            this.formatDouble(token); 
+            this._formatDouble(token); 
           }
-          this.fitField(token);
+          this.__fitField(token);
 
           str += '' + token.arg;
         }
@@ -440,7 +451,7 @@ qx.Class.define("playground.c.Stdio",
 
     _spaces10 : '          ',
 
-    formatInt : function(token) 
+    _formatInt : function(token) 
     {
       var i = parseInt(token.arg);
 
@@ -470,7 +481,7 @@ qx.Class.define("playground.c.Stdio",
       if (i < 0)
       {
         token.arg = (- i).toString(token.base);
-        this.zeroPad(token);
+        this.__zeroPad(token);
         token.arg = '-' + token.arg;
       }
       else
@@ -484,7 +495,7 @@ qx.Class.define("playground.c.Stdio",
         }
         else
         {
-          this.zeroPad(token);
+          this.__zeroPad(token);
         }
 
         if (token.sign)
@@ -513,7 +524,7 @@ qx.Class.define("playground.c.Stdio",
       }
     },
 
-    formatDouble : function(token) 
+    _formatDouble : function(token) 
     {
       var f = parseFloat(token.arg);
 
@@ -608,7 +619,7 @@ qx.Class.define("playground.c.Stdio",
         token.toUpper ? token.arg.toUpperCase() : token.arg.toLowerCase();
     },
 
-    zeroPad : function(token, /*Int*/ length) 
+    __zeroPad : function(token, /*Int*/ length) 
     {
       var negative = false;
 
@@ -646,23 +657,28 @@ qx.Class.define("playground.c.Stdio",
       }
     },
 
-    fitField : function(token) 
+    __fitField : function(token) 
     {
       if (token.maxWidth >= 0 && token.arg.length > token.maxWidth)
       {
-        return token.arg.substring(0, token.maxWidth);
+        return;
+        
+        // djl: It used to do this, but nothing uses the return value, and
+        // this function sometimes returned a value and sometimes didn't. Bad,
+        // bad, bad.
+        // return token.arg.substring(0, token.maxWidth);
       }
 
       if (token.zeroPad)
       {
-        this.zeroPad(token, token.minWidth);
+        this.__zeroPad(token, token.minWidth);
         return;
       }
 
-      this.spacePad(token);
+      this.__spacePad(token);
     },
 
-    spacePad : function(token, /*Int*/ length) 
+    __spacePad : function(token, /*Int*/ length) 
     {
       length = (arguments.length == 2) ? length : token.minWidth;
 
@@ -751,22 +767,4 @@ qx.Class.define("playground.c.Stdio",
 });
 
 
-
-module.exports = function(){
-  var args = Array.prototype.slice.call(arguments),
-    stream, format;
-  if (args[0] instanceof require('stream').Stream){
-    stream = args.shift();
-  }
-  format = args.shift();
-  var formatter = new Formatter(format);
-  var string = formatter.format.apply(formatter, args);
-  if (stream){
-    stream.write(string);
-  }else{
-    return string;
-  }
-};
-
-module.exports.Formatter = Formatter;
 
