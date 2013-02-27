@@ -2052,6 +2052,9 @@ var error =
 // Function called upon each error encountered during parsing
 parser.yy.parseError = error.parseError;
 
+// Give the Node class access to the error object
+playground.c.lib.Node.setError(error);
+
 // Create the root-level symbol table
 new playground.c.lib.Symtab(null, null, 0);
 

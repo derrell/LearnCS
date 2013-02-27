@@ -3,7 +3,7 @@ require("./Memory");
 require("./Instruction");
 require("./Machine");
 
-qx.Class.define("Tester",
+qx.Class.define("playground.c.machine.Tester",
 {
   extend : qx.core.Object,
   

@@ -9,6 +9,15 @@
 
 /*
 #ignore(require)
+#ignore(ArrayBuffer)
+#ignore(Int8Array)
+#ignore(Int16Array)
+#ignore(Int32Array)
+#ignore(Uint8Array)
+#ignore(Uint16Array)
+#ignore(Uint32Array)
+#ignore(Uint8Array)
+#ignore(Float32Array)
  */
 
 /**
@@ -133,6 +142,12 @@ qx.Class.define("playground.c.machine.Memory",
   {
     __memSize : 0,
 
+    /**
+     * Initialize the memory module.
+     *
+     * @lint ignoreUndefined(ArrayBuffer)
+     * @lint ignoreUndefined(Uint8Array)
+     */
     initAll : function()
     {
       var             i;
@@ -169,6 +184,15 @@ qx.Class.define("playground.c.machine.Memory",
      * @return
      *   The typed value retrieved from memory
      *
+     * @lint ignoreUndefined(ArrayBuffer)
+     * @lint ignoreUndefined(Int8Array)
+     * @lint ignoreUndefined(Int16Array)
+     * @lint ignoreUndefined(Int32Array)
+     * @lint ignoreUndefined(Uint8Array)
+     * @lint ignoreUndefined(Uint16Array)
+     * @lint ignoreUndefined(Uint32Array)
+     * @lint ignoreUndefined(Uint8Array)
+     * @lint ignoreUndefined(Float32Array)
      */
     _getByType : function(type, addr)
     {
@@ -190,7 +214,7 @@ qx.Class.define("playground.c.machine.Memory",
       case 0x03 :
       case "unsigned short" :
       case "ushort" :
-        return new Unt16Array(this._memory, addr, 1);
+        return new Uint16Array(this._memory, addr, 1);
 
       case 0x04 :
       case "int" :
@@ -325,7 +349,7 @@ qx.Class.define("playground.c.machine.Memory",
       sp = this.getReg("SP", "unsigned int");
 
       // Retrieve the value from the address pointed to by the stack pointer
-      value = this.get(addr, type);
+      value = this.get(sp, type);
 
       // Increment the stack pointer so it's pointing to the next in-use
       // location on the stack
@@ -458,7 +482,7 @@ qx.Class.define("playground.c.machine.Memory",
       if (addrSrc % 2 != 0 && typeSrc != "char" && typeSrc != "unsigned char")
       {
         throw new Error("Invalid memory access at " +
-                        addr.toString(16) + ": " +
+                        addrSrc.toString(16) + ": " +
                         "only char or unsigned char can be read from " +
                         "an odd address.");
       }
@@ -469,7 +493,7 @@ qx.Class.define("playground.c.machine.Memory",
           typeDest != "unsigned char")
       {
         throw new Error("Invalid memory access at " + 
-                        addr.toString(16) + ": " +
+                        addrDest.toString(16) + ": " +
                         "only char or unsigned char can be written to " +
                         "an odd address.");
       }
@@ -527,6 +551,8 @@ qx.Class.define("playground.c.machine.Memory",
      *
      * @return {Array}
      *   An array of bytes copied from the simulated machine's memory
+     *
+     * @lint ignoreUndefined(Uint8Array)
      */
     toArray : function(startAddr, length)
     {

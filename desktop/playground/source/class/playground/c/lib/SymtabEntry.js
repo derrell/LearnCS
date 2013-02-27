@@ -479,7 +479,7 @@ qx.Class.define("playground.c.lib.SymtabEntry",
 
     error : function(message)
     {
-      sys.print("Error: line " + this.__line + ": " + message + "\n");
+      console.log("Error: line " + this.__line + ": " + message + "\n");
       ++error.errorCount;
     },
 
@@ -487,7 +487,7 @@ qx.Class.define("playground.c.lib.SymtabEntry",
     {
       var             key;
 
-      sys.print("\n");
+      console.log("");
 
       for (key in this)
       {
@@ -495,7 +495,7 @@ qx.Class.define("playground.c.lib.SymtabEntry",
             ! key.match(/^\$\$/) &&
             typeof this[key] != "function")
         {
-          sys.print("\t" + key + " = " + this[key] + "\n");
+          console.log("\t" + key + " = " + this[key]);
         }
       }
     },

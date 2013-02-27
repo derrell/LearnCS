@@ -69,7 +69,6 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
 
       if (bDebug)
       {
-        sys.print("\n\nAfter processing...");
         playground.c.lib.Symtab.display();
       }
 
@@ -108,7 +107,7 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
       }
       else
       {
-        sys.print("Missing main() function\n");
+        console.log("Missing main() function\n");
       } 
 
       playground.c.machine.Memory.getInstance().prettyPrint(

@@ -71,6 +71,13 @@ qx.Class.define("playground.c.lib.Node",
       ULong   : "unsigned long",
       Float   : "float",
       Address : "pointer"
+    },
+    
+    __error : null,
+    
+    setError : function(error)
+    {
+      playground.c.lib.Node.__error = error;
     }
   },
   
@@ -86,8 +93,8 @@ qx.Class.define("playground.c.lib.Node",
      */
     error : function(message)
     {
-      sys.print("Error: line " + this.line + ": " + message + "\n");
-      ++error.errorCount;
+      console.log("Error: line " + this.line + ": " + message + "\n");
+      ++playground.c.lib.Node.__error.errorCount;
     },
 
     getExpressionValue : function(value)
@@ -122,27 +129,30 @@ qx.Class.define("playground.c.lib.Node",
     display : function(indent)
     {
       var             i;
+      var             parts = [];
 
       // Default value for indent
       indent = indent || 0;
 
       // Create the tree lines
-      sys.print(new Array(indent + 1).join("| "));
+      parts.push(new Array(indent + 1).join("| "));
 
       // Display its type and line number, then call its children recursively.
       if (typeof this.value !== "undefined")
       {
         // We have a value, so display it, and its type
-        sys.print(this.type + ": " + this.value);
+        parts.push(this.type + ": " + this.value);
         if (typeof this.numberType != "undefined")
         {
-          sys.print(" (" + this.numberType + ")");
+          parts.push(" (" + this.numberType + ")");
         }
-        sys.print("\n");
+        console.log(parts.join(""));
+        parts =[];
       }
       else
       {
-        sys.print(this.type + " (" + this.line + ")" +  "\n");
+        console.log(parts.join("") + this.type + " (" + this.line + ")");
+        parts = [];
 
         // Call recursively to handle children
         this.children.forEach(
@@ -156,10 +166,11 @@ qx.Class.define("playground.c.lib.Node",
             {
               // It's null. Display a representation of a null value.
               // Create the tree lines
-              sys.print(new Array(indent + 2).join("| "));
+              parts.push(new Array(indent + 2).join("| "));
 
               // Now display the (null) representation of this object.
-              sys.print(subnode + "\n");
+              console.log(parts.join("") + subnode + "\n");
+              parts = [];
             }
           },
           this);
@@ -1770,7 +1781,7 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       default:
-        sys.print("Unexpected node type: " + this.type);
+        console.log("Unexpected node type: " + this.type);
         break;
       }
       

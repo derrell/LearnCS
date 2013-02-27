@@ -939,6 +939,7 @@ qx.Class.define("playground.Application",
       require(["script/ansic.js"],
               function(ansic)
               {
+console.log("required ansic=" + ansic);
                 var root = ansic.parse(code);
                 root.display(0);
               });
