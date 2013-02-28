@@ -54,8 +54,6 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
          */
         parseError : function(str, hash)
         {
-          var             sys = require("sys");
-
           if (true)
           {
             var errStr =
@@ -71,17 +69,17 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
               errStr += "\t" + str;
             }
 
-            sys.print(errStr + "\n");
+            console.log(errStr);
           }
           else
           {
             // For debugging, this code displays all values of hash.
-            sys.print(str + "\n");
+            console.log(str);
 
-            sys.print("Details:\n");
+            console.log("Details:");
             for (var x in hash)
             {
-              sys.print("  " + x + ": " + hash[x] + "\n");
+              console.log("  " + x + ": " + hash[x]);
             }
           }
 

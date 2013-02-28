@@ -40,8 +40,8 @@ start_sym
     }
     else
     {
-      sys.print("\nErrors encountered: " +
-                playground.c.lib.Node.getError().errorCount + "\n\n");
+      console.log("\nErrors encountered: " +
+                  playground.c.lib.Node.getError().errorCount + "\n");
     }
   }
   ;
