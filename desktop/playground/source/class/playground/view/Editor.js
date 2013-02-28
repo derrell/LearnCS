@@ -35,27 +35,34 @@ qx.Class.define("playground.view.Editor",
 
   statics : {
     loadAce : function(clb, ctx) {
-      var resource = [
-        "playground/editor/ace.js",
-        "playground/editor/theme-eclipse.js",
-        "playground/editor/mode-c_cpp.js"
-//        "playground/editor/mode-javascript.js"
-      ];
-      var load = function(list) {
-        if (list.length == 0) {
-          clb.call(ctx);
-          return;
-        }
-        var res = list.shift();
-        var uri = qx.util.ResourceManager.getInstance().toUri(res);
-        var loader = new qx.bom.request.Script();
-        loader.onload = function() {
-          load(list);
+      if (false) { // no longer necessary...
+        var resource = [
+          "playground/editor/ace.js",
+          "playground/editor/theme-eclipse.js",
+          "playground/editor/mode-c_cpp.js"
+  //        "playground/editor/mode-javascript.js"
+        ];
+        var load = function(list) {
+          if (list.length == 0) {
+            clb.call(ctx);
+            return;
+          }
+          var res = list.shift();
+          var uri = qx.util.ResourceManager.getInstance().toUri(res);
+          var loader = new qx.bom.request.Script();
+          loader.onload = function() {
+            load(list);
+          };
+          loader.open("GET", uri);
+          loader.send();
         };
-        loader.open("GET", uri);
-        loader.send();
-      };
-      load(resource);
+        load(resource);
+      }
+      else
+      {
+        // Call the callback immediately
+        clb.call(ctx);
+      }
     }
   },
 
@@ -143,7 +150,7 @@ qx.Class.define("playground.view.Editor",
       var opera = qx.core.Environment.get("engine.name") == "opera";
 
       // FF2 does not have that...
-      if (!document.createElement("div").getBoundingClientRect || badIE || opera || !window.ace) {
+      if (!document.createElement("div").getBoundingClientRect || badIE || opera) {
         this.fireEvent("disableHighlighting");
         highlightDisabled = true;
       } else {
@@ -161,6 +168,9 @@ qx.Class.define("playground.view.Editor",
 
       // chech the initial highlight state
       var shouldHighligth = qx.bom.Cookie.get("playgroundHighlight") !== "false";
+      // djl...
+      shouldHighligth = true;
+      
       this.useHighlight(!highlightDisabled && shouldHighligth);
     },
 
@@ -174,43 +184,40 @@ qx.Class.define("playground.view.Editor",
     __onEditorAppear : function() {
       // timout needed for chrome to not get the ACE layout wrong and show the
       // text on top of the gutter
-      qx.event.Timer.once(function() {
-        var container = this.__editor.getContentElement().getDomElement();
+      qx.event.Timer.once(
+        function() {
+          var container = this.__editor.getContentElement().getDomElement();
 
-        // create the editor
-        var editor = this.__ace = ace.edit(container);
+          // create the editor
+          var editor = this.__ace = ace.edit(container);
 
-        // set javascript mode
-//        var JavaScriptMode = require("ace/mode/javascript").Mode;
-//        editor.getSession().setMode(new JavaScriptMode());
+          // configure the editor
+          var session = editor.getSession();
+          session.setUseSoftTabs(true);
+          session.setTabSize(4);
 
-        // configure the editor
-        var session = editor.getSession();
-        session.setUseSoftTabs(true);
-        session.setTabSize(4);
+          // set C mode
+          session.setMode("ace/mode/c_cpp");
 
-        // set C mode
-        var CMode = require("ace/mode/c_cpp").Mode;
-        session.setMode(new CMode());
-                            
-        // Set the theme
-        editor.setTheme("ace/theme/eclipse");
-                            
-        // Enable special behaviors, e.g., auto-paring of characters
-        editor.setBehavioursEnabled(true);
-        editor.setDisplayIndentGuides(true);
+          // Set the theme
+          editor.setTheme("ace/theme/eclipse");
 
-        // copy the inital value
-        session.setValue(this.__textarea.getValue() || "");
+          // Enable special behaviors, e.g., auto-paring of characters
+          editor.setBehavioursEnabled(true);
+          editor.setDisplayIndentGuides(true);
 
-        var self = this;
-        // append resize listener
-        this.__editor.addListener("resize", function() {
-          // use a timeout to let the layout queue apply its changes to the dom
-          window.setTimeout(function() {
-            self.__ace.resize();
-          }, 0);
-        });
+          // copy the inital value
+          session.setValue(this.__textarea.getValue() || "");
+
+          var self = this;
+          // append resize listener
+          this.__editor.addListener("resize", function() {
+            // use a timeout to let the layout queue apply its changes to
+            // the dom
+            window.setTimeout(function() {
+              self.__ace.resize();
+            }, 0);
+          });
       }, this, 500);
     },
 
