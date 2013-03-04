@@ -295,7 +295,7 @@ qx.Class.define("playground.c.lib.Node",
       switch(this.type)
       {
       case "abstract_declarator" :
-        throw new Error("abstract_declarator");
+        throw new Error("Not yet implemented: abstract_declarator");
         break;
 
       case "add" :
@@ -322,15 +322,15 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "add-assign" :
-        throw new Error("add-assign");
+        throw new Error("Not yet implemented: add-assign");
         break;
 
       case "address_of" :
-        throw new Error("address_of");
+        throw new Error("Not yet implemented: address_of");
         break;
 
       case "and" :
-        throw new Error("and");
+        throw new Error("Not yet implemented: and");
         break;
 
       case "argument_expression_list" :
@@ -387,27 +387,27 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "array_decl" :
-        throw new Error("array_decl");
+        throw new Error("Not yet implemented: array_decl");
         break;
 
       case "array_decl" :
-        throw new Error("array_decl");
+        throw new Error("Not yet implemented: array_decl");
         break;
 
       case "array_decl" :
-        throw new Error("array_decl");
+        throw new Error("Not yet implemented: array_decl");
         break;
 
       case "array_decl" :
-        throw new Error("array_decl");
+        throw new Error("Not yet implemented: array_decl");
         break;
 
       case "array_decl" :
-        throw new Error("array_decl");
+        throw new Error("Not yet implemented: array_decl");
         break;
 
       case "array_expression" :
-        throw new Error("array_expression");
+        throw new Error("Not yet implemented: array_expression");
         break;
 
       case "assign" :
@@ -444,43 +444,43 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "auto" :
-        throw new Error("auto");
+        throw new Error("Not yet implemented: auto");
         break;
 
       case "bit-and" :
-        throw new Error("bit-and");
+        throw new Error("Not yet implemented: bit-and");
         break;
 
       case "bit-and-assign" :
-        throw new Error("bit-and-assign");
+        throw new Error("Not yet implemented: bit-and-assign");
         break;
 
       case "bit_invert" :
-        throw new Error("bit_invert");
+        throw new Error("Not yet implemented: bit_invert");
         break;
 
       case "bit-or" :
-        throw new Error("bit-or");
+        throw new Error("Not yet implemented: bit-or");
         break;
 
       case "bit-or-assign" :
-        throw new Error("bit-or-assign");
+        throw new Error("Not yet implemented: bit-or-assign");
         break;
 
       case "break" :
-        throw new Error("break");
+        throw new Error("Not yet implemented: break");
         break;
 
       case "case" :
-        throw new Error("case");
+        throw new Error("Not yet implemented: case");
         break;
 
       case "cast_expression" :
-        throw new Error("cast_expression");
+        throw new Error("Not yet implemented: cast_expression");
         break;
 
       case "char" :
-        throw new Error("char");
+        throw new Error("Not yet implemented: char");
         break;
 
       case "compound_statement" :
@@ -543,14 +543,14 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "const" :
-        throw new Error("const");
+        throw new Error("Not yet implemented: const");
         break;
 
       case "constant" :
         return { value : this.value, type : this.numberType };
 
       case "continue" :
-        throw new Error("continue");
+        throw new Error("Not yet implemented: continue");
         break;
 
       case "declaration" :
@@ -777,7 +777,8 @@ qx.Class.define("playground.c.lib.Node",
               break;
 
             case "enum_specifier" :
-              throw new Error("declaration_specifiers -> enum_specifier");
+              throw new Error("Not yet implemented: " +
+                              "declaration_specifiers -> enum_specifier");
               break;
 
             case "struct" :
@@ -806,23 +807,23 @@ qx.Class.define("playground.c.lib.Node",
 
       case "declarator" :
         // should never occur; handled in each case that uses a declarator
-        throw new Error("declarator");
+        throw new Error("Not yet implemented: declarator");
         break;
 
       case "default" :
-        throw new Error("default");
+        throw new Error("Not yet implemented: default");
         break;
 
       case "dereference" :
-        throw new Error("dereference");
+        throw new Error("Not yet implemented: dereference");
         break;
 
       case "direct_abstract_declarator" :
-        throw new Error("direct_abstract_declarator");
+        throw new Error("Not yet implemented: direct_abstract_declarator");
         break;
 
       case "direct_declarator" :
-        throw new Error("direct_declarator");
+        throw new Error("Not yet implemented: direct_declarator");
         break;
 
       case "divide" :
@@ -849,51 +850,51 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "divide-assign" :
-        throw new Error("divide-assign");
+        throw new Error("Not yet implemented: divide-assign");
         break;
 
       case "double" :
-        throw new Error("double");
+        throw new Error("Not yet implemented: double");
         break;
 
       case "do-while" :
-        throw new Error("do-while");
+        throw new Error("Not yet implemented: do-while");
         break;
 
       case "ellipsis" :
-        throw new Error("ellipsis");
+        throw new Error("Not yet implemented: ellipsis");
         break;
 
       case "enumerator_list" :
-        throw new Error("enumerator_list");
+        throw new Error("Not yet implemented: enumerator_list");
         break;
 
       case "enum_specifier" :
-        throw new Error("enum_specifier");
+        throw new Error("Not yet implemented: enum_specifier");
         break;
 
       case "equal" :
-        throw new Error("equal");
+        throw new Error("Not yet implemented: equal");
         break;
 
       case "exclusive-or" :
-        throw new Error("exclusive-or");
+        throw new Error("Not yet implemented: exclusive-or");
         break;
 
       case "expression" :
-        throw new Error("expression");
+        throw new Error("Not yet implemented: expression");
         break;
 
       case "extern" :
-        throw new Error("extern");
+        throw new Error("Not yet implemented: extern");
         break;
 
       case "float" :
-        throw new Error("float");
+        throw new Error("Not yet implemented: float");
         break;
 
       case "for" :
-        throw new Error("for");
+        throw new Error("Not yet implemented: for");
         break;
 
       case "function_call" :
@@ -959,7 +960,7 @@ qx.Class.define("playground.c.lib.Node",
 
       case "function_decl" :
         // handled by function_definition
-        throw new Error("function_decl");
+        throw new Error("Not yet implemented: function_decl");
         break;
 
       case "function_definition" :
@@ -1053,7 +1054,7 @@ qx.Class.define("playground.c.lib.Node",
             break;
 
           case "enum_specifier" :
-            throw new Error("enum_specifier not yet implemented");
+            throw new Error("Not yet implemented: enum_specifier");
             break;
 
           default:
@@ -1095,7 +1096,7 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "goto" :
-        throw new Error("goto");
+        throw new Error("Not yet implemented: goto");
         break;
 
       case "greater-equal" :
@@ -1213,19 +1214,19 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "initializer" :
-        throw new Error("initializer");
+        throw new Error("Not yet implemented: initializer");
         break;
 
       case "initializer_list" :
-        throw new Error("initializer_list");
+        throw new Error("Not yet implemented: initializer_list");
         break;
 
       case "int" :
-        throw new Error("int");
+        throw new Error("Not yet implemented: int");
         break;
 
       case "label" :
-        throw new Error("label");
+        throw new Error("Not yet implemented: label");
         break;
 
       case "left-shift" :
@@ -1252,7 +1253,7 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "left-shift-assign" :
-        throw new Error("left-shift-assign");
+        throw new Error("Not yet implemented: left-shift-assign");
         break;
 
       case "less-equal" :
@@ -1302,7 +1303,7 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "long" :
-        throw new Error("long");
+        throw new Error("Not yet implemented: long");
         break;
 
       case "mod" :
@@ -1329,7 +1330,7 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "mod-assign" :
-        throw new Error("mod-assign");
+        throw new Error("Not yet implemented: mod-assign");
         break;
 
       case "multiply" :
@@ -1356,23 +1357,23 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "multiply-assign" :
-        throw new Error("multiply-assign");
+        throw new Error("Not yet implemented: multiply-assign");
         break;
 
       case "negative" :
-        throw new Error("negative");
+        throw new Error("Not yet implemented: negative");
         break;
 
       case "not" :
-        throw new Error("not");
+        throw new Error("Not yet implemented: not");
         break;
 
       case "not-equal" :
-        throw new Error("not-equal");
+        throw new Error("Not yet implemented: not-equal");
         break;
 
       case "or" :
-        throw new Error("or");
+        throw new Error("Not yet implemented: or");
         break;
 
       case "parameter_declaration" :
@@ -1451,19 +1452,19 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "pointer" :
-        throw new Error("pointer");
+        throw new Error("Not yet implemented: pointer");
         break;
 
       case "pointer_access" :
-        throw new Error("pointer_access");
+        throw new Error("Not yet implemented: pointer_access");
         break;
 
       case "positive" :
-        throw new Error("positive");
+        throw new Error("Not yet implemented: positive");
         break;
 
       case "post_decrement_op" :
-        throw new Error("post_decrement_op");
+        throw new Error("Not yet implemented: post_decrement_op");
         break;
 
       case "postfix_expression" :
@@ -1478,23 +1479,23 @@ qx.Class.define("playground.c.lib.Node",
         return this.children[0].process(data, bExecuting);
 
       case "post_increment_op" :
-        throw new Error("post_increment_op");
+        throw new Error("Not yet implemented: post_increment_op");
         break;
 
       case "pre_decrement_op" :
-        throw new Error("pre_decrement_op");
+        throw new Error("Not yet implemented: pre_decrement_op");
         break;
 
       case "pre_increment_op" :
-        throw new Error("pre_increment_op");
+        throw new Error("Not yet implemented: pre_increment_op");
         break;
 
       case "register" :
-        throw new Error("register");
+        throw new Error("Not yet implemented: register");
         break;
 
       case "return" :
-        throw new Error("return");
+        throw new Error("Not yet implemented: return");
         break;
 
       case "right-shift" :
@@ -1521,23 +1522,23 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "right-shift-assign" :
-        throw new Error("right-shift-assign");
+        throw new Error("Not yet implemented: right-shift-assign");
         break;
 
       case "short" :
-        throw new Error("short");
+        throw new Error("Not yet implemented: short");
         break;
 
       case "signed" :
-        throw new Error("signed");
+        throw new Error("Not yet implemented: signed");
         break;
 
       case "sizeof" :
-        throw new Error("sizeof");
+        throw new Error("Not yet implemented: sizeof");
         break;
 
       case "specifier_qualifier_list" :
-        throw new Error("specifier_qualifier_list");
+        throw new Error("Not yet implemented: specifier_qualifier_list");
         break;
 
       case "statement_list" :
@@ -1550,7 +1551,7 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "static" :
-        throw new Error("static");
+        throw new Error("Not yet implemented: static");
         break;
 
       case "string_literal" :
@@ -1702,15 +1703,15 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "struct_declarator" :
-        throw new Error("struct_declarator");
+        throw new Error("Not yet implemented: struct_declarator");
         break;
 
       case "struct_declarator_list" :
-        throw new Error("struct_declarator_list");
+        throw new Error("Not yet implemented: struct_declarator_list");
         break;
 
       case "structure_reference" :
-        throw new Error("structure_reference");
+        throw new Error("Not yet implemented: structure_reference");
         break;
 
       case "subtract" :
@@ -1737,11 +1738,11 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "subtract-assign" :
-        throw new Error("subtract-assign");
+        throw new Error("Not yet implemented: subtract-assign");
         break;
 
       case "switch" :
-        throw new Error("switch");
+        throw new Error("Not yet implemented: switch");
         break;
 
       case "translation_unit" :
@@ -1759,47 +1760,47 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "trinary" :
-        throw new Error("trinary");
+        throw new Error("Not yet implemented: trinary");
         break;
 
       case "type" :
-        throw new Error("type");
+        throw new Error("Not yet implemented: type");
         break;
 
       case "typedef" :
-        throw new Error("typedef");
+        throw new Error("Not yet implemented: typedef");
         break;
 
       case "type_definition" :
-        throw new Error("type_definition");
+        throw new Error("Not yet implemented: type_definition");
         break;
 
       case "type_name" :
-        throw new Error("type_name");
+        throw new Error("Not yet implemented: type_name");
         break;
 
       case "type_qualifier_list" :
-        throw new Error("type_qualifier_list");
+        throw new Error("Not yet implemented: type_qualifier_list");
         break;
 
       case "union" :
-        throw new Error("union");
+        throw new Error("Not yet implemented: union");
         break;
 
       case "unsigned" :
-        throw new Error("unsigned");
+        throw new Error("Not yet implemented: unsigned");
         break;
 
       case "void" :
-        throw new Error("void");
+        throw new Error("Not yet implemented: void");
         break;
 
       case "volatile" :
-        throw new Error("volatile");
+        throw new Error("Not yet implemented: volatile");
         break;
 
       case "xor-assign" :
-        throw new Error("xor-assign");
+        throw new Error("Not yet implemented: xor-assign");
         break;
 
       default:
