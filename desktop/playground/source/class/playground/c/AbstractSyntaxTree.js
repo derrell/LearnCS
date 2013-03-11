@@ -186,6 +186,7 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
         console.log("Missing main() function\n");
       } 
 
+/*
       playground.c.machine.Memory.getInstance().prettyPrint(
         "Globals",
         Memory.info.gas.start,
@@ -195,6 +196,7 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
         "Stack",
         Memory.info.rts.start,
         Memory.info.rts.length);
+*/
     }
   }
 });

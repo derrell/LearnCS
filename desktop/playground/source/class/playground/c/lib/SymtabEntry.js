@@ -57,6 +57,9 @@ qx.Class.define("playground.c.lib.SymtabEntry",
     // calculated size, based on the typeFlags
     this.__size = 0;
 
+    // number of elements (i.e., of an array)
+    this.__count = 1;
+
     // offset from the base pointer (in activation record, at the beginning
     // of automatic local variable portion)
     this.__offset = symtab.nextOffset;
@@ -396,7 +399,7 @@ qx.Class.define("playground.c.lib.SymtabEntry",
       if ((this.__typeFlags & (TF.Function | TF.BuiltIn)) === 0)
       {
         this.__symtab.nextOffset += 
-          this.__size + ((SIB.Word - this.__size) % SIB.Word);
+          (this.__size * this.__count) + ((SIB.Word - this.__size) % SIB.Word);
       }
     },
 
@@ -445,6 +448,16 @@ qx.Class.define("playground.c.lib.SymtabEntry",
       {
         this.error("Previously specified to be an integer");
       }
+    },
+
+    getCount : function()
+    {
+      return this.__count;
+    },
+    
+    setCount : function(count)
+    {
+      this.__count = count;
     },
 
     getSymtab : function()

@@ -73,7 +73,7 @@ postfix_expression
   : primary_expression
     {
       parser.yy.R("postfix_expression : primary_expression");
-      $$ = new playground.c.lib.Node("postfix_expression", yytext, yylineno);
+      $$ = new playground.c.lib.Node("primary_expression", yytext, yylineno);
       $$.children.push($1);
     }
   | postfix_expression '[' expression ']'

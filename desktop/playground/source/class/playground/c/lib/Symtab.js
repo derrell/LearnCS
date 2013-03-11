@@ -177,7 +177,44 @@ qx.Class.define("playground.c.lib.Symtab",
      */
     pushFramePointer : function(fp)
     {
-      playground.c.lib.Symtab.framePointers.unshift(fp);
+      var             fpPrev;
+      var             memory;
+      var             symtab;
+      var             Symtab = playground.c.lib.Symtab;
+      
+      // Retrieve the frame pointer before pushing the new one onto the stack
+      fpPrev = playground.c.lib.Symtab.framePointers[0];
+      
+      // Push the new frame pointer onto the stack
+      Symtab.framePointers.unshift(fp);
+      
+      // Get the current symbol table
+      symtab = Symtab.getCurrent();
+      
+      // Get a reference to the Memory singleton
+      memory = playground.c.machine.Memory.getInstance();
+
+      // For each symbol in the symbol table...
+console.log("symbolOrder.length=" + symtab.__symbolOrder.length);
+      symtab.__symbolOrder.forEach(
+        function(symbol)
+        {
+          var             addr;
+          
+          // Get this symbol's address
+          addr = symbol.getAddr();
+console.log("Adding symbol info for address " + addr);
+          
+          // Ensure that it's a real address and not a built-in function node
+          if (addr instanceof playground.c.lib.Node)
+          {
+            // It's a node. Ignore it
+            return;
+          }
+          
+          // Specify the name and type for this address
+          memory.setSymbolInfo(addr, symbol);
+        });
     },
     
     /**
@@ -465,7 +502,37 @@ qx.Class.define("playground.c.lib.Symtab",
      */
     setFramePointer : function(fp)
     {
+      var             memory;
+      var             symtab;
+      var             Symtab = playground.c.lib.Symtab;
+      
+      // Push the new frame pointer onto the stack
       this.__framePointer.unshift(fp);
+      
+      // Get a reference to the Memory singleton
+      memory = playground.c.machine.Memory.getInstance();
+
+      // For each symbol in the symbol table...
+console.log("symbolOrder.length=" + this.__symbolOrder.length);
+      this.__symbolOrder.forEach(
+        function(symbol)
+        {
+          var             addr;
+          
+          // Get this symbol's address
+          addr = symbol.getAddr();
+console.log("Adding symbol info for address " + addr);
+          
+          // Ensure that it's a real address and not a built-in function node
+          if (addr instanceof playground.c.lib.Node)
+          {
+            // It's a node. Ignore it
+            return;
+          }
+          
+          // Specify the name and type for this address
+          memory.setSymbolInfo(addr, symbol);
+        });
     },
     
     /**

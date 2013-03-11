@@ -109,19 +109,19 @@ qx.Class.define("playground.c.machine.Memory",
         length : 64
       },
 
-/*
       "rts" :
       {
         start : 0x9EA4,
         length : 68
       }
-*/
 
+/*
       "rts" :                     // Run-time Stack
       {
         start  : 16 * 1024,
         length : 1024
       }
+*/
     },
 
     /** The register names, and their locations in memory */
@@ -170,6 +170,9 @@ qx.Class.define("playground.c.machine.Memory",
     //    uint8Arr[i] = Math.floor(Math.random() * 256);
         uint8Arr[i] = 0x5a;
       }
+      
+      // Initialize symbol information
+      this._symbolInfo = {};
     },
 
     /**
@@ -181,7 +184,7 @@ qx.Class.define("playground.c.machine.Memory",
      * @param addr {Number}
      *   The address in simulated memory from which to retrieve the value
      *
-     * @return
+     * @return {Number}
      *   The typed value retrieved from memory
      *
      * @lint ignoreUndefined(ArrayBuffer)
@@ -572,6 +575,83 @@ qx.Class.define("playground.c.machine.Memory",
         ret.push(mem[i]);
       }
       return ret;
+    },
+
+    /**
+     * Add symbol information to be used when generating the data model.
+     *
+     * @param addr {Number}
+     *   The address of the symbol whose information is being saved.
+     *
+     * @param symbol {playground.c.lib.SymtabEntry}
+     *   A reference which may be used to retrieve information about this
+     *   symbol
+     */
+    setSymbolInfo : function(addr, symbol)
+    {
+      this._symbolInfo[addr] = 
+        {
+          name  : symbol.getName(),
+          type  : symbol.getType(),
+          count : symbol.getCount()
+        };
+    },
+
+    /**
+     * Retrieve the current data model, suitable for display.
+     *
+     * @lint ignoreUndefined(Uint32Array)
+     */
+    getDataModel : function()
+    {
+      var             words;
+      var             model = [];
+      
+      // Get a reference to memory as a list of words
+      words = Array.prototype.slice.call(
+        new Uint32Array(this._memory, 0, this.__memSize / 4),
+        0);
+      
+      // Create the model
+      //
+      // TODO: This could be optimized by creating it once, and then modifying
+      // it during calls to .set()
+      words.forEach(
+        function(word, index)
+        {
+          var             addr;
+          var             data;
+          var             info = playground.c.machine.Memory.info;
+          
+          // The address of this word is four times its index, since each word
+          // contains four bytes.
+          addr = index * 4;
+          
+          // Ignore regions of memory that we don't display
+          if (!
+              ((addr >= info.gas.start &&
+                addr < info.gas.start + info.gas.length) ||
+               (addr >= info.heap.start &&
+                addr < info.heap.start + info.heap.length) ||
+               (addr >= info.rts.start &&
+                addr < info.rts.start + info.rts.length)))
+          {
+            return;
+          }
+
+          // Retrieve the symbol information for this address, if available
+          data = this._symbolInfo[addr] || {};
+          
+          // Assign the address and value to the map
+          data.addr = addr;
+          data.word = word;
+          
+          // Add this new entry to the model
+          model.push(data);
+        },
+        this);
+      
+      return model;
     },
 
     /**

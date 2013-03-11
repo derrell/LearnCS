@@ -387,26 +387,25 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "array_decl" :
-        throw new Error("Not yet implemented: array_decl");
-        break;
-
-      case "array_decl" :
-        throw new Error("Not yet implemented: array_decl");
-        break;
-
-      case "array_decl" :
-        throw new Error("Not yet implemented: array_decl");
-        break;
-
-      case "array_decl" :
-        throw new Error("Not yet implemented: array_decl");
-        break;
-
-      case "array_decl" :
-        throw new Error("Not yet implemented: array_decl");
+        /*
+         * array_decl
+         *   0: constant_expression
+         */
+        if (bExecuting)
+        {
+          // We're executing. Get the value of the constant expression
+          return(
+            this.getExpressionValue(this.children[0].process(data,
+                                                             bExecuting)));
+        }
         break;
 
       case "array_expression" :
+        /*
+         * array_expression
+         *   0: primary_expression
+         *   1: expression (index)
+         */
         throw new Error("Not yet implemented: array_expression");
         break;
 
@@ -490,7 +489,7 @@ qx.Class.define("playground.c.lib.Node",
          *   1: statement_list
          */
 
-        // Determine if we're executing, or generating symbol tables
+        // Determine whether we're executing or generating symbol tables
         if (bExecuting)
         {
           // We're executing. Retrieve the symbol table from the node
@@ -534,6 +533,18 @@ qx.Class.define("playground.c.lib.Node",
         // If we're executing...
         if (bExecuting)
         {
+          playground.c.machine.Memory.getInstance().getDataModel().forEach(
+            function(value)
+            {
+              console.log(value.addr.toString(16) +
+                          " : " +
+                          value.word.toString(16) +
+                          " | name=" + (value.name || "") +
+                          " | type=" + (value.type || "") +
+                          " | count=" + (value.count || ""));
+            });
+
+
           // Restore the previous frame pointer
           symtab.restoreFramePointer();
         }
@@ -900,7 +911,7 @@ qx.Class.define("playground.c.lib.Node",
       case "function_call" :
         /*
          * function_call
-         *   0: postfix_expression (function to be called)
+         *   0: primary_expression (function to be called)
          *   1: argument_expression_list?
          */
         if (! bExecuting)
@@ -1467,9 +1478,9 @@ qx.Class.define("playground.c.lib.Node",
         throw new Error("Not yet implemented: post_decrement_op");
         break;
 
-      case "postfix_expression" :
+      case "primary_expression" :
         /*
-         * postfix_expression
+         * primary_expression
          *   0: primary_expression |
          *      array_expression | 
          *      structure_reference |
