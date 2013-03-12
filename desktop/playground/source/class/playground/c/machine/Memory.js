@@ -183,6 +183,9 @@ qx.Class.define("playground.c.machine.Memory",
      *
      * @param addr {Number}
      *   The address in simulated memory from which to retrieve the value
+     * 
+     * @param numElem {Number|1}
+     *   The number of elements of the specified type to retrieve
      *
      * @return {Number}
      *   The typed value retrieved from memory
@@ -197,68 +200,71 @@ qx.Class.define("playground.c.machine.Memory",
      * @lint ignoreUndefined(Uint8Array)
      * @lint ignoreUndefined(Float32Array)
      */
-    _getByType : function(type, addr)
+    _getByType : function(type, addr, numElem)
     {
+      // If the number of elements was not specified, retrieve one element.
+      numElem = numElem || 1;
+
       switch(type)
       {
       case 0x00 :
       case "char" :
-        return new Int8Array(this._memory, addr, 1);
+        return new Int8Array(this._memory, addr, numElem);
 
       case 0x01 :
       case "unsigned char" :
       case "uchar" :
-        return new Uint8Array(this._memory, addr, 1);
+        return new Uint8Array(this._memory, addr, numElem);
 
       case 0x02 :
       case "short" :
-        return new Int16Array(this._memory, addr, 1);
+        return new Int16Array(this._memory, addr, numElem);
 
       case 0x03 :
       case "unsigned short" :
       case "ushort" :
-        return new Uint16Array(this._memory, addr, 1);
+        return new Uint16Array(this._memory, addr, numElem);
 
       case 0x04 :
       case "int" :
-        return new Int32Array(this._memory, addr, 1);
+        return new Int32Array(this._memory, addr, numElem);
 
       case 0x05 :
       case "unsigned int" :
       case "uint" :
-        return new Uint32Array(this._memory, addr, 1);
+        return new Uint32Array(this._memory, addr, numElem);
 
       case 0x06 :
       case "long" :
-        return new Int32Array(this._memory, addr, 1);
+        return new Int32Array(this._memory, addr, numElem);
 
       case 0x07 :
       case "unsigned long" :
       case "ulong" :
       case "null" :
-        return new Uint32Array(this._memory, addr, 1);
+        return new Uint32Array(this._memory, addr, numElem);
 
       case 0x08 :
       case "long long" :
       case "llong" :
-        return new Int32Array(this._memory, addr, 1);
+        return new Int32Array(this._memory, addr, numElem);
 
       case 0x09 :
       case "unsigned long long" :
       case "ullong" :
-        return new Uint32Array(this._memory, addr, 1);
+        return new Uint32Array(this._memory, addr, numElem);
 
       case 0x0A :
       case "float" :
-        return new Float32Array(this._memory, addr, 1);
+        return new Float32Array(this._memory, addr, numElem);
 
       case 0x0B :
       case "double" :
-        return new Float32Array(this._memory, addr, 1);
+        return new Float32Array(this._memory, addr, numElem);
 
       case 0x0C :
       case "pointer" :
-        return new Uint32Array(this._memory, addr, 1);
+        return new Uint16Array(this._memory, addr, numElem);
 
       default:
         throw new Error("Unrecognized destination type: " + type);
@@ -589,8 +595,10 @@ qx.Class.define("playground.c.machine.Memory",
      */
     setSymbolInfo : function(addr, symbol)
     {
+var x =
       this._symbolInfo[addr] = 
         {
+          addr    : addr,
           name    : symbol.getName(),
           type    : symbol.getType(),
           size    : symbol.getSize(),
@@ -598,6 +606,8 @@ qx.Class.define("playground.c.machine.Memory",
           array   : symbol.getArraySizes(),
           param   : symbol.getIsParameter()
         };
+      
+console.log("Adding symbol " + x.name + ", type=" + x.type + ", size=" + x.size + " at addr=" + x.addr.toString(16));
     },
 
     /**
@@ -607,7 +617,14 @@ qx.Class.define("playground.c.machine.Memory",
      */
     getDataModel : function()
     {
+      var             i;
+      var             type;
+      var             size;
+      var             addr;
+      var             datum;
       var             words;
+      var             elements;
+      var             arrayCount;
       var             model = [];
       
       // Get a reference to memory as a list of words
@@ -642,18 +659,84 @@ qx.Class.define("playground.c.machine.Memory",
             return;
           }
 
-          // Retrieve the symbol information for this address, if available
-          data = this._symbolInfo[addr] || {};
+          // Retrieve the symbol information for this address, if
+          // available.
+          if (this._symbolInfo[addr])
+          {
+            // Create a clone since we'll be munging it.
+            data = JSON.parse(JSON.stringify(this._symbolInfo[addr]));
+          }
+          else
+          {
+            data = {};
+          }
           
           // Assign the address and value to the map
           data.addr = addr;
           data.word = word;
           
-          // Add this new entry to the model
+          // Add this new entry to the model, as in the "Memory Template" view
           model.push(data);
         },
         this);
       
+      // Obtain the values for each typed memory word
+      for (i = 0; i < model.length; ++i)
+      {
+        // Retrieve the data for this word
+        datum = model[i];
+        addr = datum.addr;
+        
+        // Is it typed?
+        if (datum.type)
+        {
+          // Yup. Save the type and its size
+          type = (datum.pointer || (datum.array && datum.param) 
+                  ? "pointer"
+                  : datum.type);
+          size = playground.c.machine.Memory.typeSize[type];
+          
+          // Determine how many items of this size we need values for
+          if (type === "pointer" || datum.array.length == 0)
+          {
+            arrayCount = 1;
+          }
+          else
+          {
+            arrayCount = datum.size / size;
+          }
+          
+          do
+          {
+            // Determine how many items fit in one word, which becomes the
+            // maximum number to retrieve at one time.
+            elements = Math.min(arrayCount, 4 / size);
+
+console.log("addr=" + addr + ", type=" + type + ", arrayCount=" + arrayCount + ", elements=" + elements);
+            // Get an (ordinary JavaScript) array of values of the specified
+            // type.
+            datum.values = 
+              Array.prototype.slice.call(this._getByType(type, addr, elements),
+                                         0);
+            
+            // Decrement the array count by how many we just retrieved
+            arrayCount -= elements;
+
+            // If there are more elements...
+            if (arrayCount > 0)
+            {
+              // ... then get the next datum
+              datum = model[++i];
+              addr = datum.addr;
+              
+              // This datum wasn't named, so doesn't contain type info. Add it.
+              datum.type = type;
+              datum.size = size;
+            }
+          } while(arrayCount > 0)
+        }
+      }
+
       return model;
     },
 

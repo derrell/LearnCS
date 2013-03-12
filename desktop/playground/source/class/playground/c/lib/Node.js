@@ -536,12 +536,17 @@ qx.Class.define("playground.c.lib.Node",
           playground.c.machine.Memory.getInstance().getDataModel().forEach(
             function(value)
             {
+              if (! value.type)
+              {
+                return;
+              }
               console.log(value.addr.toString(16) +
                           " : " +
                           ("00000000" + value.word.toString(16)).substr(-8) +
-                          " | name=" + (value.name || "") +
+                          " : name=" + (value.name || "") +
                           " | type=" + (value.type || "") +
                           " | size=" + (value.size || "") +
+                          " | values=" + (JSON.stringify(value.values) || "") +
                           " | ptr=" + (value.pointer || "") +
                           " | arr=" + (JSON.stringify(value.array) || "") +
                           " | param=" + (value.param || "false"));

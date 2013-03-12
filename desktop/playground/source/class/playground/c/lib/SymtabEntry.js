@@ -118,6 +118,7 @@ qx.Class.define("playground.c.lib.SymtabEntry",
         LongLong : 0,
         Float    : 0,
         Double   : 0,
+        Pointer  : 0,
         Word     : 0
       }
   },
@@ -402,15 +403,15 @@ qx.Class.define("playground.c.lib.SymtabEntry",
         // Is it a pointer?
         if (this.__pointerCount)
         {
-          // Yup. Its size is one word
-          this.__size = SIB.Word;
+          // Yup. Set its size.
+          this.__size = SIB.Pointer;
         }
         
         // Is it an array and a function parameter? That makes it a pointer.
         else if (this.__arraySizes.length === 0 && this._bIsParameter)
         {
-          // Yup. Its size is one word
-          this.__size = SIB.Word;
+          // Yup. Set its size.
+          this.__size = SIB.Pointer;
         }
         
         // It's not a pointer of any type. Calculate its size.
@@ -437,7 +438,7 @@ qx.Class.define("playground.c.lib.SymtabEntry",
         // Calculate the next symbol's offset. Every new symbol begins on a
         // multiple of WORDSIZE bytes, for easy display.
         this.__symtab.nextOffset += 
-          this.__size + ((SIB.Word - this.__size) % SIB.Word);
+          this.__size + (SIB.Word - (this.__size % SIB.Word));
       }
     },
 
@@ -620,6 +621,8 @@ qx.Class.define("playground.c.lib.SymtabEntry",
       playground.c.machine.Memory.typeSize["float"];
     statics.SizeInBytes.Double = 
       playground.c.machine.Memory.typeSize["double"];
+    statics.SizeInBytes.Pointer =
+      playground.c.machine.Memory.typeSize["pointer"];
     statics.SizeInBytes.Word = 
       playground.c.machine.Memory.WORDSIZE;
   }
