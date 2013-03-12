@@ -536,12 +536,15 @@ qx.Class.define("playground.c.lib.Node",
           playground.c.machine.Memory.getInstance().getDataModel().forEach(
             function(value)
             {
+              var             sify = JSON.stringify;
+
               console.log(value.addr.toString(16) +
                           " : " +
                           ("00000000" + value.word.toString(16)).substr(-8) +
                           " | name=" + (value.name || "") +
                           " | type=" + (value.type || "") +
-                          " | pointercount=" + (value.pointer || "") +
+                          " | ptr=" + (value.pointer || "") +
+                          " | arr=" + (sify(value.array) || "") +
                           " | count=" + (value.count || ""));
             });
 
