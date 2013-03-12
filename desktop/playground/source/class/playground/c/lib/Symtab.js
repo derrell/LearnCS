@@ -408,13 +408,16 @@ qx.Class.define("playground.c.lib.Symtab",
      * @param bIsType
      *   Whether this is a type (via typedef) or a variable
      *
+     * @param bIsParameter
+     *   Whether this is a parameter to a function
+     *
      * @return {Map|null}
      *   The symbol table entry, if the symbol was successfully added to the
      *   symbol table;
      *   null otherwise, i.e., the symbol was already in the symbol table
      *
      */
-    add : function(symName, line, bIsType)
+    add : function(symName, line, bIsType, bIsParameter)
     {
       var             value;
       var             entry;
@@ -430,6 +433,7 @@ qx.Class.define("playground.c.lib.Symtab",
       // Get a new, initialized symbol table entry
       entry = new playground.c.lib.SymtabEntry(symName,
                                                bIsType || false, 
+                                               bIsParameter || false,
                                                this,
                                                line);
 

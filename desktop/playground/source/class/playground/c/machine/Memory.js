@@ -593,9 +593,10 @@ qx.Class.define("playground.c.machine.Memory",
         {
           name    : symbol.getName(),
           type    : symbol.getType(),
+          size    : symbol.getSize(),
           pointer : symbol.getPointerCount(),
           array   : symbol.getArraySizes(),
-          count   : symbol.getCount()
+          param   : symbol.getIsParameter()
         };
     },
 

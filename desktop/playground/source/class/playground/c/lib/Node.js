@@ -536,16 +536,15 @@ qx.Class.define("playground.c.lib.Node",
           playground.c.machine.Memory.getInstance().getDataModel().forEach(
             function(value)
             {
-              var             sify = JSON.stringify;
-
               console.log(value.addr.toString(16) +
                           " : " +
                           ("00000000" + value.word.toString(16)).substr(-8) +
                           " | name=" + (value.name || "") +
                           " | type=" + (value.type || "") +
+                          " | size=" + (value.size || "") +
                           " | ptr=" + (value.pointer || "") +
-                          " | arr=" + (sify(value.array) || "") +
-                          " | count=" + (value.count || ""));
+                          " | arr=" + (JSON.stringify(value.array) || "") +
+                          " | param=" + (value.param || "false"));
             });
 
 
@@ -1044,7 +1043,8 @@ qx.Class.define("playground.c.lib.Node",
         {
           entry = playground.c.lib.Symtab.getCurrent().add(
             function_decl.children[0].value, 
-            function_decl.line, false);
+            function_decl.line, 
+            false);
 
           if (! entry)
           {
@@ -1449,7 +1449,7 @@ qx.Class.define("playground.c.lib.Node",
             // It shouldn't exist. Create a symbol table entry for this
             // variable
             entry = playground.c.lib.Symtab.getCurrent().add(
-              identifier, declarator.line, false);
+              identifier, declarator.line, false, true);
 
             if (! entry)
             {

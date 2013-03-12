@@ -26,7 +26,7 @@ qx.Class.define("playground.c.lib.SymtabEntry",
 {
   extend : qx.core.Object,
   
-  construct : function(name, bIsType, symtab, line)
+  construct : function(name, bIsType, bIsParameter, symtab, line)
   {
     this.base(arguments);
 
@@ -38,6 +38,9 @@ qx.Class.define("playground.c.lib.SymtabEntry",
 
     // whether this entry is a type definition
     this.__bIsType = bIsType;
+
+    // whether this entry represents a parameter to a function
+    this.__bIsParameter = bIsParameter;
 
     // See TypeFlags statics
     this.__typeFlags = 0;
@@ -59,9 +62,6 @@ qx.Class.define("playground.c.lib.SymtabEntry",
 
     // calculated size, based on the typeFlags
     this.__size = 0;
-
-    // number of elements (i.e., of an array)
-    this.__count = 1;
 
     // offset from the base pointer (in activation record, at the beginning
     // of automatic local variable portion)
@@ -238,6 +238,7 @@ qx.Class.define("playground.c.lib.SymtabEntry",
     {
       var             TF  = playground.c.lib.SymtabEntry.TypeFlags;
       var             SIB = playground.c.lib.SymtabEntry.SizeInBytes;
+      var             product;
 
       // Error checking
       switch(type)
@@ -396,13 +397,47 @@ qx.Class.define("playground.c.lib.SymtabEntry",
       // (It's tentative, because this function can be called multiple times:
       // once for each modifier, e.g. for "unsigned long int" it will be called
       // three times.)
-      //
-      // Every new symbol begins on a multiple of WORDSIZE bytes, for easy
-      // display.
       if ((this.__typeFlags & (TF.Function | TF.BuiltIn)) === 0)
       {
+        // Is it a pointer?
+        if (this.__pointerCount)
+        {
+          // Yup. Its size is one word
+          this.__size = SIB.Word;
+        }
+        
+        // Is it an array and a function parameter? That makes it a pointer.
+        else if (this.__arraySizes.length === 0 && this._bIsParameter)
+        {
+          // Yup. Its size is one word
+          this.__size = SIB.Word;
+        }
+        
+        // It's not a pointer of any type. Calculate its size.
+        else
+        {
+          // Assume it's not an array, so we'll use the type's size
+          product = 1;
+
+          // Is it an array?
+          if (this.__arraySizes.length)
+          {
+            // Yup. Calculate the number of elements.
+            this.__arraySizes.forEach(
+              function(size)
+              {
+                product *= size;
+              });
+
+            // Store the new size
+            this.__size *= product;
+          }
+        }
+        
+        // Calculate the next symbol's offset. Every new symbol begins on a
+        // multiple of WORDSIZE bytes, for easy display.
         this.__symtab.nextOffset += 
-          (this.__size * this.__count) + ((SIB.Word - this.__size) % SIB.Word);
+          this.__size + ((SIB.Word - this.__size) % SIB.Word);
       }
     },
 
@@ -453,16 +488,6 @@ qx.Class.define("playground.c.lib.SymtabEntry",
       }
     },
 
-    getCount : function()
-    {
-      return this.__count;
-    },
-    
-    setCount : function(count)
-    {
-      this.__count = count;
-    },
-
     getSymtab : function()
     {
       return this.__symtab;
@@ -496,6 +521,16 @@ qx.Class.define("playground.c.lib.SymtabEntry",
     addArraySize : function(size)
     {
       this.__arraySizes.push(size);
+    },
+
+    getIsParameter : function()
+    {
+      return this.__bIsParameter;
+    },
+
+    getSize : function()
+    {
+      return this.__size;
     },
 
     getLine : function()
