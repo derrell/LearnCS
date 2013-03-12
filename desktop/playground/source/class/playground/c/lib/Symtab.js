@@ -195,7 +195,6 @@ qx.Class.define("playground.c.lib.Symtab",
       memory = playground.c.machine.Memory.getInstance();
 
       // For each symbol in the symbol table...
-console.log("symbolOrder.length=" + symtab.__symbolOrder.length);
       symtab.__symbolOrder.forEach(
         function(symbol)
         {
@@ -203,7 +202,6 @@ console.log("symbolOrder.length=" + symtab.__symbolOrder.length);
           
           // Get this symbol's address
           addr = symbol.getAddr();
-console.log("Adding symbol info for address " + addr);
           
           // Ensure that it's a real address and not a built-in function node
           if (addr instanceof playground.c.lib.Node)
@@ -513,7 +511,6 @@ console.log("Adding symbol info for address " + addr);
       memory = playground.c.machine.Memory.getInstance();
 
       // For each symbol in the symbol table...
-console.log("symbolOrder.length=" + this.__symbolOrder.length);
       this.__symbolOrder.forEach(
         function(symbol)
         {
@@ -521,7 +518,6 @@ console.log("symbolOrder.length=" + this.__symbolOrder.length);
           
           // Get this symbol's address
           addr = symbol.getAddr();
-console.log("Adding symbol info for address " + addr);
           
           // Ensure that it's a real address and not a built-in function node
           if (addr instanceof playground.c.lib.Node)

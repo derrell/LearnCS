@@ -54,6 +54,9 @@ qx.Class.define("playground.c.lib.SymtabEntry",
     // number of asterisks
     this.__pointerCount = 0;
 
+    // array sizes. null indicates no size specified
+    this.__arraySizes = [];
+
     // calculated size, based on the typeFlags
     this.__size = 0;
 
@@ -483,6 +486,16 @@ qx.Class.define("playground.c.lib.SymtabEntry",
     incrementPointerCount : function()
     {
       ++this.__pointerCount;
+    },
+
+    getArraySizes : function()
+    {
+      return this.__arraySizes;
+    },
+    
+    addArraySize : function(size)
+    {
+      this.__arraySizes.push(size);
     },
 
     getLine : function()

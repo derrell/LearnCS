@@ -591,9 +591,10 @@ qx.Class.define("playground.c.machine.Memory",
     {
       this._symbolInfo[addr] = 
         {
-          name  : symbol.getName(),
-          type  : symbol.getType(),
-          count : symbol.getCount()
+          name    : symbol.getName(),
+          type    : symbol.getType(),
+          pointer : symbol.getPointerCount(),
+          count   : symbol.getCount()
         };
     },
 

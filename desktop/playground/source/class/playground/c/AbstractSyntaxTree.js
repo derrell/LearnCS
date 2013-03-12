@@ -114,7 +114,7 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
       var symtab;
       var machine;
       var Memory = playground.c.machine.Memory;
-      var bDebug = false;
+      var bDebug = true;
 
       // Initialize memory
       Memory.getInstance().initAll();

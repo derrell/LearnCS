@@ -175,28 +175,28 @@ qx.Class.define("playground.c.lib.Node",
       {
         console.log(parts.join("") + this.type + " (" + this.line + ")");
         parts = [];
-
-        // Call recursively to handle children
-        this.children.forEach(
-          function(subnode)
-          {
-            if (subnode && typeof subnode == "object")
-            {
-              subnode.display(indent + 1);
-            }
-            else
-            {
-              // It's null. Display a representation of a null value.
-              // Create the tree lines
-              parts.push(new Array(indent + 2).join("| "));
-
-              // Now display the (null) representation of this object.
-              console.log(parts.join("") + subnode + "\n");
-              parts = [];
-            }
-          },
-          this);
       }
+
+      // Call recursively to handle children
+      this.children.forEach(
+        function(subnode)
+        {
+          if (subnode && typeof subnode == "object")
+          {
+            subnode.display(indent + 1);
+          }
+          else
+          {
+            // It's null. Display a representation of a null value.
+            // Create the tree lines
+            parts.push(new Array(indent + 2).join("| "));
+
+            // Now display the (null) representation of this object.
+            console.log(parts.join("") + subnode);
+            parts = [];
+          }
+        },
+        this);
     },
     
     /**
@@ -538,9 +538,10 @@ qx.Class.define("playground.c.lib.Node",
             {
               console.log(value.addr.toString(16) +
                           " : " +
-                          value.word.toString(16) +
+                          ("00000000" + value.word.toString(16)).substr(-8) +
                           " | name=" + (value.name || "") +
                           " | type=" + (value.type || "") +
+                          " | pointercount=" + (value.pointer || "") +
                           " | count=" + (value.count || ""));
             });
 
@@ -659,6 +660,32 @@ qx.Class.define("playground.c.lib.Node",
               {
                 entry.incrementPointerCount();
               }
+
+              // Add the array sizes
+              declarator.children[0].children.forEach(
+                function(arrayDecl)
+                {
+                  var             size;
+                  
+                  if (! arrayDecl)
+                  {
+                    return;
+                  }
+
+                  // If there are no children, it was an empty set of brackets
+                  if (! arrayDecl.children[0])
+                  {
+                    entry.addArraySize(-1);
+                  }
+                  else
+                  {
+                    // It should just be a constant, but process to be sure.
+                    size = 
+                      arrayDecl.children[0].process( { entry : entry }, 
+                                                     bExecuting);
+                    entry.addArraySize(size === null ? null : size.value);
+                  }
+                });
 
               // Apply the declaration specifiers to this entry
               if (this.children && this.children[0])
@@ -1439,6 +1466,32 @@ qx.Class.define("playground.c.lib.Node",
             {
               entry.incrementPointerCount();
             }
+
+            // Add the array sizes
+            declarator.children[0].children.forEach(
+              function(arrayDecl)
+              {
+                var             size;
+
+                if (! arrayDecl)
+                {
+                  return;
+                }
+
+                // If there are no children, it was an empty set of brackets
+                if (! arrayDecl.children[0])
+                {
+                  entry.addArraySize(-1);
+                }
+                else
+                {
+                  // It should just be a constant, but process to be sure.
+                  size = 
+                    arrayDecl.children[0].process( { entry : entry },
+                                                   bExecuting);
+                  entry.addArraySize(size === null ? null : size.value);
+                }
+              });
           }
         }
 
