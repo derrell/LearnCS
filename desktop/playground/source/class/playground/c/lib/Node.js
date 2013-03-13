@@ -540,18 +540,26 @@ qx.Class.define("playground.c.lib.Node",
               {
                 return;
               }
-              console.log(value.addr.toString(16) +
-                          " : " +
-                          ("00000000" + value.word.toString(16)).substr(-8) +
-                          " : name=" + (value.name || "") +
-                          " | type=" + (value.type || "") +
-                          " | size=" + (value.size || "") +
-                          " | values=" + (JSON.stringify(value.values) || "") +
-                          " | ptr=" + (value.pointer || "") +
-                          " | arr=" + (JSON.stringify(value.array) || "") +
-                          " | param=" + (value.param || "false"));
+              console.log(
+                value.addr.toString(16) +
+                " : " +
+                value.bytes.map(
+                  function(thisByte)
+                  {
+                    return ("00" + thisByte.toString(16)).substr(-2);
+                  }).join(" ") +
+                " : name=" + (value.name || "") +
+                " | type=" + (value.type || "") +
+                " | size=" + (value.size || "") +
+                " | values=" + (JSON.stringify(value.values) || "") +
+                " | ptr=" + (value.pointer || "") +
+                " | arr=" + (JSON.stringify(value.array) || "") +
+                " | param=" + (value.param || "false"));
             });
 
+          console.log(
+            JSON.stringify(
+              playground.c.machine.Memory.getInstance().getDataModel()));
 
           // Restore the previous frame pointer
           symtab.restoreFramePointer();

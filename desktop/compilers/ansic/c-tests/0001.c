@@ -1,4 +1,4 @@
-void main(void)
+void main(int argc, char * argv[])
 {
     short bar = 23, baz = 42;
     int bing = 17;

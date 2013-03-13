@@ -184,8 +184,8 @@ qx.Class.define("playground.c.machine.Memory",
      * @param addr {Number}
      *   The address in simulated memory from which to retrieve the value
      * 
-     * @param numElem {Number|1}
-     *   The number of elements of the specified type to retrieve
+     * @param numElem {Number?}
+     *   The number of elements of the specified type to retrieve. Default: 1
      *
      * @return {Number}
      *   The typed value retrieved from memory
@@ -595,37 +595,43 @@ qx.Class.define("playground.c.machine.Memory",
      */
     setSymbolInfo : function(addr, symbol)
     {
-var x =
       this._symbolInfo[addr] = 
         {
-          addr    : addr,
-          name    : symbol.getName(),
-          type    : symbol.getType(),
-          size    : symbol.getSize(),
-          pointer : symbol.getPointerCount(),
-          array   : symbol.getArraySizes(),
-          param   : symbol.getIsParameter()
+          addr       : addr,
+          name       : symbol.getName(),
+          type       : symbol.getType(),
+          size       : symbol.getSize(),
+          pointer    : symbol.getPointerCount(),
+          array      : symbol.getArraySizes(),
+          param      : symbol.getIsParameter(),
+          
+          // The following are added to this map by getDataModel:
+          value      : null,    // will become an array of values in this word
+          word       : null,    // will become the native memory word
+          arStartEnd : null     // activation record start or end indication
         };
-      
-console.log("Adding symbol " + x.name + ", type=" + x.type + ", size=" + x.size + " at addr=" + x.addr.toString(16));
     },
 
     /**
      * Retrieve the current data model, suitable for display.
      *
+     * @lint ignoreUndefined(Uint8Array)
      * @lint ignoreUndefined(Uint32Array)
      */
     getDataModel : function()
     {
       var             i;
+      var             j;
       var             type;
       var             size;
       var             addr;
       var             datum;
       var             words;
+      var             values;
       var             elements;
       var             arrayCount;
       var             model = [];
+      var             WORDSIZE = playground.c.machine.Memory.WORDSIZE;
       
       // Get a reference to memory as a list of words
       words = Array.prototype.slice.call(
@@ -668,12 +674,23 @@ console.log("Adding symbol " + x.name + ", type=" + x.type + ", size=" + x.size 
           }
           else
           {
-            data = {};
+            data = 
+              {
+                addr       : addr,
+                name       : "",
+                type       : "unsigned long",
+                size       : WORDSIZE,
+                pointer    : 0,
+                array      : [],
+                param      : false,
+                arStartEnd : ""
+              };
           }
           
           // Assign the address and value to the map
           data.addr = addr;
-          data.word = word;
+          data.bytes = Array.prototype.slice.call(
+            new Uint8Array(this._memory, addr, WORDSIZE), 0);
           
           // Add this new entry to the model, as in the "Memory Template" view
           model.push(data);
@@ -710,18 +727,39 @@ console.log("Adding symbol " + x.name + ", type=" + x.type + ", size=" + x.size 
           {
             // Determine how many items fit in one word, which becomes the
             // maximum number to retrieve at one time.
-            elements = Math.min(arrayCount, 4 / size);
+            elements = Math.min(arrayCount, WORDSIZE / size);
 
-console.log("addr=" + addr + ", type=" + type + ", arrayCount=" + arrayCount + ", elements=" + elements);
+            // Decrement the array count by how many we will retrieve
+            arrayCount -= elements;
+
             // Get an (ordinary JavaScript) array of values of the specified
             // type.
-            datum.values = 
+            values = 
               Array.prototype.slice.call(this._getByType(type, addr, elements),
                                          0);
             
-            // Decrement the array count by how many we just retrieved
-            arrayCount -= elements;
-
+            // Put those values into a new array, in the positions for display
+            datum.values = [];
+            do
+            {
+              // Take the next value from the retrieved array and put it into
+              // our new array.
+              datum.values.push(values.pop());
+              
+              // Insert space holders in positions where no values will be
+              // displayed
+              for (j = size - 1; j > 0; --j)
+              {
+                datum.values.push(null);
+              }
+            } while(values.length > 0);
+            
+            // If the data array isn't full, fill it
+            while (datum.values.length < WORDSIZE)
+            {
+              datum.values.push(null);
+            }
+            
             // If there are more elements...
             if (arrayCount > 0)
             {
