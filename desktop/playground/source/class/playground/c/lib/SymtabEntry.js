@@ -444,6 +444,13 @@ qx.Class.define("playground.c.lib.SymtabEntry",
         {
           this.__symtab.nextOffset += SIB.Word - mod;
         }
+
+        // If we're in the global symbol table...
+        if (this.__symtab.getParent() == null)
+        {
+          // ... then add this symbol to memory, for later display
+          playground.c.lib.Symtab._addSymbolInfo(this);
+        }
       }
     },
 
