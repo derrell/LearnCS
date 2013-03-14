@@ -281,18 +281,37 @@ qx.Class.define("playground.c.lib.Node",
       var             declarator;
       var             function_decl;
       var             pointer;
-      var             value1;
-      var             value2;
-      var             value3;
+      var             value;
+      var             value1; // typically the lhs of a binary expression
+      var             value2; // typically the rhs of a binary expression
+      var             value3; // typically the return result
+      var             assignData;
       var             process = playground.c.lib.Node.process;
+      var             model;
+      var             memData;
       var             WORDSIZE = playground.c.machine.Memory.WORDSIZE;
 
       if (bExecuting)
       {
-//        console.log("Processing node " + this.type);
-        var model = playground.c.machine.Memory.getInstance().getDataModel();
-        model = qx.data.marshal.Json.createModel(model);
-        qx.core.Init.getApplication().memTemplate.setModel(model);
+        //
+        // TODO: only update the model when the line number changes (i.e., at
+        // a possible breakpoint)
+        //
+        
+        // Retrieve the data in memory
+        memData = playground.c.machine.Memory.getInstance().getDataModel();
+        
+        // Convert it to a qx.data.Array
+        model = qx.data.marshal.Json.createModel(memData);
+        
+        // Use that model to render the memory template
+        try
+        {
+          qx.core.Init.getApplication().memTemplate.setModel(model);
+        }
+        catch(e)
+        {
+        }
       }
 
       // Yup. See what type it is.
@@ -326,8 +345,24 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "add-assign" :
-        throw new Error("Not yet implemented: add-assign");
-        break;
+        /*
+         * add-assign
+         *   0: unary_expression (lhs)
+         *   1: assignment_expression (rhs)
+         */
+        
+        // Only applicable when executing
+        if (! bExecuting)
+        {
+          break;
+        }
+
+        // Assign the new value
+        return this.__assignHelper(data, 
+                                   function(oldVal, newVal)
+                                   {
+                                     return oldVal + newVal;
+                                   });
 
       case "address_of" :
         throw new Error("Not yet implemented: address_of");
@@ -414,9 +449,6 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "assign" :
-        // TODO: Test for left side variable or address (lvalue) in 23 = 42
-        // Produce a *meaningful* error message
-
         /*
          * assign
          *   0: unary_expression (lhs)
@@ -429,25 +461,15 @@ qx.Class.define("playground.c.lib.Node",
           break;
         }
 
-        // Retrieve the lvalue
-        value1 = this.children[0].process(data, true);
-        
-        // If it was a symbol table entry...
-        if (value1 instanceof playground.c.lib.SymtabEntry)
-        {
-          // ... then retrieve the symbol's address
-          value1 = { value : value1.getAddr(), type : value1.getType() };
-        }
-        
-        // Retrieve the value to assign there
-        value3 = this.getExpressionValue(this.children[1].process(data, true));
-
-        // Save the value at its new address
-        playground.c.lib.Node.__mem.set(value1.value, value1.type, value3.value);
-        break;
+        // Assign the new value
+        return this.__assignHelper(data, 
+                                   function(oldVal, newVal)
+                                   {
+                                     return newVal;
+                                   });
 
       case "auto" :
-        throw new Error("Not yet implemented: auto");
+        // ignored
         break;
 
       case "bit-and" :
@@ -912,8 +934,24 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "divide-assign" :
-        throw new Error("Not yet implemented: divide-assign");
-        break;
+        /*
+         * divide-assign
+         *   0: unary_expression (lhs)
+         *   1: assignment_expression (rhs)
+         */
+        
+        // Only applicable when executing
+        if (! bExecuting)
+        {
+          break;
+        }
+
+        // Assign the new value
+        return this.__assignHelper(data, 
+                                   function(oldVal, newVal)
+                                   {
+                                     return oldVal / newVal;
+                                   });
 
       case "double" :
         throw new Error("Not yet implemented: double");
@@ -1197,7 +1235,6 @@ qx.Class.define("playground.c.lib.Node",
         
         if (bExecuting)
         {
-console.log("Returning value " + value3.value);
           return value3;
         }
         else
@@ -1642,8 +1679,10 @@ console.log("Returning value " + value3.value);
           break;
         }
 
+        // If there's an expression to return...
         if (this.children[0])
         {
+          // ... then retrieve its value.
           value3 = 
             this.getExpressionValue(this.children[0].process(data, bExecuting));
         }
@@ -1657,7 +1696,7 @@ console.log("Returning value " + value3.value);
             };
         }
         
-        // Return via throwing an error.
+        // Return via throwing an error, to unwrap intervening call frames.
         throw new playground.c.lib.Return(value3);
         break;
 
@@ -1989,6 +2028,62 @@ console.log("Returning value " + value3.value);
           subnode.process(data, bExecuting);
         }, 
         this);
+    },
+
+    /**
+     * Helper funciton for assignments.
+     * 
+     * @param data {Map}
+     *   The data map currently in use for recursive calls to process()
+     * 
+     * @param fOp {Function}
+     *   Function to produce the result for assignment. It takes two
+     *   arguments: the old (original) value of the lhs, and the new value.
+     * 
+     * @return {Map}
+     *   Upon success, a map containing the resulting value and its type is
+     *   returned. Upon failure (lhs is not an lvalue), null is returned.
+     */
+    __assignHelper : function(data, fOp)
+    {
+      var             value;
+      var             value1;
+      var             value3;
+
+      // Retrieve the lvalue
+      value1 = this.children[0].process(data, true);
+
+      // If it was a symbol table entry...
+      if (value1 instanceof playground.c.lib.SymtabEntry)
+      {
+        // ... then retrieve the symbol's address
+        value1 = { value : value1.getAddr(), type : value1.getType() };
+      }
+      else if (this.children[0].type != "dereference")
+      {
+        this.error("The left hand side of an assignment must be " +
+                   "a variable or pointer dereference");
+        return null;
+      }
+
+      // Retrieve the value to assign there
+      value3 = this.getExpressionValue(this.children[1].process(data, true));
+
+      // Retrieve the current value
+      value = playground.c.lib.Node.__mem.get(value1.value, value1.type);
+
+      // Save the value at its new address
+      playground.c.lib.Node.__mem.set(
+        value1.value,
+        value1.type,
+        fOp(value, value3.value));
+
+      // Retrieve the value and return it
+      return (
+        {
+          value : playground.c.lib.Node.__mem.get(value1.value, value1.type),
+          type  : value1.type
+        });
     },
 
     /**
