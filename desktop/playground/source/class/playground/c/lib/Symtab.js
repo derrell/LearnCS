@@ -170,6 +170,33 @@ qx.Class.define("playground.c.lib.Symtab",
     },
 
     /**
+     * Add the information for a symbol to Memory's record, for later display
+     * 
+     * @param symbol {playground.c.lib.SymtabEntry}
+     */
+    _addSymbolInfo : function(symbol)
+    {
+      var             addr;
+      var             memory;
+
+      // Get this symbol's address
+      addr = symbol.getAddr();
+
+      // Ensure that it's a real address and not a built-in function node
+      if (addr instanceof playground.c.lib.Node)
+      {
+        // It's a node. Ignore it
+        return;
+      }
+
+      // Get a reference to the Memory singleton
+      memory = playground.c.machine.Memory.getInstance();
+
+      // Specify the name and type for this address
+      memory.setSymbolInfo(addr, symbol);
+    },
+
+    /**
      * Push a frame pointer onto its own stack
      * 
      * @param fp {Number}
@@ -178,7 +205,6 @@ qx.Class.define("playground.c.lib.Symtab",
     pushFramePointer : function(fp)
     {
       var             fpPrev;
-      var             memory;
       var             symtab;
       var             Symtab = playground.c.lib.Symtab;
       
@@ -191,28 +217,8 @@ qx.Class.define("playground.c.lib.Symtab",
       // Get the current symbol table
       symtab = Symtab.getCurrent();
       
-      // Get a reference to the Memory singleton
-      memory = playground.c.machine.Memory.getInstance();
-
-      // For each symbol in the symbol table...
-      symtab.__symbolOrder.forEach(
-        function(symbol)
-        {
-          var             addr;
-          
-          // Get this symbol's address
-          addr = symbol.getAddr();
-          
-          // Ensure that it's a real address and not a built-in function node
-          if (addr instanceof playground.c.lib.Node)
-          {
-            // It's a node. Ignore it
-            return;
-          }
-          
-          // Specify the name and type for this address
-          memory.setSymbolInfo(addr, symbol);
-        });
+      // Add each symbol in this symbol table to memory, for later display
+      symtab.__symbolOrder.forEach(this._addSymbolInfo);
     },
     
     /**
@@ -315,16 +321,18 @@ qx.Class.define("playground.c.lib.Symtab",
       var             parts = [];
       var             TF = playground.c.lib.SymtabEntry.TypeFlags;
 
+/*
       console.log("");
       if (message)
       {
         console.log(message);
       }
+*/
 
       for (symtabName in playground.c.lib.Symtab._symtabs)
       {
         symtab = playground.c.lib.Symtab._symtabs[symtabName];
-        console.log("Symbol table " + symtab + " (" + symtab.__name + ")...");
+//        console.log("Symbol table " + symtab + " (" + symtab.__name + ")...");
 
         for (symbolName in symtab.__symbols)
         {
@@ -386,9 +394,11 @@ qx.Class.define("playground.c.lib.Symtab",
             parts.push("*");
           }
 
+/*
           console.log(parts.join(""));
           entry.display();
           console.log("");
+*/
         }
       }
     }
