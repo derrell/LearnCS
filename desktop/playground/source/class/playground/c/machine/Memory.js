@@ -615,10 +615,19 @@ qx.Class.define("playground.c.machine.Memory",
     /**
      * Retrieve the current data model, suitable for display.
      *
+     * @param start {Number?}
+     *   Starting address. Defaults to the beginning of (supported) memory
+     *
+     * @param length {Number?}
+     *   Number of bytes
+     *
+     * @return {qx.data.Array}
+     *   The data model
+     *
      * @lint ignoreUndefined(Uint8Array)
      * @lint ignoreUndefined(Uint32Array)
      */
-    getDataModel : function()
+    getDataModel : function(start, length)
     {
       var             i;
       var             j;
@@ -633,9 +642,22 @@ qx.Class.define("playground.c.machine.Memory",
       var             model = [];
       var             WORDSIZE = playground.c.machine.Memory.WORDSIZE;
       
+      // Handle missing optional arguments
+      if (typeof start != "number")
+      {
+        // Default to starting at the beginning of (supported) memory
+        start = 0;
+      }
+      
+      if (typeof length != "number")
+      {
+        // Default to ending at the end of (supported) memory
+        length = this.__memSize - start;
+      }
+
       // Get a reference to memory as a list of words
       words = Array.prototype.slice.call(
-        new Uint32Array(this._memory, 0, this.__memSize / 4),
+        new Uint32Array(this._memory, start, length / WORDSIZE),
         0);
       
       // Create the model
@@ -649,11 +671,11 @@ qx.Class.define("playground.c.machine.Memory",
           var             data;
           var             info = playground.c.machine.Memory.info;
           
-          // The address of this word is four times its index, since each word
-          // contains four bytes.
-          addr = index * 4;
+          // The address of this word is WORDSIZE times its index, since each
+          // word contains four bytes.
+          addr = index * WORDSIZE;
           
-          // Ignore regions of memory that we don't display
+          // Ignore unsupported regions of memory
           if (!
               ((addr >= info.gas.start &&
                 addr < info.gas.start + info.gas.length) ||
@@ -707,11 +729,15 @@ qx.Class.define("playground.c.machine.Memory",
         // Is it typed?
         if (datum.type)
         {
-          // Yup. Save the type and its size
-          type = (datum.pointer || (datum.array && datum.param) 
-                  ? "pointer"
-                  : datum.type);
+          // If this is really a pointer, change its type
+          // Save the type and its size
+          type = datum.type;
+          if (datum.pointer || (datum.array.length && datum.param) )
+          {
+            type = "pointer";
+          }
           size = playground.c.machine.Memory.typeSize[type];
+console.log("datum.name=" + datum.name + ", pointer=" + datum.pointer + ", datum.array.length=" + datum.array.length + ", datum.param=" + datum.param + ", type=" + type + ", size=" + size);
           
           // Determine how many items of this size we need values for
           if (type === "pointer" || datum.array.length == 0)
