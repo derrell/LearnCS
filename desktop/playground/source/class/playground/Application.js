@@ -228,9 +228,62 @@ qx.Class.define("playground.Application",
       this.__mainsplit.add(this.__editorsplit, 6);
       this.__mainsplit.add(infosplit, 3);
 
-      this.__playArea = new playground.view.PlayArea();
-      this.__playArea.addListener("toggleMaximize", this._onToggleMaximize, this);
-      infosplit.add(this.__playArea, 2);
+      if (false)                // djl
+      {
+        this.__playArea = new playground.view.PlayArea();
+        this.__playArea.addListener("toggleMaximize",
+                                    this._onToggleMaximize, this);
+        infosplit.add(this.__playArea, 2);
+      }
+
+      // djl...
+      // Create a composite container for the header
+      var vbox = new qx.ui.container.Composite(new qx.ui.layout.VBox());
+      var header = new qx.ui.container.Composite();
+
+      // Create a grid layout. Leave some horizontal space between elements.
+      var gridLayout = new qx.ui.layout.Grid(8, 0);
+      header._setLayout(gridLayout);
+
+      // Set column widths exactly as they are in each MemoryWord list item
+      gridLayout.setColumnWidth(0, 120);
+      gridLayout.setColumnAlign(0, "center", "middle");
+
+      gridLayout.setColumnWidth(1, 40);
+      gridLayout.setColumnAlign(1, "center", "middle");
+
+      for (var col = 2; col < 7; col++)
+      {
+        gridLayout.setColumnWidth(col, 20);
+        gridLayout.setColumnAlign(col, "center", "middle");
+      }
+      
+      var label = new qx.ui.basic.Label(
+        "<span style='font-weight: bold;'>Name</span>");
+      label.setRich(true);
+      header.add(label, { row : 0, column : 0 } );
+
+      label = new qx.ui.basic.Label(
+        "<span style='font-weight: bold;'>Addr</span>");
+      label.setRich(true);
+      header.add(label, { row : 0, column : 1 } );
+
+      label = new qx.ui.basic.Label(
+        "<span style='font-weight: bold;'>Content</span>");
+      label.setRich(true);
+      header.add(label, { row : 0, column : 2, colSpan : 4 } );
+
+      vbox.add(header);
+
+      // Add the memory template
+      var model = playground.c.machine.Memory.getInstance().getDataModel();
+      model = qx.data.marshal.Json.createModel(model);
+      this.memTemplate = new playground.view.c.Memory(model);
+      vbox.add(this.memTemplate, { flex : 1 });
+
+      infosplit.add(vbox, 2);
+      // ...djl
+      
 
       this.__mainsplit.getChildControl("splitter").addListener("mousedown", function() {
         this.__editor.block();
@@ -448,9 +501,11 @@ qx.Class.define("playground.Application",
       this.__mode = mode;
 
       // update the views (changes the play application)
-      this.__playArea.setMode(mode);
-      this.__header.setMode(mode);
-      this.__samplesPane.setMode(mode);
+      if (this.__playArea) {
+        this.__playArea.setMode(mode);
+        this.__header.setMode(mode);
+        this.__samplesPane.setMode(mode);
+      }
 
       // erase the code
       this.__editor.setCode("");
@@ -861,6 +916,10 @@ qx.Class.define("playground.Application",
      */
     __updatePlayground : function()
     {
+      if (! this.__playArea) {
+        return;
+      }
+
       this.__log.clear();
       this.__playArea.reset(this.__beforeReg, this.__afterReg, this.__oldCode);
 

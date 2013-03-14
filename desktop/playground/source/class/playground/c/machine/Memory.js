@@ -737,7 +737,6 @@ qx.Class.define("playground.c.machine.Memory",
             type = "pointer";
           }
           size = playground.c.machine.Memory.typeSize[type];
-console.log("datum.name=" + datum.name + ", pointer=" + datum.pointer + ", datum.array.length=" + datum.array.length + ", datum.param=" + datum.param + ", type=" + type + ", size=" + size);
           
           // Determine how many items of this size we need values for
           if (type === "pointer" || datum.array.length == 0)

@@ -289,6 +289,9 @@ qx.Class.define("playground.c.lib.Node",
       if (bExecuting)
       {
 //        console.log("Processing node " + this.type);
+        var model = playground.c.machine.Memory.getInstance().getDataModel();
+        model = qx.data.marshal.Json.createModel(model);
+        qx.core.Init.getApplication().memTemplate.setModel(model);
       }
 
       // Yup. See what type it is.
@@ -533,13 +536,17 @@ qx.Class.define("playground.c.lib.Node",
         // If we're executing...
         if (bExecuting)
         {
+/*
           playground.c.machine.Memory.getInstance().getDataModel().forEach(
             function(value)
             {
+              var             model;
+
               if (! value.type)
               {
                 return;
               }
+
               console.log(
                 value.addr.toString(16) +
                 " : " +
@@ -560,7 +567,8 @@ qx.Class.define("playground.c.lib.Node",
           console.log(
             JSON.stringify(
               playground.c.machine.Memory.getInstance().getDataModel()));
-
+*/
+          
           // Restore the previous frame pointer
           symtab.restoreFramePointer();
         }
