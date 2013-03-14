@@ -189,19 +189,19 @@ qx.Class.define("playground.view.c.MemoryWord",
       case "addr1" :
         control = new qx.ui.basic.Label();
         control.setRich(true);
-        this._add(control, { row : 0, column : 1, rowSpan : 2 } );
+        this._add(control, { row : 0, column : 1, rowSpan : 4 } );
         break;
         
       case "addr2" :
         control = new qx.ui.basic.Label();
         control.setRich(true);
-        this._add(control, { row : 1, column : 1, rowSpan : 2 } );
+        this._add(control, { row : 1, column : 1, rowSpan : 4 } );
         break;
         
       case "addr4" :
         control = new qx.ui.basic.Label();
         control.setRich(true);
-        this._add(control, { row : 2, column : 1, rowSpan : 2 } );
+        this._add(control, { row : 2, column : 1, rowSpan : 4 } );
         break;
         
       case "value10" :
@@ -269,7 +269,7 @@ qx.Class.define("playground.view.c.MemoryWord",
       case "arStartEnd" :
         control = new qx.ui.basic.Label();
 control.setVisibility("excluded");
-        this._add(control, { row : 0, column : 6, rowSpan : 2 } );
+        this._add(control, { row : 0, column : 6, rowSpan : 4 } );
         break;
       }
       
@@ -278,8 +278,8 @@ control.setVisibility("excluded");
       {
         control.set(
           {
-            height    : 13,
-            maxHeight : 13,
+            height    : 14,
+            maxHeight : 14,
             margin    : 0
           });
       }
@@ -327,25 +327,8 @@ control.setVisibility("excluded");
       array = model.getArray();
       bIsPointer = (pointer !== 0 || (model.getParam() && array.length !== 0));
 
-var typeSize =
-{
-  "char"               : 1,
-  "unsigned char"      : 1,
-  "short"              : 2,
-  "unsigned short"     : 2,
-  "int"                : 4,
-  "unsigned int"       : 4,
-  "long"               : 4,
-  "unsigned long"      : 4,
-  "long long"          : 4,
-  "unsigned long long" : 4,
-  "float"              : 4,
-  "double"             : 4,
-  "pointer"            : 2
-};
-
-//      switch(playground.c.machine.Memory.typeSize[value])
-      switch(typeSize[bIsPointer ? "pointer" : value])
+      switch(playground.c.machine.Memory.typeSize[bIsPointer
+                                                  ? "pointer" : value])
       {
       case 1:
         this.getChildControl("addr1").setVisibility("visible");
