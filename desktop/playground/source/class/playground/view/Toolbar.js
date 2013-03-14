@@ -92,6 +92,7 @@ qx.Class.define("playground.view.Toolbar",
     urlShortButton.addListener("execute", function() {
       this.fireEvent("shortenUrl");
     }, this);
+    urlShortButton.exclude();   // djl
 
     // api button
     var apiButton = new qx.ui.toolbar.Button(
@@ -102,6 +103,7 @@ qx.Class.define("playground.view.Toolbar",
     apiButton.addListener("execute", function() {
       this.fireEvent("openApi");
     }, this);
+    apiButton.exclude();        // djl
 
     // help button
     var helpButton = new qx.ui.toolbar.Button(
@@ -112,6 +114,7 @@ qx.Class.define("playground.view.Toolbar",
     helpButton.addListener("execute", function() {
       this.fireEvent("openManual");
     }, this);
+    helpButton.exclude();       // djl
 
     // demobrowser button
     var demoBrowserButton = new qx.ui.toolbar.Button(
@@ -122,6 +125,7 @@ qx.Class.define("playground.view.Toolbar",
     demoBrowserButton.addListener("execute", function() {
       this.fireEvent("openDemoBrowser");
     }, this);
+    demoBrowserButton.exclude();
 
     // enable doverflow handling
     this.setOverflowHandling(true);
