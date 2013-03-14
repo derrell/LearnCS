@@ -21,6 +21,7 @@ if (typeof qx === 'undefined')
   var qx = require("qooxdoo");
   var printf = require("printf");
   require("./NodeArray");
+  require("./Return");
 }
 
 qx.Class.define("playground.c.lib.Node",
@@ -988,7 +989,10 @@ qx.Class.define("playground.c.lib.Node",
         }
 
         // Push the arguments onto the stack
-        this.children[1].process(data, bExecuting);
+        if (this.children[1])
+        {
+          this.children[1].process(data, bExecuting);
+        }
 
         // Is this a built-in function, or a user-generated one?
         if (value1.getType().match("built-in"))
@@ -1150,12 +1154,56 @@ qx.Class.define("playground.c.lib.Node",
         }
 
         // Process the compound statement
-        this.children[3].process(data, bExecuting);
+        try
+        {
+          // Save current symbol table so we know where to pop to upon return
+          symtab = playground.c.lib.Symtab.getCurrent();
+
+          this.children[3].process(data, bExecuting);
+          
+          // A return statement in the function will cause the catch() block
+          // to be executed. If one doesn't exist, create an arbitrary return
+          // value.
+          value3 =
+            {
+              value : Math.floor(Math.random() * 256),
+              type : "unsigned char"
+            };
+        }
+        catch(e)
+        {
+          // Did we get back a return value?
+          if (e instanceof playground.c.lib.Return)
+          {
+            // Yup. It contains the return value
+            value3 = e.returnCode;
+            console.log("TODO: cast value3 to this function's return type");
+            
+            // Retore symbol table to where it was when we called the function
+            while (playground.c.lib.Symtab.getCurrent() != symtab)
+            {
+              playground.c.lib.Symtab.popStack();
+            }
+          }
+          else
+          {
+            // It's not a return code. Re-throw the error
+            throw e;
+          }
+        }
 
         // Pop this function's symbol table from the stack
         playground.c.lib.Symtab.popStack();
-
-        break;
+        
+        if (bExecuting)
+        {
+console.log("Returning value " + value3.value);
+          return value3;
+        }
+        else
+        {
+          break;
+        }
 
       case "goto" :
         throw new Error("Not yet implemented: goto");
@@ -1216,7 +1264,9 @@ qx.Class.define("playground.c.lib.Node",
         entry = playground.c.lib.Symtab.getCurrent().get(this.value, false);
         if (! entry)
         {
-          throw new Error("Programmer error: entry should exist");
+          throw new Error("Programmer error: entry should exist (" +
+                          this.value + 
+                          ")");
         }
         return entry;
 
@@ -1583,7 +1633,32 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "return" :
-        throw new Error("Not yet implemented: return");
+        /*
+         * return :
+         *   0 : expression
+         */
+        if (! bExecuting)
+        {
+          break;
+        }
+
+        if (this.children[0])
+        {
+          value3 = 
+            this.getExpressionValue(this.children[0].process(data, bExecuting));
+        }
+        else
+        {
+          // No return value was provided. Choose one at random.
+          value3 =
+            {
+              value : Math.floor(Math.random() * 256),
+              type : "unsigned char"
+            };
+        }
+        
+        // Return via throwing an error.
+        throw new playground.c.lib.Return(value3);
         break;
 
       case "right-shift" :

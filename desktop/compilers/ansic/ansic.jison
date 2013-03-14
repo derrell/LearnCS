@@ -1563,6 +1563,7 @@ jump_statement
   {
     parser.yy.R("jump_statement : RETURN ';'");
     $$ = new playground.c.lib.Node("return", yytext, yylineno);
+    $$.children.push(null);
   }
   | RETURN expression ';'
   {
