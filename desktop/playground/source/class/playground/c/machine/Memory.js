@@ -678,8 +678,8 @@ qx.Class.define("playground.c.machine.Memory",
               {
                 addr       : addr,
                 name       : "",
-                type       : "unsigned long",
-                size       : WORDSIZE,
+                type       : null,
+                size       : 0,
                 pointer    : 0,
                 array      : [],
                 param      : false,
@@ -693,12 +693,12 @@ qx.Class.define("playground.c.machine.Memory",
             new Uint8Array(this._memory, addr, WORDSIZE), 0);
           
           // Add this new entry to the model, as in the "Memory Template" view
-          model.push(data);
+          model.unshift(data);
         },
         this);
       
       // Obtain the values for each typed memory word
-      for (i = 0; i < model.length; ++i)
+      for (i = model.length - 1; i >= 0; --i)
       {
         // Retrieve the data for this word
         datum = model[i];
@@ -764,7 +764,7 @@ qx.Class.define("playground.c.machine.Memory",
             if (arrayCount > 0)
             {
               // ... then get the next datum
-              datum = model[++i];
+              datum = model[--i];
               addr = datum.addr;
               
               // This datum wasn't named, so doesn't contain type info. Add it.
@@ -772,6 +772,11 @@ qx.Class.define("playground.c.machine.Memory",
               datum.size = size;
             }
           } while(arrayCount > 0)
+        }
+        else
+        {
+          datum.values = [ "", null, null, null ];
+          datum.type = "unsigned int";
         }
       }
 

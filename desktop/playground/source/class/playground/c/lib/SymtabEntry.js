@@ -240,6 +240,7 @@ qx.Class.define("playground.c.lib.SymtabEntry",
       var             TF  = playground.c.lib.SymtabEntry.TypeFlags;
       var             SIB = playground.c.lib.SymtabEntry.SizeInBytes;
       var             product;
+      var             mod;
 
       // Error checking
       switch(type)
@@ -437,8 +438,12 @@ qx.Class.define("playground.c.lib.SymtabEntry",
         
         // Calculate the next symbol's offset. Every new symbol begins on a
         // multiple of WORDSIZE bytes, for easy display.
-        this.__symtab.nextOffset += 
-          this.__size + (SIB.Word - (this.__size % SIB.Word));
+        this.__symtab.nextOffset += this.__size;
+        mod = this.__size % SIB.Word;
+        if (mod !== 0)
+        {
+          this.__symtab.nextOffset += SIB.Word - mod;
+        }
       }
     },
 
