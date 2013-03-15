@@ -127,7 +127,8 @@ qx.Class.define("playground.c.lib.Node",
         {
           // ... then retrieve the symbol's address
           value = { value : value.getAddr(), type : value.getType() };
-          value.value = playground.c.lib.Node.__mem.get(value.value, value.type);
+          value.value = 
+            playground.c.lib.Node.__mem.get(value.value, value.type);
         }
 
         return value;
@@ -2336,7 +2337,32 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "trinary" :
-        throw new Error("Not yet implemented: trinary");
+        /*
+         * trinary
+         *   0 : logical_or_expression
+         *   1 : expression
+         *   2 : conditional_expression
+         */
+        if (! bExecuting)
+        {
+          break;
+        }
+
+        // Retrieve and evaluate the logical expression from child 0
+        value1 = 
+          this.getExpressionValue(this.children[0].process(data, bExecuting));
+        
+        // If it's true, return the value of child 1
+        if (value1)
+        {
+          value2 = this.children[1].process(data, bExecuting);
+          return this.getExpressionValue(value2);
+        }
+
+        // Otherwise return the value of child 2.
+        value3 = this.children[2].process(data, bExecuting);
+        return this.getExpressionValue(value3);
+        
         break;
 
       case "type" :
