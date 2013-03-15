@@ -369,7 +369,26 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "and" :
-        throw new Error("Not yet implemented: and");
+        /*
+         * and :
+         *   0 : logical_and_expression
+         *   1 : inclusive_or_expression
+         */
+        if (bExecuting)
+        {
+          // We're executing. Get the value of the left and right expressions
+          value1 = 
+            this.getExpressionValue(this.children[0].process(data, bExecuting));
+          value2 = 
+            this.getExpressionValue(this.children[1].process(data, bExecuting));
+          
+          // Complete the operation, coercing to the appropriate type
+          return (
+            { 
+              value : value1.value && value2.value ? 1 : 0,
+              type : this.__coerce(value1.type, value2.type)
+            });
+        }
         break;
 
       case "argument_expression_list" :
@@ -477,8 +496,25 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "bit-and-assign" :
-        throw new Error("Not yet implemented: bit-and-assign");
-        break;
+        /*
+         * bit-and-assign
+         *   0: unary_expression (lhs)
+         *   1: assignment_expression (rhs)
+         */
+        
+        // Only applicable when executing
+        if (! bExecuting)
+        {
+          break;
+        }
+
+        // Assign the new value
+        return this.__assignHelper(data, 
+                                   function(oldVal, newVal)
+                                   {
+                                     return oldVal & newVal;
+                                   });
+
 
       case "bit_invert" :
         throw new Error("Not yet implemented: bit_invert");
@@ -489,8 +525,24 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "bit-or-assign" :
-        throw new Error("Not yet implemented: bit-or-assign");
-        break;
+        /*
+         * bit-or-assign
+         *   0: unary_expression (lhs)
+         *   1: assignment_expression (rhs)
+         */
+        
+        // Only applicable when executing
+        if (! bExecuting)
+        {
+          break;
+        }
+
+        // Assign the new value
+        return this.__assignHelper(data, 
+                                   function(oldVal, newVal)
+                                   {
+                                     return oldVal | newVal;
+                                   });
 
       case "break" :
         throw new Error("Not yet implemented: break");
@@ -1402,8 +1454,24 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "left-shift-assign" :
-        throw new Error("Not yet implemented: left-shift-assign");
-        break;
+        /*
+         * left-shift-assign
+         *   0: unary_expression (lhs)
+         *   1: assignment_expression (rhs)
+         */
+        
+        // Only applicable when executing
+        if (! bExecuting)
+        {
+          break;
+        }
+
+        // Assign the new value
+        return this.__assignHelper(data, 
+                                   function(oldVal, newVal)
+                                   {
+                                     return oldVal << newVal;
+                                   });
 
       case "less-equal" :
         /*
@@ -1479,8 +1547,24 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "mod-assign" :
-        throw new Error("Not yet implemented: mod-assign");
-        break;
+        /*
+         * mod-assign
+         *   0: unary_expression (lhs)
+         *   1: assignment_expression (rhs)
+         */
+        
+        // Only applicable when executing
+        if (! bExecuting)
+        {
+          break;
+        }
+
+        // Assign the new value
+        return this.__assignHelper(data, 
+                                   function(oldVal, newVal)
+                                   {
+                                     return oldVal % newVal;
+                                   });
 
       case "multiply" :
         /*
@@ -1506,8 +1590,24 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "multiply-assign" :
-        throw new Error("Not yet implemented: multiply-assign");
-        break;
+        /*
+         * multiply-assign
+         *   0: unary_expression (lhs)
+         *   1: assignment_expression (rhs)
+         */
+        
+        // Only applicable when executing
+        if (! bExecuting)
+        {
+          break;
+        }
+
+        // Assign the new value
+        return this.__assignHelper(data, 
+                                   function(oldVal, newVal)
+                                   {
+                                     return oldVal * newVal;
+                                   });
 
       case "negative" :
         throw new Error("Not yet implemented: negative");
@@ -1522,6 +1622,26 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "or" :
+        /*
+         * or :
+         *   0 : logical_or_expression
+         *   1 : logical_and_expression
+         */
+        if (bExecuting)
+        {
+          // We're executing. Get the value of the left and right expressions
+          value1 = 
+            this.getExpressionValue(this.children[0].process(data, bExecuting));
+          value2 = 
+            this.getExpressionValue(this.children[1].process(data, bExecuting));
+          
+          // Complete the operation, coercing to the appropriate type
+          return (
+            { 
+              value : value1.value || value2.value ? 1 : 0,
+              type : this.__coerce(value1.type, value2.type)
+            });
+        }
         throw new Error("Not yet implemented: or");
         break;
 
@@ -1724,8 +1844,24 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "right-shift-assign" :
-        throw new Error("Not yet implemented: right-shift-assign");
-        break;
+        /*
+         * right-shift-assign
+         *   0: unary_expression (lhs)
+         *   1: assignment_expression (rhs)
+         */
+        
+        // Only applicable when executing
+        if (! bExecuting)
+        {
+          break;
+        }
+
+        // Assign the new value
+        return this.__assignHelper(data, 
+                                   function(oldVal, newVal)
+                                   {
+                                     return oldVal >> newVal;
+                                   });
 
       case "short" :
         throw new Error("Not yet implemented: short");
@@ -1940,8 +2076,24 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "subtract-assign" :
-        throw new Error("Not yet implemented: subtract-assign");
-        break;
+        /*
+         * subtract-assign
+         *   0: unary_expression (lhs)
+         *   1: assignment_expression (rhs)
+         */
+        
+        // Only applicable when executing
+        if (! bExecuting)
+        {
+          break;
+        }
+
+        // Assign the new value
+        return this.__assignHelper(data, 
+                                   function(oldVal, newVal)
+                                   {
+                                     return oldVal - newVal;
+                                   });
 
       case "switch" :
         throw new Error("Not yet implemented: switch");
@@ -2002,8 +2154,24 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "xor-assign" :
-        throw new Error("Not yet implemented: xor-assign");
-        break;
+        /*
+         * xor-assign
+         *   0: unary_expression (lhs)
+         *   1: assignment_expression (rhs)
+         */
+        
+        // Only applicable when executing
+        if (! bExecuting)
+        {
+          break;
+        }
+
+        // Assign the new value
+        return this.__assignHelper(data, 
+                                   function(oldVal, newVal)
+                                   {
+                                     return oldVal ^ newVal;
+                                   });
 
       default:
         console.log("Unexpected node type: " + this.type);
