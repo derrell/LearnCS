@@ -1,10 +1,7 @@
-cast_expression
-sizeof
-
-do-while
-for
 switch
 
+sizeof
+cast_expression
 
 
 

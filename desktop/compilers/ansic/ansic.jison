@@ -1469,7 +1469,7 @@ expression_statement
   : ';'
   {
     parser.yy.R("expression_statement : ';'");
-    $$ = new playground.c.lib.Node("expression", yytext, yylineno);
+    $$ = null;
   }
   | expression ';'
   {
@@ -1518,7 +1518,7 @@ iteration_statement
     parser.yy.R("iteration_statement : DO statement WHILE '(' expression ')' ';'");
     $$ = new playground.c.lib.Node("do-while", yytext, yylineno);
     $$.children.push($2);       // statement
-    $$.children.push($4);       // while condition
+    $$.children.push($5);       // while condition
   }
   | FOR '(' expression_statement expression_statement ')' statement
   {

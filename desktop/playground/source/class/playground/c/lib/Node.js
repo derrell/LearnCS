@@ -295,8 +295,8 @@ qx.Class.define("playground.c.lib.Node",
       if (bExecuting)
       {
         //
-        // TODO: only update the model when the line number changes (i.e., at
-        // a possible breakpoint)
+        // TODO: only update the model when the program stops at a breakpoint,
+        // or upon program exit. This makes execution REALLY slow at present.
         //
         
         // Retrieve the data in memory
@@ -312,6 +312,8 @@ qx.Class.define("playground.c.lib.Node",
         }
         catch(e)
         {
+          // There's no memTemplate class when running outside of the GUI.
+          // In fact, there's no Application object to get, in that case.
         }
       }
 
@@ -1064,7 +1066,24 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "do-while" :
-        throw new Error("Not yet implemented: do-while");
+        /*
+         * do-while
+         *   0 : statement
+         *   1 : expression
+         */
+        if (! bExecuting)
+        {
+          // Ensure all symbols are defined for this block
+          this.children[0].process(data, bExecuting);
+          break;
+        }
+        
+        // We're executing. Process the loop.
+        do
+        {
+          this.children[0].process(data, bExecuting);
+        } while (this.getExpressionValue(
+                   this.children[1].process(data, bExecuting)).value);
         break;
 
       case "ellipsis" :
@@ -1138,7 +1157,48 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "for" :
-        throw new Error("Not yet implemented: for");
+        /*
+         * for
+         *   0 : expression_statement (initialization)
+         *   1 : expression_statement (while condition)
+         *   2 : statement (statement block)
+         *   3 : expression (after each iteration)
+         */
+        if (! bExecuting)
+        {
+          // Ensure all symbols are defined for these blocks
+          if (this.children[0])
+          {
+            this.children[0].process(data, bExecuting); // initialization
+          }
+          
+          this.children[2].process(data, bExecuting); // statement block
+          
+          if (this.children[3])
+          {
+            this.children[3].process(data, bExecuting); // after each iteration
+          }
+          break;
+        }
+        
+        // We're executing. Process the loop.
+        if (this.children[0])
+        {
+          this.children[0].process(data, bExecuting); // initialization
+        }
+
+        while (this.children[1] 
+               ? this.getExpressionValue(
+                   this.children[1].process(data, bExecuting)).value
+               : 1)
+        {
+          this.children[2].process(data, bExecuting); // statement block
+          
+          if (this.children[3])
+          {
+            this.children[3].process(data, bExecuting); // after each iteration
+          }
+        }
         break;
 
       case "function_call" :
