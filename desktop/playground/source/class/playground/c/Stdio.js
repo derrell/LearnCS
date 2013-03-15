@@ -190,6 +190,25 @@ qx.Class.define("playground.c.Stdio",
 
       s: 
       {
+        setArg : function(token)
+        {
+          var             i;
+          var             ret = [];
+
+          // Copy the null-terminated string (which is represented as the
+          // ASCII character codes of each character) from the given address,
+          // one character at a time, into an array.
+          for (i = token.arg;
+               this._mem[i] != 0 && i < this._mem.length;
+               i++)
+          {
+            ret.push(this._mem[i]);
+          }
+
+          // Convert each character code into its actual character
+          token.arg = String.fromCharCode.apply(null, ret);
+        },
+
         setMaxWidth: function(token)
         {
           token.maxWidth = (token.period == '.') ? token.precision : -1;
@@ -365,7 +384,7 @@ qx.Class.define("playground.c.Stdio",
 
           if (typeof token.setArg == 'function')
           {
-            token.setArg(token);
+            token.setArg.call(this, token);
           }
 
           if (typeof token.setMaxWidth == 'function')
