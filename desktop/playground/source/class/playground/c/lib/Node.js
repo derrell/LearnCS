@@ -515,9 +515,24 @@ qx.Class.define("playground.c.lib.Node",
                                      return oldVal & newVal;
                                    });
 
-
       case "bit_invert" :
-        throw new Error("Not yet implemented: bit_invert");
+        /*
+         * bit_invert :
+         *   0 : unary_expression
+         */
+        if (bExecuting)
+        {
+          // We're executing. Get the value of the unary expression
+          value1 = 
+            this.getExpressionValue(this.children[0].process(data, bExecuting));
+          
+          // Complete the operation
+          return (
+            { 
+              value : ~ value1.value,
+              type : value1.type
+            });
+        }
         break;
 
       case "bit-or" :
@@ -1610,11 +1625,43 @@ qx.Class.define("playground.c.lib.Node",
                                    });
 
       case "negative" :
-        throw new Error("Not yet implemented: negative");
+        /*
+         * negative :
+         *   0 : unary_expression
+         */
+        if (bExecuting)
+        {
+          // We're executing. Get the value of the unary expression
+          value1 = 
+            this.getExpressionValue(this.children[0].process(data, bExecuting));
+          
+          // Complete the operation
+          return (
+            { 
+              value : - value1.value,
+              type : value1.type
+            });
+        }
         break;
 
       case "not" :
-        throw new Error("Not yet implemented: not");
+        /*
+         * not :
+         *   0 : unary_expression
+         */
+        if (bExecuting)
+        {
+          // We're executing. Get the value of the unary expression
+          value1 = 
+            this.getExpressionValue(this.children[0].process(data, bExecuting));
+          
+          // Complete the operation
+          return (
+            { 
+              value : ! value1.value,
+              type : "int"
+            });
+        }
         break;
 
       case "not-equal" :
@@ -1755,12 +1802,41 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "positive" :
-        throw new Error("Not yet implemented: positive");
+        /*
+         * positive :
+         *   0 : unary_expression
+         */
+        if (bExecuting)
+        {
+          // We're executing. Get the value of the unary expression
+          value1 = 
+            this.getExpressionValue(this.children[0].process(data, bExecuting));
+          
+          // Complete the operation. This is a no-op.
+          return value1;
+        }
         break;
 
       case "post_decrement_op" :
-        throw new Error("Not yet implemented: post_decrement_op");
-        break;
+        /*
+         * post_decrement_op
+         *   0: unary_expression
+         */
+        
+        // Only applicable when executing
+        if (! bExecuting)
+        {
+          break;
+        }
+
+        // Assign the new value
+        return this.__assignHelper(data, 
+                                   function(oldVal, newVal)
+                                   {
+                                     return oldVal - 1;
+                                   },
+                                   true,
+                                   true);
 
       case "primary_expression" :
         /*
@@ -1774,16 +1850,68 @@ qx.Class.define("playground.c.lib.Node",
         return this.children[0].process(data, bExecuting);
 
       case "post_increment_op" :
-        throw new Error("Not yet implemented: post_increment_op");
-        break;
+        /*
+         * post_increment_op
+         *   0: unary_expression
+         */
+        
+        // Only applicable when executing
+        if (! bExecuting)
+        {
+          break;
+        }
+
+        // Assign the new value
+        return this.__assignHelper(data, 
+                                   function(oldVal, newVal)
+                                   {
+                                     return oldVal + 1;
+                                   },
+                                   true,
+                                   true);
 
       case "pre_decrement_op" :
-        throw new Error("Not yet implemented: pre_decrement_op");
+        /*
+         * pre_decrement_op
+         *   0: unary_expression
+         */
+        
+        // Only applicable when executing
+        if (! bExecuting)
+        {
+          break;
+        }
+
+        // Assign the new value
+        return this.__assignHelper(data, 
+                                   function(oldVal, newVal)
+                                   {
+                                     return oldVal - 1;
+                                   },
+                                   true,
+                                   false);
         break;
 
       case "pre_increment_op" :
-        throw new Error("Not yet implemented: pre_increment_op");
-        break;
+        /*
+         * pre_increment_op
+         *   0: unary_expression
+         */
+        
+        // Only applicable when executing
+        if (! bExecuting)
+        {
+          break;
+        }
+
+        // Assign the new value
+        return this.__assignHelper(data, 
+                                   function(oldVal, newVal)
+                                   {
+                                     return oldVal + 1;
+                                   },
+                                   true,
+                                   false);
 
       case "register" :
         throw new Error("Not yet implemented: register");
@@ -2200,19 +2328,27 @@ qx.Class.define("playground.c.lib.Node",
 
     /**
      * Helper funciton for assignments.
-     * 
+     *
      * @param data {Map}
      *   The data map currently in use for recursive calls to process()
-     * 
+     *
      * @param fOp {Function}
      *   Function to produce the result for assignment. It takes two
      *   arguments: the old (original) value of the lhs, and the new value.
-     * 
+     *
+     * @param bUnary {Boolean}
+     *   true if this is a unary operator (pre/post-increment/decrement)
+     *   false otherwise
+     *
+     * @param bPostOp {Boolean}
+     *   true if this is a post-increment or post-decrement operation;
+     *   false otherwise
+     *
      * @return {Map}
      *   Upon success, a map containing the resulting value and its type is
      *   returned. Upon failure (lhs is not an lvalue), null is returned.
      */
-    __assignHelper : function(data, fOp)
+    __assignHelper : function(data, fOp, bUnary, bPostOp)
     {
       var             value;
       var             value1;
@@ -2234,11 +2370,16 @@ qx.Class.define("playground.c.lib.Node",
         return null;
       }
 
-      // Retrieve the value to assign there
-      value3 = this.getExpressionValue(this.children[1].process(data, true));
-
       // Retrieve the current value
       value = playground.c.lib.Node.__mem.get(value1.value, value1.type);
+
+      // Determine the value to assign there. If it's a unary operator
+      // (pre/post increment/decrement), then use the retrieved
+      // value. Otherwise, get the value from the rhs of the expression.
+      value3 =
+        bUnary
+        ? { value : value, type : value1.type }
+        : this.getExpressionValue(this.children[1].process(data, true));
 
       // Save the value at its new address
       playground.c.lib.Node.__mem.set(
@@ -2246,10 +2387,17 @@ qx.Class.define("playground.c.lib.Node",
         value1.type,
         fOp(value, value3.value));
 
+      // If this is not a post-increment or post-decrement...
+      if (! bPostOp)
+      {
+        // ... then retrieve and return the altered value
+        value = playground.c.lib.Node.__mem.get(value1.value, value1.type);
+      }
+
       // Retrieve the value and return it
       return (
         {
-          value : playground.c.lib.Node.__mem.get(value1.value, value1.type),
+          value : value,
           type  : value1.type
         });
     },

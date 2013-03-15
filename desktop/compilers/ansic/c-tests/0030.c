@@ -14,7 +14,18 @@ int main(int argc, char * argv[])
   printf("i = 15 : 0x%x\n", i = 15);
   printf("i <<= 2 : 0x%x\n", i <<= 2);
   printf("i |= 7 : 0x%x\n", i |= 7);
-  printf("i &= 0xfffffffb : 0x%x\n", i &= 0xfffffffb);
+  printf("i &= ~4 : 0x%x\n", i &= ~4);
   printf("i ^= 2 : 0x%x\n", i ^= 2);
+
+  printf("i = 23 : %d\n", i = 23);
+  printf("--i : %d\n", --i);
+  printf("i : %d\n", i);
+  printf("++i : %d\n", ++i);
+  printf("i : %d\n", i);
+  printf("i-- : %d\n", i--);
+  printf("i : %d\n", i);
+  printf("i++ : %d\n", i++);
+  printf("i : %d\n", i);
+
   return 0;
 }
