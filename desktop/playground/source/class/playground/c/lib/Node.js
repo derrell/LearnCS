@@ -601,7 +601,14 @@ qx.Class.define("playground.c.lib.Node",
                                    });
 
       case "break" :
-        throw new Error("Not yet implemented: break");
+        /*
+         * break
+         *   (no children)
+         */
+        if (bExecuting)
+        {
+          throw new playground.c.lib.Break();
+        }
         break;
 
       case "case" :
@@ -1068,22 +1075,47 @@ qx.Class.define("playground.c.lib.Node",
       case "do-while" :
         /*
          * do-while
-         *   0 : statement
+         *   0 : statement block
          *   1 : expression
          */
         if (! bExecuting)
         {
-          // Ensure all symbols are defined for this block
+          // Ensure all symbols are defined for this statement block
           this.children[0].process(data, bExecuting);
           break;
         }
         
         // We're executing. Process the loop.
-        do
+        try
         {
-          this.children[0].process(data, bExecuting);
-        } while (this.getExpressionValue(
-                   this.children[1].process(data, bExecuting)).value);
+          // Save current symbol table so we know where to pop to upon return
+          symtab = playground.c.lib.Symtab.getCurrent();
+
+          do
+          {
+            // statement block
+            this.children[0].process(data, bExecuting);
+          } while (this.getExpressionValue(
+                     this.children[1].process(data, bExecuting)).value);
+        }
+        catch(e)
+        {
+          // was a break statement executed?
+          if (e instanceof playground.c.lib.Break)
+          {
+            // Yup. Retore symbol table to where it was when we entered the
+            // statement from which we are breaking
+            while (playground.c.lib.Symtab.getCurrent() != symtab)
+            {
+              playground.c.lib.Symtab.popStack();
+            }
+          }
+          else
+          {
+            // It's not a return code. Re-throw the error
+            throw e;
+          }
+        }
         break;
 
       case "ellipsis" :
@@ -1169,34 +1201,65 @@ qx.Class.define("playground.c.lib.Node",
           // Ensure all symbols are defined for these blocks
           if (this.children[0])
           {
-            this.children[0].process(data, bExecuting); // initialization
+            // initialization
+            this.children[0].process(data, bExecuting);
           }
           
-          this.children[2].process(data, bExecuting); // statement block
-          
+          // statement block
+          this.children[2].process(data, bExecuting);
+              
+          // after each iteration
           if (this.children[3])
           {
-            this.children[3].process(data, bExecuting); // after each iteration
+            this.children[3].process(data, bExecuting);
           }
           break;
         }
         
         // We're executing. Process the loop.
-        if (this.children[0])
+        try
         {
-          this.children[0].process(data, bExecuting); // initialization
-        }
+          // Save current symbol table so we know where to pop to upon return
+          symtab = playground.c.lib.Symtab.getCurrent();
 
-        while (this.children[1] 
-               ? this.getExpressionValue(
-                   this.children[1].process(data, bExecuting)).value
-               : 1)
-        {
-          this.children[2].process(data, bExecuting); // statement block
-          
-          if (this.children[3])
+          // We're executing. Process the loop.
+          if (this.children[0])
           {
-            this.children[3].process(data, bExecuting); // after each iteration
+            // initialization
+            this.children[0].process(data, bExecuting);
+          }
+
+          while (this.children[1] 
+                 ? this.getExpressionValue(
+                     this.children[1].process(data, bExecuting)).value
+                 : 1)
+          {
+            // statement block
+            this.children[2].process(data, bExecuting);
+
+            // after each iteration
+            if (this.children[3])
+            {
+              this.children[3].process(data, bExecuting);
+            }
+          }
+        }
+        catch(e)
+        {
+          // was a break statement executed?
+          if (e instanceof playground.c.lib.Break)
+          {
+            // Yup. Retore symbol table to where it was when we entered the
+            // statement from which we are breaking
+            while (playground.c.lib.Symtab.getCurrent() != symtab)
+            {
+              playground.c.lib.Symtab.popStack();
+            }
+          }
+          else
+          {
+            // It's not a return code. Re-throw the error
+            throw e;
           }
         }
         break;
@@ -2381,6 +2444,7 @@ qx.Class.define("playground.c.lib.Node",
                                    });
 
       case "switch" :
+          // don't forget to implement 'break'. See "for" and "do-while"
         throw new Error("Not yet implemented: switch");
         break;
 
