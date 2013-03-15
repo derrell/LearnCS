@@ -52,5 +52,9 @@ int main(int argc, char * argv[])
     printf("i >= 2 : %d\n", i >= 2);
     printf("i >= 1 : %d\n", i >= 1);
 
+    printf("i = 23 : %d\n", i = 23);
+    printf("i == 23 ? \"xxx\" : \"yyy\" yields %s\n", i == 23 ? "xxx" : "yyy");
+    printf("i == 24 ? \"xxx\" : \"yyy\" yields %s\n", i == 24 ? "xxx" : "yyy");
+
     return 0;
 }

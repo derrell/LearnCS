@@ -2355,15 +2355,15 @@ qx.Class.define("playground.c.lib.Node",
           this.getExpressionValue(this.children[0].process(data, bExecuting));
         
         // If it's true, return the value of child 1
-        if (value1)
+        if (value1.value)
         {
-          value2 = this.children[1].process(data, bExecuting);
-          return this.getExpressionValue(value2);
+          return this.getExpressionValue(
+            this.children[1].process(data, bExecuting));
         }
 
         // Otherwise return the value of child 2.
-        value3 = this.children[2].process(data, bExecuting);
-        return this.getExpressionValue(value3);
+        return this.getExpressionValue(
+          this.children[2].process(data, bExecuting));
         
         break;
 
