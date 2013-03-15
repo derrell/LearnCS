@@ -2123,7 +2123,9 @@ qx.Class.define("playground.c.lib.Node",
 
           // Nope. Allocate the space now
           this._mem =
-            playground.c.lib.Symtab.allocGlobalSpace(this.value.length);
+            playground.c.lib.Symtab.allocGlobalSpace(this.value.length + 1,
+                                                     "string",
+                                                     this.line);
           
           // Write the string, as character codes, into the allocated memory
           this.value.split("").forEach(

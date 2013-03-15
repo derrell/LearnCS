@@ -154,17 +154,37 @@ qx.Class.define("playground.c.lib.Symtab",
     /**
      * Allocate global space, e.g., for a literal string
      */
-    allocGlobalSpace : function(numBytes)
+    allocGlobalSpace : function(numBytes, type, line)
     {
       var             symtab = playground.c.lib.Symtab._root;
       var             startOffset;
+      var             memory;
+      var             mod;
+      var             SIB = playground.c.lib.SymtabEntry.SizeInBytes;
 
       // Save the current next offset in this symbol table
       startOffset = symtab.nextOffset;
 
       // Increase the next offset by the requested number of bytes
       symtab.nextOffset += numBytes;
+      mod = numBytes % SIB.Word;
+      if (mod !== 0)
+      {
+        symtab.nextOffset += SIB.Word - mod;
+      }
       
+      memory = playground.c.machine.Memory.getInstance();
+      memory.setSymbolInfo(
+        playground.c.machine.Memory.info.gas.start + startOffset,
+        {
+          getName         : function() { return type + " at line " + line; },
+          getType         : function() { return "char"; },
+          getSize         : function() { return numBytes; },
+          getPointerCount : function() { return 0; },
+          getArraySizes   : function() { return [ numBytes ]; },
+          getIsParameter  : function() { return false; }
+        });
+
       // Return the address of the allocated space
       return playground.c.machine.Memory.info.gas.start + startOffset;
     },

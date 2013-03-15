@@ -37,7 +37,7 @@ qx.Class.define("playground.view.c.MemoryWord",
     this.gridLayout.setColumnWidth(1, 40);
     this.gridLayout.setColumnAlign(1, "center", "middle");
     
-    for (col = 2; col < 7; col++)
+    for (col = 2; col <= 6; col++)
     {
       this.gridLayout.setColumnWidth(col, 20);
     }
@@ -488,6 +488,7 @@ control.setVisibility("excluded");
       var             param;
       var             pointer;
       var             bIsPointer;
+      var             newValue;
       
       // If the value is not a number...
       if (typeof value != "number")
@@ -508,23 +509,50 @@ control.setVisibility("excluded");
       if (bIsPointer)
       {
         // It's a pointer, so highlight it
-        value =
+        newValue =
           "<span style='font-weight: bold; color: blue;'>" + 
           ("0000" + value.toString(16)).substr(-4) +
           "</span>";
       }
       else if (type == "char" || type == "unsigned char")
       {
-        // It's a character type. Display the character itself
-        value = "'" + String.fromCharCode(value) + "'";
+        // It's a character type. Display the character itself, if possible
+        // Is it a normal, printable character?
+        if (value >= 0x20 && value <= 0x7e) // between space and ~
+        {
+          newValue = "'" + String.fromCharCode(value) + "'";
+        }
+        else
+        {
+          // It's something else. See how we want to represent it
+          newValue =
+            ({
+               0  : '\\0',       // null
+               7  : '\\a',       // bell
+               8  : '\\b',       // backspace
+               9  : '\\t',       // tab
+               10 : '\\n',       // newline
+               11 : '\\v',       // vertical tab
+               12 : '\\f',       // form feed
+               13 : '\\r'        // carriage return
+             }[value]);
+          if (typeof newValue != "undefined")
+          {
+            newValue = "'" + newValue + "'";
+          }
+          else
+          {
+            newValue = "";
+          }
+        }
       }
       else
       {
         // Convert the number to a string
-        value = value.toString();
+        newValue = value.toString();
       }
 
-      return value;
+      return newValue;
     },
 
     // property apply function

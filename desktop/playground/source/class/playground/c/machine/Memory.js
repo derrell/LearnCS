@@ -769,7 +769,7 @@ qx.Class.define("playground.c.machine.Memory",
             {
               // Take the next value from the retrieved array and put it into
               // our new array.
-              datum.values.push(values.pop());
+              datum.values.push(values.shift());
               
               // Insert space holders in positions where no values will be
               // displayed
