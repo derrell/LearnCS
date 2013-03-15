@@ -1,10 +1,3 @@
-bit-and
-bit-or
-equal
-exclusive-or
-not-equal
-or
-
 trinary
 
 cast_expression
