@@ -492,7 +492,26 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "bit-and" :
-        throw new Error("Not yet implemented: bit-and");
+        /*
+         * bit-and :
+         *   0 : and_expression
+         *   1 : equality_expression
+         */
+        if (bExecuting)
+        {
+          // We're executing. Get the value of the left and right expressions
+          value1 = 
+            this.getExpressionValue(this.children[0].process(data, bExecuting));
+          value2 = 
+            this.getExpressionValue(this.children[1].process(data, bExecuting));
+          
+          // Complete the operation, coercing to the appropriate type
+          return (
+            { 
+              value : value1.value & value2.value,
+              type : this.__coerce(value1.type, value2.type)
+            });
+        }
         break;
 
       case "bit-and-assign" :
@@ -536,7 +555,26 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "bit-or" :
-        throw new Error("Not yet implemented: bit-or");
+        /*
+         * bit-or :
+         *   0 : inclusive_or_expression
+         *   1 : exclusive_or_expression
+         */
+        if (bExecuting)
+        {
+          // We're executing. Get the value of the left and right expressions
+          value1 = 
+            this.getExpressionValue(this.children[0].process(data, bExecuting));
+          value2 = 
+            this.getExpressionValue(this.children[1].process(data, bExecuting));
+          
+          // Complete the operation, coercing to the appropriate type
+          return (
+            { 
+              value : value1.value | value2.value,
+              type : this.__coerce(value1.type, value2.type)
+            });
+        }
         break;
 
       case "bit-or-assign" :
@@ -1041,11 +1079,49 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "equal" :
-        throw new Error("Not yet implemented: equal");
+        /*
+         * equal :
+         *   0 : equality_expression
+         *   1 : relational_expression
+         */
+        if (bExecuting)
+        {
+          // We're executing. Get the value of the left and right expressions
+          value1 = 
+            this.getExpressionValue(this.children[0].process(data, bExecuting));
+          value2 = 
+            this.getExpressionValue(this.children[1].process(data, bExecuting));
+          
+          // Complete the operation, coercing to the appropriate type
+          return (
+            { 
+              value : value1.value === value2.value ? 1 : 0,
+              type : "int"
+            });
+        }
         break;
 
       case "exclusive-or" :
-        throw new Error("Not yet implemented: exclusive-or");
+        /*
+         * exclusive-or :
+         *   0 : exclusive_or_expression
+         *   1 : and_expression
+         */
+        if (bExecuting)
+        {
+          // We're executing. Get the value of the left and right expressions
+          value1 = 
+            this.getExpressionValue(this.children[0].process(data, bExecuting));
+          value2 = 
+            this.getExpressionValue(this.children[1].process(data, bExecuting));
+          
+          // Complete the operation, coercing to the appropriate type
+          return (
+            { 
+              value : value1.value ^ value2.value,
+              type : this.__coerce(value1.type, value2.type)
+            });
+        }
         break;
 
       case "expression" :
@@ -1330,7 +1406,7 @@ qx.Class.define("playground.c.lib.Node",
           // Complete the operation, coercing to the appropriate type
           return (
             { 
-              value : value1.value >= value2.value,
+              value : value1.value >= value2.value ? 1 : 0,
               type : "int"
             });
         }
@@ -1353,7 +1429,7 @@ qx.Class.define("playground.c.lib.Node",
           // Complete the operation, coercing to the appropriate type
           return (
             { 
-              value : value1.value > value2.value,
+              value : value1.value > value2.value ? 1 : 0,
               type : "int"
             });
         }
@@ -1505,7 +1581,7 @@ qx.Class.define("playground.c.lib.Node",
           // Complete the operation, coercing to the appropriate type
           return (
             { 
-              value : value1.value <= value2.value,
+              value : value1.value <= value2.value ? 1 : 0,
               type : "int"
             });
         }
@@ -1528,7 +1604,7 @@ qx.Class.define("playground.c.lib.Node",
           // Complete the operation, coercing to the appropriate type
           return (
             { 
-              value : value1.value < value2.value,
+              value : value1.value < value2.value ? 1 : 0,
               type : "int"
             });
         }
@@ -1665,7 +1741,26 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "not-equal" :
-        throw new Error("Not yet implemented: not-equal");
+        /*
+         * not-equal :
+         *   0 : equality_expression
+         *   1 : relational_expression
+         */
+        if (bExecuting)
+        {
+          // We're executing. Get the value of the left and right expressions
+          value1 = 
+            this.getExpressionValue(this.children[0].process(data, bExecuting));
+          value2 = 
+            this.getExpressionValue(this.children[1].process(data, bExecuting));
+          
+          // Complete the operation, coercing to the appropriate type
+          return (
+            { 
+              value : value1.value !== value2.value ? 1 : 0,
+              type : "int"
+            });
+        }
         break;
 
       case "or" :
@@ -1689,7 +1784,6 @@ qx.Class.define("playground.c.lib.Node",
               type : this.__coerce(value1.type, value2.type)
             });
         }
-        throw new Error("Not yet implemented: or");
         break;
 
       case "parameter_declaration" :
