@@ -133,16 +133,27 @@ qx.Class.define("playground.c.lib.Node",
       }
     },
 
-    getExpressionValue : function(value)
+    getExpressionValue : function(value, data)
     {
         // If it was a symbol table entry...
         if (value instanceof playground.c.lib.SymtabEntry)
         {
-          // ... then retrieve the symbol's address
-          value = { value : value.getAddr(), type : value.getType() };
-          value.value = 
-            playground.c.lib.Node.__mem.get(value.value, value.type);
-        }
+          // ... then retrieve the symbol's address, unless we're in 'case'
+          // mode (cases must be constant expressions)
+          if (data.bCaseMode)
+          {
+            this.error("Each 'case' statement must represent a constant " +
+                       "expression. It may not rely on any variables' values.",
+                       true);
+            value = null;
+          }
+          else
+          {
+            value = { value : value.getAddr(), type : value.getType() };
+            value.value = 
+              playground.c.lib.Node.__mem.get(value.value, value.type); 
+          }
+       }
 
         return value;
     },
@@ -348,9 +359,11 @@ qx.Class.define("playground.c.lib.Node",
         {
           // We're executing. Get the value of the left and right expressions
           value1 = 
-            this.getExpressionValue(this.children[0].process(data, bExecuting));
+            this.getExpressionValue(this.children[0].process(data, bExecuting),
+                                    data);
           value2 = 
-            this.getExpressionValue(this.children[1].process(data, bExecuting));
+            this.getExpressionValue(this.children[1].process(data, bExecuting),
+                                    data);
           
           // Complete the operation, coercing to the appropriate type
           return (
@@ -395,9 +408,11 @@ qx.Class.define("playground.c.lib.Node",
         {
           // We're executing. Get the value of the left and right expressions
           value1 = 
-            this.getExpressionValue(this.children[0].process(data, bExecuting));
+            this.getExpressionValue(this.children[0].process(data, bExecuting),
+                                    data);
           value2 = 
-            this.getExpressionValue(this.children[1].process(data, bExecuting));
+            this.getExpressionValue(this.children[1].process(data, bExecuting),
+                                    data);
           
           // Complete the operation, coercing to the appropriate type
           return (
@@ -428,7 +443,8 @@ qx.Class.define("playground.c.lib.Node",
           for (i = this.children.length - 1; i >= 0; --i)
           {
             value1 = this.getExpressionValue(
-              this.children[i].process(data, bExecuting));
+              this.children[i].process(data, bExecuting),
+              data);
 
             // Promote the argument type, if necessary
             value1.type =
@@ -471,7 +487,8 @@ qx.Class.define("playground.c.lib.Node",
           // We're executing. Get the value of the constant expression
           return(
             this.getExpressionValue(this.children[0].process(data,
-                                                             bExecuting)));
+                                                             bExecuting),
+                                    data));
         }
         break;
 
@@ -518,9 +535,11 @@ qx.Class.define("playground.c.lib.Node",
         {
           // We're executing. Get the value of the left and right expressions
           value1 = 
-            this.getExpressionValue(this.children[0].process(data, bExecuting));
+            this.getExpressionValue(this.children[0].process(data, bExecuting),
+                                    data);
           value2 = 
-            this.getExpressionValue(this.children[1].process(data, bExecuting));
+            this.getExpressionValue(this.children[1].process(data, bExecuting),
+                                    data);
           
           // Complete the operation, coercing to the appropriate type
           return (
@@ -560,7 +579,8 @@ qx.Class.define("playground.c.lib.Node",
         {
           // We're executing. Get the value of the unary expression
           value1 = 
-            this.getExpressionValue(this.children[0].process(data, bExecuting));
+            this.getExpressionValue(this.children[0].process(data, bExecuting),
+                                    data);
           
           // Complete the operation
           return (
@@ -581,9 +601,11 @@ qx.Class.define("playground.c.lib.Node",
         {
           // We're executing. Get the value of the left and right expressions
           value1 = 
-            this.getExpressionValue(this.children[0].process(data, bExecuting));
+            this.getExpressionValue(this.children[0].process(data, bExecuting),
+                                    data);
           value2 = 
-            this.getExpressionValue(this.children[1].process(data, bExecuting));
+            this.getExpressionValue(this.children[1].process(data, bExecuting),
+                                    data);
           
           // Complete the operation, coercing to the appropriate type
           return (
@@ -634,26 +656,23 @@ qx.Class.define("playground.c.lib.Node",
          *   1 :statement
          */
 
-        // We only get here prior to executing, to record the case nodes
-        if (bExecuting)
+        // We only process case expressions while executing. (This has the
+        // disadvantage that discovering non-constant cases is a run-time
+        // error and only occurs if that code branch is executed. It should
+        // hopefully be adequate for our purposes, as the alternative is much
+        // more difficult to implement.) We must, however, process any
+        // compound statements herein, so process the case's statement if not
+        // executing.
+        if (! bExecuting)
         {
+          this.children[1].process(data, bExecuting);
           break;
         }
         
-        // Ensure that the case is immediately within a switch statement's
-        // statement list.
-        if (! this.parent.cases)
-        {
-          this.error("Found a 'case' not immediately within a 'switch'");
-          break;
-        }
-        
-        // Attempt to obtain the value of this case expression
-        value1 = 
-          this.getExpressionValue(this.children[0].process(data, bExecuting));
-        
-        // If we got back null, it wasn't a constant expression
-console.log("value1=" + JSON.stringify(value1));
+        // We wouldn't have gotten here if this case statement were within a
+        // switch. Getting here means that we found a case statement which is
+        // not immediately within a switch statement.
+        this.error("Found a 'case' not immediately within a 'switch'");
         break;
 
       case "cast_expression" :
@@ -1051,7 +1070,24 @@ console.log("value1=" + JSON.stringify(value1));
         break;
 
       case "default" :
-        throw new Error("Not yet implemented: default");
+        /*
+         * default
+         *   0 :statement
+         */
+
+        // We only process default expressions while executing. We must,
+        // however, process any compound statements herein, so process the
+        // default statement if not executing.
+        if (! bExecuting)
+        {
+          this.children[0].process(data, bExecuting);
+          break;
+        }
+        
+        // We wouldn't have gotten here if this case statement were within a
+        // switch. Getting here means that we found a case statement which is
+        // not immediately within a switch statement.
+        this.error("Found a 'default' not immediately within a 'switch'");
         break;
 
       case "dereference" :
@@ -1076,9 +1112,11 @@ console.log("value1=" + JSON.stringify(value1));
         {
           // We're executing. Get the value of the left and right expressions
           value1 = 
-            this.getExpressionValue(this.children[0].process(data, bExecuting));
+            this.getExpressionValue(this.children[0].process(data, bExecuting),
+                                    data);
           value2 = 
-            this.getExpressionValue(this.children[1].process(data, bExecuting));
+            this.getExpressionValue(this.children[1].process(data, bExecuting),
+                                    data);
           
           // Complete the operation, coercing to the appropriate type
           return (
@@ -1137,7 +1175,8 @@ console.log("value1=" + JSON.stringify(value1));
             // statement block
             this.children[0].process(data, bExecuting);
           } while (this.getExpressionValue(
-                     this.children[1].process(data, bExecuting)).value);
+                     this.children[1].process(data, bExecuting),
+                     data).value);
         }
         catch(e)
         {
@@ -1181,9 +1220,11 @@ console.log("value1=" + JSON.stringify(value1));
         {
           // We're executing. Get the value of the left and right expressions
           value1 = 
-            this.getExpressionValue(this.children[0].process(data, bExecuting));
+            this.getExpressionValue(this.children[0].process(data, bExecuting),
+                                    data);
           value2 = 
-            this.getExpressionValue(this.children[1].process(data, bExecuting));
+            this.getExpressionValue(this.children[1].process(data, bExecuting),
+                                    data);
           
           // Complete the operation, coercing to the appropriate type
           return (
@@ -1204,9 +1245,11 @@ console.log("value1=" + JSON.stringify(value1));
         {
           // We're executing. Get the value of the left and right expressions
           value1 = 
-            this.getExpressionValue(this.children[0].process(data, bExecuting));
+            this.getExpressionValue(this.children[0].process(data, bExecuting),
+                                    data);
           value2 = 
-            this.getExpressionValue(this.children[1].process(data, bExecuting));
+            this.getExpressionValue(this.children[1].process(data, bExecuting),
+                                    data);
           
           // Complete the operation, coercing to the appropriate type
           return (
@@ -1272,7 +1315,8 @@ console.log("value1=" + JSON.stringify(value1));
 
           while (this.children[1] 
                  ? this.getExpressionValue(
-                     this.children[1].process(data, bExecuting)).value
+                     this.children[1].process(data, bExecuting),
+                      data).value
                  : 1)
           {
             // statement block
@@ -1564,9 +1608,11 @@ console.log("value1=" + JSON.stringify(value1));
         {
           // We're executing. Get the value of the left and right expressions
           value1 = 
-            this.getExpressionValue(this.children[0].process(data, bExecuting));
+            this.getExpressionValue(this.children[0].process(data, bExecuting),
+                                    data);
           value2 = 
-            this.getExpressionValue(this.children[1].process(data, bExecuting));
+            this.getExpressionValue(this.children[1].process(data, bExecuting),
+                                    data);
           
           // Complete the operation, coercing to the appropriate type
           return (
@@ -1587,9 +1633,11 @@ console.log("value1=" + JSON.stringify(value1));
         {
           // We're executing. Get the value of the left and right expressions
           value1 = 
-            this.getExpressionValue(this.children[0].process(data, bExecuting));
+            this.getExpressionValue(this.children[0].process(data, bExecuting),
+                                    data);
           value2 = 
-            this.getExpressionValue(this.children[1].process(data, bExecuting));
+            this.getExpressionValue(this.children[1].process(data, bExecuting),
+                                    data);
           
           // Complete the operation, coercing to the appropriate type
           return (
@@ -1642,7 +1690,8 @@ console.log("value1=" + JSON.stringify(value1));
         
         // We're executing. Get the value of the expression
         value1 = 
-          this.getExpressionValue(this.children[0].process(data, bExecuting));
+          this.getExpressionValue(this.children[0].process(data, bExecuting),
+                                  data);
         
         // If the retrieved value is non-zero...
         if (value1.value)
@@ -1696,9 +1745,11 @@ console.log("value1=" + JSON.stringify(value1));
         {
           // We're executing. Get the value of the left and right expressions
           value1 = 
-            this.getExpressionValue(this.children[0].process(data, bExecuting));
+            this.getExpressionValue(this.children[0].process(data, bExecuting),
+                                    data);
           value2 = 
-            this.getExpressionValue(this.children[1].process(data, bExecuting));
+            this.getExpressionValue(this.children[1].process(data, bExecuting),
+                                    data);
           
           // Complete the operation, coercing to the appropriate type
           return (
@@ -1739,9 +1790,11 @@ console.log("value1=" + JSON.stringify(value1));
         {
           // We're executing. Get the value of the left and right expressions
           value1 = 
-            this.getExpressionValue(this.children[0].process(data, bExecuting));
+            this.getExpressionValue(this.children[0].process(data, bExecuting),
+                                    data);
           value2 = 
-            this.getExpressionValue(this.children[1].process(data, bExecuting));
+            this.getExpressionValue(this.children[1].process(data, bExecuting),
+                                    data);
           
           // Complete the operation, coercing to the appropriate type
           return (
@@ -1762,9 +1815,11 @@ console.log("value1=" + JSON.stringify(value1));
         {
           // We're executing. Get the value of the left and right expressions
           value1 = 
-            this.getExpressionValue(this.children[0].process(data, bExecuting));
+            this.getExpressionValue(this.children[0].process(data, bExecuting),
+                                    data);
           value2 = 
-            this.getExpressionValue(this.children[1].process(data, bExecuting));
+            this.getExpressionValue(this.children[1].process(data, bExecuting),
+                                    data);
           
           // Complete the operation, coercing to the appropriate type
           return (
@@ -1789,9 +1844,11 @@ console.log("value1=" + JSON.stringify(value1));
         {
           // We're executing. Get the value of the left and right expressions
           value1 = 
-            this.getExpressionValue(this.children[0].process(data, bExecuting));
+            this.getExpressionValue(this.children[0].process(data, bExecuting),
+                                    data);
           value2 = 
-            this.getExpressionValue(this.children[1].process(data, bExecuting));
+            this.getExpressionValue(this.children[1].process(data, bExecuting),
+                                    data);
           
           // Complete the operation, coercing to the appropriate type
           return (
@@ -1832,9 +1889,11 @@ console.log("value1=" + JSON.stringify(value1));
         {
           // We're executing. Get the value of the left and right expressions
           value1 = 
-            this.getExpressionValue(this.children[0].process(data, bExecuting));
+            this.getExpressionValue(this.children[0].process(data, bExecuting),
+                                    data);
           value2 = 
-            this.getExpressionValue(this.children[1].process(data, bExecuting));
+            this.getExpressionValue(this.children[1].process(data, bExecuting),
+                                    data);
           
           // Complete the operation, coercing to the appropriate type
           return (
@@ -1874,7 +1933,8 @@ console.log("value1=" + JSON.stringify(value1));
         {
           // We're executing. Get the value of the unary expression
           value1 = 
-            this.getExpressionValue(this.children[0].process(data, bExecuting));
+            this.getExpressionValue(this.children[0].process(data, bExecuting),
+                                    data);
           
           // Complete the operation
           return (
@@ -1894,7 +1954,8 @@ console.log("value1=" + JSON.stringify(value1));
         {
           // We're executing. Get the value of the unary expression
           value1 = 
-            this.getExpressionValue(this.children[0].process(data, bExecuting));
+            this.getExpressionValue(this.children[0].process(data, bExecuting),
+                                    data);
           
           // Complete the operation
           return (
@@ -1915,9 +1976,11 @@ console.log("value1=" + JSON.stringify(value1));
         {
           // We're executing. Get the value of the left and right expressions
           value1 = 
-            this.getExpressionValue(this.children[0].process(data, bExecuting));
+            this.getExpressionValue(this.children[0].process(data, bExecuting),
+                                    data);
           value2 = 
-            this.getExpressionValue(this.children[1].process(data, bExecuting));
+            this.getExpressionValue(this.children[1].process(data, bExecuting),
+                                    data);
           
           // Complete the operation, coercing to the appropriate type
           return (
@@ -1938,9 +2001,11 @@ console.log("value1=" + JSON.stringify(value1));
         {
           // We're executing. Get the value of the left and right expressions
           value1 = 
-            this.getExpressionValue(this.children[0].process(data, bExecuting));
+            this.getExpressionValue(this.children[0].process(data, bExecuting),
+                                    data);
           value2 = 
-            this.getExpressionValue(this.children[1].process(data, bExecuting));
+            this.getExpressionValue(this.children[1].process(data, bExecuting),
+                                    data);
           
           // Complete the operation, coercing to the appropriate type
           return (
@@ -2069,7 +2134,8 @@ console.log("value1=" + JSON.stringify(value1));
         {
           // We're executing. Get the value of the unary expression
           value1 = 
-            this.getExpressionValue(this.children[0].process(data, bExecuting));
+            this.getExpressionValue(this.children[0].process(data, bExecuting),
+                                    data);
           
           // Complete the operation. This is a no-op.
           return value1;
@@ -2191,7 +2257,8 @@ console.log("value1=" + JSON.stringify(value1));
         {
           // ... then retrieve its value.
           value3 = 
-            this.getExpressionValue(this.children[0].process(data, bExecuting));
+            this.getExpressionValue(this.children[0].process(data, bExecuting),
+                                    data);
         }
         else
         {
@@ -2217,9 +2284,11 @@ console.log("value1=" + JSON.stringify(value1));
         {
           // We're executing. Get the value of the left and right expressions
           value1 = 
-            this.getExpressionValue(this.children[0].process(data, bExecuting));
+            this.getExpressionValue(this.children[0].process(data, bExecuting),
+                                    data);
           value2 = 
-            this.getExpressionValue(this.children[1].process(data, bExecuting));
+            this.getExpressionValue(this.children[1].process(data, bExecuting),
+                                    data);
           
           // Complete the operation, coercing to the appropriate type
           return (
@@ -2451,9 +2520,11 @@ console.log("value1=" + JSON.stringify(value1));
         {
           // We're executing. Get the value of the left and right expressions
           value1 = 
-            this.getExpressionValue(this.children[0].process(data, bExecuting));
+            this.getExpressionValue(this.children[0].process(data, bExecuting),
+                                    data);
           value2 = 
-            this.getExpressionValue(this.children[1].process(data, bExecuting));
+            this.getExpressionValue(this.children[1].process(data, bExecuting),
+                                    data);
           
           // Complete the operation, coercing to the appropriate type
           return (
@@ -2486,9 +2557,9 @@ console.log("value1=" + JSON.stringify(value1));
 
       case "switch" :
         /*
-         * swtich
+         * switch
          *   0 : expression
-         *   1 : statement
+         *   1 : statement (compound_statement)
          *     0 : declarations
          *     1 : statement_list
          */
@@ -2498,9 +2569,6 @@ console.log("value1=" + JSON.stringify(value1));
           {
             throw new Error("Programmer error: expected statement list");
           }
-          
-          // Prepare to record locations of cases
-          this.children[1].children[1].cases = {};
           
           // Process the compound statement.
           this.children[1].process(data, bExecuting);
@@ -2512,17 +2580,75 @@ console.log("value1=" + JSON.stringify(value1));
         {
           // Evaluate the expression on which we will switch
           value1 = 
-            this.getExpressionValue(this.children[0].process(data, bExecuting));
+            this.getExpressionValue(this.children[0].process(data, bExecuting),
+                                    data);
+          
+          // Get a reference to the statement list
+          subnode = this.children[1].children[1];
+
+          // If we haven't evaluated case expressions yet...
+          if (! subnode.cases)
+          {
+            // ... then create a map of case expression values
+            subnode.cases = {};
+
+            // Run through each case and evaluate it.
+            subnode.children.forEach(
+              function(child)
+              {
+                // Is this a case label?
+                if (child.type == "case")
+                {
+                  // Yup. Throw an error if the case expression is not constant
+                  data.bCaseMode = true;
+
+                  // Get its expression value. It (child 0) becomes the key
+                  // in the cases map, and child 1, the statement, becomes the
+                  // value of that key in the cases map.
+                  subnode.cases[this.getExpressionValue(
+                                  child.children[0].process(data, bExecuting),
+                                  data).value] = child.children[1];
+                  
+                  // Stop testing for constant expressions
+                  delete data.bCaseMode;
+                }
+                else if (child.type == "default")
+                {
+                  // Did we already find a default?
+                  if (subnode.cases["default"])
+                  {
+                    // Yup. This is an error.
+                    this.error("Found multiple 'default' labels in 'switch'",
+                               true);
+                    return;     // not reached
+                  }
+                  
+                  // Add this default's node to the cases map
+                  subnode.cases["default"] = child.children[1];
+                }
+              },
+              this);
+            
+            Object.keys(subnode.cases).forEach(
+              function(key)
+              {
+                console.log("Found case " + key);
+              });
+          }
           
           // Get map of nodes for each case
-          cases = this.children[1].children[1].cases;
-          subnode = cases[value1] || cases["default"];
+          cases = subnode.cases;
+          subnode = cases[value1.value] || cases["default"];
           
           // Did we find a case to execute?
           if (typeof subnode != "undefined")
           {
             // Yup. Process it
             subnode.process(data, bExecuting);
+          }
+          else
+          {
+            console.log("Ignoring switch value " + value1.value);
           }
         }
         catch(e)
@@ -2573,18 +2699,21 @@ console.log("value1=" + JSON.stringify(value1));
 
         // Retrieve and evaluate the logical expression from child 0
         value1 = 
-          this.getExpressionValue(this.children[0].process(data, bExecuting));
+          this.getExpressionValue(this.children[0].process(data, bExecuting),
+                                  data);
         
         // If it's true, return the value of child 1
         if (value1.value)
         {
           return this.getExpressionValue(
-            this.children[1].process(data, bExecuting));
+            this.children[1].process(data, bExecuting),
+            data);
         }
 
         // Otherwise return the value of child 2.
         return this.getExpressionValue(
-          this.children[2].process(data, bExecuting));
+          this.children[2].process(data, bExecuting),
+          data);
         
         break;
 
@@ -2722,7 +2851,8 @@ console.log("value1=" + JSON.stringify(value1));
       value3 =
         bUnary
         ? { value : value, type : value1.type }
-        : this.getExpressionValue(this.children[1].process(data, true));
+        : this.getExpressionValue(this.children[1].process(data, true),
+                                  data);
 
       // Save the value at its new address
       playground.c.lib.Node.__mem.set(
