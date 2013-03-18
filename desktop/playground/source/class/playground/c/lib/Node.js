@@ -20,8 +20,10 @@ if (typeof qx === 'undefined')
 {
   var qx = require("qooxdoo");
   var printf = require("printf");
+  require("./Symtab");
   require("./NodeArray");
   require("./Return");
+  require("./Break");
 }
 
 qx.Class.define("playground.c.lib.Node",
@@ -307,6 +309,7 @@ qx.Class.define("playground.c.lib.Node",
       var             function_decl;
       var             pointer;
       var             cases;
+      var             caseAndBreak;
       var             value;
       var             value1; // typically the lhs of a binary expression
       var             value2; // typically the rhs of a binary expression
@@ -2578,6 +2581,9 @@ qx.Class.define("playground.c.lib.Node",
         // We're executing. Evaluate the expression, and find the correct case.
         try
         {
+          // Save current symbol table so we know where to pop to upon return
+          symtab = playground.c.lib.Symtab.getCurrent();
+
           // Evaluate the expression on which we will switch
           value1 = 
             this.getExpressionValue(this.children[0].process(data, bExecuting),
@@ -2591,11 +2597,13 @@ qx.Class.define("playground.c.lib.Node",
           {
             // ... then create a map of case expression values
             subnode.cases = {};
+            subnode.caseAndBreak = [];
 
             // Run through each case and evaluate it.
             subnode.children.forEach(
               function(child)
               {
+                var             map;
                 var             value;
 
                 // Is this a case label?
@@ -2623,7 +2631,13 @@ qx.Class.define("playground.c.lib.Node",
                   }
                   
                   // This is a new case value. Save its statement.
-                  subnode.cases[value] = child.children[1];
+                  map =
+                    {
+                      order : subnode.caseAndBreak.length,
+                      node  : child.children[1]
+                    };
+                  subnode.cases[value] = map;
+                  subnode.caseAndBreak.push(map);
                   
                   // Stop testing for constant expressions
                   delete data.bCaseMode;
@@ -2640,27 +2654,45 @@ qx.Class.define("playground.c.lib.Node",
                   }
                   
                   // Add this default's node to the cases map
-                  subnode.cases["default"] = child.children[1];
+                  map =
+                    {
+                      order : subnode.caseAndBreak.length,
+                      node  : child.children[0]
+                    };
+                  subnode.cases["default"] = map;
+                  subnode.caseAndBreak.push(map);
+                }
+                else if (child.type == "break")
+                {
+                  // Do not add break to the cases map, but do add it to the
+                  // caseAndBreak array.
+                  map =
+                    {
+                      order : subnode.caseAndBreak.length,
+                      node  : child
+                    };
+                  subnode.caseAndBreak.push(map);
                 }
               },
               this);
-            
-            Object.keys(subnode.cases).forEach(
-              function(key)
-              {
-                console.log("Found case " + key);
-              });
           }
           
           // Get map of nodes for each case
           cases = subnode.cases;
+          caseAndBreak = subnode.caseAndBreak;
           subnode = cases[value1.value] || cases["default"];
           
           // Did we find a case to execute?
           if (typeof subnode != "undefined")
           {
-            // Yup. Process it
-            subnode.process(data, bExecuting);
+            // Yup. Process it and all following nodes (until a break is hit)
+            for (i = subnode.order; i < caseAndBreak.length; i++)
+            {
+              if (caseAndBreak[i].node)
+              {
+                caseAndBreak[i].node.process(data, bExecuting);
+              }
+            }
           }
           else
           {
