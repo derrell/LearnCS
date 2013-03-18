@@ -8,7 +8,7 @@ cast_expression
 abstract_declarator
 address_of
 array_expression
-break
+break                           // implemented for loops; not yet for switch
 case
 char
 const

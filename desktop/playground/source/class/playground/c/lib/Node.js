@@ -110,14 +110,27 @@ qx.Class.define("playground.c.lib.Node",
 
     /**
      * Display an error message regarding this node
-     * 
+     *
      * @param message {String}
      *   The error message to display
+     *
+     * @param bFatal {Boolean?}
+     *   Whether the message is fatal and should stop execution of the
+     *   program.
      */
-    error : function(message)
+    error : function(message, bFatal)
     {
-      console.log("Error: line " + this.line + ": " + message + "\n");
+      message = "Error: line " + this.line + ": " + message;
       ++playground.c.lib.Node.__error.errorCount;
+
+      if (bFatal)
+      {
+        throw new Error(message);
+      }
+      else
+      {
+        console.log(message);
+      }
     },
 
     getExpressionValue : function(value)
@@ -282,6 +295,7 @@ qx.Class.define("playground.c.lib.Node",
       var             declarator;
       var             function_decl;
       var             pointer;
+      var             cases;
       var             value;
       var             value1; // typically the lhs of a binary expression
       var             value2; // typically the rhs of a binary expression
@@ -607,12 +621,39 @@ qx.Class.define("playground.c.lib.Node",
          */
         if (bExecuting)
         {
+          // Throw a Break error, which will be caught by loops and the switch
+          // statement.
           throw new playground.c.lib.Break();
         }
         break;
 
       case "case" :
-        throw new Error("Not yet implemented: case");
+        /*
+         * case
+         *   0 : primary_expression
+         *   1 :statement
+         */
+
+        // We only get here prior to executing, to record the case nodes
+        if (bExecuting)
+        {
+          break;
+        }
+        
+        // Ensure that the case is immediately within a switch statement's
+        // statement list.
+        if (! this.parent.cases)
+        {
+          this.error("Found a 'case' not immediately within a 'switch'");
+          break;
+        }
+        
+        // Attempt to obtain the value of this case expression
+        value1 = 
+          this.getExpressionValue(this.children[0].process(data, bExecuting));
+        
+        // If we got back null, it wasn't a constant expression
+console.log("value1=" + JSON.stringify(value1));
         break;
 
       case "cast_expression" :
@@ -2444,8 +2485,64 @@ qx.Class.define("playground.c.lib.Node",
                                    });
 
       case "switch" :
-          // don't forget to implement 'break'. See "for" and "do-while"
-        throw new Error("Not yet implemented: switch");
+        /*
+         * swtich
+         *   0 : expression
+         *   1 : statement
+         *     0 : declarations
+         *     1 : statement_list
+         */
+        if (! bExecuting)
+        {
+          if (this.children[1].children[1].type != "statement_list")
+          {
+            throw new Error("Programmer error: expected statement list");
+          }
+          
+          // Prepare to record locations of cases
+          this.children[1].children[1].cases = {};
+          
+          // Process the compound statement.
+          this.children[1].process(data, bExecuting);
+          break;
+        }
+
+        // We're executing. Evaluate the expression, and find the correct case.
+        try
+        {
+          // Evaluate the expression on which we will switch
+          value1 = 
+            this.getExpressionValue(this.children[0].process(data, bExecuting));
+          
+          // Get map of nodes for each case
+          cases = this.children[1].children[1].cases;
+          subnode = cases[value1] || cases["default"];
+          
+          // Did we find a case to execute?
+          if (typeof subnode != "undefined")
+          {
+            // Yup. Process it
+            subnode.process(data, bExecuting);
+          }
+        }
+        catch(e)
+        {
+          // was a break statement executed?
+          if (e instanceof playground.c.lib.Break)
+          {
+            // Yup. Retore symbol table to where it was when we entered the
+            // statement from which we are breaking
+            while (playground.c.lib.Symtab.getCurrent() != symtab)
+            {
+              playground.c.lib.Symtab.popStack();
+            }
+          }
+          else
+          {
+            // It's not a return code. Re-throw the error
+            throw e;
+          }
+        }
         break;
 
       case "translation_unit" :
