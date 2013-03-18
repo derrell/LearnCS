@@ -1,5 +1,3 @@
-switch
-
 sizeof
 cast_expression
 
@@ -9,12 +7,10 @@ abstract_declarator
 address_of
 array_expression
 break                           // implemented for loops; not yet for switch
-case
 char
 const
 continue
 declarator
-default
 dereference
 direct_abstract_declarator
 direct_declarator
