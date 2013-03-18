@@ -1192,7 +1192,7 @@ qx.Class.define("playground.c.lib.Node",
           }
           else
           {
-            // It's not a return code. Re-throw the error
+            // It's not a break. Re-throw the error
             throw e;
           }
         }
@@ -1343,7 +1343,7 @@ qx.Class.define("playground.c.lib.Node",
           }
           else
           {
-            // It's not a return code. Re-throw the error
+            // It's not a break. Re-throw the error
             throw e;
           }
         }
@@ -2596,6 +2596,8 @@ qx.Class.define("playground.c.lib.Node",
             subnode.children.forEach(
               function(child)
               {
+                var             value;
+
                 // Is this a case label?
                 if (child.type == "case")
                 {
@@ -2605,9 +2607,23 @@ qx.Class.define("playground.c.lib.Node",
                   // Get its expression value. It (child 0) becomes the key
                   // in the cases map, and child 1, the statement, becomes the
                   // value of that key in the cases map.
-                  subnode.cases[this.getExpressionValue(
-                                  child.children[0].process(data, bExecuting),
-                                  data).value] = child.children[1];
+                  value =
+                    this.getExpressionValue(
+                      child.children[0].process(data, bExecuting),
+                      data).value;
+                  
+                  // Does this value already exist in the cases map
+                  if (subnode.cases[value])
+                  {
+                    // Yup. This is an error.
+                    this.error("Found multiple case labels for '" +
+                               value + "' in 'switch'",
+                               true);
+                    return;     // not reached
+                  }
+                  
+                  // This is a new case value. Save its statement.
+                  subnode.cases[value] = child.children[1];
                   
                   // Stop testing for constant expressions
                   delete data.bCaseMode;
@@ -2665,7 +2681,7 @@ qx.Class.define("playground.c.lib.Node",
           }
           else
           {
-            // It's not a return code. Re-throw the error
+            // It's not a break. Re-throw the error
             throw e;
           }
         }
