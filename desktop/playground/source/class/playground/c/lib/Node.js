@@ -24,6 +24,7 @@ if (typeof qx === 'undefined')
   require("./NodeArray");
   require("./Return");
   require("./Break");
+  require("./Continue");
 }
 
 qx.Class.define("playground.c.lib.Node",
@@ -304,6 +305,7 @@ qx.Class.define("playground.c.lib.Node",
       var             bExists;
       var             identifier;
       var             symtab;
+      var             symtab2;
       var             symtabStruct;
       var             declarator;
       var             function_decl;
@@ -648,7 +650,7 @@ qx.Class.define("playground.c.lib.Node",
         {
           // Throw a Break error, which will be caught by loops and the switch
           // statement.
-          throw new playground.c.lib.Break();
+          throw new playground.c.lib.Break(this);
         }
         break;
 
@@ -786,7 +788,15 @@ qx.Class.define("playground.c.lib.Node",
         return { value : this.value, type : this.numberType };
 
       case "continue" :
-        throw new Error("Not yet implemented: continue");
+        /*
+         * continue
+         *   (no children)
+         */
+        if (bExecuting)
+        {
+          // Throw a Continue error, which will be caught by loops.
+          throw new playground.c.lib.Continue(this);
+        }
         break;
 
       case "declaration" :
@@ -1176,7 +1186,33 @@ qx.Class.define("playground.c.lib.Node",
           do
           {
             // statement block
-            this.children[0].process(data, bExecuting);
+            try
+            {
+              // Save current symbol table so we know where to pop to upon
+              // continue
+              symtab2 = playground.c.lib.Symtab.getCurrent();
+
+              // Process the statement block
+              this.children[0].process(data, bExecuting);
+            }
+            catch(e)
+            {
+              // was a continue statement executed?
+              if (e instanceof playground.c.lib.Continue)
+              {
+                // Yup. Restore symbol table to where it was when we entered
+                // the statement from which we are continuing
+                while (playground.c.lib.Symtab.getCurrent() != symtab2)
+                {
+                  playground.c.lib.Symtab.popStack();
+                }
+              }
+              else
+              {
+                // It's not a continue. Re-throw the error
+                throw e;
+              }
+            }
           } while (this.getExpressionValue(
                      this.children[1].process(data, bExecuting),
                      data).value);
@@ -1322,8 +1358,33 @@ qx.Class.define("playground.c.lib.Node",
                       data).value
                  : 1)
           {
-            // statement block
-            this.children[2].process(data, bExecuting);
+            try
+            {
+              // Save current symbol table so we know where to pop to upon
+              // continue
+              symtab2 = playground.c.lib.Symtab.getCurrent();
+
+              // Process the statement block
+              this.children[2].process(data, bExecuting);
+            }
+            catch(e)
+            {
+              // was a continue statement executed?
+              if (e instanceof playground.c.lib.Continue)
+              {
+                // Yup. Restore symbol table to where it was when we entered
+                // the statement from which we are continuing
+                while (playground.c.lib.Symtab.getCurrent() != symtab2)
+                {
+                  playground.c.lib.Symtab.popStack();
+                }
+              }
+              else
+              {
+                // It's not a continue. Re-throw the error
+                throw e;
+              }
+            }
 
             // after each iteration
             if (this.children[3])

@@ -1,5 +1,5 @@
 /**
- * A break "error"
+ * A continue "error"
  *
  * Copyright (c) 2013 Derrell Lipman
  * 
@@ -21,14 +21,13 @@ if (typeof qx === 'undefined')
   var qx = require("qooxdoo");
 }
 
-qx.Class.define("playground.c.lib.Break",
+qx.Class.define("playground.c.lib.Continue",
 {
   extend : Error,
   
   construct : function(node)
   {
-    this.message =
-      "Encountered 'break' while not in loop or switch";
+    this.message = "Encountered 'continue' while not in loop";
     this.node = node;
   }
 });

@@ -109,12 +109,13 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
 
     process : function(root)
     {
-      var sp;
-      var data = {};
-      var symtab;
-      var machine;
-      var Memory = playground.c.machine.Memory;
-      var bDebug = true;
+      var             sp;
+      var             data = {};
+      var             symtab;
+      var             message;
+      var             machine;
+      var             Memory = playground.c.machine.Memory;
+      var             bDebug = true;
 
       // Initialize memory
       Memory.getInstance().initAll();
@@ -173,7 +174,33 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
         playground.c.lib.Node.__mem.stackPush("unsigned int", 0xcccccccc);
 
         // Process main()
-        playground.c.lib.Node.entryNode.process(data, true);
+        try
+        {
+          playground.c.lib.Node.entryNode.process(data, true);
+        }
+        catch(e)
+        {
+
+          // Determine what type of error we encountered
+          if (e instanceof playground.c.lib.Break)
+          {
+            console.log(
+              "Error: line " + e.node.line + ": " + 
+              "Found 'break' not in a loop, " +
+              "nor immediately within a 'switch'");
+          }
+          else if (e instanceof playground.c.lib.Continue)
+          {
+            console.log(
+              "Error: line " + e.node.line + ": " + 
+              "Found 'continue' not immediately within a loop");
+          }
+          else
+          {
+            console.log("Programmer error: " + e);
+            console.log(e.stack);
+          }
+        }
 
         // Restore the previous frame pointer
         symtab.restoreFramePointer();

@@ -94,5 +94,9 @@ int main(int argc, char * argv[])
         break;
     }
     
+    printf("Should show an error for case not in switch\n");
+case 42:
+    printf("Past case not in switch. This should not print.\n");
 
+    return 0;
 }
