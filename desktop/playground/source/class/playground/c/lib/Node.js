@@ -783,6 +783,9 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "constant" :
+        // Ensure we have a valid C value. JavaScript is arbitrary precision.
+        playground.c.lib.Node.__mem.setReg("R1", this.numberType, this.value);
+        this.value = playground.c.lib.Node.__mem.getReg("R1", this.numberType);
         return { value : this.value, type : this.numberType };
 
       case "continue" :
