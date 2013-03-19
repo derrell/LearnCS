@@ -12,18 +12,17 @@
  */
 
 /**
- * Code used during testing with Node; ignored when in playground
- * 
  * @lint ignoreUndefined(require)
  */
 if (typeof qx === 'undefined')
 {
   var qx = require("qooxdoo");
+  require("./RuntimeError");
 }
 
 qx.Class.define("playground.c.lib.Return",
 {
-  extend : Error,
+  extend : playground.c.lib.RuntimeError,
   
   construct : function(returnCode)
   {

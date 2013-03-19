@@ -195,6 +195,11 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
               "Error: line " + e.node.line + ": " + 
               "Found 'continue' not immediately within a loop");
           }
+          else if (e instanceof playground.c.lib.RuntimeError)
+          {
+            console.log(
+              "Error: line " + e.node.line + ": " + e.message);
+          }
           else
           {
             console.log("Programmer error: " + e);

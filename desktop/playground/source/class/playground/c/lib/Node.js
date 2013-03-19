@@ -12,8 +12,6 @@
  */
 
 /**
- * Code used during testing with Node; ignored when in playground
- * 
  * @lint ignoreUndefined(require)
  */
 if (typeof qx === 'undefined')
@@ -128,7 +126,7 @@ qx.Class.define("playground.c.lib.Node",
 
       if (bFatal)
       {
-        throw new Error(message);
+        throw new playground.c.lib.RuntimeError(this, message);
       }
       else
       {
@@ -1721,9 +1719,9 @@ qx.Class.define("playground.c.lib.Node",
         entry = playground.c.lib.Symtab.getCurrent().get(this.value, false);
         if (! entry)
         {
-          throw new Error("Programmer error: entry should exist (" +
-                          this.value + 
-                          ")");
+          throw new playground.c.lib.RuntimeError(
+            this,
+            "Undeclared variable: " + this.value);
         }
         return entry;
 
