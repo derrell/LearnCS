@@ -16,7 +16,8 @@
     "QOOXDOO_PATH" : "../../../../qooxdoo.git",
     "QXTHEME"      : "playground.theme.Theme",
     "LOCALES"      : [ "en", "de", "ro", "sv", "cs"],
-    "ROOT"         : "."
+    "ROOT"         : ".",
+    "OPTIMIZE"     : []
   },
 
   "config-warnings" :

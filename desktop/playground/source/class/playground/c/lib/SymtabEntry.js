@@ -181,6 +181,20 @@ qx.Class.define("playground.c.lib.SymtabEntry",
       var             typeList = [];
       var             TF = playground.c.lib.SymtabEntry.TypeFlags;
 
+      // Is this a pointer?
+      if (this.__pointerCount)
+      {
+        // Yup. We know the type immediately.
+        return "pointer";
+      }
+      
+      // Is it an array and also a parameter?
+      if (this.__arraySizes.length !== 0 && this.__bIsParameter)
+      {
+        // Yup. It's treated as a pointer.
+        return "pointer";
+      }
+
       if (types & TF.Unsigned)
       {
         typeList.push("unsigned");
@@ -409,7 +423,7 @@ qx.Class.define("playground.c.lib.SymtabEntry",
         }
         
         // Is it an array and a function parameter? That makes it a pointer.
-        else if (this.__arraySizes.length === 0 && this._bIsParameter)
+        else if (this.__arraySizes.length !== 0 && this.__bIsParameter)
         {
           // Yup. Set its size.
           this.__size = SIB.Pointer;

@@ -2951,7 +2951,7 @@ qx.Class.define("playground.c.lib.Node",
                    "a variable or pointer dereference");
         return null;
       }
-
+      
       // Retrieve the current value
       value = playground.c.lib.Node.__mem.get(value1.value, value1.type);
 
