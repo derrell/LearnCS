@@ -1677,7 +1677,7 @@ type_name_token
   : TYPE_NAME
   {
     parser.yy.R("identifier : TYPE_NAME (" + yytext + ")");
-    $$ = new playground.c.lib.Node("type_name", yytext, yylineno);
+    $$ = new playground.c.lib.Node("type_name_token", yytext, yylineno);
     $$.value = yytext;
   }
   ;

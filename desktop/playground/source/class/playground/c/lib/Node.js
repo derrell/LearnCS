@@ -1041,7 +1041,7 @@ qx.Class.define("playground.c.lib.Node",
               // nothing to do; already noted
               break;
 
-            case "type_name" :
+            case "type_name_token" :
               // Add this declared type
               if (data.entry)
               {
@@ -1594,7 +1594,7 @@ qx.Class.define("playground.c.lib.Node",
                  subnode = subnode.children ? subnode.children[0] : null)
             {
               // ... add this declared type
-              entry.setType(subnode.type == "type_name"
+              entry.setType(subnode.type == "type_name_token"
                             ? subnode.value
                             : subnode.type);
             }
@@ -2546,7 +2546,7 @@ qx.Class.define("playground.c.lib.Node",
             }
             else
             {
-              entry.setType(subnode.type == "type_name"
+              entry.setType(subnode.type == "type_name_token"
                             ? subnode.value
                             : subnode.type);
             }
