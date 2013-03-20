@@ -318,6 +318,7 @@ qx.Class.define("playground.c.lib.Node",
       var             process = playground.c.lib.Node.process;
       var             model;
       var             memData;
+      var             mem;
       var             WORDSIZE = playground.c.machine.Memory.WORDSIZE;
 
       if (bExecuting)
@@ -1425,9 +1426,12 @@ qx.Class.define("playground.c.lib.Node",
           break;
         }
         
+        // Get a quick reference to memory
+        mem = playground.c.lib.Node.__mem;
+
         // Save the stack pointer and frame pointer, so we can restore them
         // after the function call
-        sp = playground.c.lib.Node.__mem.getReg("SP", "unsigned int");
+        sp = mem.getReg("SP", "unsigned int");
         
         // Retrieve the symbol table entry for this function
         value1 = this.children[0].process(data, bExecuting);
@@ -1458,12 +1462,24 @@ qx.Class.define("playground.c.lib.Node",
         else
         {
           // Save the new frame pointer
-          value2._symtab.setFramePointer(
-            playground.c.lib.Node.__mem.getReg("SP", "unsigned int"));
+          value2._symtab.setFramePointer(mem.getReg("SP", "unsigned int"));
 
           // Push the return address (our current line number) onto the stack
-          playground.c.lib.Node.__mem.stackPush("unsigned int", this.line);
-
+          sp = mem.stackPush("unsigned int", this.line);
+          
+          // Add "symbol info" to show that this was a return address
+          i = playground.c.machine.Memory.typeSize["int"];
+          mem.setSymbolInfo(
+            sp,
+            {
+              getName         : function() { return "called from line #"; },
+              getType         : function() { return "int"; },
+              getSize         : function() { return i; },
+              getPointerCount : function() { return 0; },
+              getArraySizes   : function() { return []; },
+              getIsParameter  : function() { return false; }
+            });
+          
           // Process that function. Save its return value in value3
           value3 = value2.process(data, bExecuting);
 
@@ -1475,7 +1491,7 @@ qx.Class.define("playground.c.lib.Node",
         delete data.args;
 
         // Restore the stack pointer
-        playground.c.lib.Node.__mem.setReg("SP", "unsigned int", sp);
+        mem.setReg("SP", "unsigned int", sp);
         return value3;
 
       case "function_decl" :

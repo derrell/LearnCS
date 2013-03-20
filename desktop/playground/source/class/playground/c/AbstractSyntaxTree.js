@@ -111,14 +111,16 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
     {
       var             sp;
       var             data = {};
+      var             intSize;
       var             symtab;
       var             message;
       var             machine;
       var             Memory = playground.c.machine.Memory;
+      var             mem = Memory.getInstance();
       var             bDebug = true;
 
       // Initialize memory
-      Memory.getInstance().initAll();
+      mem.initAll();
 
       // Correct line numbers
       root.fixLineNumbers();
@@ -171,7 +173,18 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
           playground.c.lib.Node.__mem.getReg("SP", "unsigned int"));
 
         // Push the return address (our current line number) onto the stack
-        playground.c.lib.Node.__mem.stackPush("unsigned int", 0xcccccccc);
+        sp = playground.c.lib.Node.__mem.stackPush("unsigned int", 0);
+        intSize = Memory.typeSize["int"];
+        mem.setSymbolInfo(
+          sp,
+          {
+            getName         : function() { return "called from line #"; },
+            getType         : function() { return "int"; },
+            getSize         : function() { return intSize; },
+            getPointerCount : function() { return 0; },
+            getArraySizes   : function() { return []; },
+            getIsParameter  : function() { return false; }
+          });
 
         // Process main()
         try
@@ -219,15 +232,8 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
       } 
 
 /*
-      playground.c.machine.Memory.getInstance().prettyPrint(
-        "Globals",
-        Memory.info.gas.start,
-        Memory.info.gas.length);
-
-      playground.c.machine.Memory.getInstance().prettyPrint(
-        "Stack",
-        Memory.info.rts.start,
-        Memory.info.rts.length);
+      mem.prettyPrint("Globals", Memory.info.gas.start, Memory.info.gas.length);
+      mem.prettyPrint("Stack",   Memory.info.rts.start, Memory.info.rts.length);
 */
     }
   }

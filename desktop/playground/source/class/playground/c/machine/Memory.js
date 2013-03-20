@@ -338,6 +338,9 @@ qx.Class.define("playground.c.machine.Memory",
       // Store the specified value at the location pointed to by the stack
       // pointer.
       this.set(sp, type, value);
+      
+      // Return the address at which we stored the value.
+      return sp;
     },
     
     /**
