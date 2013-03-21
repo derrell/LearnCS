@@ -37,11 +37,13 @@ qx.Class.define("playground.view.c.MemoryWord",
     this.gridLayout.setColumnWidth(1, 40);
     this.gridLayout.setColumnAlign(1, "center", "middle");
     
-    for (col = 2; col <= 6; col++)
+    for (col = 2; col < 6; col++)
     {
       this.gridLayout.setColumnWidth(col, 20);
     }
     
+    this.gridLayout.setColumnWidth(6, 100);
+
     // Pre-create each of the child controls
     this.getChildControl("name1");
     this.getChildControl("name2");
@@ -61,7 +63,7 @@ qx.Class.define("playground.view.c.MemoryWord",
     this.getChildControl("byte1");
     this.getChildControl("byte2");
     this.getChildControl("byte3");
-    this.getChildControl("arStartEnd");
+    this.getChildControl("group");
     
     this.initArray([]);
   },
@@ -150,10 +152,10 @@ qx.Class.define("playground.view.c.MemoryWord",
       apply : "_applyByte3"
     },
     
-    arStartEnd :
+    group :
     {
       nullable : true,
-      apply    : "_applyArStartEnd"
+      apply    : "_applyGroup"
     }
   },
 
@@ -266,7 +268,7 @@ qx.Class.define("playground.view.c.MemoryWord",
         this._add(control, {row : 3, column : 5 } );
         break;
         
-      case "arStartEnd" :
+      case "group" :
         control = new qx.ui.basic.Label();
 control.setVisibility("excluded");
         this._add(control, { row : 0, column : 6, rowSpan : 4 } );
@@ -613,9 +615,9 @@ control.setVisibility("excluded");
     },
     
     // property apply function
-    _applyArStartEnd : function(value, old)
+    _applyGroup : function(value, old)
     {
-      this.getChildControl("arStartEnd").setValue(value ? value.toString() : "");
+      this.getChildControl("group").setValue(value ? value.toString() : "");
     }
   }
 });

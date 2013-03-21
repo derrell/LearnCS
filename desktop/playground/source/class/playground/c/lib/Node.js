@@ -296,8 +296,8 @@ qx.Class.define("playground.c.lib.Node",
     process : function(data, bExecuting)
     {
       var             i;
-      var             fp;
       var             sp;
+      var             origSp;
       var             intSize;
       var             subnode;
       var             entry;
@@ -1430,9 +1430,8 @@ qx.Class.define("playground.c.lib.Node",
         // Get a quick reference to memory
         mem = playground.c.lib.Node.__mem;
 
-        // Save the stack pointer and frame pointer, so we can restore them
-        // after the function call
-        sp = mem.getReg("SP", "unsigned int");
+        // Save the stack pointer, so we can restore it after the function call
+        origSp = mem.getReg("SP", "unsigned int");
         
         // Retrieve the symbol table entry for this function
         value1 = this.children[0].process(data, bExecuting);
@@ -1492,7 +1491,7 @@ qx.Class.define("playground.c.lib.Node",
         delete data.args;
 
         // Restore the stack pointer
-        mem.setReg("SP", "unsigned int", sp);
+        mem.setReg("SP", "unsigned int", origSp);
         return value3;
 
       case "function_decl" :

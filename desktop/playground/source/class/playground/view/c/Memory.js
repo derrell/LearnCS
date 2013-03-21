@@ -49,7 +49,7 @@ qx.Class.define("playground.view.c.Memory",
           controller.bindProperty("bytes[1]", "byte1", null, item, id);
           controller.bindProperty("bytes[2]", "byte2", null, item, id);
           controller.bindProperty("bytes[3]", "byte3", null, item, id);
-          controller.bindProperty("arStartEnd", "arStartEnd", null, item, id);
+          controller.bindProperty("group", "group", null, item, id);
         }
       };
     

@@ -251,7 +251,7 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
         playground.c.lib.Node.__mem.setReg("SP", "unsigned int", sp);
 
         // Push the address of the argv array onto the stack
-        playground.c.lib.Node.__mem.stackPush("char", p);
+        playground.c.lib.Node.__mem.stackPush("pointer", p);
 
         // Push the argument count onto the stack
         playground.c.lib.Node.__mem.stackPush("int", argv.length);

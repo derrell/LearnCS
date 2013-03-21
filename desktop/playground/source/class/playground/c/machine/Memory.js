@@ -598,7 +598,13 @@ qx.Class.define("playground.c.machine.Memory",
      */
     setSymbolInfo : function(addr, symbol)
     {
-console.log("setting symbol info for " + symbol.getName() + " at addr " + addr.toString(16));
+      var             name;
+      
+      // Determine the group name for the memory template view. If there's a
+      // symbol table, use its name; otherwise it's created before there's a
+      // symbol table.
+      name = symbol.getSymtab ? symbol.getSymtab().getName() : "(system)";
+
       this._symbolInfo[addr] = 
         {
           addr       : addr,
@@ -608,11 +614,11 @@ console.log("setting symbol info for " + symbol.getName() + " at addr " + addr.t
           pointer    : symbol.getPointerCount(),
           array      : symbol.getArraySizes(),
           param      : symbol.getIsParameter(),
+          group      : name,
           
           // The following are added to this map by getDataModel:
           value      : null,    // will become an array of values in this word
-          word       : null,    // will become the native memory word
-          arStartEnd : null     // activation record start or end indication
+          word       : null    // will become the native memory word
         };
     },
 
@@ -643,6 +649,7 @@ console.log("setting symbol info for " + symbol.getName() + " at addr " + addr.t
       var             values;
       var             elements;
       var             arrayCount;
+      var             symtab;
       var             model = [];
       var             WORDSIZE = playground.c.machine.Memory.WORDSIZE;
       
@@ -697,20 +704,20 @@ console.log("setting symbol info for " + symbol.getName() + " at addr " + addr.t
           {
             // Create a clone since we'll be munging it.
             data = JSON.parse(JSON.stringify(this._symbolInfo[addr]));
-//console.log("data=" + JSON.stringify(data, function(key, value) { if (typeof value == "number") return value.toString(16); return value; }, 2) + "\n\n");
           }
           else
           {
+            symtab = playground.c.lib.Symtab.getCurrent();
             data = 
               {
-                addr       : addr,
-                name       : "",
-                type       : null,
-                size       : 0,
-                pointer    : 0,
-                array      : [],
-                param      : false,
-                arStartEnd : ""
+                addr    : addr,
+                name    : "",
+                type    : null,
+                size    : 0,
+                pointer : 0,
+                array   : [],
+                param   : false,
+                group   : symtab ? symtab.getName() : "(system)"
               };
           }
           
