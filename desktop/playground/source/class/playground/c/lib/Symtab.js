@@ -341,24 +341,28 @@ qx.Class.define("playground.c.lib.Symtab",
       var             parts = [];
       var             TF = playground.c.lib.SymtabEntry.TypeFlags;
 
-/*
       console.log("");
       if (message)
       {
         console.log(message);
       }
-*/
 
       for (symtabName in playground.c.lib.Symtab._symtabs)
       {
         symtab = playground.c.lib.Symtab._symtabs[symtabName];
-//        console.log("Symbol table " + symtab + " (" + symtab.__name + ")...");
+        console.log("Symbol table " + symtab + 
+                    " (" +
+                    symtab.__name +
+                    ", fp=" +
+                    symtab.getFramePointer().toString(16) +
+                    ")...");
 
         for (symbolName in symtab.__symbols)
         {
           // Get quick reference to this symbol table entry
           entry = symtab.__symbols[symbolName];
 
+          parts = [];
           parts.push("  '" + symbolName + "':");
           if (entry.getIsType())
           {
@@ -405,7 +409,7 @@ qx.Class.define("playground.c.lib.Symtab",
           {
             // This is a struct or an enum
             parts.push(" " + entry.typeName);
-            // entry.display();
+            entry.display();
           }
 
           parts.push(" ");
@@ -414,11 +418,9 @@ qx.Class.define("playground.c.lib.Symtab",
             parts.push("*");
           }
 
-/*
           console.log(parts.join(""));
           entry.display();
           console.log("");
-*/
         }
       }
     }

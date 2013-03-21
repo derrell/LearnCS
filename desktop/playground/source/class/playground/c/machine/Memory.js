@@ -112,7 +112,7 @@ qx.Class.define("playground.c.machine.Memory",
       "rts" :
       {
         start : 0x9EA4,
-        length : 68
+        length : 256
       }
 
 /*
@@ -598,11 +598,12 @@ qx.Class.define("playground.c.machine.Memory",
      */
     setSymbolInfo : function(addr, symbol)
     {
+console.log("setting symbol info for " + symbol.getName() + " at addr " + addr.toString(16));
       this._symbolInfo[addr] = 
         {
           addr       : addr,
           name       : symbol.getName(),
-          type       : symbol.getType(),
+          type       : symbol.getType(true),
           size       : symbol.getSize(),
           pointer    : symbol.getPointerCount(),
           array      : symbol.getArraySizes(),
@@ -696,6 +697,7 @@ qx.Class.define("playground.c.machine.Memory",
           {
             // Create a clone since we'll be munging it.
             data = JSON.parse(JSON.stringify(this._symbolInfo[addr]));
+//console.log("data=" + JSON.stringify(data, function(key, value) { if (typeof value == "number") return value.toString(16); return value; }, 2) + "\n\n");
           }
           else
           {
@@ -735,20 +737,47 @@ qx.Class.define("playground.c.machine.Memory",
           // If this is really a pointer, change its type
           // Save the type and its size
           type = datum.type;
-          if (datum.pointer || (datum.array.length && datum.param) )
+          
+          // Arrays are actually pointers if they are parameters, but an array
+          // of pointers that are not parameters are not considered to be a
+          // pointer.
+          if (datum.param)
           {
-            type = "pointer";
+            // It's a parameter, so any pointer or array is a pointer
+            if (datum.pointer || datum.array.length)
+            {
+              type = "pointer";
+            }
           }
+          else
+          {
+            // It's not a parameter, so it's only a pointer if it's not an array
+            if (datum.pointer)
+            {
+              type = "pointer";
+            }
+          }
+
           size = playground.c.machine.Memory.typeSize[type];
           
           // Determine how many items of this size we need values for
-          if (type === "pointer" || datum.array.length == 0)
+          if (datum.array.length == 0)
+          {
+            arrayCount = 1;
+          }
+          else if (datum.array.length === 1 && datum.array[0] === -1)
           {
             arrayCount = 1;
           }
           else
           {
-            arrayCount = datum.size / size;
+            // multiply all of the array sizes together
+            arrayCount = datum.array.reduce(
+              function(previous, current)
+              {
+                return previous * current;
+              },
+              1);
           }
           
           do
@@ -763,8 +792,9 @@ qx.Class.define("playground.c.machine.Memory",
             // Get an (ordinary JavaScript) array of values of the specified
             // type.
             values = 
-              Array.prototype.slice.call(this._getByType(type, addr, elements),
-                                         0);
+              Array.prototype.slice.call(
+                this._getByType(type, addr, elements), 
+                0);
             
             // Put those values into a new array, in the positions for display
             datum.values = [];
@@ -798,6 +828,7 @@ qx.Class.define("playground.c.machine.Memory",
               // This datum wasn't named, so doesn't contain type info. Add it.
               datum.type = type;
               datum.size = size;
+              datum.pointer = (type === "pointer" ? 1 : 0);
             }
           } while(arrayCount > 0)
         }

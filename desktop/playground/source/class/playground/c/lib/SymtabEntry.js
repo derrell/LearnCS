@@ -175,24 +175,28 @@ qx.Class.define("playground.c.lib.SymtabEntry",
       return this.__typeFlags;
     },
 
-    getType : function()
+    getType : function(bOnlyRealType)
     {
       var             types = this.__typeFlags;
       var             typeList = [];
       var             TF = playground.c.lib.SymtabEntry.TypeFlags;
 
-      // Is this a pointer?
-      if (this.__pointerCount)
+      // If they're looking only for the realy type, don't translate to pointer
+      if (! bOnlyRealType)
       {
-        // Yup. We know the type immediately.
-        return "pointer";
-      }
-      
-      // Is it an array and also a parameter?
-      if (this.__arraySizes.length !== 0 && this.__bIsParameter)
-      {
-        // Yup. It's treated as a pointer.
-        return "pointer";
+        // Is this a pointer?
+        if (this.__pointerCount)
+        {
+          // Yup. We know the type immediately.
+          return "pointer";
+        }
+
+        // Is it an array and also a parameter?
+        if (this.__arraySizes.length !== 0 && this.__bIsParameter)
+        {
+          // Yup. It's treated as a pointer.
+          return "pointer";
+        }
       }
 
       if (types & TF.Unsigned)

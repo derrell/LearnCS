@@ -298,6 +298,7 @@ qx.Class.define("playground.c.lib.Node",
       var             i;
       var             fp;
       var             sp;
+      var             intSize;
       var             subnode;
       var             entry;
       var             bExists;
@@ -1468,13 +1469,13 @@ qx.Class.define("playground.c.lib.Node",
           sp = mem.stackPush("unsigned int", this.line);
           
           // Add "symbol info" to show that this was a return address
-          i = playground.c.machine.Memory.typeSize["int"];
+          intSize = playground.c.machine.Memory.typeSize["int"];
           mem.setSymbolInfo(
             sp,
             {
               getName         : function() { return "called from line #"; },
               getType         : function() { return "int"; },
-              getSize         : function() { return i; },
+              getSize         : function() { return intSize; },
               getPointerCount : function() { return 0; },
               getArraySizes   : function() { return []; },
               getIsParameter  : function() { return false; }
