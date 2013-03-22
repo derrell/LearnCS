@@ -103,7 +103,7 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
       // Function to display rules as they are parsed
       parser.yy.R = function(rule)
       {
-//        console.log("rule: " + rule);
+        console.log("rule: " + rule);
       };
     },
 

@@ -1,16 +1,14 @@
 sizeof
 cast_expression
 
+dereference (arbitrary expressions -- must determine type)
 
 
 abstract_declarator
-address_of
 array_expression
 char
 const
-continue
 declarator
-dereference
 direct_abstract_declarator
 direct_declarator
 double

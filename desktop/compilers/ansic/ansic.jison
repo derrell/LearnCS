@@ -82,12 +82,9 @@ postfix_expression
 
       var             array_expression;
 
-      $$ = $1;
-      array_expression =
-        new playground.c.lib.Node("array_expression", yytext, yylineno);
-      array_expression.children.push($1);
-      array_expression.children.push($3);
-      $$.children.push(array_expression);
+      $$ = new playground.c.lib.Node("array_expression", yytext, yylineno);
+      $$.children.push($1);
+      $$.children.push($3);
     }
   | postfix_expression '(' ')'
     {

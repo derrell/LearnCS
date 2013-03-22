@@ -298,6 +298,7 @@ qx.Class.define("playground.c.lib.Node",
       var             i;
       var             sp;
       var             origSp;
+      var             addr;
       var             intSize;
       var             subnode;
       var             entry;
@@ -400,7 +401,33 @@ qx.Class.define("playground.c.lib.Node",
                                    });
 
       case "address_of" :
-        throw new Error("Not yet implemented: address_of");
+        /*
+         * address_of
+         *   0: cast_expression
+         */
+        
+        // Only applicable when executing
+        if (! bExecuting)
+        {
+          break;
+        }
+
+        // We're executing. Get the value of the cast_expression
+        entry = this.children[0].process(data, bExecuting);
+
+        // Ensure we found a symbol
+        if (! (entry instanceof playground.c.lib.SymtabEntry))
+        {
+          this.error("Address-of operator requires a variable", true);
+          break;                // not reached
+        }
+
+        // Complete the operation
+        return (
+          { 
+            value : entry.getAddr(),
+            type  : "pointer"
+          });
         break;
 
       case "and" :
@@ -503,7 +530,37 @@ qx.Class.define("playground.c.lib.Node",
          *   0: primary_expression
          *   1: expression (index)
          */
-        throw new Error("Not yet implemented: array_expression");
+        
+        if (! bExecuting)
+        {
+          break;
+        }
+
+        // Get the base address
+        value1 = this.children[0].process(data, bExecuting);
+        
+        // If we don't know the size of this thing, we're in trouble. For now,
+        // we'll expect a symbol.
+        if (! (value1 instanceof playground.c.lib.SymtabEntry))
+        {
+          this.error("The base of an array access must be a variable (for now)",
+                     true);
+          break;                // not reached
+        }
+        
+        // Ensure that the symbol is an array
+        if (value1.getArraySizes().length == 0)
+        {
+          this.error(
+            value1.getName() + " is not an array. " +
+              "Providing an index does not make sense..",
+            true);
+          break;                //not reached
+        }
+
+        // Get the index
+        value2 = this.children[1].process(data, bExecuting);
+        
         break;
 
       case "assign" :
@@ -1107,8 +1164,41 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "dereference" :
-        throw new Error("Not yet implemented: dereference");
-        break;
+        /*
+         * dereference
+         *   0: cast_expression
+         */
+        
+        // Only applicable when executing
+        if (! bExecuting)
+        {
+          break;
+        }
+
+        // We're executing. Get the value of the cast_expression
+        value = this.children[0].process(data, bExecuting);
+
+        // If we found a symbol, get its address and type
+        if (value instanceof playground.c.lib.SymtabEntry)
+        {
+          addr = value.getAddr();
+          value3 = { type : value.getType(true) };
+          
+          // Get the value of the pointer
+          addr = playground.c.lib.Node.__mem.get(addr, "pointer"); 
+          
+          // Now get the value it points to
+          value3.value =
+            playground.c.lib.Node.__mem.get(addr, value3.type); 
+        }
+        else
+        {
+          throw new Error(
+            "Not yet implemented: dereference (except of declared pointer)");
+        }
+
+        // Complete the operation
+        return value3;
 
       case "direct_abstract_declarator" :
         throw new Error("Not yet implemented: direct_abstract_declarator");
@@ -2856,6 +2946,17 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "type_name" :
+        /*
+         * type_name
+         *   0: specifier_qualifier_list
+         *   1: abstract_declarator?
+         * 
+         * This node type is used only for sizeof and cast, so returns a map
+         * containing the textual type name (type) and its size (size). That
+         * information is static -- it can not change during the course of
+         * execution, so the map is cached as this.data, in case this node is
+         * traversed again.
+         */
         throw new Error("Not yet implemented: type_name");
         break;
 

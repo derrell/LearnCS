@@ -33,6 +33,8 @@ int main(int argc, char * argv[])
     printf("sizeof(unsigned int *) = %d\n", sizeof(unsigned int *));
     printf("sizeof(unsigned long *) = %d\n", sizeof(unsigned long *));
 
+    printf("sizeof(int [3]) = %d\n", sizeof(int [3]);
+
     printf("sizeof(c) = %d\n", sizeof(c));
     printf("sizeof(s) = %d\n", sizeof(s));
     printf("sizeof(i) = %d\n", sizeof(i));
