@@ -150,13 +150,20 @@ qx.Class.define("playground.c.lib.Node",
           }
           else
           {
-            value = { value : value.getAddr(), type : value.getType() };
+            value =
+              {
+                value        : value.getAddr(), 
+                type         : value.getType(false),
+                realType     : value.getType(true),
+                pointerCount : value.getPointerCount(),
+                arraySizes   : value.getArraySizes()
+              };
             value.value = 
               playground.c.lib.Node.__mem.get(value.value, value.type); 
           }
        }
 
-        return value;
+       return value;
     },
 
     /**
@@ -312,6 +319,7 @@ qx.Class.define("playground.c.lib.Node",
       var             pointer;
       var             cases;
       var             caseAndBreak;
+      var             type;
       var             value;
       var             value1; // typically the lhs of a binary expression
       var             value2; // typically the rhs of a binary expression
@@ -372,10 +380,14 @@ qx.Class.define("playground.c.lib.Node",
                                     data);
           
           // Complete the operation, coercing to the appropriate type
+          type = this.__coerce(value1.type, value2.type);
           return (
             { 
-              value : value1.value + value2.value,
-              type : this.__coerce(value1.type, value2.type)
+              value        : value1.value + value2.value,
+              type         : type,
+              realType     : type,
+              pointerCount : 0,
+              arraySizes   : []
             });
         }
         break;
@@ -447,10 +459,14 @@ qx.Class.define("playground.c.lib.Node",
                                     data);
           
           // Complete the operation, coercing to the appropriate type
+          type = this.__coerce(value1.type, value2.type);
           return (
             { 
               value : value1.value && value2.value ? 1 : 0,
-              type : this.__coerce(value1.type, value2.type)
+              type         : type,
+              realType     : type,
+              pointerCount : 0,
+              arraySizes   : []
             });
         }
         break;
@@ -604,10 +620,14 @@ qx.Class.define("playground.c.lib.Node",
                                     data);
           
           // Complete the operation, coercing to the appropriate type
+          type = this.__coerce(value1.type, value2.type);
           return (
             { 
               value : value1.value & value2.value,
-              type : this.__coerce(value1.type, value2.type)
+              type         : type,
+              realType     : type,
+              pointerCount : 0,
+              arraySizes   : []
             });
         }
         break;
@@ -647,8 +667,11 @@ qx.Class.define("playground.c.lib.Node",
           // Complete the operation
           return (
             { 
-              value : ~ value1.value,
-              type : value1.type
+              value        : ~ value1.value,
+              type         : value1.type,
+              realType     : value1.type,
+              pointerCount : 0,
+              arraySizes   : []
             });
         }
         break;
@@ -670,10 +693,14 @@ qx.Class.define("playground.c.lib.Node",
                                     data);
           
           // Complete the operation, coercing to the appropriate type
+          type = this.__coerce(value1.type, value2.type);
           return (
             { 
-              value : value1.value | value2.value,
-              type : this.__coerce(value1.type, value2.type)
+              value        : value1.value | value2.value,
+              type         : type,
+              realType     : type,
+              pointerCount : 0,
+              arraySizes   : []
             });
         }
         break;
@@ -842,10 +869,20 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "constant" :
-        // Ensure we have a valid C value. JavaScript is arbitrary precision.
+        // JavaScript is arbitrary precision. Ensure we have a valid C value
+        // by writing it as a fixed-type to a register, and then reading it
+        // back in.
         playground.c.lib.Node.__mem.setReg("R1", this.numberType, this.value);
         this.value = playground.c.lib.Node.__mem.getReg("R1", this.numberType);
-        return { value : this.value, type : this.numberType };
+
+        return (
+          {
+            value        : this.value, 
+            type         : this.numberType,
+            realType     : this.numberType,
+            pointerCount : 0,
+            arraySizes   : []
+          });
 
       case "continue" :
         /*
@@ -1182,7 +1219,14 @@ qx.Class.define("playground.c.lib.Node",
         if (value instanceof playground.c.lib.SymtabEntry)
         {
           addr = value.getAddr();
-          value3 = { type : value.getType(true) };
+          value3 = 
+            {
+              type         : value.getType(false) ,
+              realType     : value.getType(true),
+              pointerCount : value.getPointerCount(),
+              arraySizes   : value.getArraySizes()
+            };
+throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount has gone to 0");
           
           // Get the value of the pointer
           addr = playground.c.lib.Node.__mem.get(addr, "pointer"); 
@@ -1225,10 +1269,14 @@ qx.Class.define("playground.c.lib.Node",
                                     data);
           
           // Complete the operation, coercing to the appropriate type
+          type = this.__coerce(value1.type, value2.type);
           return (
             { 
-              value : value1.value / value2.value,
-              type : this.__coerce(value1.type, value2.type)
+              value        : value1.value / value2.value,
+              type         : type,
+              realType     : type,
+              pointerCount : 0,
+              arraySizes   : []
             });
         }
         break;
@@ -1361,8 +1409,11 @@ qx.Class.define("playground.c.lib.Node",
           // Complete the operation, coercing to the appropriate type
           return (
             { 
-              value : value1.value === value2.value ? 1 : 0,
-              type : "int"
+              value        : value1.value === value2.value ? 1 : 0,
+              type         : "int",
+              realType     : "int",
+              pointerCount : 0,
+              arraySizes   : []
             });
         }
         break;
@@ -1384,10 +1435,14 @@ qx.Class.define("playground.c.lib.Node",
                                     data);
           
           // Complete the operation, coercing to the appropriate type
+          type = this.__coerce(value1.type, value2.type);
           return (
             { 
-              value : value1.value ^ value2.value,
-              type : this.__coerce(value1.type, value2.type)
+              value        : value1.value ^ value2.value,
+              type         : type,
+              realType     : type,
+              pointerCount : 0,
+              arraySizes   : []
             });
         }
         break;
@@ -1727,8 +1782,11 @@ qx.Class.define("playground.c.lib.Node",
           // value.
           value3 =
             {
-              value : Math.floor(Math.random() * 256),
-              type : "unsigned char"
+              value        : Math.floor(Math.random() * 256),
+              type         : "unsigned char",
+              realType     : "unsigned char",
+              pointerCount : 0,
+              arraySizes   : []
             };
         }
         catch(e)
@@ -1788,8 +1846,11 @@ qx.Class.define("playground.c.lib.Node",
           // Complete the operation, coercing to the appropriate type
           return (
             { 
-              value : value1.value >= value2.value ? 1 : 0,
-              type : "int"
+              value        : value1.value >= value2.value ? 1 : 0,
+              type         : "int",
+              realType     : "int",
+              pointerCount : 0,
+              arraySizes   : []
             });
         }
         break;
@@ -1813,8 +1874,11 @@ qx.Class.define("playground.c.lib.Node",
           // Complete the operation, coercing to the appropriate type
           return (
             { 
-              value : value1.value > value2.value ? 1 : 0,
-              type : "int"
+              value        : value1.value > value2.value ? 1 : 0,
+              type         : "int",
+              realType     : "int",
+              pointerCount : 0,
+              arraySizes   : []
             });
         }
         break;
@@ -1925,8 +1989,11 @@ qx.Class.define("playground.c.lib.Node",
           // Complete the operation, coercing to the appropriate type
           return (
             { 
-              value : value1.value << value2.value,
-              type : "int"
+              value        : value1.value << value2.value,
+              type         : "int",
+              realType     : "int",
+              pointerCount : 0,
+              arraySizes   : []
             });
         }
         break;
@@ -1970,8 +2037,11 @@ qx.Class.define("playground.c.lib.Node",
           // Complete the operation, coercing to the appropriate type
           return (
             { 
-              value : value1.value <= value2.value ? 1 : 0,
-              type : "int"
+              value        : value1.value <= value2.value ? 1 : 0,
+              type         : "int",
+              realType     : "int",
+              pointerCount : 0,
+              arraySizes   : []
             });
         }
         break;
@@ -1995,8 +2065,11 @@ qx.Class.define("playground.c.lib.Node",
           // Complete the operation, coercing to the appropriate type
           return (
             { 
-              value : value1.value < value2.value ? 1 : 0,
-              type : "int"
+              value        : value1.value < value2.value ? 1 : 0,
+              type         : "int",
+              realType     : "int",
+              pointerCount : 0,
+              arraySizes   : []
             });
         }
         break;
@@ -2022,10 +2095,14 @@ qx.Class.define("playground.c.lib.Node",
                                     data);
           
           // Complete the operation, coercing to the appropriate type
+          type = this.__coerce(value1.type, value2.type);
           return (
             { 
-              value : value1.value % value2.value,
-              type : this.__coerce(value1.type, value2.type)
+              value        : value1.value % value2.value,
+              type         : type,
+              realType     : type,
+              pointerCount : 0,
+              arraySizes   : []
             });
         }
         break;
@@ -2067,10 +2144,14 @@ qx.Class.define("playground.c.lib.Node",
                                     data);
           
           // Complete the operation, coercing to the appropriate type
+          type = this.__coerce(value1.type, value2.type);
           return (
             { 
-              value : value1.value * value2.value,
-              type : this.__coerce(value1.type, value2.type)
+              value        : value1.value * value2.value,
+              type         : type,
+              realType     : type,
+              pointerCount : 0,
+              arraySizes   : []
             });
         }
         break;
@@ -2110,8 +2191,11 @@ qx.Class.define("playground.c.lib.Node",
           // Complete the operation
           return (
             { 
-              value : - value1.value,
-              type : value1.type
+              value        : - value1.value,
+              type         : value1.type,
+              realType     : value1.type,
+              pointerCount : 0,
+              arraySizes   : []
             });
         }
         break;
@@ -2131,8 +2215,11 @@ qx.Class.define("playground.c.lib.Node",
           // Complete the operation
           return (
             { 
-              value : ! value1.value,
-              type : "int"
+              value        : ! value1.value,
+              type         : "int",
+              realType     : "int",
+              pointerCount : 0,
+              arraySizes   : []
             });
         }
         break;
@@ -2156,8 +2243,11 @@ qx.Class.define("playground.c.lib.Node",
           // Complete the operation, coercing to the appropriate type
           return (
             { 
-              value : value1.value !== value2.value ? 1 : 0,
-              type : "int"
+              value        : value1.value !== value2.value ? 1 : 0,
+              type         : "int",
+              realType     : "int",
+              pointerCount : 0,
+              arraySizes   : []
             });
         }
         break;
@@ -2179,10 +2269,14 @@ qx.Class.define("playground.c.lib.Node",
                                     data);
           
           // Complete the operation, coercing to the appropriate type
+          type = this.__coerce(value1.type, value2.type);
           return (
             { 
-              value : value1.value || value2.value ? 1 : 0,
-              type : this.__coerce(value1.type, value2.type)
+              value        : value1.value || value2.value ? 1 : 0,
+              type         : type,
+              realType     : type,
+              pointerCount : 0,
+              arraySizes   : []
             });
         }
         break;
@@ -2436,8 +2530,11 @@ qx.Class.define("playground.c.lib.Node",
           // No return value was provided. Choose one at random.
           value3 =
             {
-              value : Math.floor(Math.random() * 256),
-              type : "unsigned char"
+              value        : Math.floor(Math.random() * 256),
+              type         : "unsigned char",
+              realType     : "unsigned char",
+              pointerCount : 0,
+              arraySizes   : []
             };
         }
         
@@ -2464,8 +2561,11 @@ qx.Class.define("playground.c.lib.Node",
           // Complete the operation, coercing to the appropriate type
           return (
             { 
-              value : value1.value >> value2.value,
-              type : "int"
+              value        : value1.value >> value2.value,
+              type         : "int",
+              realType     : "int",
+              pointerCount : 0,
+              arraySizes   : []
             });
         }
         break;
@@ -2698,10 +2798,14 @@ qx.Class.define("playground.c.lib.Node",
                                     data);
           
           // Complete the operation, coercing to the appropriate type
+          type = this.__coerce(value1.type, value2.type);
           return (
             { 
-              value : value1.value - value2.value,
-              type : this.__coerce(value1.type, value2.type)
+              value        : value1.value - value2.value,
+              type         : type,
+              realType     : type,
+              pointerCount : 0,
+              arraySizes   : []
             });
         }
         break;
@@ -3060,7 +3164,14 @@ qx.Class.define("playground.c.lib.Node",
       if (value1 instanceof playground.c.lib.SymtabEntry)
       {
         // ... then retrieve the symbol's address
-        value1 = { value : value1.getAddr(), type : value1.getType() };
+        value1 =
+          {
+            value        : value1.getAddr(), 
+            type         : value1.getType(),
+            realType     : value1.getType(),
+            pointerCount : 0,
+            arraySizes   : []
+          };
       }
       else if (this.children[0].type != "dereference")
       {
@@ -3077,7 +3188,13 @@ qx.Class.define("playground.c.lib.Node",
       // value. Otherwise, get the value from the rhs of the expression.
       value3 =
         bUnary
-        ? { value : value, type : value1.type }
+        ? { 
+            value        : value, 
+            type         : value1.type ,
+            realType     : value1.type ,
+            pointerCount : 0,
+            arraySizes   : []
+          }
         : this.getExpressionValue(this.children[1].process(data, true),
                                   data);
 
@@ -3097,8 +3214,11 @@ qx.Class.define("playground.c.lib.Node",
       // Retrieve the value and return it
       return (
         {
-          value : value,
-          type  : value1.type
+          value        : value,
+          type         : value1.type,
+          realType     : value1.type,
+          pointerCount : 0,
+          arraySizes   : []
         });
     },
 
