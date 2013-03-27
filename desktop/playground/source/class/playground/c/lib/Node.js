@@ -20,6 +20,8 @@ if (typeof qx === 'undefined')
   var printf = require("printf");
   require("./Symtab");
   require("./NodeArray");
+  require("./Specifier");
+  require("./Declarator");
   require("./Return");
   require("./Break");
   require("./Continue");
@@ -141,15 +143,24 @@ qx.Class.define("playground.c.lib.Node",
         {
           // ... then retrieve the symbol's address, unless we're in 'case'
           // mode (cases must be constant expressions)
-          if (data.bCaseMode)
+          switch(data.constantOnly)
           {
+          case "case" :
+            // occurs during executing, so error is fatal
             this.error("Each 'case' statement must represent a constant " +
                        "expression. It may not rely on any variables' values.",
                        true);
             value = null;
-          }
-          else
-          {
+            break;
+            
+          case "array_decl" :
+            // occurs before executing, so error need not be fatal
+            this.error("Array sizes must be constants");
+            value = null;
+            break;
+            
+          default:
+            // need not be constant
             value =
               {
                 value        : value.getAddr(), 
@@ -356,11 +367,18 @@ qx.Class.define("playground.c.lib.Node",
         }
       }
 
+console.log("process: " + this.type);
+
       // Yup. See what type it is.
       switch(this.type)
       {
       case "abstract_declarator" :
-        throw new Error("Not yet implemented: abstract_declarator");
+        /*
+         * abstract_declarator
+         *   0 : pointer?
+         *   1 : direct_abstract_declarator
+         */
+        this.__processSubnodes(data, bExecuting);
         break;
 
       case "add" :
@@ -530,14 +548,26 @@ qx.Class.define("playground.c.lib.Node",
          * array_decl
          *   0: constant_expression
          */
+        
         if (bExecuting)
         {
-          // We're executing. Get the value of the constant expression
-          return(
-            this.getExpressionValue(this.children[0].process(data,
-                                                             bExecuting),
-                                    data));
+          break;
         }
+
+        // Create an array declarator entry
+        declarator = new playground.c.lib.Declarator(this);
+
+        // Disallow variable access. Array sizes must be constant.
+        data.constantOnly = "array_decl";
+
+        // Get the array size
+        declarator.setArraySize(this.children[0].process(data, bExecuting));
+        
+        // Add this array declarator to the specifier/declarator list
+        data.specAndDecl.push(declarator);
+
+        // Finished with array size. Re-allow variable access.
+        delete data.constantOnly;
         break;
 
       case "array_expression" :
@@ -600,7 +630,13 @@ qx.Class.define("playground.c.lib.Node",
                                    });
 
       case "auto" :
-        // ignored
+        // Only applicable before executing
+        if (bExecuting)
+        {
+          break;
+        }
+        
+        data.specifiers.setStorage("auto");
         break;
 
       case "bit-and" :
@@ -769,7 +805,13 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "char" :
-        throw new Error("Not yet implemented: char");
+        // Only applicable before executing
+        if (bExecuting)
+        {
+          break;
+        }
+        
+        data.specifiers.setType("char");
         break;
 
       case "compound_statement" :
@@ -865,7 +907,13 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "const" :
-        throw new Error("Not yet implemented: const");
+        // Only applicable before executing
+        if (bExecuting)
+        {
+          break;
+        }
+        
+        data.specifiers.setConstant("constant");
         break;
 
       case "constant" :
@@ -901,19 +949,25 @@ qx.Class.define("playground.c.lib.Node",
          * declaration
          *   0: declaration_specifiers
          *   1: init_declarator_list
-         *      0: init_declarator
-         *         0: declarator
-         *            0: identifier
-         *            1: pointer|<null>
-         *               0: pointer|<null>
-         *                  0: etc.
-         *         1: initializer?
-         *      1: init_declarator
-         *      ...
          */
 
+        // Create our own data object with a new specifier for this declaration
+        data = 
+          {
+            id : "declaration",
+            specifiers : new playground.c.lib.Specifier(this)
+          };
+
+        // Process the specifiers
+        this.children[0].process(data, bExecuting);
+        
+        // Process the declarators
+        this.children[1].process(data, bExecuting);
+        break;
+
+/*
         // Determine if we're executing, or generating symbol tables
-        if (!bExecuting)
+        if (! bExecuting)
         {
           // Assume we do not expect the entry to already exist in the symbol
           // table
@@ -1029,7 +1083,7 @@ qx.Class.define("playground.c.lib.Node",
         
         // We enter this next block in various cases:
         //   (1) We are executing, so we need to initialize variables
-        //   (2) We're not yet exeucting, but we're at the global scope. In
+        //   (2) We're not yet executing, but we're at the global scope. In
         //       that case, we need to initialize the global variables.
         //   TODO (maybe):
         //   (3) There are static variables which need initialization
@@ -1082,6 +1136,7 @@ qx.Class.define("playground.c.lib.Node",
           // Nothing more to do if we're executing.
           break;
         }
+*/
         break;
 
       case "declaration_list" :
@@ -1127,6 +1182,9 @@ qx.Class.define("playground.c.lib.Node",
           break;
         }
 
+        this.__processSubnodes(data, bExecuting);
+
+/*
         // For each declaration specifier...
         this.children.forEach(
           function(subnode)
@@ -1172,11 +1230,24 @@ qx.Class.define("playground.c.lib.Node",
             }
           },
           this);
+*/
         break;
 
       case "declarator" :
-        // should never occur; handled in each case that uses a declarator
-        throw new Error("Not yet implemented: declarator");
+        /*
+         * declarator
+         *   0 : direct_declarator
+         *   1 : pointer?
+         */
+        
+        // Process the direct_declarator
+        this.children[0].process(data, bExecuting);
+        
+        // If there are any pointers, process them
+        if (this.children[1])
+        {
+          this.children[1].process(data, bExecuting);
+        }
         break;
 
       case "default" :
@@ -1245,11 +1316,7 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
         return value3;
 
       case "direct_abstract_declarator" :
-        throw new Error("Not yet implemented: direct_abstract_declarator");
-        break;
-
-      case "direct_declarator" :
-        throw new Error("Not yet implemented: direct_declarator");
+        this.__processSubnodes(data, bExecuting);
         break;
 
       case "divide" :
@@ -1302,7 +1369,13 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
                                    });
 
       case "double" :
-        throw new Error("Not yet implemented: double");
+        // Only applicable before executing
+        if (bExecuting)
+        {
+          break;
+        }
+        
+        data.specifiers.setType("double");
         break;
 
       case "do-while" :
@@ -1387,6 +1460,13 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
         break;
 
       case "enum_specifier" :
+        // Only applicable before executing
+        if (bExecuting)
+        {
+          break;
+        }
+        
+        data.specifiers.setType("enum");
         throw new Error("Not yet implemented: enum_specifier");
         break;
 
@@ -1448,15 +1528,26 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
         break;
 
       case "expression" :
-        throw new Error("Not yet implemented: expression");
-        break;
+        return this.__processSubnodes(data, bExecuting);
 
       case "extern" :
-        throw new Error("Not yet implemented: extern");
+        // Only applicable before executing
+        if (bExecuting)
+        {
+          break;
+        }
+        
+        data.specifiers.setStorage("extern");
         break;
 
       case "float" :
-        throw new Error("Not yet implemented: float");
+        // Only applicable before executing
+        if (bExecuting)
+        {
+          break;
+        }
+        
+        data.specifiers.setType("float");
         break;
 
       case "for" :
@@ -1640,26 +1731,60 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
         return value3;
 
       case "function_decl" :
-        // handled by function_definition
-        throw new Error("Not yet implemented: function_decl");
+        /*
+         * function_decl
+         *   0 : direct_declarator
+         *   1 : parameter_type_list
+         *   2 : identifier_list // K&R only; not implemented; always null
+         */
+        // Only applicable before executing
+        if (bExecuting)
+        {
+          break;
+        }
+        
+        // Add a function declarator for this symbol
+        declarator = new playground.c.lib.Declarator(this);
+        declarator.setType("function");
+        data.specAndDecl.push(declarator);
+        
+        // Process the children
+        this.__processSubnodes(data, bExecuting);
         break;
 
       case "function_definition" :
         /*
          * function_definition
          *   0: type specifier
-         *      0: type specifier
-         *         0: ...
          *   1: declarator
-         *      0: function_decl
-         *         0: identifier
-         *         1: pointer|<null>
-         *            0: pointer|<null>
-         *               0: etc.
-         *   2: declaration_list
+         *   2: declaration_list // K&R only; not implemented; always null
          *   3: compound_statement
          */
 
+        // If we're not executing yet...
+        if (! bExecuting)
+        {
+          // Create our own data object with a new specifier for this
+          // declaration
+          data = 
+            {
+              id : "function_definition",
+              specifiers  : new playground.c.lib.Specifier(this),
+              specAndDecl : []
+            };
+
+          // Process the children
+          this.__processSubnodes(data, bExecuting);
+
+          // Add the specifier to the end of the specifier/declarator list
+          data.specAndDecl.push(data.specifiers);
+console.log("  function_definition: id=" + data.id + ", specAndDecl.length=" + data.specAndDecl.length);
+console.log("    specAndDecl[0]=" + data.specAndDecl[0]);
+
+          break;
+        }
+
+/*
         // Create a symbol table entry for the function name
         declarator = this.children[1];
         function_decl = declarator.children[0];
@@ -1700,8 +1825,10 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
 
           // Mark this symbol table entry as a function and save this node, to
           // later execute it
-          entry.setType("function", this);
-
+          declarator = new playground.c.lib.Declarator(this);
+          declarator.setFunctionNode(this);
+          entry.setSpecAndDecl( [ declarator ] );
+          
           // Create a symbol table for this function's arguments
           symtab = new playground.c.lib.Symtab(
             playground.c.lib.Symtab.getCurrent(), 
@@ -1819,6 +1946,7 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
           return value3;
         }
         else
+*/
         {
           break;
         }
@@ -1886,9 +2014,31 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
       case "identifier" :
         if (! bExecuting)
         {
+          // This symbol shouldn't exist. Create a symbol table entry for it
+          entry = playground.c.lib.Symtab.getCurrent().add(
+            this.value, this.line, false, true);
+
+          if (! entry)
+          {
+            entry = 
+              playground.c.lib.Symtab.getCurrent().get(this.value, true);
+            this.error("Parameter '" + this.value + "' " +
+                       "was previously declared near line " +
+                       entry.getLine());
+            break;
+          }
+          
+          // Attach the specifier/declarator list to this symbol
+console.log("  identifier " + this.value + ": id=" + data.id + ", specAndDecl.length=" + data.specAndDecl.length);
+console.log("    specAndDecl[0]=" + data.specAndDecl[0]);
+
+          entry.setSpecAndDecl(data.specAndDecl);
+          
+          // Nothing else to do if not executing
           break;
         }
         
+        // We're executing. Obtain the symbol table entry for this identifier
         entry = playground.c.lib.Symtab.getCurrent().get(this.value, false);
         if (! entry)
         {
@@ -1904,7 +2054,7 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
          *   0: identifier
          *   ...
          */
-        this.__processSubnodes(data, bExecuting);
+        throw new Error("K&R-style declarations are not supported");
         break;
 
       case "if" :
@@ -1945,6 +2095,39 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
 
         break;
 
+      case "init_declarator" :
+        /*
+         * init_declarator
+         *   0 : declarator
+         *   1 : initializer?
+         */
+
+        if (! bExecuting)
+        {
+          // Create a list to hold specifiers and declarators
+          data.specAndDecl = [];
+
+          // Process the declarator, which also creates the symbol table entry
+          this.children[0].process(data, bExecuting);
+
+          // Add the specifier to the end of the specifier/declarator list
+          data.specAndDecl.push(data.specifiers);
+
+          // We no longer need our reference to the specifier/declarator list.
+          // The symbol table entry still references it
+          delete data.specAndDecl;
+          
+          break;
+        }
+        
+        // If we're executing, all we need to do is process the initializer
+        if (this.children[1])
+        {
+          this.children[1].process(data, bExecuting);
+        }
+
+        break;
+
       case "init_declarator_list" :
         /*
          * init_declarator_list
@@ -1954,19 +2137,28 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
         this.__processSubnodes(data, bExecuting);
         break;
 
-      case "initializer" :
-        throw new Error("Not yet implemented: initializer");
-        break;
-
       case "initializer_list" :
-        throw new Error("Not yet implemented: initializer_list");
+        this.__processSubnodes(data, bExecuting);
         break;
 
       case "int" :
-        throw new Error("Not yet implemented: int");
+        // Only applicable before executing
+        if (bExecuting)
+        {
+          break;
+        }
+        
+        data.specifiers.setType("int");
         break;
 
       case "label" :
+        // Only applicable before executing
+        if (bExecuting)
+        {
+          break;
+        }
+        
+        data.specifiers.setType("label");
         throw new Error("Not yet implemented: label");
         break;
 
@@ -2075,7 +2267,13 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
         break;
 
       case "long" :
-        throw new Error("Not yet implemented: long");
+        // Only applicable before executing
+        if (bExecuting)
+        {
+          break;
+        }
+        
+        data.specifiers.setSize("long");
         break;
 
       case "mod" :
@@ -2289,6 +2487,37 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
          *   2: abstract_declarator?
          */
 
+        // Create our own data object with a new specifier for this declaration
+        data = 
+          {
+            id : "parameter_declaration",
+            specifiers  : new playground.c.lib.Specifier(this),
+            specAndDecl : []
+          };
+
+        // Process the specifiers
+        this.children[0].process(data, bExecuting);
+        
+        // Process the declarator
+        if (this.children[1])
+        {
+          this.children[1].process(data, bExecuting);
+        }
+
+        // Process the abstract_declarator
+        if (this.children[2])
+        {
+          this.children[2].process(data, bExecuting);
+        }
+
+        // Add the specifier to the end of the specifier/declarator list
+        data.specAndDecl.push(data.specifiers);
+
+console.log("  parameter_declaration: id=" + data.id + ", specAndDecl.length=" + data.specAndDecl.length);
+console.log("    specAndDecl[0]=" + data.specAndDecl[0]);
+        break;
+
+/*
         // Prepare to get the identifier name
         declarator = this.children[1];
 
@@ -2370,6 +2599,7 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
         {
           this.children[2].process( { entry : entry }, bExecuting );
         }
+*/
         break;
 
       case "parameter_list" :
@@ -2383,7 +2613,16 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
         break;
 
       case "pointer" :
-        throw new Error("Not yet implemented: pointer");
+        // Only applicable before executing
+        if (bExecuting)
+        {
+          break;
+        }
+        
+        // Add a pointer declarator for this symbol
+        declarator = new playground.c.lib.Declarator(this);
+        declarator.setType("pointer");
+        data.specAndDecl.push(declarator);
         break;
 
       case "pointer_access" :
@@ -2504,7 +2743,13 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
                                    false);
 
       case "register" :
-        throw new Error("Not yet implemented: register");
+        // Only applicable before executing
+        if (bExecuting)
+        {
+          break;
+        }
+        
+        data.specifiers.setStorage("register");
         break;
 
       case "return" :
@@ -2591,11 +2836,23 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
                                    });
 
       case "short" :
-        throw new Error("Not yet implemented: short");
+        // Only applicable before executing
+        if (bExecuting)
+        {
+          break;
+        }
+        
+        data.specifiers.setSize("short");
         break;
 
       case "signed" :
-        throw new Error("Not yet implemented: signed");
+        // Only applicable before executing
+        if (bExecuting)
+        {
+          break;
+        }
+        
+        data.specifiers.setSigned("signed");
         break;
 
       case "sizeof" :
@@ -2603,7 +2860,7 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
         break;
 
       case "specifier_qualifier_list" :
-        throw new Error("Not yet implemented: specifier_qualifier_list");
+        this.__processSubnodes(data, bExecuting);
         break;
 
       case "statement_list" :
@@ -2616,7 +2873,13 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
         break;
 
       case "static" :
-        throw new Error("Not yet implemented: static");
+        // Only applicable before executing
+        if (bExecuting)
+        {
+          break;
+        }
+        
+        data.specifiers.setStorage("static");
         break;
 
       case "string_literal" :
@@ -2661,12 +2924,16 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
          *   1 : identifier
          */
         
-        // We are not expecting to get here while executing
+        // Only applicable before executing
         if (bExecuting)
         {
-          throw new Error("Programmer error? Did not expect to get here.");
+          break;
         }
+        
+        data.specifiers.setType("struct");
+        throw new Error("Not yet implemented: struct");
 
+/*
         // Is there an identifier?
         if (this.children.length > 1 && this.children[1])
         {
@@ -2700,6 +2967,7 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
         // Add the symbol table entry to the data so it's available to our
         // caller
         data.structEntry = entry;
+*/
         break;
 
       case "struct_declaration" :
@@ -2882,7 +3150,7 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
                 if (child.type == "case")
                 {
                   // Yup. Throw an error if the case expression is not constant
-                  data.bCaseMode = true;
+                  data.constantOnly = "case";
 
                   // Get its expression value. It (child 0) becomes the key
                   // in the cases map, and child 1, the statement, becomes the
@@ -2912,7 +3180,7 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
                   subnode.caseAndBreak.push(map);
                   
                   // Stop testing for constant expressions
-                  delete data.bCaseMode;
+                  delete data.constantOnly;
                 }
                 else if (child.type == "default")
                 {
@@ -3037,12 +3305,14 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
         
         break;
 
-      case "type" :
-        throw new Error("Not yet implemented: type");
-        break;
-
       case "typedef" :
-        throw new Error("Not yet implemented: typedef");
+        // Only applicable before executing
+        if (bExecuting)
+        {
+          break;
+        }
+        
+        data.specifiers.setStorage("typedef");
         break;
 
       case "type_definition" :
@@ -3065,23 +3335,48 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
         break;
 
       case "type_qualifier_list" :
-        throw new Error("Not yet implemented: type_qualifier_list");
+        this.__processSubnodes(data, bExecuting);
         break;
 
       case "union" :
+        // Only applicable before executing
+        if (bExecuting)
+        {
+          break;
+        }
+        
+        data.specifiers.setType("union");
         throw new Error("Not yet implemented: union");
         break;
 
       case "unsigned" :
-        throw new Error("Not yet implemented: unsigned");
+        // Only applicable before executing
+        if (bExecuting)
+        {
+          break;
+        }
+        
+        data.specifiers.setSigned("unsigned");
         break;
 
       case "void" :
-        throw new Error("Not yet implemented: void");
+        // Only applicable before executing
+        if (bExecuting)
+        {
+          break;
+        }
+        
+        data.specifiers.setType("void");
         break;
 
       case "volatile" :
-        throw new Error("Not yet implemented: volatile");
+        // Only applicable before executing
+        if (bExecuting)
+        {
+          break;
+        }
+        
+        data.specifiers.setVolatile("volatile");
         break;
 
       case "xor-assign" :
@@ -3114,19 +3409,29 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
 
 
     /**
-     * Process all sub-nodes of a node
+     * Process all sub-nodes of a node (which are non-null)
      * 
-     * @param node
+     * @param node {playground.c.lib.Node}
      *   The node whose sub-nodes (children) are to be processed
+     * 
+     * @return {Map}
+     *   A value expression. The value of the last subnode is returned.
      */
     __processSubnodes : function(data, bExecuting)
     {
+      var             ret;
+
       this.children.forEach(
         function(subnode)
         {
-          subnode.process(data, bExecuting);
+          if (subnode)
+          {
+            ret = subnode.process(data, bExecuting);
+          }
         }, 
         this);
+      
+      return ret;
     },
 
     /**

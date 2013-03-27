@@ -1036,6 +1036,7 @@ direct_declarator
     $$.children.push($4);
     $$.children.push(null);     // no identifier_list
   }
+/* Don't support K&R-style declarations...
   | direct_declarator function_scope '(' identifier_list ')'
   {
     parser.yy.R("direct_declarator : " +
@@ -1046,6 +1047,7 @@ direct_declarator
     $$.children.push(null);     // no parameter_type_list
     $$.children.push($4);
   }
+// ... and require 'void' for parameter list if no formal parameters
   | direct_declarator function_scope '(' ')'
   {
     parser.yy.R("direct_declarator : direct_declarator '(' ')'");
@@ -1055,6 +1057,7 @@ direct_declarator
     $$.children.push(null);     // no parameter_type_list
     $$.children.push(null);     // no identifier_list
   }
+*/
   ;
 
 pointer
@@ -1193,6 +1196,7 @@ abstract_declarator
     parser.yy.R("abstract_declarator : pointer");
     $$ = new playground.c.lib.Node("abstract_declarator", yytext, yylineno);
     $$.children.push($1);
+    $$.children.push(null);     // no abstract_declarator
   }
   | direct_abstract_declarator
   {
@@ -1602,6 +1606,7 @@ external_declaration
   ;
 
 function_definition
+/* Don't support K&R-style declarations...
   : declaration_specifiers declarator declaration_list compound_statement
   {
     parser.yy.R("function_definition : " +
@@ -1612,7 +1617,8 @@ function_definition
     $$.children.push($3);       // declaration_list
     $$.children.push($4);       // compound_statement
   }
-  | declaration_specifiers declarator compound_statement
+*/
+  : declaration_specifiers declarator compound_statement
   {
     parser.yy.R("function_definition : " +
       "declaration_specifiers declarator compound_statement");
@@ -1622,6 +1628,7 @@ function_definition
     $$.children.push(null);     // declaration_list
     $$.children.push($3);       // compound_statement
   }
+/* Don't support K&R-style declarations...
   | declarator declaration_list compound_statement
   {
     parser.yy.R("function_definition : declarator declaration_list compound_statement");
@@ -1631,6 +1638,7 @@ function_definition
     $$.children.push($2);       // declaration_list
     $$.children.push($3);       // compound_statement
   }
+*/
   | declarator compound_statement
   {
     parser.yy.R("function_definition : declarator compound_statement");

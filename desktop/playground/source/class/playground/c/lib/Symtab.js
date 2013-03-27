@@ -50,6 +50,7 @@ qx.Class.define("playground.c.lib.Symtab",
   {
     var             symtab;
     var             entry;
+    var             declarator;
 
     this.base(arguments);
 
@@ -111,8 +112,8 @@ qx.Class.define("playground.c.lib.Symtab",
     {
       // ... then add built-in functions.
       entry = this.add("printf", 0, false);
-      entry.setType(
-        "built-in", 
+      declarator = new playground.c.lib.Declarator({ line : line });
+      declarator.setBuiltIn(
         function()
         {
           var str = playground.c.Stdio.printf.apply(null, arguments);
@@ -128,6 +129,9 @@ qx.Class.define("playground.c.lib.Symtab",
           console.log(str);
           return { value : str, type : "pointer" };
         });
+      
+      // Add the declarator to the symbol table entry
+      entry.setSpecAndDecl( [ declarator ]);
       
       // Save this root symbol table for ready access
       playground.c.lib.Symtab._root = this;
@@ -350,75 +354,12 @@ qx.Class.define("playground.c.lib.Symtab",
       for (symtabName in playground.c.lib.Symtab._symtabs)
       {
         symtab = playground.c.lib.Symtab._symtabs[symtabName];
-        console.log("Symbol table " + symtab + 
-                    " (" +
-                    symtab.__name +
-                    ", fp=" +
-                    symtab.getFramePointer().toString(16) +
-                    ")...");
+        console.log("Symbol table " + symtab + " (" + symtab.__name + ")...");
 
         for (symbolName in symtab.__symbols)
         {
           // Get quick reference to this symbol table entry
           entry = symtab.__symbols[symbolName];
-
-          parts = [];
-          parts.push("  '" + symbolName + "':");
-          if (entry.getIsType())
-          {
-            parts.push(" type");
-          }
-
-          if (entry.typeFlags & TF.Function)
-          {
-            parts.push(" function");
-          }
-          if (entry.typeFlags & TF.Unsigned)
-          {
-            parts.push(" unsigned");
-          }
-          if (entry.typeFlags & TF.LongLong)
-          {
-            parts.push(" long");
-          }
-          if (entry.typeFlags & TF.Long)
-          {
-            parts.push(" long");
-          }
-          if (entry.typeFlags & TF.Short)
-          {
-            parts.push(" short");
-          }
-          if (entry.typeFlags & TF.Char)
-          {
-            parts.push(" char");
-          }
-          if (entry.typeFlags & TF.Int)
-          {
-            parts.push(" int");
-          }
-          if (entry.typeFlags & TF.Float)
-          {
-            parts.push(" float");
-          }
-          if (entry.typeFlags & TF.Double)
-          {
-            parts.push(" double");
-          }
-          if (entry.typeFlags === 0 && entry.typeName)
-          {
-            // This is a struct or an enum
-            parts.push(" " + entry.typeName);
-            entry.display();
-          }
-
-          parts.push(" ");
-          for (i = symtab.__symbols[symbolName].getPointerCount(); i > 0; i--)
-          {
-            parts.push("*");
-          }
-
-          console.log(parts.join(""));
           entry.display();
           console.log("");
         }

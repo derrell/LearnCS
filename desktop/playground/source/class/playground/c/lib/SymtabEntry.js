@@ -54,18 +54,12 @@ qx.Class.define("playground.c.lib.SymtabEntry",
     // the symbol table of this entry
     this.__symtab = symtab;
 
-    // number of asterisks
-    this.__pointerCount = 0;
-
-    // array sizes. null indicates no size specified
-    this.__arraySizes = [];
-
-    // calculated size, based on the typeFlags
-    this.__size = 0;
-
     // offset from the base pointer (in activation record, at the beginning
     // of automatic local variable portion)
     this.__offset = symtab.nextOffset;
+
+    // specifier/declarator list
+    this.__specAndDecl = null;
 
     // node to process, for functions
     this.__node = null;
@@ -81,32 +75,6 @@ qx.Class.define("playground.c.lib.SymtabEntry",
 
     /** Retained reference to memory (initialized in defer()) */
     __mem : null,
-
-    /** Bit fields in the typeFlags field of an Entry */
-    TypeFlags :
-      {
-        Char     : 1 << 0,
-        Short    : 1 << 1,
-        Int      : 1 << 2,
-        Long     : 1 << 3,
-        LongLong : 1 << 4,
-
-        Float    : 1 << 5,
-        Double   : 1 << 6,
-
-        Unsigned : 1 << 7,
-
-        Function : 1 << 8,
-        BuiltIn  : 1 << 9       // a built-in function, e.g., printf
-      },
-
-    /** Bit fields in the storageFlags field of an Entry */
-    StorageFlags :
-      {
-        Static   : 1 << 0,
-        Const    : 1 << 1,
-        Volatile : 1 << 2
-      },
 
     /** Size, in bytes, of each type */
     SizeInBytes :
@@ -133,13 +101,28 @@ qx.Class.define("playground.c.lib.SymtabEntry",
       var             offset;
       var             bGlobal;
       var             symtab;
+      var             message;
+      var             firstSpecOrDeclType;
       var             TF  = playground.c.lib.SymtabEntry.TypeFlags;
       var             SIB = playground.c.lib.SymtabEntry.SizeInBytes;
 
+      // If there is no specifier/declarator list yet...
+      if (! this.__specAndDecl || this.__specAndDecl.length == 0)
+      {
+        // ... then we're being prematurely asked for the symbol's address
+        message =
+          "Error: line " + this.__line + ": " + 
+          "The address of symbol " + this.__name + " was requested, " +
+          "but the address is not yet known.";
+        throw new playground.c.lib.RuntimeError(this, message);
+      }
+      
+      // Look at the first element of the specAndDecl list. 
+      firstSpecOrDeclType = this.__specAndDecl[0].getType();
+
       // If it's a function, its node is stored specially.
       // If it's a built-in function, its JS function reference is stored.
-      if ((this.__typeFlags & TF.Function) ||
-          (this.__typeFlags & TF.BuiltIn))
+      if (firstSpecOrDeclType == "function" || firstSpecOrDeclType == "builtIn")
       {
         return this.__node;
       }
@@ -170,89 +153,26 @@ qx.Class.define("playground.c.lib.SymtabEntry",
       this.__bIsType = bIsType;
     },
 
-    getTypes : function()
+    setSpecAndDecl : function(specAndDecl)
     {
-      return this.__typeFlags;
+      this.__specAndDecl = specAndDecl;
+console.log("  setSpecAndDecl(): entry=" + this + ", symtab=" + this.__symtab + ", specAndDecl.length=" + specAndDecl.length);
+console.log("    specAndDecl[0]=" + specAndDecl[0]);
+
     },
-
-    getType : function(bOnlyRealType)
+    
+    getSpecAndDecl : function()
     {
-      var             types = this.__typeFlags;
-      var             typeList = [];
-      var             TF = playground.c.lib.SymtabEntry.TypeFlags;
-
-      // If they're looking only for the realy type, don't translate to pointer
-      if (! bOnlyRealType)
+      if (! this.__specAndDecl)
       {
-        // Is this a pointer?
-        if (this.__pointerCount)
-        {
-          // Yup. We know the type immediately.
-          return "pointer";
-        }
-
-        // Is it an array and also a parameter?
-        if (this.__arraySizes.length !== 0 && this.__bIsParameter)
-        {
-          // Yup. It's treated as a pointer.
-          return "pointer";
-        }
-      }
-
-      if (types & TF.Unsigned)
-      {
-        typeList.push("unsigned");
-      }
-
-      if (types & TF.Char)
-      {
-        typeList.push("char");
-      }
-
-      if (types & TF.Short)
-      {
-        typeList.push("short");
-      }
-
-      if (types & TF.Long)
-      {
-        typeList.push("long");
-      }
-
-      if (types & TF.LongLong)
-      {
-        typeList.push("long");
-      }
-
-      if (types & TF.Int && ! (types & TF.Short) && ! (types & TF.Long))
-      {
-        typeList.push("int");
-      }
-
-      if (types & TF.Float)
-      {
-        typeList.push("float");
-      }
-
-      if (types & TF.Double)
-      {
-        typeList.push("double");
+        return null;
       }
       
-      if (types & TF.Function)
-      {
-        typeList.push("function");
-      }
-      
-      if (types & TF.BuiltIn)
-      {
-        typeList.push("built-in");
-      }
-
-      // Give 'em a string listing all of those, and the new type
-      return typeList.join(" ");
+      // Return a shallow clone of the array, so it can be altered as necessary
+      return this.__specAndDecl.slice(0);
     },
 
+/*
     setType : function(type, node)
     {
       var             TF  = playground.c.lib.SymtabEntry.TypeFlags;
@@ -471,53 +391,7 @@ qx.Class.define("playground.c.lib.SymtabEntry",
         }
       }
     },
-
-    getIsUnsigned : function()
-    {
-      // Return a true binary, not the null indicating that it's not yet set.
-      return !!this.bUnsigned;
-    },
-
-    setIsUnsigned : function(bIsUnsigned)
-    {
-      // If signedness has not been specified yet...
-      if (this.bUnsigned === null)
-      {
-        // ... then specify it.
-        this.bUnsigned = bIsUnsigned;
-        return;
-      }
-
-      // Can't set signedness multiple times.
-      this.error("Signedness was previously specified");
-    },
-
-    getIsFloat : function()
-    {
-      // Return a true binary, not the null indicating that it's not yet set.
-      return !!this.bUnsigned;
-    },
-
-    setIsFloat : function(bIsFloat)
-    {
-      // If floatedness has not been specified yet...
-      if (this.bFloat === null)
-      {
-        // ... then specify it.
-        this.bFloat = bIsFloat;
-        return;
-      }
-
-      // Can't set signedness multiple times.
-      if (this.bFloat)
-      {
-        this.error("Previously specified to be floating point");
-      }
-      else
-      {
-        this.error("Previously specified to be an integer");
-      }
-    },
+*/
 
     getSymtab : function()
     {
@@ -532,26 +406,6 @@ qx.Class.define("playground.c.lib.SymtabEntry",
     getStructSymtab : function()
     {
       return this.__structSymtab;
-    },
-
-    getPointerCount : function()
-    {
-      return this.__pointerCount;
-    },
-
-    incrementPointerCount : function()
-    {
-      ++this.__pointerCount;
-    },
-
-    getArraySizes : function()
-    {
-      return this.__arraySizes;
-    },
-    
-    addArraySize : function(size)
-    {
-      this.__arraySizes.push(size);
     },
 
     getIsParameter : function()
@@ -587,49 +441,27 @@ qx.Class.define("playground.c.lib.SymtabEntry",
             ! key.match(/^\$\$/) &&
             typeof this[key] != "function")
         {
-          console.log("\t" + key + " = " + this[key]);
+          if (key == "__specAndDecl" && this[key])
+          {
+            this[key].forEach(
+              function(specOrDecl, i)
+              {
+                if (specOrDecl)
+                {
+                  specOrDecl.display();
+                }
+                else
+                {
+                  console.log("\t__specOrDecl[" + i + "] = null");
+                }
+              });
+          }
+          else
+          {
+            console.log("\t" + key + " = " + this[key]);
+          }
         }
       }
-    },
-    
-    __types : function(checkTypes, thisType, otherTypes)
-    {
-      var             typeList = [];
-      var             TF = playground.c.lib.SymtabEntry.TypeFlags;
-
-      // List previously-added types
-      if ((checkTypes & TF.Char) && (otherTypes & TF.Char))
-      {
-        typeList.push("char");
-      }
-
-      if ((checkTypes & TF.Short) && (otherTypes & TF.Short))
-      {
-        typeList.push("short");
-      }
-
-      if ((checkTypes & TF.Int) && (otherTypes & TF.Int))
-      {
-        typeList.push("int");
-      }
-
-      if ((checkTypes & TF.Long) && (otherTypes & TF.Long))
-      {
-        typeList.push("long");
-      }
-
-      if ((checkTypes & TF.Float) && (otherTypes & TF.Float))
-      {
-        typeList.push("float");
-      }
-
-      if ((checkTypes & TF.Double) && (otherTypes & TF.Double))
-      {
-        typeList.push("double");
-      }
-
-      // Give 'em a string listing all of those, and the new type
-      return typeList.join(", ") + " with " + thisType;
     }
   },
   

@@ -152,7 +152,7 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
 
       if (bDebug)
       {
-//        playground.c.lib.Symtab.display();
+        playground.c.lib.Symtab.display();
       }
 
       intSize = Memory.typeSize["int"];
