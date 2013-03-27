@@ -560,8 +560,18 @@ console.log("process: " + this.type);
         // Disallow variable access. Array sizes must be constant.
         data.constantOnly = "array_decl";
 
-        // Get the array size
-        declarator.setArraySize(this.children[0].process(data, bExecuting));
+        // Is an array size specified?
+        if (this.children[0])
+        {
+          // Yup. Determine it and add to the declarator
+          value1 = this.children[0].process(data, bExecuting);
+          declarator.setArrayCount(value1.value);
+        }
+        else
+        {
+          // Otherwise just note that this is an array
+          declarator.setType("array");
+        }
         
         // Add this array declarator to the specifier/declarator list
         data.specAndDecl.push(declarator);
@@ -1237,17 +1247,10 @@ console.log("process: " + this.type);
         /*
          * declarator
          *   0 : direct_declarator
-         *   1 : pointer?
+         *   1 : pointer? array?
+         *   ...
          */
-        
-        // Process the direct_declarator
-        this.children[0].process(data, bExecuting);
-        
-        // If there are any pointers, process them
-        if (this.children[1])
-        {
-          this.children[1].process(data, bExecuting);
-        }
+        this.__processSubnodes(data, bExecuting);
         break;
 
       case "default" :
@@ -1743,13 +1746,27 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
           break;
         }
         
+        // Process the direct declarator. It may add a declarator.
+        this.children[0].process(data, bExecuting);
+
         // Add a function declarator for this symbol
         declarator = new playground.c.lib.Declarator(this);
         declarator.setType("function");
         data.specAndDecl.push(declarator);
         
-        // Process the children
-        this.__processSubnodes(data, bExecuting);
+        // Process the remaining children
+        this.children.forEach(
+          function(child, i)
+          {
+            // Skip the already-processed direct declarator, and any null
+            // children.
+            if (i == 0 || ! child)
+            {
+              return;
+            }
+            
+            child.process(data, bExecuting);
+          });
         break;
 
       case "function_definition" :
@@ -2034,7 +2051,8 @@ console.log("    specAndDecl[0]=" + data.specAndDecl[0]);
 
           entry.setSpecAndDecl(data.specAndDecl);
           
-          // Nothing else to do if not executing
+          // Process any children
+          this.__processSubnodes(data, bExecuting);
           break;
         }
         
