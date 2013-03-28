@@ -116,9 +116,11 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
       var             argArr;
       var             intSize;
       var             ptrSize;
+      var             entry;
       var             symtab;
       var             message;
       var             machine;
+      var             entryNode;
       var             declarator;
       var             function_decl;
       var             Memory = playground.c.machine.Memory;
@@ -160,9 +162,21 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
       intSize = Memory.typeSize["int"];
       ptrSize = Memory.typeSize["pointer"];
 
+      // Get the symbol table entry for main, if it exists
+      symtab = playground.c.lib.Symtab.getByName("*");
+      entry = symtab.get("main", true);
+      
+      // If this entry's first specifier/declarator indicates it's a function...
+      declarator = entry.getSpecAndDecl()[0];
+      if (declarator.getType() == "function")
+      {
+        // ... then that's our entry node
+        entryNode = declarator.getFunctionNode();
+      }
+
       // Process the abstract syntax tree from the entry point, if it exists,
       // to run the program
-      if (playground.c.lib.Node.entryNode)
+      if (entryNode)
       {
         // Prepare to call main(). Reset the machine.
         machine.initAll();
@@ -256,7 +270,7 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
         mem.beginActivationRecord(sp);
 
         // Name this activation record
-        declarator = playground.c.lib.Node.entryNode.children[1];
+        declarator = entryNode.children[1];
         function_decl = declarator.children[0];
         mem.nameActivationRecord(
           "Activation Record: " + function_decl.children[0].value);
@@ -268,7 +282,7 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
         playground.c.lib.Node.__mem.stackPush("int", argv.length);
 
         // Retrieve the symbol table for main()
-        symtab = playground.c.lib.Node.entryNode._symtab;
+        symtab = entryNode._symtab;
 
         // Save the new frame pointer
         symtab.setFramePointer(
@@ -290,7 +304,7 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
         // Process main()
         try
         {
-          playground.c.lib.Node.entryNode.process(data, true);
+          entryNode.process(data, true);
         }
         catch(e)
         {

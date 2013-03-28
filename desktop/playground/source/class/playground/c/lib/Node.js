@@ -1681,7 +1681,7 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
         
         // Prepare to save arguments in a JS array as well as on the stack, in
         // case this is a built-in function being called.
-        if (value1.getType().match("built-in"))
+        if (value1.getSpecAndDecl()[0].getType() == "builtIn")
         {
           data.args = [];
         }
@@ -1693,7 +1693,7 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
         }
 
         // Is this a built-in function, or a user-generated one?
-        if (value1.getType().match("built-in"))
+        if (value1.getSpecAndDecl()[0].getType() == "builtIn")
         {
           // Save the return value in value3
           value3 = value2.apply(null, data.args);
@@ -1749,10 +1749,24 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
         // Process the direct declarator. It may add a declarator.
         this.children[0].process(data, bExecuting);
 
-        // Add a function declarator for this symbol
+        // Find our enclosing function definition
+        for (subnode = this.parent; subnode; subnode = subnode.parent)
+        {
+          if (subnode.type == "function_definition")
+          {
+            break;
+          }
+        }
+
+        // Add a function declarator for this symbol. The attached node is the
+        // function definition, if we found one; the current node, otherwise.
         declarator = new playground.c.lib.Declarator(this);
         declarator.setType("function");
+        declarator.setFunctionNode(subnode);
         data.specAndDecl.push(declarator);
+        
+        // Save the current symbol table along with the function definition node
+        subnode._symtab = playground.c.lib.Symtab.getCurrent();
         
         // Process the remaining children
         this.children.forEach(
@@ -1795,122 +1809,24 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
 
           // Add the specifier to the end of the specifier/declarator list
           data.specAndDecl.push(data.specifiers);
-console.log("  function_definition: id=" + data.id + ", specAndDecl.length=" + data.specAndDecl.length);
-console.log("    specAndDecl[0]=" + data.specAndDecl[0]);
-
           break;
         }
 
-/*
+        // We're executing. The symbol table entry for this function must
+        // exist. Retrieve it from the node where we saved it.
+        symtab = this._symtab;
+          
+        // Push it onto the symbol table stack as if we'd just created it
+        playground.c.lib.Symtab.pushStack(symtab);
+
         // Create a symbol table entry for the function name
         declarator = this.children[1];
         function_decl = declarator.children[0];
 
-        // If we're executing...
-        if (bExecuting)
+        // Process the paremeter list
+        if (function_decl.children[1])
         {
-          // ... then the symbol table entry for this function must
-          // exist. Retrieve it from the node where we saved it.
-          symtab = this._symtab;
-          
-          // Push it onto the symbol table stack as if we'd just created it
-          playground.c.lib.Symtab.pushStack(symtab);
-
-          // Process the paremeter list
-          if (function_decl.children[1])
-          {
-            function_decl.children[1].process(data, bExecuting);
-          }
-        }
-        else
-        {
-          entry = playground.c.lib.Symtab.getCurrent().add(
-            function_decl.children[0].value, 
-            function_decl.line, 
-            false);
-
-          if (! entry)
-          {
-            entry = playground.c.lib.Symtab.getCurrent().get(
-              function_decl.children[0].value, true);
-            this.error("Identifier '" + 
-                       function_decl.children[0].value + "' " +
-                       "was previously declared near line " +
-                       entry.getLine());
-            return null;
-          }
-
-          // Mark this symbol table entry as a function and save this node, to
-          // later execute it
-          declarator = new playground.c.lib.Declarator(this);
-          declarator.setFunctionNode(this);
-          entry.setSpecAndDecl( [ declarator ] );
-          
-          // Create a symbol table for this function's arguments
-          symtab = new playground.c.lib.Symtab(
-            playground.c.lib.Symtab.getCurrent(), 
-            function_decl.children[0].value,
-            function_decl.line);
-
-          // Is this the main() function?
-          if (function_decl.children[0].value == "main" && 
-              symtab.getParent() &&
-              ! symtab.getParent().getParent())
-          {
-            //
-            // We found the program entry point!!!
-            // 
-            playground.c.lib.Node.entryNode = this;
-          }
-
-          // Save the symbol table for when we're executing
-          this._symtab = symtab;
-
-          // Process the paremeter list
-          if (function_decl.children[1])
-          {
-            function_decl.children[1].process(data, bExecuting);
-          }
-
-          // Look for specially-handled type specifiers.
-          switch(this.children[0].type)
-          {
-          case "struct" :
-            this.children[0].process(data, bExecuting);
-            break;
-
-          case "enum_specifier" :
-            throw new Error("Not yet implemented: enum_specifier");
-            break;
-
-          default:
-            // Count and save the number of levels of pointers of this variable
-            // e.g., char **p; would call incrementPointerCount() twice.
-            for (pointer = declarator.children[1];
-                 pointer;
-                 pointer = pointer.children[0])
-            {
-              entry.incrementPointerCount();
-            }
-
-            // Add this declaration's types to each of those symtab entries
-            for (subnode = this.children[0];
-                 subnode;
-                 subnode = subnode.children ? subnode.children[0] : null)
-            {
-              // ... add this declared type
-              entry.setType(subnode.type == "type_name_token"
-                            ? subnode.value
-                            : subnode.type);
-            }
-
-            // I have no idea what this declaration list is, in children[2]
-            if (this.children[2])
-            {
-              throw new Error("What is a declaration_list??? " +
-                              "K&R-style declarations?");
-            }
-          }
+          function_decl.children[1].process(data, bExecuting);
         }
 
         // Process the compound statement
@@ -1958,15 +1874,7 @@ console.log("    specAndDecl[0]=" + data.specAndDecl[0]);
         // Pop this function's symbol table from the stack
         playground.c.lib.Symtab.popStack();
         
-        if (bExecuting)
-        {
-          return value3;
-        }
-        else
-*/
-        {
-          break;
-        }
+        return value3;
 
       case "goto" :
         throw new Error("Not yet implemented: goto");
@@ -2039,21 +1947,17 @@ console.log("    specAndDecl[0]=" + data.specAndDecl[0]);
           {
             entry = 
               playground.c.lib.Symtab.getCurrent().get(this.value, true);
-            this.error("Parameter '" + this.value + "' " +
+            this.error("Identifier '" + this.value + "' " +
                        "was previously declared near line " +
                        entry.getLine());
             break;
           }
           
           // Attach the specifier/declarator list to this symbol
-console.log("  identifier " + this.value + ": id=" + data.id + ", specAndDecl.length=" + data.specAndDecl.length);
-console.log("    specAndDecl[0]=" + data.specAndDecl[0]);
-
           entry.setSpecAndDecl(data.specAndDecl);
           
           // Process any children
           this.__processSubnodes(data, bExecuting);
-          break;
         }
         
         // We're executing. Obtain the symbol table entry for this identifier
@@ -2530,9 +2434,6 @@ console.log("    specAndDecl[0]=" + data.specAndDecl[0]);
 
         // Add the specifier to the end of the specifier/declarator list
         data.specAndDecl.push(data.specifiers);
-
-console.log("  parameter_declaration: id=" + data.id + ", specAndDecl.length=" + data.specAndDecl.length);
-console.log("    specAndDecl[0]=" + data.specAndDecl[0]);
         break;
 
 /*

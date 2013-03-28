@@ -111,6 +111,14 @@ qx.Class.define("playground.c.lib.Declarator",
     },
 
     /**
+     * Retrieve a function's node
+     */
+    getFunctionNode : function()
+    {
+      return this.__functionNode;
+    },
+
+    /**
      * Set a builtIn function
      */
     setBuiltIn : function(func)
@@ -120,7 +128,7 @@ qx.Class.define("playground.c.lib.Declarator",
       {
         throw new playground.c.lib.RuntimeError(
           this.__node,
-          "Programmer error: Unexpected built-in function: " + node);
+          "Programmer error: Unexpected built-in function: " + func);
       }
       
       this.setType("builtIn");

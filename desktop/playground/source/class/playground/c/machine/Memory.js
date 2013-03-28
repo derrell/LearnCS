@@ -620,15 +620,15 @@ qx.Class.define("playground.c.machine.Memory",
         {
           addr       : addr,
           name       : symbol.getName(),
-          type       : symbol.getType(true),
-          size       : symbol.getSize(),
-          pointer    : symbol.getPointerCount(),
-          array      : symbol.getArraySizes(),
+          type       : "int", // symbol.getType(true),
+          size       : 4, // symbol.getSize(),
+          pointer    : 0, // symbol.getPointerCount(),
+          array      : [], // symbol.getArraySizes(),
           param      : symbol.getIsParameter(),
           group      : name,
           
           // The following are added to this map by getDataModel:
-          value      : null,    // will become an array of values in this word
+          value      : null,   // will become an array of values in this word
           word       : null    // will become the native memory word
         };
     },

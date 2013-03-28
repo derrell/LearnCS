@@ -145,7 +145,7 @@ qx.Class.define("playground.c.lib.Specifier",
       {
         throw new playground.c.lib.RuntimeError(
           this.__node,
-          "Programmer error: Unexpected signedness: " + type);
+          "Programmer error: Unexpected signedness: " + value);
       }
 
       // Ensure that two mutually-exclusive types haven't been specified
@@ -199,7 +199,7 @@ qx.Class.define("playground.c.lib.Specifier",
       {
         throw new playground.c.lib.RuntimeError(
           this.__node,
-          "Programmer error: Unexpected size: " + type);
+          "Programmer error: Unexpected size: " + value);
       }
 
       // We can accept "long" if "long" is already specified, to create "long
@@ -244,7 +244,7 @@ qx.Class.define("playground.c.lib.Specifier",
       {
         throw new playground.c.lib.RuntimeError(
           this.__node,
-          "Programmer error: Unexpected constant: " + type);
+          "Programmer error: Unexpected constant: " + value);
       }
 
       // Ensure that two mutually-exclusive types haven't been specified
@@ -281,7 +281,7 @@ qx.Class.define("playground.c.lib.Specifier",
       {
         throw new playground.c.lib.RuntimeError(
           this.__node,
-          "Programmer error: Unexpected volatility: " + type);
+          "Programmer error: Unexpected volatility: " + value);
       }
 
       // Ensure that two mutually-exclusive types haven't been specified
