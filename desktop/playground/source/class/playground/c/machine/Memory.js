@@ -643,9 +643,19 @@ qx.Class.define("playground.c.machine.Memory",
     beginActivationRecord : function(addr)
     {
       // Record the address. The function name will be added later
+console.log("Beginning activation record at " + addr.toString(16));
       this.__activationRecordsBegin.push({ addr : addr });
     },
     
+    /**
+     * End use of the current activation record
+     */
+    endActivationRecord : function()
+    {
+      var ar = this.__activationRecordsBegin.pop();
+console.log("Ending activation record at " + ar.addr.toString(16) + " with name " + ar.name);
+    },
+
     /**
      * Name the current activation record.
      * 
@@ -662,13 +672,9 @@ qx.Class.define("playground.c.machine.Memory",
         throw new Error("Programmer error: no activation records");
       }
       
-      // Error checking: name must not have already been set
       activationRecord = 
         this.__activationRecordsBegin[this.__activationRecordsBegin.length - 1];
-      if (activationRecord.name)
-      {
-        throw new Error("Programmer error: activation record name is set");
-      }
+console.log("Naming activation record at " + activationRecord.addr.toString(16) + " with name " + name);
       
       // Add a name to the most recently added activation record
       activationRecord.name = name;
@@ -697,6 +703,7 @@ qx.Class.define("playground.c.machine.Memory",
       var             size;
       var             addr;
       var             datum;
+      var             group;
       var             words;
       var             values;
       var             elements;
@@ -935,6 +942,15 @@ qx.Class.define("playground.c.machine.Memory",
           datum.type = "unsigned int";
         }
       }
+
+      model.forEach(
+        function(datum)
+        {
+          if (typeof datum.group == "undefined")
+          {
+            console.log("undefined group name at address " + datum.addr.toString(16) + ": " + JSON.stringify(datum));
+          }
+        });
 
       return model;
     },

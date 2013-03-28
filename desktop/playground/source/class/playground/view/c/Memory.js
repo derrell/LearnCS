@@ -18,6 +18,8 @@ qx.Class.define("playground.view.c.Memory",
     // Call the superclass constructor
     this.base(arguments, model);
 
+    this.setItemHeight(10);
+
     this.getPane().addLayer(
       new qx.ui.virtual.layer.Row("white", "rgb(238, 243, 255)"));
     this.getPane().addLayer(
@@ -50,6 +52,56 @@ qx.Class.define("playground.view.c.Memory",
           controller.bindProperty("bytes[2]", "byte2", null, item, id);
           controller.bindProperty("bytes[3]", "byte3", null, item, id);
           controller.bindProperty("group", "group", null, item, id);
+        },
+        
+        // Use the defined group name from the model.  There should be a group
+        // name for every item in the model, but if one is not defined, use
+        // null.
+        group : function(model) 
+        {
+          return model.getGroup ? model.getGroup() : null;
+        },
+        
+        // Uses a own group item
+        createGroupItem : function() 
+        {
+          return new qx.ui.form.ListItem();
+        },
+
+        // Configures each item
+        configureGroupItem : function(item) 
+        {
+          item.setBackgroundColor("#5e5e5e");
+          item.setTextColor("white");
+        },
+
+        // Binds the group name to the label and assign an icon dependent on
+        // the group name
+        bindGroupItem : function(controller, item, id) 
+        {
+          controller.bindProperty(null, "label", null, item, id);
+/*
+          controller.bindProperty(
+            null,
+            "icon", 
+            {
+              converter : function(data) 
+              {
+                switch(data) 
+                {
+                case "Friends":
+                  return "icon/16/emotes/face-laugh.png";
+                  
+                case "Colleagues":
+                  return "icon/16/categories/office.png";
+                  
+                default:
+                  return "icon/16/categories/system.png";
+                }
+              }
+            },
+            item, id);
+*/
         }
       };
     
