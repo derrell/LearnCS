@@ -141,6 +141,7 @@ qx.Class.define("playground.c.machine.Memory",
   members :
   {
     __memSize : 0,
+    __activationRecordsBegin : null,
 
     /**
      * Initialize the memory module.
@@ -152,6 +153,7 @@ qx.Class.define("playground.c.machine.Memory",
     {
       var             i;
       var             uint8Arr;
+      var             info = playground.c.machine.Memory.info;
 
       // Ascertain the size of memory
       this.__memSize = 
@@ -173,6 +175,15 @@ qx.Class.define("playground.c.machine.Memory",
       
       // Initialize symbol information
       this._symbolInfo = {};
+      
+      // Initialize the activation record array for command line arguments
+      this.__activationRecordsBegin =
+        [
+          {
+            addr : info.rts.start  + info.rts.length,
+            name : "Command line arguments"
+          }
+        ];
     },
 
     /**
@@ -623,6 +634,53 @@ qx.Class.define("playground.c.machine.Memory",
     },
 
     /**
+     * Begin an activation record. The address is saved, and the function name
+     * for which this is an activation record is later added.
+     * 
+     * @param addr {Number}
+     *   The (high) stack address at which this activation record begins
+     */
+    beginActivationRecord : function(addr)
+    {
+      // Record the address. The function name will be added later
+console.log("Beginning activation record at " + addr.toString(16));
+      this.__activationRecordsBegin.push({ addr : addr });
+    },
+    
+    /**
+     * End use of the current activation record
+     */
+    endActivationRecord : function()
+    {
+      var ar = this.__activationRecordsBegin.pop();
+console.log("Ending activation record at " + ar.addr.toString(16) + " with name " + ar.name);
+    },
+
+    /**
+     * Name the current activation record.
+     * 
+     * @param name {String}
+     *   The name of the function to which this activation record belongs
+     */
+    nameActivationRecord : function(name)
+    {
+      var             activationRecord;
+
+      // Error checking: there must be an activation record
+      if (this.__activationRecordsBegin.length == 0)
+      {
+        throw new Error("Programmer error: no activation records");
+      }
+      
+      activationRecord = 
+        this.__activationRecordsBegin[this.__activationRecordsBegin.length - 1];
+console.log("Naming activation record at " + activationRecord.addr.toString(16) + " with name " + name);
+      
+      // Add a name to the most recently added activation record
+      activationRecord.name = name;
+    },
+
+    /**
      * Retrieve the current data model, suitable for display.
      *
      * @param start {Number?}
@@ -645,11 +703,11 @@ qx.Class.define("playground.c.machine.Memory",
       var             size;
       var             addr;
       var             datum;
+      var             group;
       var             words;
       var             values;
       var             elements;
       var             arrayCount;
-      var             symtab;
       var             model = [];
       var             WORDSIZE = playground.c.machine.Memory.WORDSIZE;
       
@@ -680,21 +738,60 @@ qx.Class.define("playground.c.machine.Memory",
         {
           var             addr;
           var             data;
+          var             group = "Unknown";
           var             info = playground.c.machine.Memory.info;
+          var             arIndex; // activation record index
+          var             mem;
           
           // The address of this word is WORDSIZE times its index, since each
           // word contains four bytes.
           addr = index * WORDSIZE;
           
-          // Ignore unsupported regions of memory
-          if (!
-              ((addr >= info.gas.start &&
-                addr < info.gas.start + info.gas.length) ||
-               (addr >= info.heap.start &&
-                addr < info.heap.start + info.heap.length) ||
-               (addr >= info.rts.start &&
-                addr < info.rts.start + info.rts.length)))
+          // Figure out which region of memory we're in. If we're in the stack
+          // region, then further determine which activation record we're in.
+          if (addr >= info.gas.start &&
+              addr < info.gas.start + info.gas.length)
           {
+            group = "Globals & Statics";
+          }
+          else if (addr >= info.heap.start &&
+                   addr < info.heap.start + info.heap.length)
+          {
+            group = "Heap";
+          }
+          else if (addr >= info.rts.start &&
+                   addr < info.rts.start + info.rts.length)
+          {
+            // First see if the current address is below the stack pointer
+            mem = playground.c.machine.Memory.getInstance();
+            if (addr < mem.getReg("SP", "unsigned int"))
+            {
+              group = "Currently unused";
+            }
+            else
+            {
+              // We're in the run-time stack. Which activation are record we in?
+              for (arIndex = this.__activationRecordsBegin.length - 1;
+                   arIndex >= 0;
+                   arIndex--)
+              {
+                // Once we find an activation record entry whose address is
+                // greater than the address we're looking at, we've found our
+                // group.
+                if (addr < this.__activationRecordsBegin[arIndex].addr)
+                {
+                  // We found it. Save its name.
+                  group = this.__activationRecordsBegin[arIndex].name;
+                  
+                  // No need to search further.
+                  break;
+                }
+              }
+            }
+          }
+          else
+          {
+            // Ignore unsupported regions of memory
             return;
           }
 
@@ -704,10 +801,10 @@ qx.Class.define("playground.c.machine.Memory",
           {
             // Create a clone since we'll be munging it.
             data = JSON.parse(JSON.stringify(this._symbolInfo[addr]));
+            data.group = group;
           }
           else
           {
-            symtab = playground.c.lib.Symtab.getCurrent();
             data = 
               {
                 addr    : addr,
@@ -717,7 +814,7 @@ qx.Class.define("playground.c.machine.Memory",
                 pointer : 0,
                 array   : [],
                 param   : false,
-                group   : symtab ? symtab.getName() : "(system)"
+                group   : group
               };
           }
           
@@ -845,6 +942,15 @@ qx.Class.define("playground.c.machine.Memory",
           datum.type = "unsigned int";
         }
       }
+
+      model.forEach(
+        function(datum)
+        {
+          if (typeof datum.group == "undefined")
+          {
+            console.log("undefined group name at address " + datum.addr.toString(16) + ": " + JSON.stringify(datum));
+          }
+        });
 
       return model;
     },

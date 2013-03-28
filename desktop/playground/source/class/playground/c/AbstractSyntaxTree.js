@@ -119,6 +119,8 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
       var             symtab;
       var             message;
       var             machine;
+      var             declarator;
+      var             function_decl;
       var             Memory = playground.c.machine.Memory;
       var             mem = Memory.getInstance();
       var             bDebug = true;
@@ -250,6 +252,15 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
         sp -= p % playground.c.machine.Memory.WORDSIZE;
         playground.c.lib.Node.__mem.setReg("SP", "unsigned int", sp);
 
+        // This is the beginning of an activation record.
+        mem.beginActivationRecord(sp);
+
+        // Name this activation record
+        declarator = playground.c.lib.Node.entryNode.children[1];
+        function_decl = declarator.children[0];
+        mem.nameActivationRecord(
+          "Activation Record: " + function_decl.children[0].value);
+
         // Push the address of the argv array onto the stack
         playground.c.lib.Node.__mem.stackPush("pointer", p);
 
@@ -310,11 +321,14 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
           }
         }
 
+        // We're finished with this activation record.
+        mem.endActivationRecord();
+
         // Restore the previous frame pointer
         symtab.restoreFramePointer();
 
         // Restore the original stack pointer
-        playground.c.lib.Node.__mem.setReg("SP", "unsigned int", origSp);
+        mem.setReg("SP", "unsigned int", origSp);
       }
       else
       {

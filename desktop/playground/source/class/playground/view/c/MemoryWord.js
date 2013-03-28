@@ -270,7 +270,7 @@ qx.Class.define("playground.view.c.MemoryWord",
         
       case "group" :
         control = new qx.ui.basic.Label();
-control.setVisibility("excluded");
+        control.setVisibility("excluded");
         this._add(control, { row : 0, column : 6, rowSpan : 4 } );
         break;
       }
