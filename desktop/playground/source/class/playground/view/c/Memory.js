@@ -80,28 +80,16 @@ qx.Class.define("playground.view.c.Memory",
         bindGroupItem : function(controller, item, id) 
         {
           controller.bindProperty(null, "label", null, item, id);
-/*
           controller.bindProperty(
             null,
             "icon", 
             {
               converter : function(data) 
               {
-                switch(data) 
-                {
-                case "Friends":
-                  return "icon/16/emotes/face-laugh.png";
-                  
-                case "Colleagues":
-                  return "icon/16/categories/office.png";
-                  
-                default:
-                  return "icon/16/categories/system.png";
-                }
+                return "resource/playground/images/downarrow-white.png";
               }
             },
             item, id);
-*/
         }
       };
     
