@@ -202,6 +202,9 @@ qx.Class.define("playground.c.lib.Specifier",
           "Programmer error: Unexpected size: " + value);
       }
 
+      // Save the type.
+      this.__type = "int";
+
       // We can accept "long" if "long" is already specified, to create "long
       // long". No other combinations are allowed.
       if (this.__size == "long" && value == "long")
@@ -211,7 +214,7 @@ qx.Class.define("playground.c.lib.Specifier",
       }
 
       // Ensure that two mutually-exclusive types haven't been specified
-      if (this.__size !== null)
+      if (this.__size !== null && this.__size != "int")
       {
         throw new playground.c.lib.RuntimeError(
           this.__node,

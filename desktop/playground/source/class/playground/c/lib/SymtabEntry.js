@@ -475,6 +475,7 @@ qx.Class.define("playground.c.lib.SymtabEntry",
                 }
               });
             console.log(
+              "\t    " +
               JSON.stringify(
                 playground.c.lib.SymtabEntry.getInfo(this[key])));
           }

@@ -766,7 +766,7 @@ console.log("Naming activation record at " + activationRecord.addr.toString(16) 
             mem = playground.c.machine.Memory.getInstance();
             if (addr < mem.getReg("SP", "unsigned int"))
             {
-              group = "Currently unused";
+              group = "Currently unused stack space";
             }
             else
             {

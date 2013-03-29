@@ -367,7 +367,7 @@ qx.Class.define("playground.c.lib.Node",
         }
       }
 
-console.log("process: " + this.type);
+//      console.log("process: " + this.type);
 
       // Yup. See what type it is.
       switch(this.type)

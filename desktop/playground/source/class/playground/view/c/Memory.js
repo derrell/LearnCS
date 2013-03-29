@@ -71,7 +71,7 @@ qx.Class.define("playground.view.c.Memory",
         // Configures each item
         configureGroupItem : function(item) 
         {
-          item.setBackgroundColor("#5e5e5e");
+          item.setBackgroundColor("#3e3e5e");
           item.setTextColor("white");
         },
 
