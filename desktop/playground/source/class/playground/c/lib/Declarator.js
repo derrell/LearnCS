@@ -47,9 +47,9 @@ qx.Class.define("playground.c.lib.Declarator",
     setType : function(value)
     {
       // Ensure we have a valid value
-      if ( [
-             "array", "function", "pointer", "builtIn"
-           ].indexOf(value) === -1)
+      if ([
+            "array", "function", "pointer", "builtIn"
+          ].indexOf(value) === -1)
       {
         throw new playground.c.lib.RuntimeError(
           this.__node,
@@ -89,6 +89,14 @@ qx.Class.define("playground.c.lib.Declarator",
 
       // Save the new value
       this.__numElem = numElem;
+    },
+
+    /**
+     * Retrieve the count of elements in an array
+     */
+    getArrayCount : function()
+    {
+      return this.__numElem;
     },
 
     /**
@@ -135,6 +143,14 @@ qx.Class.define("playground.c.lib.Declarator",
       
       // Save the new value
       this.__builtIn = func;
+    },
+
+    /**
+     * Retrieve a built-in function
+     */
+    getBuiltIn : function()
+    {
+      return this.__builtIn;
     },
 
     /**

@@ -91,11 +91,11 @@ qx.Class.define("playground.c.lib.Specifier",
     setType : function(value)
     {
       // Ensure we have a valid value
-      if ( [
-             "int",  "float",  "double", "char", 
-             "void", "struct", "union",  "enum", 
-             "label"
-           ].indexOf(value) === -1)
+      if ([
+            "int",  "float",  "double", "char", 
+            "void", "struct", "union",  "enum", 
+            "label"
+          ].indexOf(value) === -1)
       {
         throw new playground.c.lib.RuntimeError(
           this.__node,

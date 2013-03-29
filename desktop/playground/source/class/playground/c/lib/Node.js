@@ -2542,6 +2542,9 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
         declarator = new playground.c.lib.Declarator(this);
         declarator.setType("pointer");
         data.specAndDecl.push(declarator);
+        
+        // Process additional pointers
+        this.__processSubnodes(data, bExecuting);
         break;
 
       case "pointer_access" :

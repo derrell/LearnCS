@@ -112,7 +112,14 @@ qx.Class.define("playground.c.lib.Symtab",
     {
       // ... then add built-in functions.
       entry = this.add("printf", 0, false);
-      declarator = new playground.c.lib.Declarator({ line : line });
+      declarator = new playground.c.lib.Declarator(
+        {
+          line : line,
+          toString : function()
+          {
+            return "printf";
+          }
+        });
       declarator.setBuiltIn(
         function()
         {

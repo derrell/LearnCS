@@ -88,11 +88,220 @@ qx.Class.define("playground.c.lib.SymtabEntry",
         Double   : 0,
         Pointer  : 0,
         Word     : 0
+      },
+
+    getInfo : function(specAndDecl)
+    {
+      var             i;
+      var             type;
+      var             count;
+      var             size = 1;
+      var             component;
+      var             bSizeDone = false;
+      var             parts = [];
+      var             sd;
+      var             SIB = playground.c.lib.SymtabEntry.SizeInBytes;
+
+      // Traverse this provided specifier/declarator list, calculating its
+      // textual type representation and its size.
+      for (i = 0; i < specAndDecl.length; i++)
+      {
+        // Get the current specifier or declarator
+        sd = specAndDecl[i];
+        
+        // Set the size and add to the parts of the type
+        switch(type = sd.getType())
+        {
+          //
+          // Specifier types
+          //
+
+        case "int" :
+          // The size of an int is determined by the getSize() propery
+          switch(sd.getSize())
+          {
+          case "short" :
+            if (! bSizeDone)
+            {
+              size *= SIB.Short;
+            }
+
+            // Stop calculating size
+            bSizeDone = true;
+            
+            parts.push("short");
+            break;
+
+          case "long" :
+            if (! bSizeDone)
+            {
+              size *= SIB.Long;
+            }
+
+            // Stop calculating size
+            bSizeDone = true;
+            
+            parts.push("long");
+            break;
+
+          case "long long" :
+            if (! bSizeDone)
+            {
+              size *= SIB.LongLong;
+            }
+
+            // Stop calculating size
+            bSizeDone = true;
+            
+            parts.push("long long");
+            break;
+
+          case null :
+            if (! bSizeDone)
+            {
+              size *= SIB.Int;
+            }
+
+            // Stop calculating size
+            bSizeDone = true;
+            
+            parts.push("int");
+            break;
+
+          default :
+            throw new Error("Internal Error: " +
+                            "Unexpected specifier size: " + sd.getSize());
+            break;
+          }
+          break;
+
+        case "float" :
+          if (! bSizeDone)
+          {
+            size *= SIB.Float;
+          }
+
+          // Stop calculating size
+          bSizeDone = true;
+
+          parts.push("float");
+          break;
+
+        case "double" :
+          if (! bSizeDone)
+          {
+            size *= SIB.Double;
+          }
+
+          // Stop calculating size
+          bSizeDone = true;
+
+          parts.push("double");
+          break;
+
+        case "char" :
+          if (! bSizeDone)
+          {
+            size *= SIB.Char;
+          }
+
+          // Stop calculating size
+          bSizeDone = true;
+
+          parts.push("char");
+          break;
+
+        case "void" :
+          throw new Error("Don't yet know type/size of void");
+          break;
+
+        case "struct" :
+          throw new Error("Don't yet know type/size of struct");
+          break;
+
+        case "union" :
+          throw new Error("Don't yet know type/size of label");
+          break;
+
+        case "enum" :
+          throw new Error("Don't yet know type/size of label");
+          break;
+
+        case "label" :
+          throw new Error("Don't yet know how to get type/size of label");
+          break;
+
+
+          //
+          // Declarator types
+          //
+
+        case "array" :
+          count = sd.getArrayCount() || 0;
+          size *= count;
+
+          parts.push("array[" + (count || "") + "] of ");
+          break;
+
+        case "function" :
+          // Stop calculating size
+          bSizeDone = true;
+          
+          parts.push("function");
+          break;
+
+        case "pointer" :
+          size *= SIB.Pointer;
+
+          // Stop calculating size
+          bSizeDone = true;
+
+          parts.push("ptr to ");
+          break;
+
+        case "builtIn" :
+          // Stop calculating size
+          bSizeDone = true;
+          break;
+
+
+          //
+          // Some unrecognized type. Programmer error.
+          //
+
+        default :
+          throw new Error("Internal error: " +
+                          "Unexpected specifier type: " + sd.getType());
+          break;
+        }
+        
+        // If we hit a function or builtIn declarator...
+        if (type == "function" || type == "builtIn")
+        {
+          // ... traverse no farther.
+          break;
+        }
       }
+      
+      component = specAndDecl[0].getType();
+      if (component == "array")
+      {
+        component += "[" + (specAndDecl[0].getArrayCount() || "") + "]";
+      }
+
+      return (
+        {
+          description : parts.join(""),
+          size        : size,
+          component   : component
+        });
+    }
   },
   
   members :
   {
+    __cache : null,
+
     getAddr : function()
     {
       var             i;
@@ -102,7 +311,7 @@ qx.Class.define("playground.c.lib.SymtabEntry",
       var             bGlobal;
       var             symtab;
       var             message;
-      var             firstSpecOrDeclType;
+      var             firstSpecOrDecl;
       var             TF  = playground.c.lib.SymtabEntry.TypeFlags;
       var             SIB = playground.c.lib.SymtabEntry.SizeInBytes;
 
@@ -118,19 +327,24 @@ qx.Class.define("playground.c.lib.SymtabEntry",
       }
       
       // Look at the first element of the specAndDecl list. 
-      firstSpecOrDeclType = this.__specAndDecl[0].getType();
+      firstSpecOrDecl = this.__specAndDecl[0];
 
       // If it's a function, its node is stored specially.
       // If it's a built-in function, its JS function reference is stored.
-      if (firstSpecOrDeclType == "function" || firstSpecOrDeclType == "builtIn")
+      switch(firstSpecOrDecl.getType())
       {
-        return this.__node;
+      case "function" :
+        return firstSpecOrDecl.getFunctionNode();
+        
+      case "builtIn" :
+        return firstSpecOrDecl.getBuiltIn();
+        
+      default:
+        // Calculate the address of this symbol from its symbol table's frame
+        // pointer and its own offset.
+        ret = this.__symtab.getFramePointer() + this.__offset;
+        return ret;
       }
-      
-      // Calculate the address of this symbol from its symbol table's frame
-      // pointer and its own offset.
-      ret = this.__symtab.getFramePointer() + this.__offset;
-      return ret;
     },
 
     getName : function()
@@ -156,9 +370,6 @@ qx.Class.define("playground.c.lib.SymtabEntry",
     setSpecAndDecl : function(specAndDecl)
     {
       this.__specAndDecl = specAndDecl;
-console.log("  setSpecAndDecl(): entry=" + this + ", symtab=" + this.__symtab + ", specAndDecl.length=" + specAndDecl.length);
-console.log("    specAndDecl[0]=" + specAndDecl[0]);
-
     },
     
     getSpecAndDecl : function()
@@ -171,227 +382,6 @@ console.log("    specAndDecl[0]=" + specAndDecl[0]);
       // Return a shallow clone of the array, so it can be altered as necessary
       return this.__specAndDecl.slice(0);
     },
-
-/*
-    setType : function(type, node)
-    {
-      var             TF  = playground.c.lib.SymtabEntry.TypeFlags;
-      var             SIB = playground.c.lib.SymtabEntry.SizeInBytes;
-      var             product;
-      var             mod;
-
-      // Error checking
-      switch(type)
-      {
-      case "char" :
-      case "short" :
-      case "float" :
-      case "double" :
-      case "long" :
-        if (this.__typeFlags & (TF.Char | TF.Short | TF.Float | TF.Double))
-        {
-          this.error("Incompatible type combination: " +
-                     this.__types(TF.Char | TF.Short | TF.Float | TF.Double,
-                                  type, this.__typeFlags));
-          return;
-        }
-
-        if ((type == "float" || type == "double") && 
-            ((this.__typeFlags & TF.Long) || (this.__typeFlags & TF.Int)))
-        {
-          this.error("Incompatible type combination: " +
-                     this.__types(TF.Float | TF.Double, type,
-                                  this.__typeFlags));
-          return;
-        }
-        break;
-
-      case "unsigned" :
-        if (this.__typeFlags & (TF.Float | TF.Double))
-        {
-          this.error("Incompatible type combination: " +
-                     this.__types(TF.Float | TF.Double,
-                                  type, this.__typeFlags));
-          return;
-        }
-        break;
-
-      case "int" :
-        break;
-
-      case "function" :
-        break;
-
-      case "built-in" :
-        break;
-
-      default:
-        // We got a user-defined (typedef'ed) type
-        this.__typeName = type;
-        return;
-      }
-
-      // Now set the appropriate bit, the size, and the next offset
-      switch(type)
-      {
-      case "char" :
-        if (this.__typeFlags & TF.Char)
-        {
-          this.error("Type specified multiple times: " + type);
-          return;
-        }
-        this.__typeFlags |= TF.Char;
-        this.__size = SIB.Char;
-        break;
-
-      case "short" :
-        if (this.__typeFlags & TF.Short)
-        {
-          this.error("Type specified multiple times: " + type);
-          return;
-        }
-        this.__typeFlags |= TF.Short;
-        this.__size = SIB.Short;
-        break;
-
-      case "float" :
-        if (this.__typeFlags & TF.Float)
-        {
-          this.error("Type specified multiple times: " + type);
-          return;
-        }
-        this.__typeFlags |= TF.Float;
-        this.__size = SIB.Float;
-        break;
-
-      case "double" :
-        if (this.__typeFlags & TF.Double)
-        {
-          this.error("Type specified multiple times: " + type);
-          return;
-        }
-        this.__typeFlags |= TF.Double;
-        this.__size = SIB.Double;
-        break;
-
-      case "int" :
-        if (this.__typeFlags & TF.Int)
-        {
-          this.error("Type specified multiple times: " + type);
-          return;
-        }
-        this.__typeFlags |= TF.Int;
-
-        // this one may have already by set, e.g., short int
-        if (this.__size === 0)
-        {
-          this.__size = SIB.Int;
-        }
-        break;
-
-      case "long" :
-        if (this.__typeFlags & TF.LongLong)
-        {
-          this.error("Type is too long: long long long");
-          return;
-        }
-        this.__typeFlags |=
-          (this.__typeFlags & TF.Long) ? TF.LongLong : TF.Long;
-        this.__size =
-          (this.__typeFlags & TF.LongLong) ? SIB.LongLong : SIB.Long;
-        break;
-
-      case "unsigned" :
-        if (this.__typeFlags & TF.Unsigned)
-        {
-          this.error("Type specified multiple times: " + type);
-          return;
-        }
-        this.__typeFlags |= TF.Unsigned;
-
-        // Default to unsigned int, if not otherwise set; may get overridden
-        if (this.__size === 0)
-        {
-          this.__size = SIB.Int;
-        }
-        break;
-
-      case "function" :
-        this.__typeFlags |= TF.Function;
-        this.__size = 0;
-        this.__node = node;     // save node to process when function is called
-        break;
-
-      case "built-in" :
-        this.__typeFlags |= TF.BuiltIn;
-        this.__size = 0;
-        this.__node = node;    // save JavaSCript function reference
-        break;
-        
-      default :
-        throw new Error("Unexpected type: " + type);
-        break;
-      }
-
-      // Specify the next symbol's (tentative) offset based on this one's size
-      // (It's tentative, because this function can be called multiple times:
-      // once for each modifier, e.g. for "unsigned long int" it will be called
-      // three times.)
-      if ((this.__typeFlags & (TF.Function | TF.BuiltIn)) === 0)
-      {
-        // Is it a pointer?
-        if (this.__pointerCount)
-        {
-          // Yup. Set its size.
-          this.__size = SIB.Pointer;
-        }
-        
-        // Is it an array and a function parameter? That makes it a pointer.
-        else if (this.__arraySizes.length !== 0 && this.__bIsParameter)
-        {
-          // Yup. Set its size.
-          this.__size = SIB.Pointer;
-        }
-        
-        // It's not a pointer of any type. Calculate its size.
-        else
-        {
-          // Assume it's not an array, so we'll use the type's size
-          product = 1;
-
-          // Is it an array?
-          if (this.__arraySizes.length)
-          {
-            // Yup. Calculate the number of elements.
-            this.__arraySizes.forEach(
-              function(size)
-              {
-                product *= size;
-              });
-
-            // Store the new size
-            this.__size *= product;
-          }
-        }
-        
-        // Calculate the next symbol's offset. Every new symbol begins on a
-        // multiple of WORDSIZE bytes, for easy display.
-        this.__symtab.nextOffset += this.__size;
-        mod = this.__size % SIB.Word;
-        if (mod !== 0)
-        {
-          this.__symtab.nextOffset += SIB.Word - mod;
-        }
-
-        // If we're in the global symbol table...
-        if (this.__symtab.getParent() == null)
-        {
-          // ... then add this symbol to memory, for later display
-          playground.c.lib.Symtab._addSymbolInfo(this);
-        }
-      }
-    },
-*/
 
     getSymtab : function()
     {
@@ -413,8 +403,37 @@ console.log("    specAndDecl[0]=" + specAndDecl[0]);
       return this.__bIsParameter;
     },
 
+    getType : function()
+    {
+      // Have we already determined this symbol's type?
+      if (typeof this.__type != "undefined")
+      {
+        // Yup. Just return it.
+        return this.__type;
+      }
+      
+      // Calculate this symbol's type and size by traversing the symbol's
+      // specifier/declarator list.
+      playground.lib.c.SymtabEntry.getInfo(this.__specAndDecl);
+      
+      // Give 'em what they came for
+      return this.__type;
+    },
+
     getSize : function()
     {
+      // Have we already determined this symbol's size?
+      if (typeof this.__size != "undefined")
+      {
+        // Yup. Just return it.
+        return this.__size;
+      }
+      
+      // Calculate this symbol's type and size by traversing the symbol's
+      // specifier/declarator list.
+      playground.lib.c.SymtabEntry.getInfo(this.__specAndDecl);
+      
+      // Give 'em what they came for
       return this.__size;
     },
 
@@ -455,6 +474,9 @@ console.log("    specAndDecl[0]=" + specAndDecl[0]);
                   console.log("\t__specOrDecl[" + i + "] = null");
                 }
               });
+            console.log(
+              JSON.stringify(
+                playground.c.lib.SymtabEntry.getInfo(this[key])));
           }
           else
           {
