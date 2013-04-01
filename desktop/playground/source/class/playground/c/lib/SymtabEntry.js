@@ -320,6 +320,7 @@ qx.Class.define("playground.c.lib.SymtabEntry",
       // Calculate the number of bytes consumed by the specifier or declarator
       // and possibly (recursively) its successors
       byteCount = specAndDecl[0].calculateByteCount(1, specAndDecl, 0);
+console.log("calculateOffset: byteCount=" + byteCount + ", nextOffset=" + (this.__symtab.nextOffset + byteCount));
       
       // Now we can update the offset of the next symbol in this symbol table
       this.__symtab.nextOffset += byteCount;

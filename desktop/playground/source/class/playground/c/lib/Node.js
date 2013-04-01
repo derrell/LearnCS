@@ -2038,6 +2038,7 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
 
           // Calculate the offset in the symbol table for this symbol table
           // entry, based on the now-complete specifiers and declarators
+console.log("Calculating offset for symbol " + data.entry.getName());
           data.entry.calculateOffset();
 
           // We no longer need our reference to the specifier/declarator list.
@@ -2444,6 +2445,7 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
 
           // Calculate the symbol offset required for this symbol table
           // entry, based on the now-complete specifiers and declarators
+console.log("Calculating offset for symbol " + data.entry.getName());
           data.entry.calculateOffset();
         }
 

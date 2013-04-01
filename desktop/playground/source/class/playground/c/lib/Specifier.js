@@ -354,7 +354,7 @@ qx.Class.define("playground.c.lib.Specifier",
         break;
       }
 
-      return byteCount + multiplier;
+      return byteCount * multiplier;
     },
 
     /**
