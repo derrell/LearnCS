@@ -324,6 +324,9 @@ console.log("calculateOffset: byteCount=" + byteCount + ", nextOffset=" + (this.
       
       // Now we can update the offset of the next symbol in this symbol table
       this.__symtab.nextOffset += byteCount;
+      
+      // Save this symbol table entry's size
+      this.__size = byteCount;
     },
 
     getAddr : function()
@@ -438,7 +441,7 @@ console.log("calculateOffset: byteCount=" + byteCount + ", nextOffset=" + (this.
       
       // Calculate this symbol's type and size by traversing the symbol's
       // specifier/declarator list.
-      playground.lib.c.SymtabEntry.getInfo(this.__specAndDecl);
+      playground.c.lib.SymtabEntry.getInfo(this.__specAndDecl);
       
       // Give 'em what they came for
       return this.__type;
@@ -453,9 +456,13 @@ console.log("calculateOffset: byteCount=" + byteCount + ", nextOffset=" + (this.
         return this.__size;
       }
       
-      // Calculate this symbol's type and size by traversing the symbol's
-      // specifier/declarator list.
-      playground.lib.c.SymtabEntry.getInfo(this.__specAndDecl);
+      // We should probably never get here, as the size should have been
+      // calculated via a call to calculateOffset(). Just in case, though...
+      // 
+      // Calculate the number of bytes consumed by the specifier or declarator
+      // and possibly (recursively) its successors
+      this.__size = 
+        this.__specAndDecl[0].calculateByteCount(1, this.__specAndDecl, 0);
       
       // Give 'em what they came for
       return this.__size;

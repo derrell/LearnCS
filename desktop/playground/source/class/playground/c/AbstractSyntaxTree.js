@@ -339,11 +339,11 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
         mem.prettyPrint("Globals", 
                         Memory.info.gas.start, 
                         Memory.info.gas.length);
-*/
 
         mem.prettyPrint("Stack",
                         Memory.info.rts.start,
                         Memory.info.rts.length);
+*/
 
         // We're finished with this activation record.
         mem.endActivationRecord();
