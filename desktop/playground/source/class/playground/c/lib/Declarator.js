@@ -154,6 +154,60 @@ qx.Class.define("playground.c.lib.Declarator",
     },
 
     /**
+     * Get the byte account of this declarator.
+     * 
+     * @param multiplier {Number}
+     *   Number of elements of this type to account for in the byte count
+     * 
+     * @return
+     *   The calculated byte count of this declarator type
+     */
+    calculateByteCount : function(multiplier, specAndDecl, i)
+    {
+      var             count;
+
+      // Determine the byte count for this type
+      switch(this.__type)
+      {
+      case "array" :
+        // An array with an array count multiplies and then calls recursively
+        count = this.getArrayCount();
+        if (count !== null)
+        {
+          // This had better not be the last specifier/declarator in the list
+          if (specAndDecl.length == i + 1)
+          {
+            throw new Error("Internal error: " +
+                            "unexpected end of specifier/declarator list");
+          }
+          
+          return specAndDecl[i + 1].calculateByteCount(multiplier * count,
+                                                       specAndDecl,
+                                                       i + 1);
+        }
+        else
+        {
+          // We have an array with no count. That makes it a pointer, if it's
+          // a parameter, and an error otherwise (which we can't detect from
+          // here). Assume it's not an error.
+          return playground.c.machine.Memory.typeSize["pointer"] * multiplier;
+        }
+        break;
+        
+      case "function" :
+      case "pointer" :
+      case "builtIn" :
+        // Pointers of all types are the same size. Just multiply by previous
+        // byte count.
+        return playground.c.machine.Memory.typeSize["pointer"] * multiplier;
+        break;
+        
+      default:
+        throw new Error("Internal error: unexpected type: " + this.__type);
+      }
+    },
+    
+    /**
      * Display this specifier
      */
     display : function()

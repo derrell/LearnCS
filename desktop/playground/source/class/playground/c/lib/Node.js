@@ -367,7 +367,7 @@ qx.Class.define("playground.c.lib.Node",
         }
       }
 
-//      console.log("process: " + this.type);
+      console.log("process: " + this.type);
 
       // Yup. See what type it is.
       switch(this.type)
@@ -1955,6 +1955,7 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
           
           // Attach the specifier/declarator list to this symbol
           entry.setSpecAndDecl(data.specAndDecl);
+          data.entry = entry;
           
           // Process any children
           this.__processSubnodes(data, bExecuting);
@@ -2034,6 +2035,10 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
 
           // Add the specifier to the end of the specifier/declarator list
           data.specAndDecl.push(data.specifiers);
+
+          // Calculate the offset in the symbol table for this symbol table
+          // entry, based on the now-complete specifiers and declarators
+          data.entry.calculateOffset();
 
           // We no longer need our reference to the specifier/declarator list.
           // The symbol table entry still references it
@@ -2432,8 +2437,16 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
           this.children[2].process(data, bExecuting);
         }
 
-        // Add the specifier to the end of the specifier/declarator list
-        data.specAndDecl.push(data.specifiers);
+        if (! bExecuting)
+        {
+          // Add the specifier to the end of the specifier/declarator list
+          data.specAndDecl.push(data.specifiers);
+
+          // Calculate the symbol offset required for this symbol table
+          // entry, based on the now-complete specifiers and declarators
+          data.entry.calculateOffset();
+        }
+
         break;
 
 /*

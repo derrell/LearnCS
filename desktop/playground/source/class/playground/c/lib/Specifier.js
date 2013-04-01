@@ -17,6 +17,7 @@
 if (typeof qx === 'undefined')
 {
   var qx = require("qooxdoo");
+  require("../machine/Memory");
 }
 
 qx.Class.define("playground.c.lib.Specifier",
@@ -31,14 +32,14 @@ qx.Class.define("playground.c.lib.Specifier",
 
   members :
   {
-    __node     : null,
-    __storage  : null,
-    __type     : null,
-    __sign     : null,
-    __size     : null,
-    __constant : null,
-    __volatile : null,
-
+    __node      : null,
+    __storage   : null,
+    __type      : null,
+    __sign      : null,
+    __size      : null,
+    __constant  : null,
+    __volatile  : null,
+    
     /**
      * Set the storage
      * 
@@ -199,9 +200,18 @@ qx.Class.define("playground.c.lib.Specifier",
       {
         throw new playground.c.lib.RuntimeError(
           this.__node,
-          "Programmer error: Unexpected size: " + value);
+          "Internal error: Unexpected size: " + value);
       }
 
+      // Ensure a size isn't applied to something other than an int
+      if (this.__type !== null && this.__type != "int")
+      {
+        throw new playground.c.lib.RuntimeError(
+          this.__node,
+          "Can not specify " + value + 
+            " in addition to previously specified " + this.__type);
+      }
+      
       // Save the type.
       this.__type = "int";
 
@@ -213,15 +223,6 @@ qx.Class.define("playground.c.lib.Specifier",
         return;
       }
 
-      // Ensure that two mutually-exclusive types haven't been specified
-      if (this.__size !== null && this.__size != "int")
-      {
-        throw new playground.c.lib.RuntimeError(
-          this.__node,
-          "Can not specifiy " + value + 
-            " in addition to previously specified " + this.__size);
-      }
-      
       // Save the new value
       this.__size = value;
     },
@@ -308,6 +309,54 @@ qx.Class.define("playground.c.lib.Specifier",
       return this.__volatile;
     },
     
+    /**
+     * Get the byte account of this specifier.
+     * 
+     * @param multiplier {Number}
+     *   Number of elements of this type to account for in the byte count
+     * 
+     * @return
+     *   The calculated byte count of this specifier type
+     */
+    calculateByteCount : function(multiplier)
+    {
+      var             byteCount;
+
+      // Determine the byte count for this type
+      switch(this.__type)
+      {
+      case "int" :
+        switch(this.__size)
+        {
+        case "short" :
+        case "long" :
+        case "long long" :
+          byteCount = playground.c.machine.Memory.typeSize[this.__size];
+          break;
+
+        default :
+          byteCount = playground.c.machine.Memory.typeSize["int"];
+          break;
+        }
+        break;
+        
+      case "float" :
+      case "double" :
+      case "char" :
+        byteCount = playground.c.machine.Memory.typeSize[this.__type];
+        break;
+        
+      case "struct" :
+      case "union" :
+      case "enum" :
+      case "label" :
+        throw new Error("Not yet implemented: " + this.__type);
+        break;
+      }
+
+      return byteCount + multiplier;
+    },
+
     /**
      * Display this specifier
      */

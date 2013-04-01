@@ -302,6 +302,29 @@ qx.Class.define("playground.c.lib.SymtabEntry",
   {
     __cache : null,
 
+    calculateOffset : function()
+    {
+      var             byteCount = 0;
+      var             specAndDecl;
+
+      // Retrieve the specifier/declarator list
+      specAndDecl = this.__specAndDecl;
+      
+      // We are supposed to have a list by now. Ensure we do.
+      if (! specAndDecl)
+      {
+        throw new Error("Internal error: " +
+                        "Expected specifier/declarator list to exist");
+      }
+      
+      // Calculate the number of bytes consumed by the specifier or declarator
+      // and possibly (recursively) its successors
+      byteCount = specAndDecl[0].calculateByteCount(1, specAndDecl, 0);
+      
+      // Now we can update the offset of the next symbol in this symbol table
+      this.__symtab.nextOffset += byteCount;
+    },
+
     getAddr : function()
     {
       var             i;
