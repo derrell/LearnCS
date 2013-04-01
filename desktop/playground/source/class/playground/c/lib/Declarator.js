@@ -166,7 +166,6 @@ qx.Class.define("playground.c.lib.Declarator",
     {
       var             count;
 
-console.log("declarator: multiplier=" + multiplier + ", index=" + i);
       // Determine the byte count for this type
       switch(this.__type)
       {
@@ -182,7 +181,6 @@ console.log("declarator: multiplier=" + multiplier + ", index=" + i);
                             "unexpected end of specifier/declarator list");
           }
           
-console.log("declarator calling recursively. current=" + count);
           return specAndDecl[i + 1].calculateByteCount(multiplier,
                                                        specAndDecl,
                                                        i + 1);
@@ -192,7 +190,6 @@ console.log("declarator calling recursively. current=" + count);
           // We have an array with no count. That makes it a pointer, if it's
           // a parameter, and an error otherwise (which we can't detect from
           // here). Assume it's not an error.
-console.log("declarator found array with no count");
           return playground.c.machine.Memory.typeSize["pointer"] * multiplier;
         }
         break;
@@ -202,7 +199,6 @@ console.log("declarator found array with no count");
       case "builtIn" :
         // Pointers of all types are the same size. Just multiply by previous
         // byte count.
-console.log("declarator found pointer");
         return playground.c.machine.Memory.typeSize["pointer"] * multiplier;
         break;
         

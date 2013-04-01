@@ -648,7 +648,6 @@ qx.Class.define("playground.c.machine.Memory",
     beginActivationRecord : function(addr)
     {
       // Record the address. The function name will be added later
-console.log("Beginning activation record at " + addr.toString(16));
       this.__activationRecordsBegin.push({ addr : addr });
     },
     
@@ -658,7 +657,6 @@ console.log("Beginning activation record at " + addr.toString(16));
     endActivationRecord : function()
     {
       var ar = this.__activationRecordsBegin.pop();
-console.log("Ending activation record at " + ar.addr.toString(16) + " with name " + ar.name);
     },
 
     /**
@@ -679,7 +677,6 @@ console.log("Ending activation record at " + ar.addr.toString(16) + " with name 
       
       activationRecord = 
         this.__activationRecordsBegin[this.__activationRecordsBegin.length - 1];
-console.log("Naming activation record at " + activationRecord.addr.toString(16) + " with name " + name);
       
       // Add a name to the most recently added activation record
       activationRecord.name = name;

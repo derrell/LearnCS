@@ -271,7 +271,6 @@ qx.Class.define("playground.c.lib.SymtabEntry",
       
       // Save this symbol table entry's size
       this.__size = byteCount;
-console.log("calculateOffset: byteCount=" + byteCount + ", nextOffset=" + this.__symtab.nextOffset);
     },
 
     getAddr : function()
@@ -385,7 +384,6 @@ console.log("calculateOffset: byteCount=" + byteCount + ", nextOffset=" + this._
         playground.c.lib.SymtabEntry.getInfo(this.__specAndDecl, this);
       }
       
-console.log("getType: type of " + this.__name + " is " + this.__type);
       // Give 'em what they came for
       return this.__type;
     },
@@ -432,7 +430,6 @@ console.log("getType: type of " + this.__name + " is " + this.__type);
         playground.c.lib.SymtabEntry.getInfo(this.__specAndDecl, this);
       }
       
-if (this.__arraySizes === null) console.log("NULL!!!");
       // Give 'em what they came for
       return this.__arraySizes;
     },
