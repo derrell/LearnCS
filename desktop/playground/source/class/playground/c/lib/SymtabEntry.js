@@ -89,27 +89,28 @@ qx.Class.define("playground.c.lib.SymtabEntry",
         Pointer  : 0,
         Word     : 0
       },
-
-    getInfo : function(specAndDecl)
+    
+    getInfo : function(specAndDecl, obj)
     {
       var             i;
       var             type;
+      var             description;
       var             count;
-      var             size = 1;
-      var             component;
-      var             bSizeDone = false;
       var             parts = [];
+      var             arraySizes = [];
+      var             pointerCount = 0;
+      var             bDone = false;
       var             sd;
       var             SIB = playground.c.lib.SymtabEntry.SizeInBytes;
 
       // Traverse this provided specifier/declarator list, calculating its
       // textual type representation and its size.
-      for (i = 0; i < specAndDecl.length; i++)
+      for (i = 0; i < specAndDecl.length && ! bDone; i++)
       {
         // Get the current specifier or declarator
         sd = specAndDecl[i];
         
-        // Set the size and add to the parts of the type
+        // Add to the parts of the type
         switch(type = sd.getType())
         {
           //
@@ -117,98 +118,26 @@ qx.Class.define("playground.c.lib.SymtabEntry",
           //
 
         case "int" :
-          // The size of an int is determined by the getSize() propery
-          switch(sd.getSize())
+          // Add unsigned, if needed
+          if (sd.getSigned() === "unsigned")
           {
-          case "short" :
-            if (! bSizeDone)
-            {
-              size *= SIB.Short;
-            }
-
-            // Stop calculating size
-            bSizeDone = true;
-            
-            parts.push("short");
-            break;
-
-          case "long" :
-            if (! bSizeDone)
-            {
-              size *= SIB.Long;
-            }
-
-            // Stop calculating size
-            bSizeDone = true;
-            
-            parts.push("long");
-            break;
-
-          case "long long" :
-            if (! bSizeDone)
-            {
-              size *= SIB.LongLong;
-            }
-
-            // Stop calculating size
-            bSizeDone = true;
-            
-            parts.push("long long");
-            break;
-
-          case null :
-            if (! bSizeDone)
-            {
-              size *= SIB.Int;
-            }
-
-            // Stop calculating size
-            bSizeDone = true;
-            
-            parts.push("int");
-            break;
-
-          default :
-            throw new Error("Internal Error: " +
-                            "Unexpected specifier size: " + sd.getSize());
-            break;
+            parts.push("unsigned");
           }
+
+          // The size of an int is determined by the getSize() propery
+          parts.push(sd.getSize() || "int");
+          
+          // No need to loop further
+          bDone = true;
           break;
 
         case "float" :
-          if (! bSizeDone)
-          {
-            size *= SIB.Float;
-          }
-
-          // Stop calculating size
-          bSizeDone = true;
-
-          parts.push("float");
-          break;
-
         case "double" :
-          if (! bSizeDone)
-          {
-            size *= SIB.Double;
-          }
-
-          // Stop calculating size
-          bSizeDone = true;
-
-          parts.push("double");
-          break;
-
         case "char" :
-          if (! bSizeDone)
-          {
-            size *= SIB.Char;
-          }
-
-          // Stop calculating size
-          bSizeDone = true;
-
-          parts.push("char");
+          parts.push(type);
+          
+          // No need to loop further
+          bDone = true;
           break;
 
         case "void" :
@@ -237,31 +166,29 @@ qx.Class.define("playground.c.lib.SymtabEntry",
           //
 
         case "array" :
-          count = sd.getArrayCount() || 0;
-          size *= count;
+          count = sd.getArrayCount() || -1;
+          parts.push("array[" + count + "] of ");
 
-          parts.push("array[" + (count || "") + "] of ");
+          arraySizes.push(count);
           break;
 
         case "function" :
-          // Stop calculating size
-          bSizeDone = true;
-          
           parts.push("function");
+          
+          // No need to loop further
+          bDone = true;
           break;
 
         case "pointer" :
-          size *= SIB.Pointer;
-
-          // Stop calculating size
-          bSizeDone = true;
-
-          parts.push("ptr to ");
+          parts.push("pointer to ");
+          ++pointerCount;
           break;
 
         case "builtIn" :
-          // Stop calculating size
-          bSizeDone = true;
+          parts.push("builtIn");
+
+          // No need to loop further
+          bDone = true;
           break;
 
 
@@ -283,29 +210,40 @@ qx.Class.define("playground.c.lib.SymtabEntry",
         }
       }
       
-      component = specAndDecl[0].getType();
-      if (component == "array")
+      // Calculate the complete type
+      description = parts.join("");
+
+      // If so requested, cache the type so it needn't be re-calculated
+      if (obj)
       {
-        component += "[" + (specAndDecl[0].getArrayCount() || "") + "]";
+        obj.__type = type;
+        obj.__pointerCount = pointerCount;
+        obj.__arraySizes = arraySizes;
       }
 
       return (
         {
-          description : parts.join(""),
-          size        : size,
-          component   : component
+          type         : type,
+          pointerCount : pointerCount,
+          arraySizes   : arraySizes,
+          description  : description
         });
     }
   },
   
   members :
   {
-    __cache : null,
+    __size         : null,
+    __type         : null,
+    __pointerCount : null,
+    __arraySizes   : null,
 
     calculateOffset : function()
     {
       var             byteCount = 0;
+      var             remainder;
       var             specAndDecl;
+      var             SIB = playground.c.lib.SymtabEntry.SizeInBytes;
 
       // Retrieve the specifier/declarator list
       specAndDecl = this.__specAndDecl;
@@ -320,13 +258,20 @@ qx.Class.define("playground.c.lib.SymtabEntry",
       // Calculate the number of bytes consumed by the specifier or declarator
       // and possibly (recursively) its successors
       byteCount = specAndDecl[0].calculateByteCount(1, specAndDecl, 0);
-console.log("calculateOffset: byteCount=" + byteCount + ", nextOffset=" + (this.__symtab.nextOffset + byteCount));
       
+      // Calculate the remainder to add to the byte count, such that the next
+      // offset will be on a word boundary.
+      remainder = byteCount % SIB.Word;
+
       // Now we can update the offset of the next symbol in this symbol table
-      this.__symtab.nextOffset += byteCount;
+      this.__symtab.nextOffset += 
+        (remainder === 0
+         ? byteCount
+         : byteCount + SIB.Word - remainder);
       
       // Save this symbol table entry's size
       this.__size = byteCount;
+console.log("calculateOffset: byteCount=" + byteCount + ", nextOffset=" + this.__symtab.nextOffset);
     },
 
     getAddr : function()
@@ -432,17 +377,15 @@ console.log("calculateOffset: byteCount=" + byteCount + ", nextOffset=" + (this.
 
     getType : function()
     {
-      // Have we already determined this symbol's type?
-      if (typeof this.__type != "undefined")
+      // Have we already determined this symbol's info?
+      if (this.__type === null)
       {
-        // Yup. Just return it.
-        return this.__type;
+        // Calculate this symbol's info by traversing the symbol's
+        // specifier/declarator list.
+        playground.c.lib.SymtabEntry.getInfo(this.__specAndDecl, this);
       }
       
-      // Calculate this symbol's type and size by traversing the symbol's
-      // specifier/declarator list.
-      playground.c.lib.SymtabEntry.getInfo(this.__specAndDecl);
-      
+console.log("getType: type of " + this.__name + " is " + this.__type);
       // Give 'em what they came for
       return this.__type;
     },
@@ -450,22 +393,48 @@ console.log("calculateOffset: byteCount=" + byteCount + ", nextOffset=" + (this.
     getSize : function()
     {
       // Have we already determined this symbol's size?
-      if (typeof this.__size != "undefined")
+      if (this.__size === null)
       {
-        // Yup. Just return it.
-        return this.__size;
+        // We should probably never get here, as the size should have been
+        // calculated via a call to calculateOffset(). Just in case, though...
+        // 
+        // Calculate the number of bytes consumed by the specifier or
+        // declarator and possibly (recursively) its successors
+        this.__size = 
+          this.__specAndDecl[0].calculateByteCount(1, this.__specAndDecl, 0);
       }
-      
-      // We should probably never get here, as the size should have been
-      // calculated via a call to calculateOffset(). Just in case, though...
-      // 
-      // Calculate the number of bytes consumed by the specifier or declarator
-      // and possibly (recursively) its successors
-      this.__size = 
-        this.__specAndDecl[0].calculateByteCount(1, this.__specAndDecl, 0);
       
       // Give 'em what they came for
       return this.__size;
+    },
+
+    getPointerCount : function()
+    {
+      // Have we already determined this symbol's info?
+      if (this.__pointerCount === null)
+      {
+        // Calculate this symbol's info by traversing the symbol's
+        // specifier/declarator list.
+        playground.c.lib.SymtabEntry.getInfo(this.__specAndDecl, this);
+      }
+      
+      // Give 'em what they came for
+      return this.__pointerCount;
+    },
+    
+    getArraySizes : function()
+    {
+      // Have we already determined this symbol's info?
+      if (this.__arraySizes === null)
+      {
+        // Calculate this symbol's info by traversing the symbol's
+        // specifier/declarator list.
+        playground.c.lib.SymtabEntry.getInfo(this.__specAndDecl, this);
+      }
+      
+if (this.__arraySizes === null) console.log("NULL!!!");
+      // Give 'em what they came for
+      return this.__arraySizes;
     },
 
     getLine : function()
@@ -506,9 +475,9 @@ console.log("calculateOffset: byteCount=" + byteCount + ", nextOffset=" + (this.
                 }
               });
             console.log(
-              "\t    " +
-              JSON.stringify(
-                playground.c.lib.SymtabEntry.getInfo(this[key])));
+              "\t    " + 
+                playground.c.lib.SymtabEntry.getInfo(
+                  this.__specAndDecl).description);
           }
           else
           {

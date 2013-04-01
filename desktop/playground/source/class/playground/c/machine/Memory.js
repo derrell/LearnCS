@@ -610,6 +610,11 @@ qx.Class.define("playground.c.machine.Memory",
     setSymbolInfo : function(addr, symbol)
     {
       var             name;
+      var             type;
+      var             parts;
+      var             index;
+      var             results;
+      var             symInfo;
       
       // Determine the group name for the memory template view. If there's a
       // symbol table, use its name; otherwise it's created before there's a
@@ -622,8 +627,8 @@ qx.Class.define("playground.c.machine.Memory",
           name       : symbol.getName(),
           type       : symbol.getType(),
           size       : symbol.getSize(),
-          pointer    : 0, // symbol.getPointerCount(),
-          array      : [], // symbol.getArraySizes(),
+          pointer    : symbol.getPointerCount(),
+          array      : symbol.getArraySizes(),
           param      : symbol.getIsParameter(),
           group      : name,
           
