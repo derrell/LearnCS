@@ -112,7 +112,7 @@ qx.Class.define("playground.c.machine.Memory",
       "rts" :
       {
         start : 0x9EA4,
-        length : 256
+        length : 64
       }
 
 /*
@@ -745,7 +745,7 @@ console.log("Naming activation record at " + activationRecord.addr.toString(16) 
           
           // The address of this word is WORDSIZE times its index, since each
           // word contains four bytes.
-          addr = index * WORDSIZE;
+          addr = start + (index * WORDSIZE);
           
           // Figure out which region of memory we're in. If we're in the stack
           // region, then further determine which activation record we're in.
@@ -948,7 +948,8 @@ console.log("Naming activation record at " + activationRecord.addr.toString(16) 
         {
           if (typeof datum.group == "undefined")
           {
-            console.log("undefined group name at address " + datum.addr.toString(16) + ": " + JSON.stringify(datum));
+            console.log("undefined group name at address " +
+                        datum.addr.toString(16) + ": " + JSON.stringify(datum));
           }
         });
 
@@ -966,35 +967,40 @@ console.log("Naming activation record at " + activationRecord.addr.toString(16) 
      */
     prettyPrint : function(message, startAddr, length)
     {
-      var data = this.toArray(startAddr, length);
-      var parts = [];
+      var             model;
+      
+      // Retrieve the data to be displayed
+      model = this.getDataModel(startAddr, length);
 
       // Display the message
       console.log(message);
-
-      // For each value to be displayed...
-      data.forEach(
-        function(value, i)
+      
+      model.forEach(
+        function(datum, i)
         {
-          // See if we need an address heading
-          if (i % 16 == 0)
-          {
-            // We do. Display it, as four hex digits
-            if (i !== 0)
-            {
-              console.log(parts.join(""));
-              parts = [];
-            }
-            parts.push(("0000" + 
-                        (startAddr + i).toString(16)).substr(-4) + ": ");
-          }
-
-          // Display this value, as two hex digits
-          parts.push(("00" + value.toString(16)).substr(-2) + " ");
+          var             parts;
+          var             nameLen = datum.name.length;
+          var             numSpaces = 24 - datum.name.length;
+          
+          parts = 
+            [
+              datum.name,
+              new Array(numSpaces).join(" "),
+              ("0000" + datum.addr.toString(16)).substr(-4),
+              "\t",
+              datum.bytes.map(
+                function(byteValue)
+                {
+                  if (byteValue === null)
+                  {
+                    byteValue = 0xfe;
+                  }
+                  return ("00" + byteValue.toString(16)).substr(-2);
+                }).join(" ")
+            ];
+          
+          console.log(parts.join(""));
         });
-
-      // Terminate the display with a newline
-      console.log(parts.join("") + "\n");
     }
   },
   
