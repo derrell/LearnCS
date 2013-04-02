@@ -64,14 +64,15 @@ SQ                      ("'")
                                   ? parser.symbols_.TYPE_NAME
                                   : parser.symbols_.IDENTIFIER);
                         }
-0[xX]{H}+{IS}?		{ return(parser.symbols_.CONSTANT_HEX); }
-0{D}+{IS}?		{ return(parser.symbols_.CONSTANT_OCTAL); }
-{D}+{IS}?		{ return(parser.symbols_.CONSTANT_DECIMAL); }
-"L"?{SQ}(\\.|[^\\{SQ}])+{SQ}	{ return(parser.symbols_.CONSTANT_CHAR); }
 
 {D}+{E}{FS}?		{ return(parser.symbols_.CONSTANT_FLOAT); }
 {D}*"."{D}+({E})?{FS}?	{ return(parser.symbols_.CONSTANT_FLOAT); }
 {D}+"."{D}*({E})?{FS}?	{ return(parser.symbols_.CONSTANT_FLOAT); }
+
+0[xX]{H}+{IS}?		{ return(parser.symbols_.CONSTANT_HEX); }
+0{D}+{IS}?		{ return(parser.symbols_.CONSTANT_OCTAL); }
+{D}+{IS}?		{ return(parser.symbols_.CONSTANT_DECIMAL); }
+"L"?{SQ}(\\.|[^\\{SQ}])+{SQ}	{ return(parser.symbols_.CONSTANT_CHAR); }
 
 "L"?\"(\\.|[^\\"])*\"	{ return(parser.symbols_.STRING_LITERAL); }
 

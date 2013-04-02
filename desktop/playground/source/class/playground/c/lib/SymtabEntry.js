@@ -124,8 +124,10 @@ qx.Class.define("playground.c.lib.SymtabEntry",
             parts.push("unsigned");
           }
 
-          // The size of an int is determined by the getSize() propery
-          parts.push(sd.getSize() || "int");
+          // The type and size of any int is determined by the getSize()
+          // property
+          type = sd.getSize() || "int";
+          parts.push(type);
           
           // No need to loop further
           bDone = true;

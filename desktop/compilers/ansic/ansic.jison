@@ -1887,7 +1887,6 @@ constant
     $$ = new playground.c.lib.Node("constant", yytext, yylineno);
     $$.numberType = playground.c.lib.Node.NumberType.Float;
     $$.value = parseFloat(yytext);
-    }
   }
   ;
 

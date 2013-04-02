@@ -1758,15 +1758,20 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
           }
         }
 
-        // Add a function declarator for this symbol. The attached node is the
-        // function definition, if we found one; the current node, otherwise.
+        // Add a function declarator for this symbol.
         declarator = new playground.c.lib.Declarator(this);
         declarator.setType("function");
         declarator.setFunctionNode(subnode);
         data.specAndDecl.push(declarator);
         
-        // Save the current symbol table along with the function definition node
-        subnode._symtab = playground.c.lib.Symtab.getCurrent();
+        // Create a symbol table for this function's arguments
+        symtab = new playground.c.lib.Symtab(
+          playground.c.lib.Symtab.getCurrent(), 
+          data.entry.getName(),
+          this.line);
+
+        // Save the function's symbol table in the function definition node
+        subnode._symtab = symtab;
         
         // Process the remaining children
         this.children.forEach(
@@ -1809,31 +1814,34 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
 
           // Add the specifier to the end of the specifier/declarator list
           data.specAndDecl.push(data.specifiers);
+
+          // Pop this function's symbol table from the stack
+          playground.c.lib.Symtab.popStack();
+        
           break;
         }
 
         // We're executing. The symbol table entry for this function must
         // exist. Retrieve it from the node where we saved it.
-        symtab = this._symtab;
-          
+        symtab2 = this._symtab;
+
         // Push it onto the symbol table stack as if we'd just created it
-        playground.c.lib.Symtab.pushStack(symtab);
+        playground.c.lib.Symtab.pushStack(symtab2);
 
-        // Create a symbol table entry for the function name
-        declarator = this.children[1];
-        function_decl = declarator.children[0];
-
-        // Process the paremeter list
-        if (function_decl.children[1])
-        {
-          function_decl.children[1].process(data, bExecuting);
-        }
-
-        // Process the compound statement
         try
         {
           // Save current symbol table so we know where to pop to upon return
           symtab = playground.c.lib.Symtab.getCurrent();
+
+          // Create a symbol table entry for the function name
+          declarator = this.children[1];
+          function_decl = declarator.children[0];
+
+          // Process the paremeter list
+          if (function_decl.children[1])
+          {
+            function_decl.children[1].process(data, bExecuting);
+          }
 
           this.children[3].process(data, bExecuting);
           
