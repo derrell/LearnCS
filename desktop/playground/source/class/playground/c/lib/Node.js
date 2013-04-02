@@ -1250,8 +1250,19 @@ qx.Class.define("playground.c.lib.Node",
          *   1 : pointer? array?
          *   ...
          */
-        this.__processSubnodes(data, bExecuting);
-        break;
+        
+        // Process the direct declarator, to determine the identifier
+        entry = this.children[0].process(data, bExecuting);
+        
+        // Process the remaining sub-nodes
+        for (i = 1; i < this.children.length; i++)
+        {
+          if (this.children[i])
+          {
+            this.children[i].process(data, bExecuting);
+          }
+        }
+        return entry;
 
       case "default" :
         /*
@@ -1865,7 +1876,7 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
           {
             // Yup. It contains the return value
             value3 = e.returnCode;
-            console.log("TODO: cast value3 to this function's return type");
+            console.error("TODO: cast value3 to this function's return type");
             
             // Retore symbol table to where it was when we called the function
             while (playground.c.lib.Symtab.getCurrent() != symtab)
@@ -2056,12 +2067,17 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
           break;
         }
         
+        // We're executing. Retrieve the symbol table entry for this variable.
+        entry = this.children[0].process(data, bExecuting);
+
         // If we're executing, all we need to do is process the initializer
         if (this.children[1])
         {
-          this.children[1].process(data, bExecuting);
+          value = this.children[1].process(data, bExecuting);
+          playground.c.lib.Node.__mem.set(entry.getAddr(), 
+                                          entry.getType(), 
+                                          value.value);
         }
-
         break;
 
       case "init_declarator_list" :

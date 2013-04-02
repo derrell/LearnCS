@@ -18,6 +18,8 @@
  */
 if (typeof qx === 'undefined')
 {
+  var             bConsole = true;
+
   require("./lib/Symtab.js");
   require("./lib/Node.js");
   require("./machine/Memory.js");
@@ -31,13 +33,41 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
   
   statics :
   {
+    debugFlags :
+    {
+      ast    : false,
+      symtab : false
+    },
+
     main : function(parser)
     {
-      if (typeof window === "undefined")
+      var             argv;
+      var             optimist;
+
+      if (bConsole)
       {
-        require("./lib/Symtab.js");
-        require("./lib/Node.js");
-        require("./c/machine/Machine.js");
+        // Option processing, when run from the command line
+        optimist = require("optimist");
+        argv = optimist
+          .usage("Usage: $0 " +
+                 "[--ast] [--symtab] [--rts] [--heap] [--gas] <file.c>")
+          .boolean( [ "ast", "symtab", "rts", "heap", "gas" ] )
+          .argv;
+        
+        // If help was requested...
+        if (argv.h || argv.help)
+        {
+          // ... then just print the help message and exit
+          console.log(optimist.help());
+          process.exit(0);
+        }
+        
+        // Set flags
+        playground.c.AbstractSyntaxTree.debugFlags.ast    = !!argv["ast"];
+        playground.c.AbstractSyntaxTree.debugFlags.symtab = !!argv["symtab"];
+        playground.c.AbstractSyntaxTree.debugFlags.rts    = !!argv["rts"];
+        playground.c.AbstractSyntaxTree.debugFlags.heap   = !!argv["heap"];
+        playground.c.AbstractSyntaxTree.debugFlags.gas    = !!argv["gas"];
       }
 
       var error =
@@ -125,7 +155,6 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
       var             function_decl;
       var             Memory = playground.c.machine.Memory;
       var             mem = Memory.getInstance();
-      var             bDebug = true;
 
       // Initialize memory
       mem.initAll();
@@ -133,13 +162,10 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
       // Correct line numbers
       root.fixLineNumbers();
 
-      if (bDebug)
+      // Display the abstract syntax tree
+      if (playground.c.AbstractSyntaxTree.debugFlags.ast)
       {
-        // Display the abstract syntax tree
         root.display();
-
-        // Display the symbol table
-//        playground.c.lib.Symtab.display();
       }
 
       // Reset the symbol table to a clean state
@@ -154,7 +180,7 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
       // Process the abstract syntax tree to create symbol tables
       root.process(data, false);
 
-      if (bDebug)
+      if (playground.c.AbstractSyntaxTree.debugFlags.symtab)
       {
         playground.c.lib.Symtab.display();
       }
@@ -335,15 +361,26 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
           }
         }
 
-/*
-        mem.prettyPrint("Globals", 
-                        Memory.info.gas.start, 
-                        Memory.info.gas.length);
-*/
+        if (playground.c.AbstractSyntaxTree.debugFlags.rts)
+        {
+          mem.prettyPrint("Stack",
+                          Memory.info.rts.start,
+                          Memory.info.rts.length);
+        }
 
-        mem.prettyPrint("Stack",
-                        Memory.info.rts.start,
-                        Memory.info.rts.length);
+        if (playground.c.AbstractSyntaxTree.debugFlags.heap)
+        {
+          mem.prettyPrint("Stack",
+                          Memory.info.heap.start,
+                          Memory.info.heap.length);
+        }
+
+        if (playground.c.AbstractSyntaxTree.debugFlags.gas)
+        {
+          mem.prettyPrint("Globals", 
+                          Memory.info.gas.start, 
+                          Memory.info.gas.length);
+        }
 
         // We're finished with this activation record.
         mem.endActivationRecord();
