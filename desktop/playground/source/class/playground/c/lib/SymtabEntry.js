@@ -376,7 +376,7 @@ qx.Class.define("playground.c.lib.SymtabEntry",
       return this.__bIsParameter;
     },
 
-    getType : function()
+    getType : function(bMemAccess)
     {
       // Have we already determined this symbol's info?
       if (this.__type === null)
@@ -387,6 +387,19 @@ qx.Class.define("playground.c.lib.SymtabEntry",
       }
       
       // Give 'em what they came for
+      if (bMemAccess)
+      {
+        if (this.__pointerCount)
+        {
+          return "pointer";
+        }
+        
+        if (this.__bIsParameter && this.__arrayCount)
+        {
+          return "pointer";
+        }
+      }
+      
       return this.__type;
     },
 

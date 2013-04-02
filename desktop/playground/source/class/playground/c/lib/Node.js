@@ -164,8 +164,8 @@ qx.Class.define("playground.c.lib.Node",
             value =
               {
                 value        : value.getAddr(), 
-                type         : value.getType(false),
-                realType     : value.getType(true),
+                type         : value.getType(true),
+                realType     : value.getType(false),
                 pointerCount : value.getPointerCount(),
                 arraySizes   : value.getArraySizes()
               };
@@ -595,24 +595,6 @@ qx.Class.define("playground.c.lib.Node",
         // Get the base address
         value1 = this.children[0].process(data, bExecuting);
         
-        // If we don't know the size of this thing, we're in trouble. For now,
-        // we'll expect a symbol.
-        if (! (value1 instanceof playground.c.lib.SymtabEntry))
-        {
-          this.error("The base of an array access must be a variable (for now)",
-                     true);
-          break;                // not reached
-        }
-        
-        // Ensure that the symbol is an array
-        if (value1.getArraySizes().length == 0)
-        {
-          this.error(
-            value1.getName() + " is not an array. " +
-              "Providing an index does not make sense..",
-            true);
-          break;                //not reached
-        }
 
         // Get the index
         value2 = this.children[1].process(data, bExecuting);
@@ -975,180 +957,6 @@ qx.Class.define("playground.c.lib.Node",
         this.children[1].process(data, bExecuting);
         break;
 
-/*
-        // Determine if we're executing, or generating symbol tables
-        if (! bExecuting)
-        {
-          // Assume we do not expect the entry to already exist in the symbol
-          // table
-          bExists = false;
-
-          // If this is a typedef, it's already been added to the symbol table
-          if (this.children[0].children &&
-              this.children[0].children.length > 0 &&
-              this.children[0].children[0].type == "typedef")
-          {
-            // If it's a type, then it will exist already
-            bExists = true;
-          }
-
-          // Are there identifiers to apply these declaration specifieres to?
-          if (! this.children[1])
-          {
-            // Nope. Just process the declaration_specifiers.
-            this.children[0].process( {}, bExecuting );
-            break;
-          }
-
-          // Create symbol table entries for these identifiers
-          this.children[1].children.forEach(
-            function(init_declarator)
-            {
-              var             entry;
-              var             value;
-              var             pointer;
-              var             identifier;
-              var             declarator;
-
-              // Retrieve this declarator
-              declarator = init_declarator.children[0];
-
-              // Get the identifier name
-              identifier = declarator.children[0].value;
-
-              // If the symbol table should already exist...
-              if (bExists)
-              {
-                // ... then retrieve the entry
-                entry = playground.c.lib.Symtab.getCurrent().get(identifier);
-
-                if (! entry)
-                {
-                  this.error("Programmer error: type name should have existed");
-                  return;
-                }
-              }
-              else
-              {
-                // It shouldn't exist. Create a symbol table entry for this
-                // variable
-                entry = playground.c.lib.Symtab.getCurrent().add(
-                  identifier, declarator.line, false);
-
-                if (! entry)
-                {
-                  entry = playground.c.lib.Symtab.getCurrent().get(
-                    identifier, true);
-                  this.error("Variable '" + identifier + "' " +
-                             "was previously declared near line " +
-                             entry.getLine());
-                  return;
-                }
-              }
-
-              // Count and save the number of levels of pointers of this
-              // variable e.g., char **p; would call incrementPointerCount()
-              // twice.
-              for (pointer = declarator.children[1];
-                   pointer;
-                   pointer = pointer.children[0])
-              {
-                entry.incrementPointerCount();
-              }
-
-              // Add the array sizes
-              declarator.children[0].children.forEach(
-                function(arrayDecl)
-                {
-                  var             size;
-                  
-                  if (! arrayDecl)
-                  {
-                    return;
-                  }
-
-                  // If there are no children, it was an empty set of brackets
-                  if (! arrayDecl.children[0])
-                  {
-                    entry.addArraySize(-1);
-                  }
-                  else
-                  {
-                    // It should just be a constant, but process to be sure.
-                    size = 
-                      arrayDecl.children[0].process( { entry : entry }, 
-                                                     bExecuting);
-                    entry.addArraySize(size === null ? null : size.value);
-                  }
-                });
-
-              // Apply the declaration specifiers to this entry
-              if (this.children && this.children[0])
-              {
-                this.children[0].process( { entry : entry }, bExecuting );
-              }
-            },
-            this);
-        }
-        
-        // We enter this next block in various cases:
-        //   (1) We are executing, so we need to initialize variables
-        //   (2) We're not yet executing, but we're at the global scope. In
-        //       that case, we need to initialize the global variables.
-        //   TODO (maybe):
-        //   (3) There are static variables which need initialization
-        if (bExecuting || ! playground.c.lib.Symtab.getCurrent().getParent())
-        {
-          // Are there identifiers to apply these declaration specifieres to?
-          if (! this.children[1])
-          {
-            // Nope. We have nothing to do while executing.
-            break;
-          }
-          
-          // Process any variable initializers
-          this.children[1].children.forEach(
-            function(init_declarator)
-            {
-              var             entry;
-              var             value;
-              var             pointer;
-              var             identifier;
-              var             declarator;
-
-              // Retrieve this declarator
-              declarator = init_declarator.children[0];
-
-              // Get the identifier name
-              identifier = declarator.children[0].value;
-
-              // Retrieve the symbol table entry
-              entry = playground.c.lib.Symtab.getCurrent().get(identifier);
-
-              if (! entry)
-              {
-                this.error("Programmer error: name should have existed");
-                return;
-              }
-
-              // If there is an initializer...
-              if (init_declarator.children[1])
-              {
-                // ... then retrieve its value
-                value = init_declarator.children[1].process(data, bExecuting);
-                playground.c.lib.Node.__mem.set(entry.getAddr(), 
-                                                entry.getType(),
-                                                value.value);
-              }
-            },
-            this);
-
-          // Nothing more to do if we're executing.
-          break;
-        }
-*/
-        break;
-
       case "declaration_list" :
         /*
          * declaration_list
@@ -1193,54 +1001,6 @@ qx.Class.define("playground.c.lib.Node",
         }
 
         this.__processSubnodes(data, bExecuting);
-
-/*
-        // For each declaration specifier...
-        this.children.forEach(
-          function(subnode)
-          {
-            switch(subnode.type)
-            {
-            case "typedef" :
-              // nothing to do; already noted
-              break;
-
-            case "type_name_token" :
-              // Add this declared type
-              if (data.entry)
-              {
-                data.entry.setType(subnode.value);
-              }
-              break;
-
-            case "enum_specifier" :
-              throw new Error("Not yet implemented: " +
-                              "declaration_specifiers -> enum_specifier");
-              break;
-
-            case "struct" :
-              // Handle declaration of the struct, if necessary
-              subnode.process(data, bExecuting);
-
-              // We received back the structure symtab entry. Our entry's
-              // type, if we were given an entry, is its name.
-              if (data.entry)
-              {
-                data.entry.setType(data.structEntry.name);
-              }
-              break;
-
-            default:
-              // Add this declared type
-              if (data.entry)
-              {
-                data.entry.setType(subnode.type);
-              }
-              break;
-            }
-          },
-          this);
-*/
         break;
 
       case "declarator" :
@@ -1306,8 +1066,8 @@ qx.Class.define("playground.c.lib.Node",
           addr = value.getAddr();
           value3 = 
             {
-              type         : value.getType(false) ,
-              realType     : value.getType(true),
+              type         : value.getType(true) ,
+              realType     : value.getType(false),
               pointerCount : value.getPointerCount(),
               arraySizes   : value.getArraySizes()
             };
@@ -2474,91 +2234,6 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
 
         break;
 
-/*
-        // Prepare to get the identifier name
-        declarator = this.children[1];
-
-        // If there is one...
-        if (declarator)
-        {
-          // ... then extract it.
-          identifier = declarator.children[0].value;
-
-          // If we're executing...
-          if (bExecuting)
-          {
-            // ... then retrieve the existing symbol table entry
-            entry = playground.c.lib.Symtab.getCurrent().get(identifier, true);
-            if (! entry)
-            {
-              throw new Error("Programmer error: entry should exist");
-            }
-          }
-          else
-          {
-            // It shouldn't exist. Create a symbol table entry for this
-            // variable
-            entry = playground.c.lib.Symtab.getCurrent().add(
-              identifier, declarator.line, false, true);
-
-            if (! entry)
-            {
-              entry = 
-                playground.c.lib.Symtab.getCurrent().get(identifier, true);
-              this.error("Parameter '" + identifier + "' " +
-                         "was previously declared near line " +
-                         entry.getLine());
-              return null;
-            }
-
-            // Count and save the number of levels of pointers of this variable
-            // e.g., char **p; would call incrementPointerCount() twice.
-            for (pointer = declarator.children[1];
-                 pointer;
-                 pointer = pointer.children[0])
-            {
-              entry.incrementPointerCount();
-            }
-
-            // Add the array sizes
-            declarator.children[0].children.forEach(
-              function(arrayDecl)
-              {
-                var             size;
-
-                if (! arrayDecl)
-                {
-                  return;
-                }
-
-                // If there are no children, it was an empty set of brackets
-                if (! arrayDecl.children[0])
-                {
-                  entry.addArraySize(-1);
-                }
-                else
-                {
-                  // It should just be a constant, but process to be sure.
-                  size = 
-                    arrayDecl.children[0].process( { entry : entry },
-                                                   bExecuting);
-                  entry.addArraySize(size === null ? null : size.value);
-                }
-              });
-          }
-        }
-
-        // Apply the declaration specifiers to each of this entry
-        this.children[0].process( { entry : entry }, bExecuting );
-
-        // Process abstract declarators
-        if (this.children[2])
-        {
-          this.children[2].process( { entry : entry }, bExecuting );
-        }
-*/
-        break;
-
       case "parameter_list" :
         /*
          * parameter_list
@@ -2892,42 +2567,6 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
         
         data.specifiers.setType("struct");
         throw new Error("Not yet implemented: struct");
-
-/*
-        // Is there an identifier?
-        if (this.children.length > 1 && this.children[1])
-        {
-          // Yes. Retrieve it.
-          identifier = this.children[1].value;
-        }
-        else
-        {
-          // Otherwise, create a unique identifier.
-          identifier = "struct#" + playground.c.lib.Symtab.getUniqueId();
-        }
-
-        // Retrieve the symbol table entry for this struct (a type)
-        entry = playground.c.lib.Symtab.getCurrent().get(identifier, false);
-
-        // Create a special symbol table for this struct's members
-        symtabStruct = entry.getStructSymtab();
-        if (! symtabStruct)
-        {
-          symtabStruct = 
-            new playground.c.lib.Symtab(null, identifier, this.line);
-          entry.setStructSymtab(symtabStruct);
-        }
-
-        // Add each of the members to the entry's symbol table
-        if (this.children[0])
-        {
-          this.children[0].process( { entry : entry }, bExecuting );
-        }
-
-        // Add the symbol table entry to the data so it's available to our
-        // caller
-        data.structEntry = entry;
-*/
         break;
 
       case "struct_declaration" :
@@ -3226,9 +2865,6 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
          *   ...
          */
         
-        // Reset the entry point. It's not yet known.
-        playground.c.lib.Node.entryNode = null;
-        
         // Process all subnodes
         this.__processSubnodes(data, bExecuting);
         break;
@@ -3432,8 +3068,8 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
         value1 =
           {
             value        : value1.getAddr(), 
-            type         : value1.getType(),
-            realType     : value1.getType(),
+            type         : value1.getType(false),
+            realType     : value1.getType(true),
             pointerCount : 0,
             arraySizes   : []
           };
