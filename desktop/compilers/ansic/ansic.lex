@@ -20,6 +20,7 @@ SQ                      ("'")
 %s typedef_mode
 
 %%
+{SLASH}{SLASH}.* { }
 {SLASH}{STAR}({SLASH}|.|{STAR}.)*{STAR}+{SLASH}	{ }
 
 "auto"			{ return(parser.symbols_.AUTO); }
