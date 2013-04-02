@@ -1843,6 +1843,7 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
             function_decl.children[1].process(data, bExecuting);
           }
 
+          // Process the compound statement
           this.children[3].process(data, bExecuting);
           
           // A return statement in the function will cause the catch() block
