@@ -112,7 +112,7 @@ qx.Class.define("playground.c.machine.Memory",
       "rts" :
       {
         start : 0x9EA4,
-        length : 64
+        length : 128
       }
 
 /*
