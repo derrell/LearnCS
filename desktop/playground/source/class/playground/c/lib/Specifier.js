@@ -84,9 +84,9 @@ qx.Class.define("playground.c.lib.Specifier",
              "auto", "register", "static", "extern", "typedef"
            ].indexOf(value) === -1)
       {
-        throw new playground.c.lib.RuntimeError(
+        throw new Error(
           this.__node,
-          "Programmer error: Unexpected storage type: " + value);
+          "Internal error: Unexpected storage type: " + value);
       }
 
       // Ensure that two mutually-exclusive types haven't been specified
@@ -128,9 +128,9 @@ qx.Class.define("playground.c.lib.Specifier",
             "label"
           ].indexOf(value) === -1)
       {
-        throw new playground.c.lib.RuntimeError(
+        throw new Error(
           this.__node,
-          "Programmer error: Unexpected specifier type: " + value);
+          "Internal error: Unexpected specifier type: " + value);
       }
 
       // Ensure that two mutually-exclusive types haven't been specified
@@ -174,9 +174,9 @@ qx.Class.define("playground.c.lib.Specifier",
       // Ensure we have a valid value
       if ( [ "signed", "unsigned" ].indexOf(value) === -1)
       {
-        throw new playground.c.lib.RuntimeError(
+        throw new Error(
           this.__node,
-          "Programmer error: Unexpected signedness: " + value);
+          "Internal error: Unexpected signedness: " + value);
       }
 
       // Ensure that two mutually-exclusive types haven't been specified
@@ -276,9 +276,9 @@ qx.Class.define("playground.c.lib.Specifier",
       // Ensure we have a valid value
       if ( [ "constant" ].indexOf(value) === -1)
       {
-        throw new playground.c.lib.RuntimeError(
+        throw new Error(
           this.__node,
-          "Programmer error: Unexpected constant: " + value);
+          "Internal error: Unexpected constant: " + value);
       }
 
       // Ensure that two mutually-exclusive types haven't been specified
@@ -313,9 +313,9 @@ qx.Class.define("playground.c.lib.Specifier",
       // Ensure we have a valid value
       if ( [ "volatile" ].indexOf(value) === -1)
       {
-        throw new playground.c.lib.RuntimeError(
+        throw new Error(
           this.__node,
-          "Programmer error: Unexpected volatility: " + value);
+          "Internal error: Unexpected volatility: " + value);
       }
 
       // Ensure that two mutually-exclusive types haven't been specified
@@ -435,7 +435,7 @@ qx.Class.define("playground.c.lib.Specifier",
       // Copy the sign, if it's been set
       if (this.__sign)
       {
-        specifier.setSign(this.__sign);
+        specifier.setSigned(this.__sign);
       }
       
       // If our current specifier's type is "long" or "long long" then add

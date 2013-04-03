@@ -821,7 +821,7 @@ qx.Class.define("playground.c.lib.Node",
           symtab = this._symtab;
           if (! symtab)
           {
-            throw new Error("Programmer error: Expected to find symtab entry");
+            throw new Error("Internal error: Expected to find symtab entry");
           }
           
           // Push this symbol table onto the stack, as if we'd just created it.
@@ -1642,7 +1642,8 @@ qx.Class.define("playground.c.lib.Node",
           this.children[3].process(data, bExecuting);
           
           // Create a specifier for the value
-          specOrDecl = new playground.c.lib.Specifier(this, "char", "unsigned");
+          specOrDecl = 
+            new playground.c.lib.Specifier(this, "int", "char", "unsigned");
 
           // A return statement in the function will cause the catch() block
           // to be executed. If one doesn't exist, create an arbitrary return
@@ -2436,7 +2437,8 @@ qx.Class.define("playground.c.lib.Node",
         else
         {
           // Create a specifier for the value
-          specOrDecl = new playground.c.lib.Specifier(this, "char", "unsigned");
+          specOrDecl = 
+            new playground.c.lib.Specifier(this, "int", "char", "unsigned");
 
           // No return value was provided. Choose one at random.
           value3 =
@@ -2744,7 +2746,7 @@ qx.Class.define("playground.c.lib.Node",
         {
           if (this.children[1].children[1].type != "statement_list")
           {
-            throw new Error("Programmer error: expected statement list");
+            throw new Error("Internal error: expected statement list");
           }
           
           // Process the compound statement.
@@ -3139,7 +3141,7 @@ qx.Class.define("playground.c.lib.Node",
       type =
         value3.specAndDecl[0] instanceof playground.c.lib.Declarator
         ? "pointer"
-        : value3.specAndDecl[0].getCType();
+        : value1.specAndDecl[0].getCType();
 
       // Save the value at its new address
       playground.c.lib.Node.__mem.set(
@@ -3158,7 +3160,7 @@ qx.Class.define("playground.c.lib.Node",
       return (
         {
           value       : value,
-          specAndDecl : value3.specAndDecl.slice(0)
+          specAndDecl : value1.specAndDecl.slice(0)
         });
     },
 

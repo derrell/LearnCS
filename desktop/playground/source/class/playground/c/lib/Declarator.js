@@ -65,9 +65,9 @@ qx.Class.define("playground.c.lib.Declarator",
             "array", "function", "pointer", "builtIn"
           ].indexOf(value) === -1)
       {
-        throw new playground.c.lib.RuntimeError(
+        throw new Error(
           this.__node,
-          "Programmer error: Unexpected declarator type: " + value);
+          "Internal error: Unexpected declarator type: " + value);
       }
 
       // Save the new value
@@ -93,9 +93,9 @@ qx.Class.define("playground.c.lib.Declarator",
       // Ensure we have a valid value
       if (typeof numElem != "number" || numElem !== parseInt(numElem, 10))
       {
-        throw new playground.c.lib.RuntimeError(
+        throw new Error(
           this.__node,
-          "Programmer error: Unexpected array size: " + numElem);
+          "Internal error: Unexpected array size: " + numElem);
       }
       
       // Set this declarator to be an array
@@ -121,9 +121,9 @@ qx.Class.define("playground.c.lib.Declarator",
       // Ensure we have a valid value
       if (! (node instanceof playground.c.lib.Node))
       {
-        throw new playground.c.lib.RuntimeError(
+        throw new Error(
           this.__node,
-          "Programmer error: Unexpected function node: " + node);
+          "Internal error: Unexpected function node: " + node);
       }
       
       this.setType("function");
@@ -148,9 +148,9 @@ qx.Class.define("playground.c.lib.Declarator",
       // Ensure we have a valid value
       if (! (func instanceof Function))
       {
-        throw new playground.c.lib.RuntimeError(
+        throw new Error(
           this.__node,
-          "Programmer error: Unexpected built-in function: " + func);
+          "Internal error: Unexpected built-in function: " + func);
       }
       
       this.setType("builtIn");
