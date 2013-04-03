@@ -1565,8 +1565,10 @@ qx.Class.define("playground.c.lib.Node",
           data.entry.getName(),
           this.line);
 
-        // Save the function's symbol table in the function definition node
+        // Save the function's symbol table and name in the function
+        // definition node
         subnode._symtab = symtab;
+        subnode._functionName = data.entry.getName();
         
         // Process the remaining children
         this.children.forEach(
@@ -1628,11 +1630,9 @@ qx.Class.define("playground.c.lib.Node",
           // Save current symbol table so we know where to pop to upon return
           symtab = playground.c.lib.Symtab.getCurrent();
 
-          // Create a symbol table entry for the function name
+          // Process the paremeter list
           declarator = this.children[1];
           function_decl = declarator.children[0];
-
-          // Process the paremeter list
           if (function_decl.children[1])
           {
             function_decl.children[1].process(data, bExecuting);
@@ -1660,8 +1660,8 @@ qx.Class.define("playground.c.lib.Node",
           {
             // Yup. It contains the return value
             value3 = e.returnCode;
-            console.error("TODO: cast value3 to this function's return type");
-            
+            specAndDecl = value3.specAndDecl;
+
             // Retore symbol table to where it was when we called the function
             while (playground.c.lib.Symtab.getCurrent() != symtab)
             {
@@ -1678,6 +1678,18 @@ qx.Class.define("playground.c.lib.Node",
         // Pop this function's symbol table from the stack
         playground.c.lib.Symtab.popStack();
         
+        // Obtain the symbol table entry for this function
+        entry = symtab.getParent().get(this._functionName, true);
+
+        // Get the specifier/declarator list for this function
+        specAndDecl = entry.getSpecAndDecl();
+
+        // Remove the "function" declarator, to leave the return type
+        specAndDecl.shift();
+
+        // Set this specAndDecl for the return value
+        value3.specAndDecl = specAndDecl;
+
         return value3;
 
       case "goto" :
@@ -2239,9 +2251,13 @@ qx.Class.define("playground.c.lib.Node",
           // Add the specifier to the end of the specifier/declarator list
           data.specAndDecl.push(data.specifiers);
 
-          // Calculate the symbol offset required for this symbol table
-          // entry, based on the now-complete specifiers and declarators
-          data.entry.calculateOffset();
+          // If it's not a void parameter list...
+          if (data.entry)
+          {
+            // Calculate the symbol offset required for this symbol table
+            // entry, based on the now-complete specifiers and declarators
+            data.entry.calculateOffset();
+          }
         }
 
         break;
