@@ -138,43 +138,50 @@ qx.Class.define("playground.c.lib.Node",
 
     getExpressionValue : function(value, data)
     {
-        // If it was a symbol table entry...
-        if (value instanceof playground.c.lib.SymtabEntry)
-        {
-          // ... then retrieve the symbol's address, unless we're in 'case'
-          // mode (cases must be constant expressions)
-          switch(data.constantOnly)
-          {
-          case "case" :
-            // occurs during executing, so error is fatal
-            this.error("Each 'case' statement must represent a constant " +
-                       "expression. It may not rely on any variables' values.",
-                       true);
-            value = null;
-            break;
-            
-          case "array_decl" :
-            // occurs before executing, so error need not be fatal
-            this.error("Array sizes must be constants");
-            value = null;
-            break;
-            
-          default:
-            // need not be constant
-            value =
-              {
-                value        : value.getAddr(), 
-                type         : value.getType(true),
-                realType     : value.getType(false),
-                pointerCount : value.getPointerCount(),
-                arraySizes   : value.getArraySizes()
-              };
-            value.value = 
-              playground.c.lib.Node.__mem.get(value.value, value.type); 
-          }
-       }
+      var             type;
 
-       return value;
+      // If it was a symbol table entry...
+      if (value instanceof playground.c.lib.SymtabEntry)
+      {
+        // ... then retrieve the symbol's address, unless we're in 'case'
+        // mode (cases must be constant expressions)
+        switch(data.constantOnly)
+        {
+        case "case" :
+          // occurs during executing, so error is fatal
+          this.error("Each 'case' statement must represent a constant " +
+                     "expression. It may not rely on any variables' values.",
+                     true);
+          value = null;
+          break;
+
+        case "array_decl" :
+          // occurs before executing, so error need not be fatal
+          this.error("Array sizes must be constants");
+          value = null;
+          break;
+
+        default:
+          // need not be constant
+          value =
+            {
+              value       : value.getAddr(), 
+              specAndDecl : value.getSpecAndDecl()
+            };
+
+          // Determine the memory type to use for saving the value
+          type =
+            value.specAndDecl[0] instanceof playground.c.lib.Declarator
+            ? "pointer"
+            : value.specAndDecl[0].getCType();
+
+          // Replace the symbol's address with the symbol's current value
+          value.value = 
+            playground.c.lib.Node.__mem.get(value.value, type); 
+        }
+      }
+
+     return value;
     },
 
     /**
@@ -331,6 +338,8 @@ qx.Class.define("playground.c.lib.Node",
       var             cases;
       var             caseAndBreak;
       var             type;
+      var             specAndDecl;
+      var             specOrDecl;
       var             value;
       var             value1; // typically the lhs of a binary expression
       var             value2; // typically the rhs of a binary expression
@@ -398,14 +407,11 @@ qx.Class.define("playground.c.lib.Node",
                                     data);
           
           // Complete the operation, coercing to the appropriate type
-          type = this.__coerce(value1.type, value2.type);
+          specAndDecl = this.__coerce(value1.specAndDecl, value2.specAndDecl);
           return (
             { 
-              value        : value1.value + value2.value,
-              type         : type,
-              realType     : type,
-              pointerCount : 0,
-              arraySizes   : []
+              value       : value1.value + value2.value,
+              specAndDecl : specAndDecl
             });
         }
         break;
@@ -456,7 +462,7 @@ qx.Class.define("playground.c.lib.Node",
         return (
           { 
             value : entry.getAddr(),
-            type  : "pointer"
+            specAndDecl  : "pointer"
           });
         break;
 
@@ -477,14 +483,11 @@ qx.Class.define("playground.c.lib.Node",
                                     data);
           
           // Complete the operation, coercing to the appropriate type
-          type = this.__coerce(value1.type, value2.type);
+          specAndDecl = this.__coerce(value1.specAndDecl, value2.specAndDecl);
           return (
             { 
-              value : value1.value && value2.value ? 1 : 0,
-              type         : type,
-              realType     : type,
-              pointerCount : 0,
-              arraySizes   : []
+              value       : value1.value && value2.value ? 1 : 0,
+              specAndDecl : specAndDecl
             });
         }
         break;
@@ -512,26 +515,33 @@ qx.Class.define("playground.c.lib.Node",
               this.children[i].process(data, bExecuting),
               data);
 
-            // Promote the argument type, if necessary
-            value1.type =
+            // Pull the first specifier/declarator off of the list. We'll
+            // replace it with one containing the (possibly unaltered)
+            // promoted type.
+            specOrDecl = value1.specAndDecl.shift();
+            
+            // Is this a declarator?
+            if (specOrDecl instanceof playground.c.lib.Declarator)
             {
-              "char"               : "int",
-              "unsigned char"      : "unsigned int",
-              "short"              : "int",
-              "unsigned short"     : "unsigned int",
-              "int"                : "int",
-              "unsigned int"       : "unsigned int",
-              "long"               : "long",
-              "unsigned long"      : "unsigned long",
-              "long long"          : "long long",
-              "unsigned long long" : "unsigned long long",
-              "float"              : "double",
-              "double"             : "double",
-              "pointer"            : "pointer"
-            }[value1.type];
+              // Yup. We're going to push an address
+              type = "pointer";
+            }
+            else
+            {
+              // It's a specifier. Get a new specifier with a (possibly)
+              // increased size appropriate as a promoted argument.
+              specOrDecl = specOrDecl.promote();
+              
+              // Get the memory access type from this specifier
+              type = specOrDecl.getCType();
+            }
+            
+            // Put the (possibly altered) specifier/declarator back onto the
+            // list of specifiers/declarators
+            value1.specAndDecl.unshift(specOrDecl);
 
             // Push the argument onto the stack
-            playground.c.lib.Node.__mem.stackPush(value1.type, value1.value);
+            playground.c.lib.Node.__mem.stackPush(type, value1.value);
             
             // If we were given a JavaScript array in which to place args too...
             if (data.args)
@@ -648,14 +658,11 @@ qx.Class.define("playground.c.lib.Node",
                                     data);
           
           // Complete the operation, coercing to the appropriate type
-          type = this.__coerce(value1.type, value2.type);
+          specAndDecl = this.__coerce(value1.specAndDecl, value2.specAndDecl);
           return (
             { 
-              value : value1.value & value2.value,
-              type         : type,
-              realType     : type,
-              pointerCount : 0,
-              arraySizes   : []
+              value       : value1.value & value2.value,
+              specAndDecl : specAndDecl
             });
         }
         break;
@@ -695,11 +702,8 @@ qx.Class.define("playground.c.lib.Node",
           // Complete the operation
           return (
             { 
-              value        : ~ value1.value,
-              type         : value1.type,
-              realType     : value1.type,
-              pointerCount : 0,
-              arraySizes   : []
+              value       : ~ value1.value,
+              specAndDecl : value1.specAndDecl
             });
         }
         break;
@@ -721,14 +725,11 @@ qx.Class.define("playground.c.lib.Node",
                                     data);
           
           // Complete the operation, coercing to the appropriate type
-          type = this.__coerce(value1.type, value2.type);
+          specAndDecl = this.__coerce(value1.specAndDecl, value2.specAndDecl);
           return (
             { 
-              value        : value1.value | value2.value,
-              type         : type,
-              realType     : type,
-              pointerCount : 0,
-              arraySizes   : []
+              value       : value1.value | value2.value,
+              specAndDecl : specAndDecl
             });
         }
         break;
@@ -803,7 +804,7 @@ qx.Class.define("playground.c.lib.Node",
           break;
         }
         
-        data.specifiers.setType("char");
+        data.specifiers.setSize("char");
         break;
 
       case "compound_statement" :
@@ -857,39 +858,6 @@ qx.Class.define("playground.c.lib.Node",
         // If we're executing...
         if (bExecuting)
         {
-/*
-          playground.c.machine.Memory.getInstance().getDataModel().forEach(
-            function(value)
-            {
-              var             model;
-
-              if (! value.type)
-              {
-                return;
-              }
-
-              console.log(
-                value.addr.toString(16) +
-                " : " +
-                value.bytes.map(
-                  function(thisByte)
-                  {
-                    return ("00" + thisByte.toString(16)).substr(-2);
-                  }).join(" ") +
-                " : name=" + (value.name || "") +
-                " | type=" + (value.type || "") +
-                " | size=" + (value.size || "") +
-                " | values=" + (JSON.stringify(value.values) || "") +
-                " | ptr=" + (value.pointer || "") +
-                " | arr=" + (JSON.stringify(value.array) || "") +
-                " | param=" + (value.param || "false"));
-            });
-
-          console.log(
-            JSON.stringify(
-              playground.c.machine.Memory.getInstance().getDataModel()));
-*/
-          
           // Restore the previous frame pointer
           symtab.restoreFramePointer();
         }
@@ -915,13 +883,42 @@ qx.Class.define("playground.c.lib.Node",
         playground.c.lib.Node.__mem.setReg("R1", this.numberType, this.value);
         this.value = playground.c.lib.Node.__mem.getReg("R1", this.numberType);
 
+        // Create a specifier for this number type
+        specOrDecl = new playground.c.lib.Specifier(this);
+        switch(this.numberType)
+        {
+        case playground.c.lib.Node.NumberType.Int : 
+          specOrDecl.setType("int");
+          break;
+
+        case playground.c.lib.Node.NumberType.Uint : 
+          specOrDecl.setType("int");
+          specOrDecl.setSigned("unsigned");
+          break;
+
+        case playground.c.lib.Node.NumberType.Long : 
+          specOrDecl.setType("int");
+          specOrDecl.setSize("long");
+          break;
+
+        case playground.c.lib.Node.NumberType.ULong : 
+          specOrDecl.setType("int");
+          specOrDecl.setSigned("unsigned");
+          specOrDecl.setSize("long");
+          break;
+
+        case playground.c.lib.Node.NumberType.Float : 
+          specOrDecl.setType("float");
+          break;
+          
+        default :
+          throw new Error("Unexpected number type: " + this.numberType);
+        }
+
         return (
           {
-            value        : this.value, 
-            type         : this.numberType,
-            realType     : this.numberType,
-            pointerCount : 0,
-            arraySizes   : []
+            value       : this.value, 
+            specAndDecl : [ specOrDecl ]
           });
 
       case "continue" :
@@ -1063,28 +1060,61 @@ qx.Class.define("playground.c.lib.Node",
         // If we found a symbol, get its address and type
         if (value instanceof playground.c.lib.SymtabEntry)
         {
+          // Find the address from which we will retrieve the pointer
           addr = value.getAddr();
-          value3 = 
-            {
-              type         : value.getType(true) ,
-              realType     : value.getType(false),
-              pointerCount : value.getPointerCount(),
-              arraySizes   : value.getArraySizes()
-            };
-throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount has gone to 0");
-          
-          // Get the value of the pointer
-          addr = playground.c.lib.Node.__mem.get(addr, "pointer"); 
-          
-          // Now get the value it points to
-          value3.value =
-            playground.c.lib.Node.__mem.get(addr, value3.type); 
+
+          // Obtain the specifier/declarator list
+          specAndDecl = value.getSpecAndDecl();
         }
         else
         {
-          throw new Error(
-            "Not yet implemented: dereference (except of declared pointer)");
+          // Find the address from which we will retrieve the pointer
+          addr = value.value;
+
+          // Obtain the specifier/declarator list
+          specAndDecl = value.specAndDecl;
         }
+        
+        // Pull the first specifier/declarator off of the list
+        specOrDecl = specAndDecl.shift();
+
+        // Ensure that we can dereference this thing. To be able to, it must
+        // be either a pointer.
+        if (specOrDecl.getType() != "pointer")
+        {
+          throw new playground.c.lib.RuntimeError(
+            this,
+            "Can not dereference " + value.getName() + 
+              " because it is not a pointer.");
+        }
+
+        // Get the first remaining specifier/declarator
+        specOrDecl = specAndDecl[0];
+        
+        // It must be a specifier, or we can't dereference
+        if (specOrDecl instanceof playground.c.lib.Declarator)
+        {
+          throw new playground.c.lib.RuntimeError(
+            this,
+            "Can only dereference a native type " +
+              "(e.g. short, unsigned long, float, etc.)");
+        }
+
+        // Determine the type to dereference, from the remaining
+        // specifier/declarator
+        type = specAndDecl.getCType();
+        
+        // Prepare the return value. We know it's specifier/declarator list.
+        value3 = 
+          {
+            specAndDecl : specAndDecl
+          };
+
+        // Get the address that the pointer points to
+        addr = playground.c.lib.Node.__mem.get(addr, "pointer"); 
+
+        // Now get the value from that address
+        value3.value = playground.c.lib.Node.__mem.get(addr, type); 
 
         // Complete the operation
         return value3;
@@ -1110,14 +1140,11 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
                                     data);
           
           // Complete the operation, coercing to the appropriate type
-          type = this.__coerce(value1.type, value2.type);
+          specAndDecl = this.__coerce(value1.specAndDecl, value2.specAndDecl);
           return (
             { 
-              value        : value1.value / value2.value,
-              type         : type,
-              realType     : type,
-              pointerCount : 0,
-              arraySizes   : []
+              value       : value1.value / value2.value,
+              specAndDecl : specAndDecl
             });
         }
         break;
@@ -1260,14 +1287,14 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
             this.getExpressionValue(this.children[1].process(data, bExecuting),
                                     data);
           
+          // Create a specifier for the value
+          specOrDecl = new playground.c.lib.Specifier(this, "int");
+
           // Complete the operation, coercing to the appropriate type
           return (
             { 
-              value        : value1.value === value2.value ? 1 : 0,
-              type         : "int",
-              realType     : "int",
-              pointerCount : 0,
-              arraySizes   : []
+              value       : value1.value === value2.value ? 1 : 0,
+              specAndDecl : [ specOrDecl ]
             });
         }
         break;
@@ -1289,14 +1316,11 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
                                     data);
           
           // Complete the operation, coercing to the appropriate type
-          type = this.__coerce(value1.type, value2.type);
+          specAndDecl = this.__coerce(value1.specAndDecl, value2.specAndDecl);
           return (
             { 
-              value        : value1.value ^ value2.value,
-              type         : type,
-              realType     : type,
-              pointerCount : 0,
-              arraySizes   : []
+              value       : value1.value ^ value2.value,
+              specAndDecl : specAndDecl
             });
         }
         break;
@@ -1617,16 +1641,16 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
           // Process the compound statement
           this.children[3].process(data, bExecuting);
           
+          // Create a specifier for the value
+          specOrDecl = new playground.c.lib.Specifier(this, "char", "unsigned");
+
           // A return statement in the function will cause the catch() block
           // to be executed. If one doesn't exist, create an arbitrary return
           // value.
           value3 =
             {
-              value        : Math.floor(Math.random() * 256),
-              type         : "unsigned char",
-              realType     : "unsigned char",
-              pointerCount : 0,
-              arraySizes   : []
+              value       : Math.floor(Math.random() * 256),
+              specAndDecl : [ specOrDecl ]
             };
         }
         catch(e)
@@ -1676,14 +1700,14 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
             this.getExpressionValue(this.children[1].process(data, bExecuting),
                                     data);
           
+          // Create a specifier for the value
+          specOrDecl = new playground.c.lib.Specifier(this, "int");
+
           // Complete the operation, coercing to the appropriate type
           return (
             { 
-              value        : value1.value >= value2.value ? 1 : 0,
-              type         : "int",
-              realType     : "int",
-              pointerCount : 0,
-              arraySizes   : []
+              value       : value1.value >= value2.value ? 1 : 0,
+              specAndDecl : [ specOrDecl ]
             });
         }
         break;
@@ -1704,14 +1728,14 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
             this.getExpressionValue(this.children[1].process(data, bExecuting),
                                     data);
           
+          // Create a specifier for the value
+          specOrDecl = new playground.c.lib.Specifier(this, "int");
+
           // Complete the operation, coercing to the appropriate type
           return (
             { 
-              value        : value1.value > value2.value ? 1 : 0,
-              type         : "int",
-              realType     : "int",
-              pointerCount : 0,
-              arraySizes   : []
+              value       : value1.value > value2.value ? 1 : 0,
+              specAndDecl : [ specOrDecl ]
             });
         }
         break;
@@ -1890,14 +1914,14 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
             this.getExpressionValue(this.children[1].process(data, bExecuting),
                                     data);
           
+          // Create a specifier for the value
+          specOrDecl = new playground.c.lib.Specifier(this, "int");
+
           // Complete the operation, coercing to the appropriate type
           return (
             { 
-              value        : value1.value << value2.value,
-              type         : "int",
-              realType     : "int",
-              pointerCount : 0,
-              arraySizes   : []
+              value       : value1.value << value2.value,
+              specAndDecl : [ specOrDecl ]
             });
         }
         break;
@@ -1938,14 +1962,14 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
             this.getExpressionValue(this.children[1].process(data, bExecuting),
                                     data);
           
+          // Create a specifier for the value
+          specOrDecl = new playground.c.lib.Specifier(this, "int");
+
           // Complete the operation, coercing to the appropriate type
           return (
             { 
-              value        : value1.value <= value2.value ? 1 : 0,
-              type         : "int",
-              realType     : "int",
-              pointerCount : 0,
-              arraySizes   : []
+              value       : value1.value <= value2.value ? 1 : 0,
+              specAndDecl : [ specOrDecl ]
             });
         }
         break;
@@ -1966,14 +1990,14 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
             this.getExpressionValue(this.children[1].process(data, bExecuting),
                                     data);
           
+          // Create a specifier for the value
+          specOrDecl = new playground.c.lib.Specifier(this, "int");
+
           // Complete the operation, coercing to the appropriate type
           return (
             { 
-              value        : value1.value < value2.value ? 1 : 0,
-              type         : "int",
-              realType     : "int",
-              pointerCount : 0,
-              arraySizes   : []
+              value       : value1.value < value2.value ? 1 : 0,
+              specAndDecl : [ specOrDecl ]
             });
         }
         break;
@@ -2005,14 +2029,11 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
                                     data);
           
           // Complete the operation, coercing to the appropriate type
-          type = this.__coerce(value1.type, value2.type);
+          specAndDecl = this.__coerce(value1.specAndDecl, value2.specAndDecl);
           return (
             { 
-              value        : value1.value % value2.value,
-              type         : type,
-              realType     : type,
-              pointerCount : 0,
-              arraySizes   : []
+              value       : value1.value % value2.value,
+              specAndDecl : specAndDecl
             });
         }
         break;
@@ -2054,14 +2075,11 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
                                     data);
           
           // Complete the operation, coercing to the appropriate type
-          type = this.__coerce(value1.type, value2.type);
+          specAndDecl = this.__coerce(value1.specAndDecl, value2.specAndDecl);
           return (
             { 
-              value        : value1.value * value2.value,
-              type         : type,
-              realType     : type,
-              pointerCount : 0,
-              arraySizes   : []
+              value       : value1.value * value2.value,
+              specAndDecl : specAndDecl
             });
         }
         break;
@@ -2101,11 +2119,8 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
           // Complete the operation
           return (
             { 
-              value        : - value1.value,
-              type         : value1.type,
-              realType     : value1.type,
-              pointerCount : 0,
-              arraySizes   : []
+              value       : - value1.value,
+              specAndDecl : value1.specAndDecl
             });
         }
         break;
@@ -2122,14 +2137,14 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
             this.getExpressionValue(this.children[0].process(data, bExecuting),
                                     data);
           
+          // Create a specifier for the value
+          specOrDecl = new playground.c.lib.Specifier(this, "int");
+
           // Complete the operation
           return (
             { 
-              value        : ! value1.value,
-              type         : "int",
-              realType     : "int",
-              pointerCount : 0,
-              arraySizes   : []
+              value       : ! value1.value,
+              specAndDecl : [ specOrDecl ]
             });
         }
         break;
@@ -2150,14 +2165,14 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
             this.getExpressionValue(this.children[1].process(data, bExecuting),
                                     data);
           
+          // Create a specifier for the value
+          specOrDecl = new playground.c.lib.Specifier(this, "int");
+
           // Complete the operation, coercing to the appropriate type
           return (
             { 
-              value        : value1.value !== value2.value ? 1 : 0,
-              type         : "int",
-              realType     : "int",
-              pointerCount : 0,
-              arraySizes   : []
+              value       : value1.value !== value2.value ? 1 : 0,
+              specAndDecl : [ specOrDecl ]
             });
         }
         break;
@@ -2179,14 +2194,11 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
                                     data);
           
           // Complete the operation, coercing to the appropriate type
-          type = this.__coerce(value1.type, value2.type);
+          specAndDecl = this.__coerce(value1.specAndDecl, value2.specAndDecl);
           return (
             { 
-              value        : value1.value || value2.value ? 1 : 0,
-              type         : type,
-              realType     : type,
-              pointerCount : 0,
-              arraySizes   : []
+              value       : value1.value || value2.value ? 1 : 0,
+              specAndDecl : specAndDecl
             });
         }
         break;
@@ -2407,14 +2419,14 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
         }
         else
         {
+          // Create a specifier for the value
+          specOrDecl = new playground.c.lib.Specifier(this, "char", "unsigned");
+
           // No return value was provided. Choose one at random.
           value3 =
             {
-              value        : Math.floor(Math.random() * 256),
-              type         : "unsigned char",
-              realType     : "unsigned char",
-              pointerCount : 0,
-              arraySizes   : []
+              value       : Math.floor(Math.random() * 256),
+              specAndDecl : [ specOrDecl ]
             };
         }
         
@@ -2438,14 +2450,14 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
             this.getExpressionValue(this.children[1].process(data, bExecuting),
                                     data);
           
+          // Create a specifier for the value
+          specOrDecl = new playground.c.lib.Specifier(this, "int");
+
           // Complete the operation, coercing to the appropriate type
           return (
             { 
-              value        : value1.value >> value2.value,
-              type         : "int",
-              realType     : "int",
-              pointerCount : 0,
-              arraySizes   : []
+              value       : value1.value >> value2.value,
+              specAndDecl : [ specOrDecl ]
             });
         }
         break;
@@ -2545,11 +2557,21 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
                                           0);
         }
         
+        // Create an initially-empty specifier/declarator list
+        specAndDecl = [];
+
+        // Create a declarator to indicate that it's a pointer, and add it to
+        // the specifier/declarator list
+        specAndDecl.push(new playground.c.lib.Declarator(this, "pointer"));
+
+        // Create a specifier to indicate that it's a char *
+        specAndDecl.push(new playground.c.lib.Specifier(this, "int", "char"));
+
         // Return the pointer to the string in global memory
         return (
           {
-            value : this._mem, 
-            type  : playground.c.lib.Node.NumberType.Address
+            value       : this._mem, 
+            specAndDecl : specAndDecl
           });
 
       case "struct" :
@@ -2665,14 +2687,11 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
                                     data);
           
           // Complete the operation, coercing to the appropriate type
-          type = this.__coerce(value1.type, value2.type);
+          specAndDecl = this.__coerce(value1.specAndDecl, value2.specAndDecl);
           return (
             { 
-              value        : value1.value - value2.value,
-              type         : type,
-              realType     : type,
-              pointerCount : 0,
-              arraySizes   : []
+              value       : value1.value - value2.value,
+              specAndDecl : specAndDecl
             });
         }
         break;
@@ -3054,6 +3073,7 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
      */
     __assignHelper : function(data, fOp, bUnary, bPostOp)
     {
+      var             type;
       var             value;
       var             value1;
       var             value3;
@@ -3068,10 +3088,7 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
         value1 =
           {
             value        : value1.getAddr(), 
-            type         : value1.getType(false),
-            realType     : value1.getType(true),
-            pointerCount : 0,
-            arraySizes   : []
+            specAndDecl  : value1.getSpecAndDecl()
           };
       }
       else if (this.children[0].type != "dereference")
@@ -3081,8 +3098,14 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
         return null;
       }
       
+      // Determine the memory type to use for saving the value
+      type =
+        value1.specAndDecl[0] instanceof playground.c.lib.Declarator
+        ? "pointer"
+        : value1.specAndDecl[0].getCType();
+
       // Retrieve the current value
-      value = playground.c.lib.Node.__mem.get(value1.value, value1.type);
+      value = playground.c.lib.Node.__mem.get(value1.value, type);
 
       // Determine the value to assign there. If it's a unary operator
       // (pre/post increment/decrement), then use the retrieved
@@ -3090,36 +3113,36 @@ throw new Error("FIX ME: determine whether it's still a pointer, or pointerCount
       value3 =
         bUnary
         ? { 
-            value        : value, 
-            type         : value1.type ,
-            realType     : value1.type ,
-            pointerCount : 0,
-            arraySizes   : []
+            value       : value, 
+            specAndDecl : value1.specAndDecl.slice(0)
           }
         : this.getExpressionValue(this.children[1].process(data, true),
                                   data);
 
+      // Determine the memory type to use for saving the value
+      type =
+        value3.specAndDecl[0] instanceof playground.c.lib.Declarator
+        ? "pointer"
+        : value3.specAndDecl[0].getCType();
+
       // Save the value at its new address
       playground.c.lib.Node.__mem.set(
         value1.value,
-        value1.type,
+        type,
         fOp(value, value3.value));
 
       // If this is not a post-increment or post-decrement...
       if (! bPostOp)
       {
         // ... then retrieve and return the altered value
-        value = playground.c.lib.Node.__mem.get(value1.value, value1.type);
+        value = playground.c.lib.Node.__mem.get(value1.value, type);
       }
 
       // Retrieve the value and return it
       return (
         {
-          value        : value,
-          type         : value1.type,
-          realType     : value1.type,
-          pointerCount : 0,
-          arraySizes   : []
+          value       : value,
+          specAndDecl : value3.specAndDecl.slice(0)
         });
     },
 

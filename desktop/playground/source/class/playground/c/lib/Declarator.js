@@ -23,10 +23,24 @@ qx.Class.define("playground.c.lib.Declarator",
 {
   extend : qx.core.Object,
   
-  construct : function(node)
+  /**
+   * Constructor for a new declarator
+   * 
+   * @param node {playground.c.lib.Node}
+   *   The node at which this declarator is created
+   * 
+   * @param type {String?}
+   *   An optional type. If provided, this.setType() is called.
+   */
+  construct : function(node, type)
   {
     this.base(arguments);
     this.__node = node;
+    
+    if (type)
+    {
+      this.setType(type);
+    }
   },
 
   members :

@@ -24,10 +24,40 @@ qx.Class.define("playground.c.lib.Specifier",
 {
   extend : qx.core.Object,
   
-  construct : function(node)
+  /**
+   * Constructor for a new specifier
+   * 
+   * @param node {playground.c.lib.Node}
+   *   The node at which this specifier is created
+   * 
+   * @param type {String?}
+   *   An optional type. If provided, this.setType() is called.
+   * 
+   * @param size {String?}
+   *   An optional size. If provided, this.setSize() is called.
+   * 
+   * @param sign {String?}
+   *   An optional signedness. If provided, this.setSigned() is called.
+   */
+  construct : function(node, type, size, sign)
   {
     this.base(arguments);
     this.__node = node;
+    
+    if (type)
+    {
+      this.setType(type);
+    }
+    
+    if (size)
+    {
+      this.setSize(size);
+    }
+    
+    if (sign)
+    {
+      this.setSigned(sign);
+    }
   },
 
   members :
@@ -85,7 +115,7 @@ qx.Class.define("playground.c.lib.Specifier",
      *
      * @param value {String}
      *   One of:
-     *     "int",  "float",  "double", "char", 
+     *     "int",  "float",  "double",
      *     "void", "struct", "union",  "enum", 
      *     "label"
      */
@@ -93,7 +123,7 @@ qx.Class.define("playground.c.lib.Specifier",
     {
       // Ensure we have a valid value
       if ([
-            "int",  "float",  "double", "char", 
+            "int",  "float",  "double",
             "void", "struct", "union",  "enum", 
             "label"
           ].indexOf(value) === -1)
@@ -113,7 +143,7 @@ qx.Class.define("playground.c.lib.Specifier",
       }
       
       // Ensure the type doesn't conflict with the signedness
-      if (this.__sign !== null && value != "int" && value != "char")
+      if (this.__sign !== null && value != "int")
       {
         throw new playground.c.lib.RuntimeError(
           this.__node,
@@ -175,7 +205,7 @@ qx.Class.define("playground.c.lib.Specifier",
       }
       
       // Otherwise, determine if there's a default signedness
-      if (this.__type == "int" || this.__type == "char")
+      if (this.__type == "int")
       {
         return "signed";
       }
@@ -189,14 +219,14 @@ qx.Class.define("playground.c.lib.Specifier",
      * 
      * @param value {String}
      *   One of:
-     *     "short", "long"
+     *     "char", "short", "long"
      * 
      *   If "long" is specified twice, we store "long long"
      */
     setSize : function(value)
     {
       // Ensure we have a valid value
-      if ( [ "short", "long" ].indexOf(value) === -1)
+      if ( [ "char", "short", "long" ].indexOf(value) === -1)
       {
         throw new playground.c.lib.RuntimeError(
           this.__node,
@@ -331,6 +361,7 @@ qx.Class.define("playground.c.lib.Specifier",
         case "short" :
         case "long" :
         case "long long" :
+        case "char" :
           byteCount = playground.c.machine.Memory.typeSize[this.__size];
           break;
 
@@ -342,7 +373,6 @@ qx.Class.define("playground.c.lib.Specifier",
         
       case "float" :
       case "double" :
-      case "char" :
         byteCount = playground.c.machine.Memory.typeSize[this.__type];
         break;
         
@@ -355,6 +385,78 @@ qx.Class.define("playground.c.lib.Specifier",
       }
 
       return byteCount * multiplier;
+    },
+
+    /**
+     * Get the C type appropriate for memory access.
+     */
+    getCType : function()
+    {
+      // Determine the byte count for this type
+      switch(this.__type)
+      {
+      case "int" :
+        return this.__size || "int";
+        
+      case "float" :
+      case "double" :
+        return this.__type;
+        
+      case "struct" :
+      case "union" :
+      case "enum" :
+      case "label" :
+        throw new Error("Not yet implemented: " + this.__type);
+
+      default :
+        throw new Error("Unexpected type: " + this.__type);
+      }
+    },
+
+    /**
+     * Promote this specifier, with a possibly altered type.
+     * 
+     * @return {playground.c.lib.Specifier}
+     *   The promoted specifier. All storage, constant, and volatile
+     *   information is excluded from the new specifier, and the size is set
+     *   to one appropriate for a function argument, i.e., small size values
+     *   are increased to at least sizeof int.
+     */
+    promote : function()
+    {
+      var             specifier;
+      
+      // Get a new specifier with the same node as our current specifier.
+      specifier = new playground.c.lib.Specifier(this.__node);
+      
+      // Copy the type
+      specifier.setType(this.__type);
+      
+      // Copy the sign, if it's been set
+      if (this.__sign)
+      {
+        specifier.setSign(this.__sign);
+      }
+      
+      // If our current specifier's type is "long" or "long long" then add
+      // those to the new specifier. (Nothing is done if the current
+      // specifier's size is "char" or "short", which keeps the new
+      // specifier's type at an assumed "int".)
+      if (this.__type == "int")
+      {
+        if (this.__size == "long")
+        {
+          specifier.setSize("long");
+        }
+
+        if (this.__size == "long long")
+        {
+          specifier.setSize("long");
+          specifier.setSize("long"); // second call changes it to "long long"
+        }
+      }
+      
+      return specifier;
     },
 
     /**

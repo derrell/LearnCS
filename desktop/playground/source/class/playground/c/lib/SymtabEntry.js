@@ -135,7 +135,6 @@ qx.Class.define("playground.c.lib.SymtabEntry",
 
         case "float" :
         case "double" :
-        case "char" :
           parts.push(type);
           
           // No need to loop further
