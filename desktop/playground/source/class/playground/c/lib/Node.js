@@ -139,9 +139,19 @@ qx.Class.define("playground.c.lib.Node",
     getExpressionValue : function(value, data)
     {
       var             type;
+      var             specAndDecl;
+      var             specOrDecl;
+      
+      // Retrieve the specifier/declarator list, and its first entry
+      specAndDecl =
+        value instanceof playground.c.lib.SymtabEntry
+        ? value.getSpecAndDecl()
+        : value.specAndDecl;
+      specOrDecl = specAndDecl[0];
 
       // If it was a symbol table entry...
-      if (value instanceof playground.c.lib.SymtabEntry)
+      if (value instanceof playground.c.lib.SymtabEntry ||
+          specOrDecl.getType() == "address")
       {
         // ... then retrieve the symbol's address, unless we're in 'case'
         // mode (cases must be constant expressions)
@@ -163,11 +173,23 @@ qx.Class.define("playground.c.lib.Node",
 
         default:
           // need not be constant
-          value =
-            {
-              value       : value.getAddr(), 
-              specAndDecl : value.getSpecAndDecl()
-            };
+          
+          // See whether we got an address or a symbol table entry
+          if (value.specAndDecl[0].getType() == "address")
+          {
+            // It's an address. Remove the internal-use "address" declarator
+            value.specAndDecl.shift();
+          }
+          else
+          {
+            // It's a symbol table entry. Retrieve the address and
+            // specifier/declarator list.
+            value =
+              {
+                value       : value.getAddr(), 
+                specAndDecl : value.getSpecAndDecl()
+              };
+          }
 
           // Determine the memory type to use for saving the value
           type =
@@ -181,7 +203,7 @@ qx.Class.define("playground.c.lib.Node",
         }
       }
 
-     return value;
+      return value;
     },
 
     /**
@@ -324,6 +346,7 @@ qx.Class.define("playground.c.lib.Node",
       var             sp;
       var             origSp;
       var             addr;
+      var             offset;
       var             intSize;
       var             subnode;
       var             entry;
@@ -605,9 +628,109 @@ qx.Class.define("playground.c.lib.Node",
         // Get the base address
         value1 = this.children[0].process(data, bExecuting);
         
+        // Figure out where the specifier/declarator list is, and retrieve it.
+        if (value1 instanceof playground.c.lib.SymtabEntry)
+        {
+          specAndDecl = value1.getSpecAndDecl();
+        }
+        else
+        {
+          specAndDecl = value1.specAndDecl;
+        }
+
+        // Look at the first specifier/declarator to ensure this can be indexed
+        specOrDecl = specAndDecl[0];
+
+        // Ensure this an array or a pointer
+        type = specOrDecl.getType();
+        switch(type)
+        {
+        case "array" :
+          break;
+
+        case "pointer" :
+          break;
+          
+        default :
+          throw new playground.c.lib.RuntimeError(
+            this,
+            "Can't access an array element of something that is not an array");
+          break;
+        }
+
+        // If we got a symbol table entry...
+        if (value1 instanceof playground.c.lib.SymtabEntry)
+        {
+          // ... then retrieve the symbol's address
+          addr = value1.getAddr();
+          
+          // If this is a pointer...
+          if (type == "pointer" || value1.getIsParameter())
+          {
+            // ... then we need to get the address that the pointer points to
+            addr = playground.c.lib.Node.__mem.get(addr, "pointer"); 
+          }
+        }
+        else
+        {
+          // We already have an address
+          addr = value1.value;
+        }
+        
+        // Figure out the size of each array element
+        // First, get a copy of the specifier/declarator list
+        specAndDecl = specAndDecl.slice(0);
+        
+        // Strip off the initial (pointer or array) entry to find out how many
+        // bytes a value of the remaining specifier/declarator consumes
+        specAndDecl.shift();
+        
+        // Determine the memory type of the value
+        specOrDecl = specAndDecl[0];
+        type =
+          specOrDecl instanceof playground.c.lib.Declarator
+          ? "pointer"
+          : specAndDecl[0].getCType();
+
+        // Calculate the byte count
+        offset = specAndDecl[0].calculateByteCount(1, specAndDecl, 0);
 
         // Get the index
         value2 = this.children[1].process(data, bExecuting);
+        
+        // We'd better have a specifier to say what type this is.
+        specOrDecl = value2.specAndDecl[0];
+        if (! (specOrDecl instanceof playground.c.lib.Specifier) ||
+            specOrDecl.getType() != "int")
+        {
+          throw new playground.c.lib.RuntimeError(
+            this,
+            "Array index must evaluate to an integer");
+        }
+        
+        // Multiply together the byte count of each element, and the desired
+        // index, to yield a byte offset to the element's value
+        offset *= value2.value;
+        
+        // Prepend a special "address" declarator
+        specAndDecl.unshift(new playground.c.lib.Declarator(this, "address"));
+
+        // The return value will be the value at the calculated address plus
+        // the offset.
+var ret = 
+{
+value       : addr + offset,
+specAndDecl : specAndDecl
+};
+console.log("array_expression returning " + ret.value + ", " + ret.specAndDecl[0].getType());
+        return (
+/*
+          {
+            value       : value,
+            specAndDecl : specAndDecl
+          });
+*/
+ret);
         
         break;
 
@@ -3095,6 +3218,9 @@ qx.Class.define("playground.c.lib.Node",
       var             value;
       var             value1;
       var             value3;
+      var             specOrDecl;
+      var             specAndDecl;
+      var             bFirst;
 
       // Retrieve the lvalue
       value1 = this.children[0].process(data, true);
@@ -3109,18 +3235,62 @@ qx.Class.define("playground.c.lib.Node",
             specAndDecl  : value1.getSpecAndDecl()
           };
       }
-      else if (this.children[0].type != "dereference")
+      else if (value1.specAndDecl[0].getType() != "address")
       {
         this.error("The left hand side of an assignment must be " +
-                   "a variable or pointer dereference");
+                   "a variable, pointer dereference, " +
+                   "or array element reference");
         return null;
       }
       
-      // Determine the memory type to use for saving the value
-      type =
-        value1.specAndDecl[0] instanceof playground.c.lib.Declarator
-        ? "pointer"
-        : value1.specAndDecl[0].getCType();
+      // Get a shallow copy of the specifier/declarator list
+      specAndDecl = value1.specAndDecl.slice(0);
+
+      // Only loop a maximum of one time
+      bFirst = true;
+
+      do
+      {
+        // Get the first specifier/declarator
+        specOrDecl = specAndDecl.shift();
+
+        // Determine the memory type to use for saving the value
+        switch(specOrDecl.getType())
+        {
+        case "pointer" :
+        case "function" :
+        case "array" :
+          type = "pointer";
+          break;
+
+        case "address" :
+          // Find out the type based on the next specifier/declarator
+          if (bFirst)
+          {
+            bFirst = false;
+            continue;
+          }
+          
+          // There were two "address" declarators in a row. It's a pointer.
+          type = "pointer";
+          break;
+          
+        default :
+          if (specOrDecl instanceof playground.c.lib.Specifier)
+          {
+            type = specOrDecl.getCType();
+          }
+          else
+          {
+            throw new Error("Internal error: unexpected type: " + 
+                            specOrDecl.getType());
+          }
+          break;
+        }
+        
+        // Normal exit from the loop
+        break;
+      } while (true);
 
       // Retrieve the current value
       value = playground.c.lib.Node.__mem.get(value1.value, type);
@@ -3139,7 +3309,7 @@ qx.Class.define("playground.c.lib.Node",
 
       // Determine the memory type to use for saving the value
       type =
-        value3.specAndDecl[0] instanceof playground.c.lib.Declarator
+        value1.specAndDecl[0] instanceof playground.c.lib.Declarator
         ? "pointer"
         : value1.specAndDecl[0].getCType();
 

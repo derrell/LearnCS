@@ -56,13 +56,14 @@ qx.Class.define("playground.c.lib.Declarator",
      * 
      * @param value {String}
      *   One of:
-     *     "array", "function", "pointer", "builtIn"
+     *     "array", "function", "pointer", or one of the internally-used 
+     *     declarator types: "builtIn" or "address"
      */
     setType : function(value)
     {
       // Ensure we have a valid value
       if ([
-            "array", "function", "pointer", "builtIn"
+            "array", "function", "pointer", "builtIn", "address"
           ].indexOf(value) === -1)
       {
         throw new Error(
@@ -195,7 +196,7 @@ qx.Class.define("playground.c.lib.Declarator",
                             "unexpected end of specifier/declarator list");
           }
           
-          return specAndDecl[i + 1].calculateByteCount(multiplier,
+          return specAndDecl[i + 1].calculateByteCount(count * multiplier,
                                                        specAndDecl,
                                                        i + 1);
         }
