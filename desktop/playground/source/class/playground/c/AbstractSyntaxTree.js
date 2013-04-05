@@ -48,11 +48,10 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
       {
         // Option processing, when run from the command line
         optimist = require("optimist");
-        argv = optimist
-          .usage("Usage: $0 " +
-                 "[--ast] [--symtab] [--rts] [--heap] [--gas] <file.c>")
-          .boolean( [ "ast", "symtab", "rts", "heap", "gas" ] )
-          .argv;
+        optimist.usage("Usage: $0 " +
+                 "[--ast] [--symtab] [--rts] [--heap] [--gas] <file.c>");
+        optimist["boolean"]( [ "ast", "symtab", "rts", "heap", "gas" ] );
+        argv = optimist.argv;
         
         // If help was requested...
         if (argv.h || argv.help)

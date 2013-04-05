@@ -175,12 +175,7 @@ qx.Class.define("playground.c.lib.Node",
           // need not be constant
           
           // See whether we got an address or a symbol table entry
-          if (value.specAndDecl[0].getType() == "address")
-          {
-            // It's an address. Remove the internal-use "address" declarator
-            value.specAndDecl.shift();
-          }
-          else
+          if (value instanceof playground.c.lib.SymtabEntry)
           {
             // It's a symbol table entry. Retrieve the address and
             // specifier/declarator list.
@@ -189,6 +184,11 @@ qx.Class.define("playground.c.lib.Node",
                 value       : value.getAddr(), 
                 specAndDecl : value.getSpecAndDecl()
               };
+          }
+          else
+          {
+            // It's an address. Remove the internal-use "address" declarator
+            value.specAndDecl.shift();
           }
 
           // Determine the memory type to use for saving the value
@@ -3342,65 +3342,114 @@ ret);
      * "value" method of integer promotions. See, for example, page 48 of
      * http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf
      *
-     * @param type1 {String}
-     *   One of the C types (or "pointer")
+     * @param specAndDecl1 {String}
+     *   A specifier/declarator list for the first type to be tested
      *
-     * @param type2 {String}
-     *   One of the C types (or "pointer")
+     * @param specAndDecl2 {String}
+     *   A specifier/declarator list for the second type to be tested
      *
      * @return {String}
      *   The C type to which to coerce the operands of an operation between
      *   operands originally of type1 and type2.
      */
-    __coerce : function(type1, type2)
+    __coerce : function(specAndDecl1, specAndDecl2)
     {
+      var             spec1 = specAndDecl1[0];
+      var             spec2 = specAndDecl2[0];
+      var             type1 = spec1.getType();
+      var             type2 = spec2.getType();
+      var             sign1 = spec1.getSigned();
+      var             sign2 = spec2.getSigned();
+      var             size1 = spec1.getSize();
+      var             size2 = spec2.getSize();
+      
+      // Ensure that we got types that can be coerced
+      [ type1, type2 ].forEach(
+        function(type)
+        {
+          switch(type)
+          {
+          case "int" :
+          case "float" :
+          case "double" :
+            break;
+            
+          default :
+            throw new Error("Can not coerce to type " + type);
+          }
+        });
+      
       // First, test for the common and easy case: both types are already the
       // same.
       if (type1 == type2)
       {
-        return type1;
+        return specAndDecl1;
       }
 
       // If one of the operands is double, then coerce to double
-      if (type1 == "double" || type2 == "double")
+      if (type1 == "double")
       {
-        return "double";
+        return specAndDecl1;
+      }
+      if (type2 == "double")
+      {
+        return specAndDecl2;
       }
 
       // If one of the operands is float, then coerce to float
-      if (type1 == "float" || type2 == "float")
+      if (type1 == "float")
       {
-        return "float";
+        return specAndDecl1;
+      }
+      if (type2 == "float")
+      {
+        return specAndDecl2;
       }
 
       // If one of the operands is unsigned long long, then coerce to
       // unsigned long long.
 
-      if (type1 == "unsigned long long" || type2 == "unsigned long long")
+      if (type1 == "unsigned long long")
       {
-        return "unsigned long long";
+        return specAndDecl1;
+      }
+      if (type2 == "unsigned long long")
+      {
+        return specAndDecl2;
       }
 
       // If one of the operands is unsigned long, then coerce to unsigned long.
-      if (type1 == "unsigned long" || type2 == "unsigned long")
+      if (type1 == "int" && sign1 == "unsigned" && size1 == "long")
       {
-        return "unsigned long";
+        return specAndDecl1;
+      }
+      if (type2 == "int" && sign2 == "unsigned" && size2 == "long")
+      {
+        return specAndDecl2;
       }
 
       // If one of the operands is long, then coerce to long.
-      if (type1 == "long" || type2 == "long")
+      if (type1 == "int" && size1 == "long")
       {
-        return "long";
+        return specAndDecl1;
+      }
+      if (type2 == "int" && size2 == "long")
+      {
+        return specAndDecl2;
       }
 
       // If one of the operands is unsigned int, then coerce to unsigned int.
-      if (type1 == "unsigned int" || type2 == "unsigned int")
+      if (type1 == "int" && sign1 == "unsigned" && size1 === null)
       {
-        return "unsigned int";
+        return specAndDecl1;
+      }
+      if (type2 == "int" && sign2 == "unsigned" && size2 == null)
+      {
+        return specAndDecl2;
       }
 
       // In any other case, coerce to int.
-      return "int";
+      return [ new playground.c.lib.Specifier(this, "int") ];
     }
   },
   
