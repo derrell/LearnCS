@@ -91,7 +91,7 @@ postfix_expression
       parser.yy.R("postfix_expression : postfix_expression '(' ')'");
       $$ = new playground.c.lib.Node("function_call", yytext, yylineno);
       $$.children.push($1);
-      $$.children.push(null);   // no argument_expression_list
+      $$.children.push(nullNode());   // no argument_expression_list
     }
   | postfix_expression '(' argument_expression_list ')'
     {
@@ -658,7 +658,7 @@ init_declarator
     parser.yy.R("init_declarator : declarator");
     $$ = new playground.c.lib.Node("init_declarator", yytext, yylineno);
     $$.children.push($1);
-    $$.children.push(null);     // no initializer
+    $$.children.push(nullNode());     // no initializer
   }
   | declarator '=' initializer
   {
@@ -783,7 +783,7 @@ struct_or_union_specifier
       "struct_or_union lbrace struct_declaration_list rbrace");
     $$ = $1;
     $$.children.push($3);
-    $$.children.push(null);     // no identifier
+    $$.children.push(nullNode());     // no identifier
 
     // Add a symbol table entry for this struct (a type)
     playground.c.lib.Symtab.getCurrent().add(
@@ -793,7 +793,7 @@ struct_or_union_specifier
   {
     parser.yy.R("struct_or_union_specifier : struct_or_union identifier");
     $$ = $1;
-    $$.children.push(null);     // no declaration list
+    $$.children.push(nullNode());     // no declaration list
 
     // Munge the name of the struct
     $2.value = "struct#" + $2.value;
@@ -899,7 +899,7 @@ struct_declarator
   {
     parser.yy.R("struct_declarator : ':' constant_expression");
     $$ = new playground.c.lib.Node("struct_declarator", yytext, yylineno);
-    $$.children.push(null);     // no declarator
+    $$.children.push(nullNode());     // no declarator
     $$.children.push($2);
   }
   | declarator ':' constant_expression
@@ -917,7 +917,7 @@ enum_specifier
     parser.yy.R("enum_specifier : ENUM lbrace enumerator_list rbrace");
     $$ = new playground.c.lib.Node("enum_specifier", yytext, yylineno);
     $$.children.push($3);
-    $$.children.push(null);     // no identifier
+    $$.children.push(nullNode());     // no identifier
   }
   | ENUM identifier lbrace enumerator_list rbrace
   {
@@ -930,7 +930,7 @@ enum_specifier
   {
     parser.yy.R("enum_specifier : ENUM identifier");
     $$ = new playground.c.lib.Node("enum_specifier", yytext, yylineno);
-    $$.children.push(null);     // no enumerator list
+    $$.children.push(nullNode());     // no enumerator list
     $$.children.push($2);
   }
   ;
@@ -990,7 +990,7 @@ declarator
     parser.yy.R("declarator : direct_declarator");
     $$ = new playground.c.lib.Node("declarator", yytext, yylineno);
     $$.children.push($1);
-    $$.children.push(null);
+    $$.children.push(nullNode());
   }
   ;
 
@@ -1034,7 +1034,7 @@ direct_declarator
     $$ = new playground.c.lib.Node("function_decl", yytext, yylineno);
     $$.children.push($1);
     $$.children.push($4);
-    $$.children.push(null);     // no identifier_list
+    $$.children.push(nullNode());     // no identifier_list
   }
 /* Don't support K&R-style declarations...
   | direct_declarator function_scope '(' identifier_list ')'
@@ -1044,7 +1044,7 @@ direct_declarator
 
     $$ = new playground.c.lib.Node("function_decl", yytext, yylineno);
     $$.children.push($1);
-    $$.children.push(null);     // no parameter_type_list
+    $$.children.push(nullNode());     // no parameter_type_list
     $$.children.push($4);
   }
 // ... and require 'void' for parameter list if no formal parameters
@@ -1054,8 +1054,8 @@ direct_declarator
     
     $$ = new playground.c.lib.Node("function_decl", yytext, yylineno);
     $$.children.push($1);
-    $$.children.push(null);     // no parameter_type_list
-    $$.children.push(null);     // no identifier_list
+    $$.children.push(nullNode());     // no parameter_type_list
+    $$.children.push(nullNode());     // no identifier_list
   }
 */
   ;
@@ -1139,14 +1139,14 @@ parameter_declaration
     $$ = new playground.c.lib.Node("parameter_declaration", yytext, yylineno);
     $$.children.push($1);
     $$.children.push($2);
-    $$.children.push(null);     // no abstract declarator
+    $$.children.push(nullNode());     // no abstract declarator
   }
   | declaration_specifiers abstract_declarator
   {
     parser.yy.R("parameter_declaration : declaration_specifiers abstract_declarator");
     $$ = new playground.c.lib.Node("parameter_declaration", yytext, yylineno);
     $$.children.push($1);
-    $$.children.push(null);     // no declarator
+    $$.children.push(nullNode());     // no declarator
     $$.children.push($2);
   }
   | declaration_specifiers
@@ -1154,8 +1154,8 @@ parameter_declaration
     parser.yy.R("parameter_declaration : declaration_specifiers");
     $$ = new playground.c.lib.Node("parameter_declaration", yytext, yylineno);
     $$.children.push($1);
-    $$.children.push(null);     // no declarator
-    $$.children.push(null);     // no abstract declarator
+    $$.children.push(nullNode());     // no declarator
+    $$.children.push(nullNode());     // no abstract declarator
   }
   ;
 
@@ -1196,13 +1196,13 @@ abstract_declarator
     parser.yy.R("abstract_declarator : pointer");
     $$ = new playground.c.lib.Node("abstract_declarator", yytext, yylineno);
     $$.children.push($1);
-    $$.children.push(null);     // no abstract_declarator
+    $$.children.push(nullNode());     // no abstract_declarator
   }
   | direct_abstract_declarator
   {
     parser.yy.R("abstract_declarator : direct_abstract_declarator");
     $$ = new playground.c.lib.Node("abstract_declarator", yytext, yylineno);
-    $$.children.push(null);     // no pointer
+    $$.children.push(nullNode());     // no pointer
     $$.children.push($1);
   }
   | pointer direct_abstract_declarator
@@ -1417,7 +1417,7 @@ compound_statement
   {
     parser.yy.R("compound_statement : lbrace_scope statement_list rbrace_scope");
     $$ = new playground.c.lib.Node("compound_statement", yytext, yylineno);
-    $$.children.push(null);     // no declaration_list
+    $$.children.push(nullNode());     // no declaration_list
     $$.children.push($2);
   }
   | lbrace_scope declaration_list rbrace_scope
@@ -1425,7 +1425,7 @@ compound_statement
     parser.yy.R("compound_statement : lbrace_scope declaration_list rbrace_scope");
     $$ = new playground.c.lib.Node("compound_statement", yytext, yylineno);
     $$.children.push($2);
-    $$.children.push(null);     // no statement list
+    $$.children.push(nullNode());     // no statement list
   }
   | lbrace_scope declaration_list statement_list rbrace_scope
   {
@@ -1470,7 +1470,7 @@ expression_statement
   : ';'
   {
     parser.yy.R("expression_statement : ';'");
-    $$ = null;
+    $$ = nullNode();
   }
   | expression ';'
   {
@@ -1509,10 +1509,10 @@ iteration_statement
   {
     parser.yy.R("iteration_statement : WHILE '(' expression ')' statement");
     $$ = new playground.c.lib.Node("for", yytext, yylineno);
-    $$.children.push(null);     // initialization
+    $$.children.push(nullNode());     // initialization
     $$.children.push($3);       // while condition
     $$.children.push($5);       // statement block
-    $$.children.push(null);     // after each iteration
+    $$.children.push(nullNode());     // after each iteration
   }
   | DO statement WHILE '(' expression ')' ';'
   {
@@ -1528,7 +1528,7 @@ iteration_statement
     $$.children.push($3);       // initialization
     $$.children.push($4);       // while condition
     $$.children.push($6);       // statement block
-    $$.children.push(null);     // after each iteration
+    $$.children.push(nullNode());     // after each iteration
   }
   | FOR '(' expression_statement expression_statement expression ')' statement
   {
@@ -1564,7 +1564,7 @@ jump_statement
   {
     parser.yy.R("jump_statement : RETURN ';'");
     $$ = new playground.c.lib.Node("return", yytext, yylineno);
-    $$.children.push(null);
+    $$.children.push(nullNode());
   }
   | RETURN expression ';'
   {
@@ -1625,7 +1625,7 @@ function_definition
     $$ = new playground.c.lib.Node("function_definition", yytext, yylineno);
     $$.children.push($1);       // declaration_specifiers
     $$.children.push($2);       // declarator
-    $$.children.push(null);     // declaration_list
+    $$.children.push(nullNode());     // declaration_list
     $$.children.push($3);       // compound_statement
   }
 /* Don't support K&R-style declarations...
@@ -1633,7 +1633,7 @@ function_definition
   {
     parser.yy.R("function_definition : declarator declaration_list compound_statement");
     $$ = new playground.c.lib.Node("function_definition", yytext, yylineno);
-    $$.children.push(null);     // declaration_specifiers
+    $$.children.push(nullNode());     // declaration_specifiers
     $$.children.push($1);       // declarator
     $$.children.push($2);       // declaration_list
     $$.children.push($3);       // compound_statement
@@ -1643,9 +1643,9 @@ function_definition
   {
     parser.yy.R("function_definition : declarator compound_statement");
     $$ = new playground.c.lib.Node("function_definition", yytext, yylineno);
-    $$.children.push(null);     // declaration_specifiers
+    $$.children.push(nullNode());     // declaration_specifiers
     $$.children.push($1);       // declarator
-    $$.children.push(null);     // declaration_list
+    $$.children.push(nullNode());     // declaration_list
     $$.children.push($2);       // compound_statement
   }
   ;
@@ -1989,7 +1989,7 @@ rbrace
   : RBRACE
   {
     parser.yy.R("rbrace : RBRACE");
-    $$ = new playground.c.lib.Node("rbrace", yytext, yylineno);;
+    $$ = new playground.c.lib.Node("rbrace", yytext, yylineno);
   }
   ;
 
@@ -1997,3 +1997,8 @@ rbrace
 
 require("../../playground/source/class/playground/c/AbstractSyntaxTree.js");
 playground.c.AbstractSyntaxTree.main(parser);
+
+function nullNode()
+{
+  return new playground.c.lib.Node("_null_", yytext, yylineno);
+}
