@@ -206,6 +206,17 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
         // Prepare to call main(). Reset the machine.
         machine.initAll();
 
+        // Try to reset the model of the memory template view
+        try
+        {
+          qx.core.Init.getApplication().memTemplate.setModel(null);
+        }
+        catch(e)
+        {
+          console.log("Reset memory template view: " + e);
+        }
+
+
         // Save the stack pointer, so we can restore it after the function call
         origSp = playground.c.lib.Node.__mem.getReg("SP", "unsigned int");
 

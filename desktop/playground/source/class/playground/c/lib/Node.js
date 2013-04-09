@@ -68,6 +68,9 @@ qx.Class.define("playground.c.lib.Node",
     /** The Memory singleton instance */
     __mem : null,
     
+    /** Previous line number (used to know when a new instruction is executed */
+    _prevLine : 0,
+
     /** Mappings of types of numbers to their types */
     NumberType :
     {
@@ -110,7 +113,7 @@ qx.Class.define("playground.c.lib.Node",
   {
     /** The symbol table associated with this specific node */
     _symtab : null,
-
+    
     /**
      * Display an error message regarding this node
      *
@@ -368,6 +371,7 @@ qx.Class.define("playground.c.lib.Node",
       var             value2; // typically the rhs of a binary expression
       var             value3; // typically the return result
       var             assignData;
+      var             bOldIsParameter;
       var             process = playground.c.lib.Node.process;
       var             model;
       var             memData;
@@ -381,21 +385,26 @@ qx.Class.define("playground.c.lib.Node",
         // or upon program exit. This makes execution REALLY slow at present.
         //
         
-        // Retrieve the data in memory
-        memData = playground.c.machine.Memory.getInstance().getDataModel();
-        
-        // Convert it to a qx.data.Array
-        model = qx.data.marshal.Json.createModel(memData);
-        
-        // Use that model to render the memory template
-        try
+        // See if the line number has changed
+        if (this.line !== playground.c.lib.Node._prevLine)
         {
-          qx.core.Init.getApplication().memTemplate.setModel(model);
-        }
-        catch(e)
-        {
-          // There's no memTemplate class when running outside of the GUI.
-          // In fact, there's no Application object to get, in that case.
+          // Retrieve the data in memory
+          memData = playground.c.machine.Memory.getInstance().getDataModel();
+
+          // Convert it to a qx.data.Array
+          model = qx.data.marshal.Json.createModel(memData);
+
+          // Use that model to render the memory template
+          try
+          {
+            qx.core.Init.getApplication().memTemplate.setModel(model);
+//            qx.ui.core.queue.Widget.flush();
+          }
+          catch(e)
+          {
+            // There's no memTemplate class when running outside of the GUI.
+            // In fact, there's no Application object to get, in that case.
+          }
         }
       }
 
@@ -717,21 +726,11 @@ qx.Class.define("playground.c.lib.Node",
 
         // The return value will be the value at the calculated address plus
         // the offset.
-var ret = 
-{
-value       : addr + offset,
-specAndDecl : specAndDecl
-};
-console.log("array_expression returning " + ret.value + ", " + ret.specAndDecl[0].getType());
         return (
-/*
           {
-            value       : value,
-            specAndDecl : specAndDecl
+          value       : addr + offset,
+          specAndDecl : specAndDecl
           });
-*/
-ret);
-        
         break;
 
       case "assign" :
@@ -1881,7 +1880,7 @@ ret);
         {
           // This symbol shouldn't exist. Create a symbol table entry for it
           entry = playground.c.lib.Symtab.getCurrent().add(
-            this.value, this.line, false, true);
+            this.value, this.line, false, data.bIsParameter);
 
           if (! entry)
           {
@@ -2393,7 +2392,15 @@ ret);
          *   ...
          *   n: ellipsis?
          */
+        
+        // Save the current parameter flag (for later possible addition of
+        // nexted functions)
+        bOldIsParameter = data.bIsParameter;
+        data.bIsParameter = true;
+
         this.__processSubnodes(data, bExecuting);
+
+        data.bIsParameter = bOldIsParameter;
         break;
 
       case "pointer" :
@@ -2572,7 +2579,7 @@ ret);
         }
         
         // Return via throwing an error, to unwrap intervening call frames.
-        throw new playground.c.lib.Return(value3);
+        throw new playground.c.lib.Return(this, value3);
         break;
 
       case "right-shift" :
@@ -3252,7 +3259,7 @@ ret);
       do
       {
         // Get the first specifier/declarator
-        specOrDecl = specAndDecl.shift();
+        specOrDecl = specAndDecl[0];
 
         // Determine the memory type to use for saving the value
         switch(specOrDecl.getType())
@@ -3268,6 +3275,7 @@ ret);
           if (bFirst)
           {
             bFirst = false;
+            specAndDecl.shift();
             continue;
           }
           
@@ -3302,16 +3310,10 @@ ret);
         bUnary
         ? { 
             value       : value, 
-            specAndDecl : value1.specAndDecl.slice(0)
+            specAndDecl : specAndDecl.slice(0)
           }
         : this.getExpressionValue(this.children[1].process(data, true),
                                   data);
-
-      // Determine the memory type to use for saving the value
-      type =
-        value1.specAndDecl[0] instanceof playground.c.lib.Declarator
-        ? "pointer"
-        : value1.specAndDecl[0].getCType();
 
       // Save the value at its new address
       playground.c.lib.Node.__mem.set(
@@ -3330,7 +3332,7 @@ ret);
       return (
         {
           value       : value,
-          specAndDecl : value1.specAndDecl.slice(0)
+          specAndDecl : specAndDecl.slice(0)
         });
     },
 
