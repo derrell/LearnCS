@@ -176,236 +176,255 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
       // Initialize the machine singleton, which initializes the registers
       machine = playground.c.machine.Machine.getInstance();
 
+      function catchError(error)
+      {
+        // Determine what type of error we encountered
+        if (error instanceof playground.c.lib.Break)
+        {
+          console.log(
+            "Error: line " + error.node.line + ": " + 
+            "Found 'break' not in a loop, " +
+            "nor immediately within a 'switch'");
+        }
+        else if (error instanceof playground.c.lib.Continue)
+        {
+          console.log(
+            "Error: line " + error.node.line + ": " + 
+            "Found 'continue' not immediately within a loop");
+        }
+        else if (error instanceof playground.c.lib.RuntimeError)
+        {
+          console.log(
+            "Error: line " + error.node.line + ": " + error.message);
+        }
+        else
+        {
+          console.log("Programmer error: " + error);
+          console.log(error.stack);
+        }
+      };
+
       // Process the abstract syntax tree to create symbol tables
-      root.process(data, false);
-
-      if (playground.c.AbstractSyntaxTree.debugFlags.symtab)
-      {
-        playground.c.lib.Symtab.display();
-      }
-
-      intSize = Memory.typeSize["int"];
-      ptrSize = Memory.typeSize["pointer"];
-
-      // Get the symbol table entry for main, if it exists
-      symtab = playground.c.lib.Symtab.getByName("*");
-      entry = symtab.get("main", true);
-      
-      // If this entry's first specifier/declarator indicates it's a function...
-      declarator = entry.getSpecAndDecl()[0];
-      if (declarator.getType() == "function")
-      {
-        // ... then that's our entry node
-        entryNode = declarator.getFunctionNode();
-      }
-
-      // Process the abstract syntax tree from the entry point, if it exists,
-      // to run the program
-      if (entryNode)
-      {
-        console.log("Preparing to call main()");
-
-        // Prepare to call main(). Reset the machine.
-        machine.initAll();
-
-        // Try to reset the model of the memory template view
-        try
+      root.process(
+        data,
+        false,
+        function()
         {
-          qx.core.Init.getApplication().memTemplate.setModel(null);
-        }
-        catch(e)
-        {
-          // Do nothing. The call will fail when not running in the GUI
-        }
-
-
-        // Save the stack pointer, so we can restore it after the function call
-        origSp = playground.c.lib.Node.__mem.getReg("SP", "unsigned int");
-
-        // Push the arguments onto the stack. First, if there are no arguments
-        // provided, create one.
-        argv = argv || [ "test1", "hello", "world" ];
-        
-        // Explicitly null-terminate each of the argument strings and save in
-        // its own array.
-        argArr = argv.map(function(arg) { return arg + "\0"; });
-        
-        // argv now becomes the pointers to each of the strings
-        argv = [];
-        
-        // Point to where the stack pointer points. We'll adjust this for each
-        // argument string.
-        p = sp = origSp;
-
-        // Write each argument to the stack (last one first, so first one is
-        // at the lowest address in memory)
-        argArr.reverse().forEach(
-          function(arg, i)
+          if (playground.c.AbstractSyntaxTree.debugFlags.symtab)
           {
-            // Set a pointer on the stack to the beginning of that string
-            // (aligned at a word boundary)
-            p -= arg.length;
-            p -= p % playground.c.machine.Memory.WORDSIZE;
+            playground.c.lib.Symtab.display();
+          }
 
-            // That address is where this argument string will be
-            argv[i] = p;
-            
+          intSize = Memory.typeSize["int"];
+          ptrSize = Memory.typeSize["pointer"];
+
+          // Get the symbol table entry for main, if it exists
+          symtab = playground.c.lib.Symtab.getByName("*");
+          entry = symtab.get("main", true);
+
+          // If this entry's first specifier/declarator indicates it's a
+          // function...
+          declarator = entry.getSpecAndDecl()[0];
+          if (declarator.getType() == "function")
+          {
+            // ... then that's our entry node
+            entryNode = declarator.getFunctionNode();
+          }
+
+          // Process the abstract syntax tree from the entry point, if it
+          // exists, to run the program
+          if (entryNode)
+          {
+            console.log("Preparing to call main()");
+
+            // Prepare to call main(). Reset the machine.
+            machine.initAll();
+
+            // Try to reset the model of the memory template view
+            try
+            {
+              qx.core.Init.getApplication().memTemplate.setModel(null);
+            }
+            catch(e)
+            {
+              // Do nothing. The call will fail when not running in the GUI
+            }
+
+
+            // Save the stack pointer, so we can restore it after the function
+            // call
+            origSp = playground.c.lib.Node.__mem.getReg("SP", "unsigned int");
+
+            // Push the arguments onto the stack. First, if there are no
+            // arguments provided, create one.
+            argv = argv || [ "test1", "hello", "world" ];
+
+            // Explicitly null-terminate each of the argument strings and save
+            // in its own array.
+            argArr = argv.map(function(arg) { return arg + "\0"; });
+
+            // argv now becomes the pointers to each of the strings
+            argv = [];
+
+            // Point to where the stack pointer points. We'll adjust this for
+            // each argument string.
+            p = sp = origSp;
+
+            // Write each argument to the stack (last one first, so first one
+            // is at the lowest address in memory)
+            argArr.reverse().forEach(
+              function(arg, i)
+              {
+                // Set a pointer on the stack to the beginning of that string
+                // (aligned at a word boundary)
+                p -= arg.length;
+                p -= p % playground.c.machine.Memory.WORDSIZE;
+
+                // That address is where this argument string will be
+                argv[i] = p;
+
+                mem.setSymbolInfo(
+                  p,
+                  {
+                    getName         : function() { return "argument " + 
+                                                   (argArr.length - i - 1); },
+                    getType         : function() { return "char"; },
+                    getSize         : function() { return arg.length; },
+                    getPointerCount : function() { return 0; },
+                    getArraySizes   : function() { return [ arg.length ]; },
+                    getIsParameter  : function() { return false; }
+                  });
+
+                // Now write each character to memory
+                arg.split("").forEach(
+                  function(ch, i)
+                  {
+                    mem.set(p + i, "char", ch.charCodeAt(0));
+                  });
+              });
+
+            // We want to end on a word boundary. If there are an odd number
+            // of argv pointers, decrement by one pointer to start with.
+            if (argv.length % 2 === 1)
+            {
+              p -= ptrSize;
+            }
+
+            // Now push the argv array of pointers
+            argv.forEach(
+              function(pointer, i)
+              {
+                // Set a pointer on the stack for this argv pointer
+                p -= ptrSize;
+
+                // Write out the pointer
+                mem.set(p, "pointer", pointer);
+              });
+
             mem.setSymbolInfo(
               p,
               {
-                getName         : function() { return "argument " + 
-                                               (argArr.length - i - 1); },
+                getName         : function() { return "argument pointers"; },
                 getType         : function() { return "char"; },
-                getSize         : function() { return arg.length; },
-                getPointerCount : function() { return 0; },
-                getArraySizes   : function() { return [ arg.length ]; },
+                getSize         : function() { return ptrSize * argv.length; },
+                getPointerCount : function() { return 1; },
+                getArraySizes   : function() { return [ argv.length ]; },
                 getIsParameter  : function() { return false; }
               });
 
-            // Now write each character to memory
-            arg.split("").forEach(
-              function(ch, i)
+            // Adjust the stack pointer back to a word boundary
+            sp = p - playground.c.machine.Memory.WORDSIZE;;
+            sp -= p % playground.c.machine.Memory.WORDSIZE;
+            playground.c.lib.Node.__mem.setReg("SP", "unsigned int", sp);
+
+            // This is the beginning of an activation record.
+            mem.beginActivationRecord(sp);
+
+            // Name this activation record
+            declarator = entryNode.children[1];
+            function_decl = declarator.children[0];
+            mem.nameActivationRecord(
+              "Activation Record: " + function_decl.children[0].value);
+
+            // Push the address of the argv array onto the stack
+            playground.c.lib.Node.__mem.stackPush("pointer", p);
+
+            // Push the argument count onto the stack
+            playground.c.lib.Node.__mem.stackPush("int", argv.length);
+
+            // Retrieve the symbol table for main()
+            symtab = entryNode._symtab;
+
+            // Save the new frame pointer
+            symtab.setFramePointer(
+              playground.c.lib.Node.__mem.getReg("SP", "unsigned int"));
+
+            // Push the return address (our current line number) onto the stack
+            sp = playground.c.lib.Node.__mem.stackPush("unsigned int", 0);
+            mem.setSymbolInfo(
+              sp,
               {
-                mem.set(p + i, "char", ch.charCodeAt(0));
+                getName         : function() { return "called from line #"; },
+                getType         : function() { return "int"; },
+                getSize         : function() { return intSize; },
+                getPointerCount : function() { return 0; },
+                getArraySizes   : function() { return []; },
+                getIsParameter  : function() { return false; }
               });
-          });
-        
-        // We want to end on a word boundary. If there are an odd number of
-        // argv pointers, decrement by one pointer to start with.
-        if (argv.length % 2 === 1)
-        {
-          p -= ptrSize;
-        }
 
-        // Now push the argv array of pointers
-        argv.forEach(
-          function(pointer, i)
-          {
-            // Set a pointer on the stack for this argv pointer
-            p -= ptrSize;
+            // Process main()
+            try
+            {
+              entryNode.process(
+                data,
+                true,
+                function()
+                {
+                  if (playground.c.AbstractSyntaxTree.debugFlags.rts)
+                  {
+                    mem.prettyPrint("Stack",
+                                    Memory.info.rts.start,
+                                    Memory.info.rts.length);
+                  }
 
-            // Write out the pointer
-            mem.set(p, "pointer", pointer);
-          });
-        
-        mem.setSymbolInfo(
-          p,
-          {
-            getName         : function() { return "argument pointers"; },
-            getType         : function() { return "char"; },
-            getSize         : function() { return ptrSize * argv.length; },
-            getPointerCount : function() { return 1; },
-            getArraySizes   : function() { return [ argv.length ]; },
-            getIsParameter  : function() { return false; }
-          });
+                  if (playground.c.AbstractSyntaxTree.debugFlags.heap)
+                  {
+                    mem.prettyPrint("Stack",
+                                    Memory.info.heap.start,
+                                    Memory.info.heap.length);
+                  }
 
-        // Adjust the stack pointer back to a word boundary
-        sp = p - playground.c.machine.Memory.WORDSIZE;;
-        sp -= p % playground.c.machine.Memory.WORDSIZE;
-        playground.c.lib.Node.__mem.setReg("SP", "unsigned int", sp);
+                  if (playground.c.AbstractSyntaxTree.debugFlags.gas)
+                  {
+                    mem.prettyPrint("Globals", 
+                                    Memory.info.gas.start, 
+                                    Memory.info.gas.length);
+                  }
 
-        // This is the beginning of an activation record.
-        mem.beginActivationRecord(sp);
+                  // We're finished with this activation record.
+                  mem.endActivationRecord();
 
-        // Name this activation record
-        declarator = entryNode.children[1];
-        function_decl = declarator.children[0];
-        mem.nameActivationRecord(
-          "Activation Record: " + function_decl.children[0].value);
+                  // Restore the previous frame pointer
+                  symtab.restoreFramePointer();
 
-        // Push the address of the argv array onto the stack
-        playground.c.lib.Node.__mem.stackPush("pointer", p);
-
-        // Push the argument count onto the stack
-        playground.c.lib.Node.__mem.stackPush("int", argv.length);
-
-        // Retrieve the symbol table for main()
-        symtab = entryNode._symtab;
-
-        // Save the new frame pointer
-        symtab.setFramePointer(
-          playground.c.lib.Node.__mem.getReg("SP", "unsigned int"));
-
-        // Push the return address (our current line number) onto the stack
-        sp = playground.c.lib.Node.__mem.stackPush("unsigned int", 0);
-        mem.setSymbolInfo(
-          sp,
-          {
-            getName         : function() { return "called from line #"; },
-            getType         : function() { return "int"; },
-            getSize         : function() { return intSize; },
-            getPointerCount : function() { return 0; },
-            getArraySizes   : function() { return []; },
-            getIsParameter  : function() { return false; }
-          });
-
-        // Process main()
-        try
-        {
-          entryNode.process(data, true);
-        }
-        catch(e)
-        {
-          // Determine what type of error we encountered
-          if (e instanceof playground.c.lib.Break)
-          {
-            console.log(
-              "Error: line " + e.node.line + ": " + 
-              "Found 'break' not in a loop, " +
-              "nor immediately within a 'switch'");
-          }
-          else if (e instanceof playground.c.lib.Continue)
-          {
-            console.log(
-              "Error: line " + e.node.line + ": " + 
-              "Found 'continue' not immediately within a loop");
-          }
-          else if (e instanceof playground.c.lib.RuntimeError)
-          {
-            console.log(
-              "Error: line " + e.node.line + ": " + e.message);
+                  // Restore the original stack pointer
+                  mem.setReg("SP", "unsigned int", origSp);
+                  
+                  console.log("Done");
+                }.bind(entryNode),
+                catchError);
+            }
+            catch(e)
+            {
+              catchError(e);
+            }
           }
           else
           {
-            console.log("Programmer error: " + e);
-            console.log(e.stack);
-          }
-        }
-
-        if (playground.c.AbstractSyntaxTree.debugFlags.rts)
-        {
-          mem.prettyPrint("Stack",
-                          Memory.info.rts.start,
-                          Memory.info.rts.length);
-        }
-
-        if (playground.c.AbstractSyntaxTree.debugFlags.heap)
-        {
-          mem.prettyPrint("Stack",
-                          Memory.info.heap.start,
-                          Memory.info.heap.length);
-        }
-
-        if (playground.c.AbstractSyntaxTree.debugFlags.gas)
-        {
-          mem.prettyPrint("Globals", 
-                          Memory.info.gas.start, 
-                          Memory.info.gas.length);
-        }
-
-        // We're finished with this activation record.
-        mem.endActivationRecord();
-
-        // Restore the previous frame pointer
-        symtab.restoreFramePointer();
-
-        // Restore the original stack pointer
-        mem.setReg("SP", "unsigned int", origSp);
-      }
-      else
-      {
-        console.log("Missing main() function\n");
-      } 
+            console.log("Missing main() function\n");
+          } 
+        }.bind(root),
+        catchError);
     }
   }
 });

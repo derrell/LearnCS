@@ -255,7 +255,14 @@ qx.Class.define("playground.c.lib.Node",
       }
       else
       {
-        console.log(parts.join("") + this.type + " (" + this.line + ")");
+        if (this.type == "_null_")
+        {
+          console.log(parts.join("") + "null");
+        }
+        else
+        {
+          console.log(parts.join("") + this.type + " (" + this.line + ")");
+        }
         parts = [];
       }
 
@@ -409,6 +416,9 @@ qx.Class.define("playground.c.lib.Node",
           // Convert it to a qx.data.Array
           model = qx.data.marshal.Json.createModel(memData);
           qx.core.Init.getApplication().memTemplate.setModel(model);
+          
+          // Save the current line to prevent reentry until line number changes
+          playground.c.lib.Node._prevLine = this.line;
         }
       }
 
@@ -484,13 +494,14 @@ qx.Class.define("playground.c.lib.Node",
         }
 
         // Assign the new value
-        return this.__assignHelper(data, 
-                                   function(oldVal, newVal)
-                                   {
-                                     return oldVal + newVal;
-                                   },
-                                   success,
-                                   failure);
+        this.__assignHelper(data, 
+                            function(oldVal, newVal)
+                            {
+                              return oldVal + newVal;
+                            },
+                            success,
+                            failure);
+        break;
 
       case "address_of" :
         /*
@@ -791,35 +802,43 @@ qx.Class.define("playground.c.lib.Node",
             offset = specAndDecl[0].calculateByteCount(1, specAndDecl, 0);
 
             // Get the index
-            value2 = this.children[1].process(data, bExecuting);
-
-            // We'd better have a specifier to say what type this is.
-            specOrDecl = value2.specAndDecl[0];
-            if (! (specOrDecl instanceof playground.c.lib.Specifier) ||
-                specOrDecl.getType() != "int")
-            {
-              this._throwIt(new playground.c.lib.RuntimeError(
-                              this,
-                              "Array index must evaluate to an integer"),
-                            success,
-                            failure);
-            }
-
-            // Multiply together the byte count of each element, and the
-            // desired index, to yield a byte offset to the element's value
-            offset *= value2.value;
-
-            // Prepend a special "address" declarator
-            specAndDecl.unshift(new playground.c.lib.Declarator(this,
-                                                                "address"));
-
-            // The return value will be the value at the calculated address plus
-            // the offset.
-            success(
+            this.children[1].process(
+              data,
+              bExecuting,
+              function(v)
               {
-              value       : addr + offset,
-              specAndDecl : specAndDecl
-              });
+                value2 = v;
+                
+                // We'd better have a specifier to say what type this is.
+                specOrDecl = value2.specAndDecl[0];
+                if (! (specOrDecl instanceof playground.c.lib.Specifier) ||
+                    specOrDecl.getType() != "int")
+                {
+                  this._throwIt(new playground.c.lib.RuntimeError(
+                                  this,
+                                  "Array index must evaluate to an integer"),
+                                success,
+                                failure);
+                }
+
+                // Multiply together the byte count of each element, and the
+                // desired index, to yield a byte offset to the element's
+                // value
+                offset *= value2.value;
+
+                // Prepend a special "address" declarator
+                specAndDecl.unshift(new playground.c.lib.Declarator(this,
+                                                                    "address"));
+
+                // The return value will be the value at the calculated
+                // address plus the offset.
+                success(
+                  {
+                  value       : addr + offset,
+                  specAndDecl : specAndDecl
+                  });
+              }.bind(this),
+              failure);
           }.bind(this),
           failure);
         break;
@@ -839,13 +858,14 @@ qx.Class.define("playground.c.lib.Node",
         }
 
         // Assign the new value
-        return this.__assignHelper(data, 
-                                   function(oldVal, newVal)
-                                   {
-                                     return newVal;
-                                   },
-                                   success,
-                                   failure);
+        this.__assignHelper(data, 
+                            function(oldVal, newVal)
+                            {
+                              return newVal;
+                            },
+                            success,
+                            failure);
+        break;
 
       case "auto" :
         // Only applicable before executing
@@ -912,13 +932,14 @@ qx.Class.define("playground.c.lib.Node",
         }
 
         // Assign the new value
-        return this.__assignHelper(data, 
-                                   function(oldVal, newVal)
-                                   {
-                                     return oldVal & newVal;
-                                   },
-                                   success,
-                                   failure);
+        this.__assignHelper(data, 
+                            function(oldVal, newVal)
+                            {
+                              return oldVal & newVal;
+                            },
+                            success,
+                            failure);
+        break;
 
       case "bit_invert" :
         /*
@@ -1001,13 +1022,14 @@ qx.Class.define("playground.c.lib.Node",
         }
 
         // Assign the new value
-        return this.__assignHelper(data, 
-                                   function(oldVal, newVal)
-                                   {
-                                     return oldVal | newVal;
-                                   },
-                                   success,
-                                   failure);
+        this.__assignHelper(data, 
+                            function(oldVal, newVal)
+                            {
+                              return oldVal | newVal;
+                            },
+                            success,
+                            failure);
+        break;
 
       case "break" :
         /*
@@ -1108,10 +1130,11 @@ qx.Class.define("playground.c.lib.Node",
           bExecuting,
           function()
           {
+            // Process the statement list
             this.children[1].process(
               data,
               bExecuting,
-              compound_statement_finalize,
+              compound_statement_finalize.bind(this),
               failure);
           }.bind(this),
           failure);
@@ -1127,6 +1150,8 @@ qx.Class.define("playground.c.lib.Node",
 
           // Revert to the prior scope
           playground.c.lib.Symtab.popStack();
+          
+          success();
         };
         break;
 
@@ -1187,6 +1212,8 @@ qx.Class.define("playground.c.lib.Node",
             specAndDecl : [ specOrDecl ]
           });
 
+        break;
+
       case "continue" :
         /*
          * continue
@@ -1195,7 +1222,7 @@ qx.Class.define("playground.c.lib.Node",
         if (bExecuting)
         {
           // Throw a Continue error, which will be caught by loops.
-          this.throwIt(new playground.c.lib.Continue(this), success, failure);
+          this._throwIt(new playground.c.lib.Continue(this), success, failure);
         }
         break;
 
@@ -1231,23 +1258,28 @@ qx.Class.define("playground.c.lib.Node",
          *   0: declaration
          *   ...
          */
-        this.__processSubnodes(data, bExecuting, success, failure);
+        this.__processSubnodes(
+          data,
+          bExecuting,
+          function()
+          {
+            // Adjust the stack pointer to take automatic local variables into
+            // account. First, get the current symbol table
+            symtab = playground.c.lib.Symtab.getCurrent();
 
-        // Adjust the stack pointer to take automatic local variables into
-        // account. First, get the current symbol table
-        symtab = playground.c.lib.Symtab.getCurrent();
+            // Get the stack pointer's current value
+            sp = playground.c.lib.Node.__mem.getReg("SP", "unsigned int");
 
-        // Get the stack pointer's current value
-        sp = playground.c.lib.Node.__mem.getReg("SP", "unsigned int");
+            // Subtract the symbol table's size from the stack pointer, so that
+            // subsequent function calls don't overwrite the automatic local
+            // variables
+            sp -= symtab.getSize();
 
-        // Subtract the symbol table's size from the stack pointer, so that
-        // subsequent function calls don't overwrite the automatic local
-        // variables
-        sp -= symtab.getSize();
-
-        // Write the new stack pointer value
-        playground.c.lib.Node.__mem.setReg("SP", "unsigned int", sp);
-        success();
+            // Write the new stack pointer value
+            playground.c.lib.Node.__mem.setReg("SP", "unsigned int", sp);
+            success();
+          }.bind(this),
+          failure);
         break;
 
       case "declaration_specifiers" :
@@ -1490,13 +1522,14 @@ qx.Class.define("playground.c.lib.Node",
         }
 
         // Assign the new value
-        return this.__assignHelper(data, 
-                                   function(oldVal, newVal)
-                                   {
-                                     return oldVal / newVal;
-                                   },
-                                   success,
-                                   failure);
+        this.__assignHelper(data, 
+                            function(oldVal, newVal)
+                            {
+                              return oldVal / newVal;
+                            },
+                            success,
+                            failure);
+        break;
 
       case "double" :
         // Only applicable before executing
@@ -1726,7 +1759,8 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "expression" :
-        return this.__processSubnodes(data, bExecuting, success, failure);
+        this.__processSubnodes(data, bExecuting, success, failure);
+        break;
 
       case "extern" :
         // Only applicable before executing
@@ -2322,7 +2356,6 @@ qx.Class.define("playground.c.lib.Node",
           
           // Process any children
           this.__processSubnodes(data, bExecuting, success, failure);
-          success();
         }
         else
         {
@@ -2360,7 +2393,6 @@ qx.Class.define("playground.c.lib.Node",
         {
           // ... then just process each of the subnodes
           this.__processSubnodes(data, bExecuting, success, failure);
-          success();
           break;
         }
         
@@ -2400,20 +2432,26 @@ qx.Class.define("playground.c.lib.Node",
           data.specAndDecl = [];
 
           // Process the declarator, which also creates the symbol table entry
-          this.children[0].process(data, bExecuting);
+          this.children[0].process(
+            data,
+            bExecuting,
+            function()
+            {
+              // Add the specifier to the end of the specifier/declarator list
+              data.specAndDecl.push(data.specifiers);
 
-          // Add the specifier to the end of the specifier/declarator list
-          data.specAndDecl.push(data.specifiers);
+              // Calculate the offset in the symbol table for this symbol
+              // table entry, based on the now-complete specifiers and
+              // declarators
+              data.entry.calculateOffset();
 
-          // Calculate the offset in the symbol table for this symbol table
-          // entry, based on the now-complete specifiers and declarators
-          data.entry.calculateOffset();
+              // We no longer need our reference to the specifier/declarator
+              // list. The symbol table entry still references it
+              delete data.specAndDecl;
 
-          // We no longer need our reference to the specifier/declarator list.
-          // The symbol table entry still references it
-          delete data.specAndDecl;
-
-          success();
+              success();
+            }.bind(this),
+            failure);
         }
         else
         {
@@ -2426,11 +2464,20 @@ qx.Class.define("playground.c.lib.Node",
             {
               // If we're executing, all we need to do is process the
               // initializer
-              value = this.children[1].process(data, bExecuting);
-              playground.c.lib.Node.__mem.set(entry.getAddr(), 
-                                              entry.getType(), 
-                                              value.value);
-              success();
+              this.children[1].process(
+                data, 
+                bExecuting,
+                function(v)
+                {
+                  value = v;
+
+                  // Save the value
+                  playground.c.lib.Node.__mem.set(entry.getAddr(), 
+                                                  entry.getType(), 
+                                                  value.value);
+                  success();
+                }.bind(this),
+                failure);
             }.bind(this),
             failure);
         }
@@ -2530,13 +2577,14 @@ qx.Class.define("playground.c.lib.Node",
         }
 
         // Assign the new value
-        return this.__assignHelper(data, 
-                                   function(oldVal, newVal)
-                                   {
-                                     return oldVal << newVal;
-                                   },
-                                   success,
-                                   failure);
+        this.__assignHelper(data, 
+                            function(oldVal, newVal)
+                            {
+                              return oldVal << newVal;
+                            },
+                            success,
+                            failure);
+        break;
 
       case "less-equal" :
         /*
@@ -2679,13 +2727,14 @@ qx.Class.define("playground.c.lib.Node",
         }
 
         // Assign the new value
-        return this.__assignHelper(data, 
-                                   function(oldVal, newVal)
-                                   {
-                                     return oldVal % newVal;
-                                   },
-                                   success,
-                                   failure);
+        this.__assignHelper(data, 
+                            function(oldVal, newVal)
+                            {
+                              return oldVal % newVal;
+                            },
+                            success,
+                            failure);
+        break;
 
       case "multiply" :
         /*
@@ -2740,13 +2789,14 @@ qx.Class.define("playground.c.lib.Node",
         }
 
         // Assign the new value
-        return this.__assignHelper(data, 
-                                   function(oldVal, newVal)
-                                   {
-                                     return oldVal * newVal;
-                                   },
-                                   success,
-                                   failure);
+        this.__assignHelper(data, 
+                            function(oldVal, newVal)
+                            {
+                              return oldVal * newVal;
+                            },
+                            success,
+                            failure);
+        break;
 
       case "negative" :
         /*
@@ -3053,15 +3103,16 @@ qx.Class.define("playground.c.lib.Node",
         }
 
         // Assign the new value
-        return this.__assignHelper(data, 
-                                   function(oldVal, newVal)
-                                   {
-                                     return oldVal + 1;
-                                   },
-                                   success,
-                                   failure,
-                                   true,
-                                   true);
+        this.__assignHelper(data, 
+                            function(oldVal, newVal)
+                            {
+                              return oldVal + 1;
+                            },
+                            success,
+                            failure,
+                            true,
+                            true);
+        break;
 
       case "pre_decrement_op" :
         /*
@@ -3102,15 +3153,16 @@ qx.Class.define("playground.c.lib.Node",
         }
 
         // Assign the new value
-        return this.__assignHelper(data, 
-                                   function(oldVal, newVal)
-                                   {
-                                     return oldVal + 1;
-                                   },
-                                   success,
-                                   failure,
-                                   true,
-                                   false);
+        this.__assignHelper(data, 
+                            function(oldVal, newVal)
+                            {
+                              return oldVal + 1;
+                            },
+                            success,
+                            failure,
+                            true,
+                            false);
+        break;
 
       case "register" :
         // Only applicable before executing
@@ -3229,13 +3281,14 @@ qx.Class.define("playground.c.lib.Node",
         }
 
         // Assign the new value
-        return this.__assignHelper(data, 
-                                   function(oldVal, newVal)
-                                   {
-                                     return oldVal >> newVal;
-                                   },
-                                   success,
-                                   failure);
+        this.__assignHelper(data, 
+                            function(oldVal, newVal)
+                            {
+                              return oldVal >> newVal;
+                            },
+                            success,
+                            failure);
+        break;
 
       case "short" :
         // Only applicable before executing
@@ -3400,6 +3453,7 @@ qx.Class.define("playground.c.lib.Node",
                *   0: struct_declaration_list
                *   1: identifier
                */
+//FIXME (not enough args)
               subnode.process(data, bExecuting);
               entry.setType(subnode.children[1].value);
             }
@@ -3492,13 +3546,14 @@ qx.Class.define("playground.c.lib.Node",
         }
 
         // Assign the new value
-        return this.__assignHelper(data, 
-                                   function(oldVal, newVal)
-                                   {
-                                     return oldVal - newVal;
-                                   },
-                                   success,
-                                   failure);
+        this.__assignHelper(data, 
+                            function(oldVal, newVal)
+                            {
+                              return oldVal - newVal;
+                            },
+                            success,
+                            failure);
+        break;
 
       case "switch" :
         /*
@@ -3568,32 +3623,36 @@ qx.Class.define("playground.c.lib.Node",
                          // Get its expression value. It (child 0) becomes the
                          // key in the cases map, and child 1, the statement,
                          // becomes the value of that key in the cases map.
-                         value =
-                           this.getExpressionValue(
-                             child.children[0].process(data, bExecuting),
-                             data).value;
-
-                         // Does this value already exist in the cases map
-                         if (subnode.cases[value])
-                         {
-                           // Yup. This is an error.
-                           this.error("Found multiple case labels for '" +
-                                      value + "' in 'switch'",
-                                      true);
-                           return;     // not reached
-                         }
-
-                         // This is a new case value. Save its statement.
-                         map =
+                         child.children[0].process(
+                           data,
+                           bExecuting,
+                           function(v)
                            {
-                             order : subnode.caseAndBreak.length,
-                             node  : child.children[1]
-                           };
-                         subnode.cases[value] = map;
-                         subnode.caseAndBreak.push(map);
+                             value = this.getExpressionValue(v, data).value;
 
-                         // Stop testing for constant expressions
-                         delete data.constantOnly;
+                             // Does this value already exist in the cases map
+                             if (subnode.cases[value])
+                             {
+                               // Yup. This is an error.
+                               this.error("Found multiple case labels for '" +
+                                          value + "' in 'switch'",
+                                          true);
+                               return;     // not reached
+                             }
+
+                             // This is a new case value. Save its statement.
+                             map =
+                               {
+                                 order : subnode.caseAndBreak.length,
+                                 node  : child.children[1]
+                               };
+                             subnode.cases[value] = map;
+                             subnode.caseAndBreak.push(map);
+
+                             // Stop testing for constant expressions
+                             delete data.constantOnly;
+                           }.bind(this),
+                           failure);
                        }
                        else if (child.type == "default")
                        {
@@ -3615,6 +3674,7 @@ qx.Class.define("playground.c.lib.Node",
                            };
                          subnode.cases["default"] = map;
                          subnode.caseAndBreak.push(map);
+                         success();
                        }
                        else if (child.type == "break")
                        {
@@ -3880,6 +3940,11 @@ qx.Class.define("playground.c.lib.Node",
     {
       var             i;
 
+      if (! success || ! failure)
+      {
+        throw new Error("Missing success/failure functions");
+      }
+
       if (this.children.length > 0)
       {
         i = 0;
@@ -3902,6 +3967,10 @@ qx.Class.define("playground.c.lib.Node",
             }
           }.bind(this),
           failure);
+      }
+      else
+      {
+        success();
       }
     },
 
