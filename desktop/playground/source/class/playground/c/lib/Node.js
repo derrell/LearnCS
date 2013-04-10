@@ -422,7 +422,7 @@ qx.Class.define("playground.c.lib.Node",
         }
       }
 
-      console.log("process: " + this.type);
+//      console.log("process: " + this.type);
 
       // Yup. See what type it is.
       switch(this.type)
@@ -455,14 +455,14 @@ qx.Class.define("playground.c.lib.Node",
             bExecuting,
             function(v)
             {
-              value1 = getExpressionValue(v, data);
+              value1 = this.getExpressionValue(v, data);
               
               this.children[1].process(
                 data,
                 bExecuting,
                 function(v)
                 {
-                  value2 = v;
+                  value2 = this.getExpressionValue(v, data);
                   
                   // Complete the operation, coercing to the appropriate type
                   specAndDecl = this.__coerce(value1.specAndDecl,
@@ -553,14 +553,14 @@ qx.Class.define("playground.c.lib.Node",
             bExecuting,
             function(v)
             {
-              value1 = v;
+              value1 = this.getExpressionValue(v, data);
 
               this.children[1].process(
                 data,
                 bExecuting,
                 function(v)
                 {
-                  value2 = v;
+                  value2 = this.getExpressionValue(v, data);
                   
                   // Create a specifier for the value
                   specOrDecl = new playground.c.lib.Specifier(this, "int");
@@ -893,14 +893,14 @@ qx.Class.define("playground.c.lib.Node",
             bExecuting,
             function(v)
             {
-              value1 = v;
+              value1 = this.getExpressionValue(v, data);
 
               this.children[1].process(
                 data,
                 bExecuting,
                 function(v)
                 {
-                  value2 = v;
+                  value2 = this.getExpressionValue(v, data);
                   
                   // Complete the operation, coercing to the appropriate type
                   specAndDecl = this.__coerce(value1.specAndDecl,
@@ -954,9 +954,7 @@ qx.Class.define("playground.c.lib.Node",
             bExecuting,
             function(v)
             {
-              value1 = v;
-
-              value1 = this.getExpressionValue(value1, data);
+              value1 = this.getExpressionValue(v, data);
 
               // Complete the operation
               success(
@@ -983,14 +981,14 @@ qx.Class.define("playground.c.lib.Node",
             bExecuting,
             function(v)
             {
-              value1 = v;
+              value1 = this.getExpressionValue(v, data);
 
               this.children[1].process(
                 data,
                 bExecuting,
                 function(v)
                 {
-                  value2 = v;
+                  value2 = this.getExpressionValue(v, data);
                   
                   // Complete the operation, coercing to the appropriate type
                   specAndDecl = this.__coerce(value1.specAndDecl,
@@ -1483,14 +1481,14 @@ qx.Class.define("playground.c.lib.Node",
             bExecuting,
             function(v)
             {
-              value1 = v;
+              value1 = this.getExpressionValue(v, data);
 
               this.children[1].process(
                 data,
                 bExecuting,
                 function(v)
                 {
-                  value2 = v;
+                  value2 = this.getExpressionValue(v, data);
                   
                   // Complete the operation, coercing to the appropriate type
                   specAndDecl = this.__coerce(value1.specAndDecl,
@@ -1696,14 +1694,14 @@ qx.Class.define("playground.c.lib.Node",
             bExecuting,
             function(v)
             {
-              value1 = v;
+              value1 = this.getExpressionValue(v, data);
               
               this.children[1].process(
                 data,
                 bExecuting,
                 function(v)
                 {
-                  value2 = v;
+                  value2 = this.getExpressionValue(v, data);
                   
                   // Create a specifier for the value
                   specOrDecl = new playground.c.lib.Specifier(this, "int");
@@ -1734,14 +1732,14 @@ qx.Class.define("playground.c.lib.Node",
             bExecuting,
             function(v)
             {
-              value1 = v;
+              value1 = this.getExpressionValue(v, data);
 
               this.children[1].process(
                 data,
                 bExecuting,
                 function(v)
                 {
-                  value2 = v;
+                  value2 = this.getExpressionValue(v, data);
                   
                   // Complete the operation, coercing to the appropriate type
                   specAndDecl = this.__coerce(value1.specAndDecl,
@@ -2213,7 +2211,7 @@ qx.Class.define("playground.c.lib.Node",
             if (error instanceof playground.c.lib.Return)
             {
               // Yup. It contains the return value
-              value3 = e.returnCode;
+              value3 = error.returnCode;
               specAndDecl = value3.specAndDecl;
 
               // Retore symbol table to where it was when we called the function
@@ -2270,14 +2268,14 @@ qx.Class.define("playground.c.lib.Node",
             bExecuting,
             function(v)
             {
-              value1 = v;
+              value1 = this.getExpressionValue(v, data);
 
               this.children[1].process(
                 data,
                 bExecuting,
                 function(v)
                 {
-                  value2 = v;
+                  value2 = this.getExpressionValue(v, data);
                   
                   // Create a specifier for the value
                   specOrDecl = new playground.c.lib.Specifier(this, "int");
@@ -2308,14 +2306,14 @@ qx.Class.define("playground.c.lib.Node",
             bExecuting,
             function(v)
             {
-              value1 = v;
+              value1 = this.getExpressionValue(v, data);
 
               this.children[1].process(
                 data,
                 bExecuting,
                 function(v)
                 {
-                  value2 = v;
+                  value2 = this.getExpressionValue(v, data);
                   
                   // Create a specifier for the value
                   specOrDecl = new playground.c.lib.Specifier(this, "int");
@@ -2535,14 +2533,14 @@ qx.Class.define("playground.c.lib.Node",
             bExecuting,
             function(v)
             {
-              value1 = v;
+              value1 = this.getExpressionValue(v, data);
               
               this.children[1].process(
                 data,
                 bExecuting,
                 function(v)
                 {
-                  value2 = v;
+                  value2 = this.getExpressionValue(v, data);
                   
                   // Complete the operation, coercing to the appropriate type
                   specOrDecl = 
@@ -2600,14 +2598,14 @@ qx.Class.define("playground.c.lib.Node",
             bExecuting,
             function(v)
             {
-              value1 = v;
+              value1 = this.getExpressionValue(v, data);
 
               this.children[1].process(
                 data,
                 bExecuting,
                 function(v)
                 {
-                  value2 = v;
+                  value2 = this.getExpressionValue(v, data);
                   
                   // Create a specifier for the value
                   specOrDecl = new playground.c.lib.Specifier(this, "int");
@@ -2638,14 +2636,14 @@ qx.Class.define("playground.c.lib.Node",
             bExecuting,
             function(v)
             {
-              value1 = v;
+              value1 = this.getExpressionValue(v, data);
               
               this.children[1].process(
                 data,
                 bExecuting,
                 function(v)
                 {
-                  value2 = v;
+                  value2 = this.getExpressionValue(v, data);
 
                   // Create a specifier for the value
                   specOrDecl = new playground.c.lib.Specifier(this, "int");
@@ -2688,14 +2686,14 @@ qx.Class.define("playground.c.lib.Node",
             bExecuting,
             function(v)
             {
-              value1 = v;
+              value1 = this.getExpressionValue(v, data);
 
               this.children[1].process(
                 data,
                 bExecuting,
                 function(v)
                 {
-                  value2 = v;
+                  value2 = this.getExpressionValue(v, data);
                   
                   // Complete the operation, coercing to the appropriate type
                   specAndDecl =
@@ -2750,14 +2748,14 @@ qx.Class.define("playground.c.lib.Node",
             bExecuting,
             function(v)
             {
-              value1 = v;
+              value1 = this.getExpressionValue(v, data);
 
               this.children[1].process(
                 data,
                 bExecuting,
                 function(v)
                 {
-                  value2 = v;
+                  value2 = this.getExpressionValue(v, data);
                   
                   // Complete the operation, coercing to the appropriate type
                   specAndDecl =
@@ -2811,7 +2809,7 @@ qx.Class.define("playground.c.lib.Node",
             bExecuting,
             function(v)
             {
-              value1 = v;
+              value1 = this.getExpressionValue(v, data);
 
               // Complete the operation
               success(
@@ -2837,7 +2835,7 @@ qx.Class.define("playground.c.lib.Node",
             bExecuting,
             function(v)
             {
-              value1 = v;
+              value1 = this.getExpressionValue(v, data);
               
               // Create a specifier for the value
               specOrDecl = new playground.c.lib.Specifier(this, "int");
@@ -2867,14 +2865,14 @@ qx.Class.define("playground.c.lib.Node",
             bExecuting,
             function(v)
             {
-              value1 = v;
+              value1 = this.getExpressionValue(v, data);
               
               this.children[1].process(
                 data,
                 bExecuting,
                 function(v)
                 {
-                  value2 = v;
+                  value2 = this.getExpressionValue(v, data);
                   
                   // Create a specifier for the value
                   specOrDecl = new playground.c.lib.Specifier(this, "int");
@@ -2906,14 +2904,14 @@ qx.Class.define("playground.c.lib.Node",
             bExecuting,
             function(v)
             {
-              value1 = v;
+              value1 = this.getExpressionValue(v, data);
               
               this.children[1].process(
                 data,
                 bExecuting,
                 function(v)
                 {
-                  value2 = v;
+                  value2 = this.getExpressionValue(v, data);
                   
                   // Create a specifier for the value
                   specOrDecl = new playground.c.lib.Specifier(this, "int");
@@ -3241,14 +3239,14 @@ qx.Class.define("playground.c.lib.Node",
             bExecuting,
             function(v)
             {
-              value1 = v;
+              value1 = this.getExpressionValue(v, data);
               
               this.children[1].process(
                 data,
                 bExecuting,
                 function(v)
                 {
-                  value2 = v;
+                  value2 = this.getExpressionValue(v, data);
                   
                   // Create a specifier for the value
                   specOrDecl = 
@@ -3506,14 +3504,14 @@ qx.Class.define("playground.c.lib.Node",
             bExecuting,
             function(v)
             {
-              value1 = v;
+              value1 = this.getExpressionValue(v, data);
               
               this.children[1].process(
                 data,
                 bExecuting,
                 function(v)
                 {
-                  value2 = v;
+                  value2 = this.getExpressionValue(v, data);
 
                   // Complete the operation, coercing to the appropriate type
                   specAndDecl = 
@@ -3722,17 +3720,23 @@ qx.Class.define("playground.c.lib.Node",
                     i = subnode.order;
                     (function()
                      {
-                       caseAndBreak[i].node.process(data, bExecuting,
-                                                    success, failure);
+                       var             fSelf = arguments.callee;
 
-                       if (++i < caseAndBreak.length)
-                       {
-                         arguments.callee.bind(this)();
-                       }
-                       else
-                       {
-                         success();
-                       }
+                       caseAndBreak[i].node.process(
+                         data,
+                         bExecuting,
+                         function()
+                         {
+                           if (++i < caseAndBreak.length)
+                           {
+                             fSelf.bind(this)();
+                           }
+                           else
+                           {
+                             success();
+                           }
+                         }.bind(this),
+                         failure);
                      }).bind(this)();
                   }
                   else
@@ -3809,7 +3813,7 @@ qx.Class.define("playground.c.lib.Node",
             {
               this.children[2].process(data, bExecuting, success, failure);
             }
-          },
+          }.bind(this),
           failure);
         break;
 
@@ -4113,7 +4117,7 @@ qx.Class.define("playground.c.lib.Node",
               {
                 value3 = this.getExpressionValue(v, data);
                 saveAndReturn.bind(this)();
-              },
+              }.bind(this),
               failure);
           }
 
@@ -4140,7 +4144,7 @@ qx.Class.define("playground.c.lib.Node",
               });
           }
 
-        },
+        }.bind(this),
         failure);
     },
 
