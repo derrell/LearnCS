@@ -332,21 +332,6 @@ qx.Class.define("playground.c.lib.Node",
       return this.line;
     },
     
-    _tryIt : function(tryBlock, catchBlock, success, failure)
-    {
-      tryBlock(
-        success,
-        function(error)
-        {
-          catchBlock(error, success, failure);
-        });
-    },
-    
-    _throwIt : function(error, success, failure)
-    {
-      failure(error);
-    },
-    
     /**
      * Process, in continuation style, the abstract syntax tree beginning at
      * the specified node.
@@ -453,15 +438,17 @@ qx.Class.define("playground.c.lib.Node",
           this.children[0].process(
             data,
             bExecuting,
-            function(value1)
+            function(v)
             {
-              value1 = getExpressionValue(value1, data);
+              value1 = getExpressionValue(v, data);
               
               this.children[1].process(
                 data,
                 bExecuting,
-                function(value2)
+                function(v)
                 {
+                  value2 = v;
+                  
                   // Complete the operation, coercing to the appropriate type
                   specAndDecl = this.__coerce(value1.specAndDecl,
                                               value2.specAndDecl);
@@ -546,13 +533,17 @@ qx.Class.define("playground.c.lib.Node",
           this.children[0].process(
             data, 
             bExecuting,
-            function(value1)
+            function(v)
             {
+              value1 = v;
+
               this.children[1].process(
                 data,
                 bExecuting,
-                function(value2)
+                function(v)
                 {
+                  value2 = v;
+                  
                   // Create a specifier for the value
                   specOrDecl = new playground.c.lib.Specifier(this, "int");
 
@@ -590,9 +581,9 @@ qx.Class.define("playground.c.lib.Node",
           this.children[i].process(
             data, 
             bExecuting,
-            function(value1)
+            function(v)
             {
-              value1 = this.getExpressionValue(value1,data);
+              value1 = this.getExpressionValue(v, data);
 
               // Pull the first specifier/declarator off of the list. We'll
               // replace it with one containing the (possibly unaltered)
@@ -630,8 +621,15 @@ qx.Class.define("playground.c.lib.Node",
                 data.args.unshift(value1.value);
               }
               
-              this.children[++i].process(
-                data, bExecuting, arguments.callee, failure);
+              if (--i >= 0)
+              {
+                this.children[i].process(
+                  data, bExecuting, arguments.callee.bind(this), failure);
+              }
+              else
+              {
+                success();
+              }
             }.bind(this),
             failure);
         }
@@ -661,8 +659,10 @@ qx.Class.define("playground.c.lib.Node",
           this.children[0].process(
             data,
             bExecuting,
-            function(value1)
+            function(v)
             {
+              value1 = v;
+              
               // We got the array size. Add it.
               declarator.setArrayCount(value1.value);
 
@@ -703,8 +703,10 @@ qx.Class.define("playground.c.lib.Node",
         this.children[0].process(
           data,
           bExecuting,
-          function(value1)
+          function(v)
           {
+            value1 = v;
+            
             // Figure out where the specifier/declarator list is, and retrieve
             // it.
             if (value1 instanceof playground.c.lib.SymtabEntry)
@@ -855,13 +857,17 @@ qx.Class.define("playground.c.lib.Node",
           this.children[0].process(
             data, 
             bExecuting,
-            function(value1)
+            function(v)
             {
+              value1 = v;
+
               this.children[1].process(
                 data,
                 bExecuting,
-                function(value2)
+                function(v)
                 {
+                  value2 = v;
+                  
                   // Complete the operation, coercing to the appropriate type
                   specAndDecl = this.__coerce(value1.specAndDecl,
                                               value2.specAndDecl);
@@ -910,8 +916,10 @@ qx.Class.define("playground.c.lib.Node",
           this.children[0].process(
             data,
             bExecuting,
-            function(value1)
+            function(v)
             {
+              value1 = v;
+
               value1 = this.getExpressionValue(value1, data);
 
               // Complete the operation
@@ -937,13 +945,17 @@ qx.Class.define("playground.c.lib.Node",
           this.children[0].process(
             data, 
             bExecuting,
-            function(value1)
+            function(v)
             {
+              value1 = v;
+
               this.children[1].process(
                 data,
                 bExecuting,
-                function(value2)
+                function(v)
                 {
+                  value2 = v;
+                  
                   // Complete the operation, coercing to the appropriate type
                   specAndDecl = this.__coerce(value1.specAndDecl,
                                               value2.specAndDecl);
@@ -1256,26 +1268,29 @@ qx.Class.define("playground.c.lib.Node",
             var             i;
 
             // Process the remaining sub-nodes
-            i = 1;
-            this.children[i].process(
-              data,
-              bExecuting,
-              function()
-              {
-                if (++i < this.children.length)
+            if (this.children.length > 0)
+            {
+              i = 1;
+              this.children[i].process(
+                data,
+                bExecuting,
+                function()
                 {
-                  this.children[i].process(
-                    data,
-                    bExecuting,
-                    arguments.callee.bind(this),
-                    failure);
-                }
-                else
-                {
-                  success(entry);
-                }
-              }.bind(this),
-              failure);
+                  if (++i < this.children.length)
+                  {
+                    this.children[i].process(
+                      data,
+                      bExecuting,
+                      arguments.callee.bind(this),
+                      failure);
+                  }
+                  else
+                  {
+                    success(entry);
+                  }
+                }.bind(this),
+                failure);
+            }
           }.bind(this),
           failure);
         break;
@@ -1320,8 +1335,10 @@ qx.Class.define("playground.c.lib.Node",
         this.children[0].process(
           data,
           bExecuting,
-          function(value)
+          function(v)
           {
+            value = v;
+
             // If we found a symbol, get its address and type
             if (value instanceof playground.c.lib.SymtabEntry)
             {
@@ -1409,13 +1426,17 @@ qx.Class.define("playground.c.lib.Node",
           this.children[0].process(
             data, 
             bExecuting,
-            function(value1)
+            function(v)
             {
+              value1 = v;
+
               this.children[1].process(
                 data,
                 bExecuting,
-                function(value2)
+                function(v)
                 {
+                  value2 = v;
+                  
                   // Complete the operation, coercing to the appropriate type
                   specAndDecl = this.__coerce(value1.specAndDecl,
                                               value2.specAndDecl);
@@ -1613,13 +1634,17 @@ qx.Class.define("playground.c.lib.Node",
           this.children[0].process(
             data, 
             bExecuting,
-            function(value1)
+            function(v)
             {
+              value1 = v;
+              
               this.children[1].process(
                 data,
                 bExecuting,
-                function(value2)
+                function(v)
                 {
+                  value2 = v;
+                  
                   // Create a specifier for the value
                   specOrDecl = new playground.c.lib.Specifier(this, "int");
 
@@ -1647,13 +1672,17 @@ qx.Class.define("playground.c.lib.Node",
           this.children[0].process(
             data, 
             bExecuting,
-            function(value1)
+            function(v)
             {
+              value1 = v;
+
               this.children[1].process(
                 data,
                 bExecuting,
-                function(value2)
+                function(v)
                 {
+                  value2 = v;
+                  
                   // Complete the operation, coercing to the appropriate type
                   specAndDecl = this.__coerce(value1.specAndDecl,
                                               value2.specAndDecl);
@@ -1746,9 +1775,9 @@ qx.Class.define("playground.c.lib.Node",
                 this.children[1].process(
                   data,
                   bExecuting,
-                  function(value)
+                  function(v)
                   {
-                    value = this.getExpressionValue(value, data);
+                    value = this.getExpressionValue(v, data);
                     if (value.value)
                     {
                       this._tryIt(
@@ -1845,8 +1874,10 @@ qx.Class.define("playground.c.lib.Node",
         this.children[0].process(
           data,
           bExecuting,
-          function(value1)
+          function(v)
           {
+            value1 = v;
+            
             // Get the address of that entry, which is the node for the called
             // function, or the reference of a built-in function.
             value2 = value1.getAddr();
@@ -1907,8 +1938,10 @@ qx.Class.define("playground.c.lib.Node",
                   value2.process(
                     data,
                     bExecuting,
-                    function(value3)
+                    function(v)
                     {
+                      value3 = v;
+                      
                       // Restore the previous frame pointer
                       value2._symtab.restoreFramePointer();
 
@@ -1945,6 +1978,8 @@ qx.Class.define("playground.c.lib.Node",
           bExecuting,
           function()
           {
+            var             i;
+
             // Find our enclosing function definition
             for (subnode = this.parent; subnode; subnode = subnode.parent)
             {
@@ -1972,22 +2007,29 @@ qx.Class.define("playground.c.lib.Node",
             subnode._functionName = data.entry.getName();
 
             // Process the remaining children
-            i = 1;
-            this.children[i].process(
-              data,
-              bExecuting,
-              function()
-              {
-                if (++i < this.children.length)
+            if (this.children.length > 0)
+            {
+              i = 1;
+              this.children[i].process(
+                data,
+                bExecuting,
+                function()
                 {
-                  this.children[i].process(
-                    data,
-                    bExecuting,
-                    arguments.callee.bind(this),
-                    failure);
-                }
-              }.bind(this),
-              failure);
+                  if (++i < this.children.length)
+                  {
+                    this.children[i].process(
+                      data,
+                      bExecuting,
+                      arguments.callee.bind(this),
+                      failure);
+                  }
+                  else
+                  {
+                    success();
+                  }
+                }.bind(this),
+                failure);
+            }
           }.bind(this),
           failure);
         break;
@@ -2154,13 +2196,17 @@ qx.Class.define("playground.c.lib.Node",
           this.children[0].process(
             data, 
             bExecuting,
-            function(value1)
+            function(v)
             {
+              value1 = v;
+
               this.children[1].process(
                 data,
                 bExecuting,
-                function(value2)
+                function(v)
                 {
+                  value2 = v;
+                  
                   // Create a specifier for the value
                   specOrDecl = new playground.c.lib.Specifier(this, "int");
 
@@ -2188,13 +2234,17 @@ qx.Class.define("playground.c.lib.Node",
           this.children[0].process(
             data, 
             bExecuting,
-            function(value1)
+            function(v)
             {
+              value1 = v;
+
               this.children[1].process(
                 data,
                 bExecuting,
-                function(value2)
+                function(v)
                 {
+                  value2 = v;
+                  
                   // Create a specifier for the value
                   specOrDecl = new playground.c.lib.Specifier(this, "int");
 
@@ -2279,9 +2329,9 @@ qx.Class.define("playground.c.lib.Node",
         this.children[0].process(
           data,
           bExecuting,
-          function(value1)
+          function(v)
           {
-            value1 = this.getExpressionValue(value1, data);
+            value1 = this.getExpressionValue(v, data);
 
             // If the retrieved value is non-zero...
             if (value1.value)
@@ -2393,13 +2443,17 @@ qx.Class.define("playground.c.lib.Node",
           this.children[0].process(
             data, 
             bExecuting,
-            function(value1)
+            function(v)
             {
+              value1 = v;
+              
               this.children[1].process(
                 data,
                 bExecuting,
-                function(value2)
+                function(v)
                 {
+                  value2 = v;
+                  
                   // Complete the operation, coercing to the appropriate type
                   specOrDecl = 
                     new playground.c.lib.Specifier(this, "int", "unsigned");
@@ -2452,13 +2506,17 @@ qx.Class.define("playground.c.lib.Node",
           this.children[0].process(
             data, 
             bExecuting,
-            function(value1)
+            function(v)
             {
+              value1 = v;
+
               this.children[1].process(
                 data,
                 bExecuting,
-                function(value2)
+                function(v)
                 {
+                  value2 = v;
+                  
                   // Create a specifier for the value
                   specOrDecl = new playground.c.lib.Specifier(this, "int");
 
@@ -2486,13 +2544,17 @@ qx.Class.define("playground.c.lib.Node",
           this.children[0].process(
             data, 
             bExecuting,
-            function(value1)
+            function(v)
             {
+              value1 = v;
+              
               this.children[1].process(
                 data,
                 bExecuting,
-                function(value2)
+                function(v)
                 {
+                  value2 = v;
+
                   // Create a specifier for the value
                   specOrDecl = new playground.c.lib.Specifier(this, "int");
 
@@ -2530,13 +2592,17 @@ qx.Class.define("playground.c.lib.Node",
           this.children[0].process(
             data,
             bExecuting,
-            function(value1)
+            function(v)
             {
+              value1 = v;
+
               this.children[1].process(
                 data,
                 bExecuting,
-                function(value2)
+                function(v)
                 {
+                  value2 = v;
+                  
                   // Complete the operation, coercing to the appropriate type
                   specAndDecl =
                     this.__coerce(value1.specAndDecl, value2.specAndDecl);
@@ -2586,13 +2652,17 @@ qx.Class.define("playground.c.lib.Node",
           this.children[0].process(
             data,
             bExecuting,
-            function(value1)
+            function(v)
             {
+              value1 = v;
+
               this.children[1].process(
                 data,
                 bExecuting,
-                function(value2)
+                function(v)
                 {
+                  value2 = v;
+                  
                   // Complete the operation, coercing to the appropriate type
                   specAndDecl =
                     this.__coerce(value1.specAndDecl, value2.specAndDecl);
@@ -2641,8 +2711,10 @@ qx.Class.define("playground.c.lib.Node",
           this.children[0].process(
             data,
             bExecuting,
-            function(value1)
+            function(v)
             {
+              value1 = v;
+
               // Complete the operation
               success(
                 { 
@@ -2665,8 +2737,10 @@ qx.Class.define("playground.c.lib.Node",
           this.children[0].process(
             data,
             bExecuting,
-            function(value1)
+            function(v)
             {
+              value1 = v;
+              
               // Create a specifier for the value
               specOrDecl = new playground.c.lib.Specifier(this, "int");
 
@@ -2693,13 +2767,17 @@ qx.Class.define("playground.c.lib.Node",
           this.children[0].process(
             data, 
             bExecuting,
-            function(value1)
+            function(v)
             {
+              value1 = v;
+              
               this.children[1].process(
                 data,
                 bExecuting,
-                function(value2)
+                function(v)
                 {
+                  value2 = v;
+                  
                   // Create a specifier for the value
                   specOrDecl = new playground.c.lib.Specifier(this, "int");
 
@@ -2728,13 +2806,17 @@ qx.Class.define("playground.c.lib.Node",
           this.children[0].process(
             data, 
             bExecuting,
-            function(value1)
+            function(v)
             {
+              value1 = v;
+              
               this.children[1].process(
                 data,
                 bExecuting,
-                function(value2)
+                function(v)
                 {
+                  value2 = v;
+                  
                   // Create a specifier for the value
                   specOrDecl = new playground.c.lib.Specifier(this, "int");
 
@@ -2865,9 +2947,9 @@ qx.Class.define("playground.c.lib.Node",
           this.children[0].process(
             data,
             bExecuting,
-            function(value1)
+            function(v)
             {
-              value1 = this.getExpressionValue(value1, data);
+              value1 = this.getExpressionValue(v, data);
               success(value1);
             }.bind(this),
             failure);
@@ -3004,8 +3086,10 @@ qx.Class.define("playground.c.lib.Node",
           this.children[0].process(
             data,
             bExecuting,
-            function(value3)
+            function(v)
             {
+              value3 = v;
+              
               // Was there a return expression?
               if (typeof value3 != "undefined")
               {
@@ -3050,13 +3134,17 @@ qx.Class.define("playground.c.lib.Node",
           this.children[0].process(
             data, 
             bExecuting,
-            function(value1)
+            function(v)
             {
+              value1 = v;
+              
               this.children[1].process(
                 data,
                 bExecuting,
-                function(value2)
+                function(v)
                 {
+                  value2 = v;
+                  
                   // Create a specifier for the value
                   specOrDecl = 
                     new playground.c.lib.Specifier(this, "int", "unsigned");
@@ -3299,13 +3387,17 @@ qx.Class.define("playground.c.lib.Node",
           this.children[0].process(
             data, 
             bExecuting,
-            function(value1)
+            function(v)
             {
+              value1 = v;
+              
               this.children[1].process(
                 data,
                 bExecuting,
-                function(value2)
+                function(v)
                 {
+                  value2 = v;
+
                   // Complete the operation, coercing to the appropriate type
                   specAndDecl = 
                     this.__coerce(value1.specAndDecl, value2.specAndDecl);
@@ -3360,149 +3452,196 @@ qx.Class.define("playground.c.lib.Node",
           }
           
           // Process the compound statement.
-          this.children[1].process(data, bExecuting);
+          this.children[1].process(data, bExecuting, success, failure);
           break;
         }
 
-        // We're executing. Evaluate the expression, and find the correct case.
-        try
-        {
-          // Save current symbol table so we know where to pop to upon return
-          symtab = playground.c.lib.Symtab.getCurrent();
-
-          // Evaluate the expression on which we will switch
-          value1 = 
-            this.getExpressionValue(this.children[0].process(data, bExecuting),
-                                    data);
-          
-          // Get a reference to the statement list
-          subnode = this.children[1].children[1];
-
-          // If we haven't evaluated case expressions yet...
-          if (! subnode.cases)
+        this._tryIt(
+          // try
+          function(succ, fail)
           {
-            // ... then create a map of case expression values
-            subnode.cases = {};
-            subnode.caseAndBreak = [];
+            // Save current symbol table so we know where to pop to upon
+            // return
+            symtab = playground.c.lib.Symtab.getCurrent();
 
-            // Run through each case and evaluate it.
-            subnode.children.forEach(
-              function(child)
+            // Evaluate the expression on which we will switch
+            this.children[0].process(
+              data,
+              bExecuting,
+              function(v)
               {
-                var             map;
-                var             value;
+                var             i;
 
-                // Is this a case label?
-                if (child.type == "case")
-                {
-                  // Yup. Throw an error if the case expression is not constant
-                  data.constantOnly = "case";
+                value1 = this.getExpressionValue(v, data);
 
-                  // Get its expression value. It (child 0) becomes the key
-                  // in the cases map, and child 1, the statement, becomes the
-                  // value of that key in the cases map.
-                  value =
-                    this.getExpressionValue(
-                      child.children[0].process(data, bExecuting),
-                      data).value;
-                  
-                  // Does this value already exist in the cases map
-                  if (subnode.cases[value])
-                  {
-                    // Yup. This is an error.
-                    this.error("Found multiple case labels for '" +
-                               value + "' in 'switch'",
-                               true);
-                    return;     // not reached
-                  }
-                  
-                  // This is a new case value. Save its statement.
-                  map =
-                    {
-                      order : subnode.caseAndBreak.length,
-                      node  : child.children[1]
-                    };
-                  subnode.cases[value] = map;
-                  subnode.caseAndBreak.push(map);
-                  
-                  // Stop testing for constant expressions
-                  delete data.constantOnly;
-                }
-                else if (child.type == "default")
+                // Get a reference to the statement list
+                subnode = this.children[1].children[1];
+
+                // If we haven't evaluated case expressions yet...
+                if (! subnode.cases)
                 {
-                  // Did we already find a default?
-                  if (subnode.cases["default"])
+                  // ... then create a map of case expression values
+                  subnode.cases = {};
+                  subnode.caseAndBreak = [];
+
+                  // Run through each case and evaluate it.
+                  if (subnode.children.length > 0)
                   {
-                    // Yup. This is an error.
-                    this.error("Found multiple 'default' labels in 'switch'",
-                               true);
-                    return;     // not reached
+                    i = 0;
+                    (function(child)
+                     {
+                       var             i;
+                       var             map;
+                       var             value;
+
+                       // Is this a case label?
+                       if (child.type == "case")
+                       {
+                         // Yup. Throw an error if the case expression is not
+                         // constant
+                         data.constantOnly = "case";
+
+                         // Get its expression value. It (child 0) becomes the
+                         // key in the cases map, and child 1, the statement,
+                         // becomes the value of that key in the cases map.
+                         value =
+                           this.getExpressionValue(
+                             child.children[0].process(data, bExecuting),
+                             data).value;
+
+                         // Does this value already exist in the cases map
+                         if (subnode.cases[value])
+                         {
+                           // Yup. This is an error.
+                           this.error("Found multiple case labels for '" +
+                                      value + "' in 'switch'",
+                                      true);
+                           return;     // not reached
+                         }
+
+                         // This is a new case value. Save its statement.
+                         map =
+                           {
+                             order : subnode.caseAndBreak.length,
+                             node  : child.children[1]
+                           };
+                         subnode.cases[value] = map;
+                         subnode.caseAndBreak.push(map);
+
+                         // Stop testing for constant expressions
+                         delete data.constantOnly;
+                       }
+                       else if (child.type == "default")
+                       {
+                         // Did we already find a default?
+                         if (subnode.cases["default"])
+                         {
+                           // Yup. This is an error.
+                           this.error("Found multiple 'default' labels " +
+                                      "in 'switch'",
+                                      true);
+                           return;     // not reached
+                         }
+
+                         // Add this default's node to the cases map
+                         map =
+                           {
+                             order : subnode.caseAndBreak.length,
+                             node  : child.children[0]
+                           };
+                         subnode.cases["default"] = map;
+                         subnode.caseAndBreak.push(map);
+                       }
+                       else if (child.type == "break")
+                       {
+                         // Do not add break to the cases map, but do add it to
+                         // the caseAndBreak array.
+                         map =
+                           {
+                             order : subnode.caseAndBreak.length,
+                             node  : child
+                           };
+                         subnode.caseAndBreak.push(map);
+                       }
+
+                       ++i;
+                       if (i < subnode.children.length)
+                       {
+                         arguments.callee.bind(this)(subnode.children[i]);
+                       }
+                       else
+                       {
+                         switch_find_case.bind(this)();
+                       }
+                     }).bind(this)(subnode.children[i]);
                   }
-                  
-                  // Add this default's node to the cases map
-                  map =
-                    {
-                      order : subnode.caseAndBreak.length,
-                      node  : child.children[0]
-                    };
-                  subnode.cases["default"] = map;
-                  subnode.caseAndBreak.push(map);
                 }
-                else if (child.type == "break")
+                else
                 {
-                  // Do not add break to the cases map, but do add it to the
-                  // caseAndBreak array.
-                  map =
-                    {
-                      order : subnode.caseAndBreak.length,
-                      node  : child
-                    };
-                  subnode.caseAndBreak.push(map);
+                  switch_find_case.bind(this)();
                 }
-              },
-              this);
-          }
-          
-          // Get map of nodes for each case
-          cases = subnode.cases;
-          caseAndBreak = subnode.caseAndBreak;
-          subnode = cases[value1.value] || cases["default"];
-          
-          // Did we find a case to execute?
-          if (typeof subnode != "undefined")
+
+                function switch_find_case()
+                {
+                  var             i;
+
+                  // Get map of nodes for each case
+                  cases = subnode.cases;
+                  caseAndBreak = subnode.caseAndBreak;
+                  subnode = cases[value1.value] || cases["default"];
+
+                  // Did we find a case to execute?
+                  if (typeof subnode != "undefined")
+                  {
+                    // Yup. Process it and all following nodes (until a break is
+                    // hit)
+                    i = subnode.order;
+                    (function()
+                     {
+                       caseAndBreak[i].node.process(data, bExecuting,
+                                                    success, failure);
+
+                       if (++i < caseAndBreak.length)
+                       {
+                         arguments.callee.bind(this)();
+                       }
+                       else
+                       {
+                         success();
+                       }
+                     }).bind(this)();
+                  }
+                  else
+                  {
+                    console.log("Ignoring switch value " + value1.value);
+                  }
+                }
+              }.bind(this),
+              failure);
+          },
+        
+          // catch
+          function(error, succ, fail)
           {
-            // Yup. Process it and all following nodes (until a break is hit)
-            for (i = subnode.order; i < caseAndBreak.length; i++)
+            // was a break statement executed?
+            if (error instanceof playground.c.lib.Break)
             {
-              if (caseAndBreak[i].node)
+              // Yup. Retore symbol table to where it was when we entered the
+              // statement from which we are breaking
+              while (playground.c.lib.Symtab.getCurrent() != symtab)
               {
-                caseAndBreak[i].node.process(data, bExecuting);
+                playground.c.lib.Symtab.popStack();
               }
             }
-          }
-          else
-          {
-            console.log("Ignoring switch value " + value1.value);
-          }
-        }
-        catch(e)
-        {
-          // was a break statement executed?
-          if (e instanceof playground.c.lib.Break)
-          {
-            // Yup. Retore symbol table to where it was when we entered the
-            // statement from which we are breaking
-            while (playground.c.lib.Symtab.getCurrent() != symtab)
+            else
             {
-              playground.c.lib.Symtab.popStack();
+              // It's not a break. Re-throw the error
+              this._throwIt(error, succ, fail);
             }
-          }
-          else
-          {
-            // It's not a break. Re-throw the error
-            throw e;
-          }
-        }
+          },
+          
+          success,
+          failure);
         break;
 
       case "translation_unit" :
@@ -3529,23 +3668,24 @@ qx.Class.define("playground.c.lib.Node",
         }
 
         // Retrieve and evaluate the logical expression from child 0
-        value1 = 
-          this.getExpressionValue(this.children[0].process(data, bExecuting),
-                                  data);
-        
-        // If it's true, return the value of child 1
-        if (value1.value)
-        {
-          return this.getExpressionValue(
-            this.children[1].process(data, bExecuting),
-            data);
-        }
-
-        // Otherwise return the value of child 2.
-        return this.getExpressionValue(
-          this.children[2].process(data, bExecuting),
-          data);
-        
+        this.children[0].process(
+          data,
+          bExecuting,
+          function(v)
+          {
+            value1 = this.getExpressionValue(v, data);
+            
+            // If it's true, return the value of child 1
+            if (value1.value)
+            {
+              this.children[1].process(data, bExecuting, success, failure);
+            }
+            else
+            {
+              this.children[2].process(data, bExecuting, success, failure);
+            }
+          },
+          failure);
         break;
 
       case "typedef" :
@@ -3662,21 +3802,33 @@ qx.Class.define("playground.c.lib.Node",
      * @return {Map}
      *   A value expression. The value of the last subnode is returned.
      */
-    __processSubnodes : function(data, bExecuting)
+    __processSubnodes : function(data, bExecuting, success, failure)
     {
-      var             ret;
+      var             i;
 
-      this.children.forEach(
-        function(subnode)
-        {
-          if (subnode)
+      if (this.children.length > 0)
+      {
+        i = 0;
+        this.children[i].process(
+          data,
+          bExecuting,
+          function(ret)
           {
-            ret = subnode.process(data, bExecuting);
-          }
-        }, 
-        this);
-      
-      return ret;
+            if (++i < this.children.length)
+            {
+              this.children[i].process(
+                data,
+                bExecuting,
+                arguments.callee.bind(this),
+                failure);
+            }
+            else
+            {
+              success(ret);
+            }
+          }.bind(this),
+          failure);
+      }
     },
 
     /**
@@ -3718,110 +3870,135 @@ qx.Class.define("playground.c.lib.Node",
       var             bFirst;
 
       // Retrieve the lvalue
-      value1 = this.children[0].process(data, true);
-
-      // If it was a symbol table entry...
-      if (value1 instanceof playground.c.lib.SymtabEntry)
-      {
-        // ... then retrieve the symbol's address
-        value1 =
-          {
-            value        : value1.getAddr(), 
-            specAndDecl  : value1.getSpecAndDecl()
-          };
-      }
-      else if (value1.specAndDecl[0].getType() != "address")
-      {
-        this.error("The left hand side of an assignment must be " +
-                   "a variable, pointer dereference, " +
-                   "or array element reference");
-        return null;
-      }
-      
-      // Get a shallow copy of the specifier/declarator list
-      specAndDecl = value1.specAndDecl.slice(0);
-
-      // Only loop a maximum of one time
-      bFirst = true;
-
-      do
-      {
-        // Get the first specifier/declarator
-        specOrDecl = specAndDecl[0];
-
-        // Determine the memory type to use for saving the value
-        switch(specOrDecl.getType())
+      this.children[0].process(
+        data,
+        true,
+        function(v)
         {
-        case "pointer" :
-        case "function" :
-        case "array" :
-          type = "pointer";
-          break;
+          value1 = v;
 
-        case "address" :
-          // Find out the type based on the next specifier/declarator
-          if (bFirst)
+          // If it was a symbol table entry...
+          if (value1 instanceof playground.c.lib.SymtabEntry)
           {
-            bFirst = false;
-            specAndDecl.shift();
-            continue;
+            // ... then retrieve the symbol's address
+            value1 =
+              {
+                value        : value1.getAddr(), 
+                specAndDecl  : value1.getSpecAndDecl()
+              };
           }
-          
-          // There were two "address" declarators in a row. It's a pointer.
-          type = "pointer";
-          break;
-          
-        default :
-          if (specOrDecl instanceof playground.c.lib.Specifier)
+          else if (value1.specAndDecl[0].getType() != "address")
           {
-            type = specOrDecl.getCType();
+            this.error("The left hand side of an assignment must be " +
+                       "a variable, pointer dereference, " +
+                       "or array element reference");
+            success();
+            return;
+          }
+
+          // Get a shallow copy of the specifier/declarator list
+          specAndDecl = value1.specAndDecl.slice(0);
+
+          // Only loop a maximum of one time
+          bFirst = true;
+
+          do
+          {
+            // Get the first specifier/declarator
+            specOrDecl = specAndDecl[0];
+
+            // Determine the memory type to use for saving the value
+            switch(specOrDecl.getType())
+            {
+            case "pointer" :
+            case "function" :
+            case "array" :
+              type = "pointer";
+              break;
+
+            case "address" :
+              // Find out the type based on the next specifier/declarator
+              if (bFirst)
+              {
+                bFirst = false;
+                specAndDecl.shift();
+                continue;
+              }
+
+              // There were two "address" declarators in a row. It's a pointer.
+              type = "pointer";
+              break;
+
+            default :
+              if (specOrDecl instanceof playground.c.lib.Specifier)
+              {
+                type = specOrDecl.getCType();
+              }
+              else
+              {
+                throw new Error("Internal error: unexpected type: " + 
+                                specOrDecl.getType());
+              }
+              break;
+            }
+
+            // Normal exit from the loop
+            break;
+          } while (true);
+
+          // Retrieve the current value
+          value = playground.c.lib.Node.__mem.get(value1.value, type);
+
+          // Determine the value to assign there. If it's a unary operator
+          // (pre/post increment/decrement), then use the retrieved
+          // value. Otherwise, get the value from the rhs of the expression.
+          if (bUnary)
+          {
+            value3 = 
+              { 
+                value       : value, 
+                specAndDecl : specAndDecl.slice(0)
+              };
+            saveAndReturn.bind(this)();
           }
           else
           {
-            throw new Error("Internal error: unexpected type: " + 
-                            specOrDecl.getType());
+            this.children[1].process(
+              data,
+              true,
+              function(v)
+              {
+                value3 = this.getExpressionValue(v, data);
+                saveAndReturn.bind(this)();
+              },
+              failure);
           }
-          break;
-        }
-        
-        // Normal exit from the loop
-        break;
-      } while (true);
 
-      // Retrieve the current value
-      value = playground.c.lib.Node.__mem.get(value1.value, type);
+          function saveAndReturn()
+          {
+            // Save the value at its new address
+            playground.c.lib.Node.__mem.set(
+              value1.value,
+              type,
+              fOp(value, value3.value));
 
-      // Determine the value to assign there. If it's a unary operator
-      // (pre/post increment/decrement), then use the retrieved
-      // value. Otherwise, get the value from the rhs of the expression.
-      value3 =
-        bUnary
-        ? { 
-            value       : value, 
-            specAndDecl : specAndDecl.slice(0)
+            // If this is not a post-increment or post-decrement...
+            if (! bPostOp)
+            {
+              // ... then retrieve and return the altered value
+              value = playground.c.lib.Node.__mem.get(value1.value, type);
+            }
+
+            // Retrieve the value and return it
+            success(
+              {
+                value       : value,
+                specAndDecl : specAndDecl.slice(0)
+              });
           }
-        : this.getExpressionValue(this.children[1].process(data, true),
-                                  data);
 
-      // Save the value at its new address
-      playground.c.lib.Node.__mem.set(
-        value1.value,
-        type,
-        fOp(value, value3.value));
-
-      // If this is not a post-increment or post-decrement...
-      if (! bPostOp)
-      {
-        // ... then retrieve and return the altered value
-        value = playground.c.lib.Node.__mem.get(value1.value, type);
-      }
-
-      // Retrieve the value and return it
-      return (
-        {
-          value       : value,
-          specAndDecl : specAndDecl.slice(0)
-        });
+        },
+        failure);
     },
 
     /**
@@ -3940,6 +4117,48 @@ qx.Class.define("playground.c.lib.Node",
 
       // In any other case, coerce to int.
       return [ new playground.c.lib.Specifier(this, "int") ];
+    },
+    
+    /**
+     * A try/catch facility, written in continuation-passing style.
+     * 
+     * @param tryBlock {Function}
+     *   The 'try' portion
+     * 
+     * @param catchBlock {Function}
+     *   The 'catch' portion
+     * 
+     * @param success {Function}
+     *   Function to call upon successful completion of this call
+     * 
+     * @param failure {Function}
+     *   Function to call upon failed completion of this call
+     */
+    _tryIt : function(tryBlock, catchBlock, success, failure)
+    {
+      tryBlock(
+        success,
+        function(error)
+        {
+          catchBlock(error, success, failure);
+        });
+    },
+    
+    /**
+     * "Throw" an error which may be caught by _tryIt()
+     * 
+     * @param error {playground.c.lib.RuntimeError}
+     *   The error being thrown
+     * 
+     * @param success {Function}
+     *   Function to call upon successful completion of this call
+     * 
+     * @param failure {Function}
+     *   Function to call upon failed completion of this call
+     */
+    _throwIt : function(error, success, failure)
+    {
+      failure(error);
     }
   },
   
