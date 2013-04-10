@@ -395,6 +395,7 @@ qx.Class.define("playground.c.lib.Node",
       var             memData;
       var             mem;
       var             memTemplate;
+      var             args;
       var             WORDSIZE = playground.c.machine.Memory.WORDSIZE;
 
       if (bExecuting)
@@ -408,7 +409,9 @@ qx.Class.define("playground.c.lib.Node",
         memTemplate = qx.core.Init && qx.core.Init.getApplication().memTemplate;
 
         // See if the line number has changed
-        if (memTemplate && this.line !== playground.c.lib.Node._prevLine)
+        if (memTemplate && 
+            this.type != "_null_" &&
+            this.line !== playground.c.lib.Node._prevLine)
         {
           // Retrieve the data in memory
           memData = playground.c.machine.Memory.getInstance().getDataModel();
@@ -419,10 +422,27 @@ qx.Class.define("playground.c.lib.Node",
           
           // Save the current line to prevent reentry until line number changes
           playground.c.lib.Node._prevLine = this.line;
+          
+          // Save the arguments to this function
+          args = qx.lang.Array.cast(arguments, Array);
+
+          // Provide an opportunity for the gui to update
+          qx.util.TimerManager.getInstance().start(
+            function(userData, timerId)
+            {
+              console.log("Executing line " + this.line);
+              this.process.apply(this, args);
+            },
+            0,
+            this,
+            null,
+            2000);
+          
+          return;
         }
       }
 
-//      console.log("process: " + this.type);
+      console.log("process: " + this.type);
 
       // Yup. See what type it is.
       switch(this.type)
@@ -1040,6 +1060,10 @@ qx.Class.define("playground.c.lib.Node",
           // statement.
           this._throwIt(new playground.c.lib.Break(this), success, failure);
         }
+        else
+        {
+          success();
+        }
         break;
 
       case "case" :
@@ -1563,7 +1587,7 @@ qx.Class.define("playground.c.lib.Node",
             symtab = playground.c.lib.Symtab.getCurrent();
 
             // try
-            var do_while_statement_block = function(succ, fail)
+            var do_while_try_statement_block = function(succ, fail)
             {
               // Save current symbol table so we know where to pop to upon
               // continue
@@ -1597,7 +1621,7 @@ qx.Class.define("playground.c.lib.Node",
             // statement block with try/catch
             var do_while_while_statement_block = function(succ, fail)
             {
-              this._tryIt(do_while_statement_block,
+              this._tryIt(do_while_try_statement_block,
                           do_while_catch_continue,
                           succ,
                           fail);
@@ -1613,11 +1637,11 @@ qx.Class.define("playground.c.lib.Node",
                 {
                   if (value)
                   {
-                    do_while_try_statement_block(success, failure);
+                    do_while_try_statement_block(succ, failure);
                   }
                   else
                   {
-                    success();
+                    succ();
                   }
                 }.bind(this),
                 failure);
@@ -1874,8 +1898,8 @@ qx.Class.define("playground.c.lib.Node",
                                    symtab2)
                             {
                               playground.c.lib.Symtab.popStack();
-                              succ();
                             }
+                            succ();
                           }
                           else
                           {
@@ -1904,6 +1928,7 @@ qx.Class.define("playground.c.lib.Node",
               {
                 playground.c.lib.Symtab.popStack();
               }
+              succ();
             }
             else
             {
@@ -2469,10 +2494,13 @@ qx.Class.define("playground.c.lib.Node",
                 {
                   value = v;
 
-                  // Save the value
-                  playground.c.lib.Node.__mem.set(entry.getAddr(), 
-                                                  entry.getType(), 
-                                                  value.value);
+                  // If there was an initializer, save it.
+                  if (typeof value != "undefined")
+                  {
+                    playground.c.lib.Node.__mem.set(entry.getAddr(), 
+                                                    entry.getType(), 
+                                                    value.value);
+                  }
                   success();
                 }.bind(this),
                 failure);
@@ -3590,6 +3618,7 @@ qx.Class.define("playground.c.lib.Node",
                 var             i;
 
                 value1 = this.getExpressionValue(v, data);
+console.log("Found expression to switch: " + value1);
 
                 // Get a reference to the statement list
                 subnode = this.children[1].children[1];
@@ -3610,6 +3639,7 @@ qx.Class.define("playground.c.lib.Node",
                        var             i;
                        var             map;
                        var             value;
+                       var             fSelf = arguments.callee;
 
                        // Is this a case label?
                        if (child.type == "case")
@@ -3627,6 +3657,7 @@ qx.Class.define("playground.c.lib.Node",
                            function(v)
                            {
                              value = this.getExpressionValue(v, data).value;
+console.log("case=" + value);
 
                              // Does this value already exist in the cases map
                              if (subnode.cases[value])
@@ -3649,10 +3680,23 @@ qx.Class.define("playground.c.lib.Node",
 
                              // Stop testing for constant expressions
                              delete data.constantOnly;
+
+                             ++i;
+                             if (i < subnode.children.length)
+                             {
+                               fSelf.bind(this)(subnode.children[i]);
+                             }
+                             else
+                             {
+                               switch_find_case.bind(this)();
+                             }
                            }.bind(this),
                            failure);
+                         
+                         return;
                        }
-                       else if (child.type == "default")
+
+                       if (child.type == "default")
                        {
                          // Did we already find a default?
                          if (subnode.cases["default"])
@@ -3672,7 +3716,6 @@ qx.Class.define("playground.c.lib.Node",
                            };
                          subnode.cases["default"] = map;
                          subnode.caseAndBreak.push(map);
-                         success();
                        }
                        else if (child.type == "break")
                        {
@@ -3689,7 +3732,7 @@ qx.Class.define("playground.c.lib.Node",
                        ++i;
                        if (i < subnode.children.length)
                        {
-                         arguments.callee.bind(this)(subnode.children[i]);
+                         fSelf.bind(this)(subnode.children[i]);
                        }
                        else
                        {
@@ -3760,6 +3803,8 @@ qx.Class.define("playground.c.lib.Node",
               {
                 playground.c.lib.Symtab.popStack();
               }
+              
+              succ();
             }
             else
             {
