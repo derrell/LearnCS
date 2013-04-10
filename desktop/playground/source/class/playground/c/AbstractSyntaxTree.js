@@ -203,6 +203,8 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
       // to run the program
       if (entryNode)
       {
+        console.log("Preparing to call main()");
+
         // Prepare to call main(). Reset the machine.
         machine.initAll();
 
@@ -213,7 +215,7 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
         }
         catch(e)
         {
-          console.log("Reset memory template view: " + e);
+          // Do nothing. The call will fail when not running in the GUI
         }
 
 
@@ -344,7 +346,6 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
         }
         catch(e)
         {
-
           // Determine what type of error we encountered
           if (e instanceof playground.c.lib.Break)
           {

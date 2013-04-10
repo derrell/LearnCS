@@ -106,6 +106,11 @@ qx.Class.define("playground.c.lib.Node",
     getError : function()
     {
       return playground.c.lib.Node.__error;
+    },
+    
+    getNull : function()
+    {
+      return new playground.c.lib.Node("_null_");
     }
   },
   
@@ -407,7 +412,7 @@ qx.Class.define("playground.c.lib.Node",
         }
       }
 
-//      console.log("process: " + this.type);
+      console.log("process: " + this.type);
 
       // Yup. See what type it is.
       switch(this.type)
@@ -474,6 +479,7 @@ qx.Class.define("playground.c.lib.Node",
         // Only applicable when executing
         if (! bExecuting)
         {
+          success();
           break;
         }
 
@@ -495,6 +501,7 @@ qx.Class.define("playground.c.lib.Node",
         // Only applicable when executing
         if (! bExecuting)
         {
+          success();
           break;
         }
 
@@ -643,6 +650,7 @@ qx.Class.define("playground.c.lib.Node",
         
         if (bExecuting)
         {
+          success();
           break;
         }
 
@@ -653,7 +661,7 @@ qx.Class.define("playground.c.lib.Node",
         data.constantOnly = "array_decl";
 
         // Is an array size specified?
-        if (this.children[0].type != "null")
+        if (this.children.length > 0 && this.children[0].type != "_null_")
         {
           // Yup. Determine it and add to the declarator
           this.children[0].process(
@@ -671,6 +679,7 @@ qx.Class.define("playground.c.lib.Node",
 
               // Finished with array size. Re-allow variable access.
               delete data.constantOnly;
+              success();
             }.bind(this),
             failure);
         }
@@ -684,6 +693,7 @@ qx.Class.define("playground.c.lib.Node",
 
           // Finished with array size. Re-allow variable access.
           delete data.constantOnly;
+          success();
         }
         break;
 
@@ -696,6 +706,7 @@ qx.Class.define("playground.c.lib.Node",
         
         if (! bExecuting)
         {
+          success();
           break;
         }
 
@@ -823,6 +834,7 @@ qx.Class.define("playground.c.lib.Node",
         // Only applicable when executing
         if (! bExecuting)
         {
+          success();
           break;
         }
 
@@ -839,10 +851,12 @@ qx.Class.define("playground.c.lib.Node",
         // Only applicable before executing
         if (bExecuting)
         {
+          success();
           break;
         }
         
         data.specifiers.setStorage("auto");
+        success();
         break;
 
       case "bit-and" :
@@ -893,6 +907,7 @@ qx.Class.define("playground.c.lib.Node",
         // Only applicable when executing
         if (! bExecuting)
         {
+          success();
           break;
         }
 
@@ -981,6 +996,7 @@ qx.Class.define("playground.c.lib.Node",
         // Only applicable when executing
         if (! bExecuting)
         {
+          success();
           break;
         }
 
@@ -1041,10 +1057,12 @@ qx.Class.define("playground.c.lib.Node",
         // Only applicable before executing
         if (bExecuting)
         {
+          success();
           break;
         }
         
         data.specifiers.setSize("char");
+        success();
         break;
 
       case "compound_statement" :
@@ -1116,10 +1134,12 @@ qx.Class.define("playground.c.lib.Node",
         // Only applicable before executing
         if (bExecuting)
         {
+          success();
           break;
         }
         
         data.specifiers.setConstant("constant");
+        success();
         break;
 
       case "constant" :
@@ -1227,6 +1247,7 @@ qx.Class.define("playground.c.lib.Node",
 
         // Write the new stack pointer value
         playground.c.lib.Node.__mem.setReg("SP", "unsigned int", sp);
+        success();
         break;
 
       case "declaration_specifiers" :
@@ -1245,6 +1266,7 @@ qx.Class.define("playground.c.lib.Node",
         // We don't need to do this if we're executing
         if (bExecuting)
         {
+          success();
           break;
         }
 
@@ -1328,6 +1350,7 @@ qx.Class.define("playground.c.lib.Node",
         // Only applicable when executing
         if (! bExecuting)
         {
+          success();
           break;
         }
 
@@ -1462,6 +1485,7 @@ qx.Class.define("playground.c.lib.Node",
         // Only applicable when executing
         if (! bExecuting)
         {
+          success();
           break;
         }
 
@@ -1478,10 +1502,12 @@ qx.Class.define("playground.c.lib.Node",
         // Only applicable before executing
         if (bExecuting)
         {
+          success();
           break;
         }
         
         data.specifiers.setType("double");
+        success();
         break;
 
       case "do-while" :
@@ -1493,7 +1519,7 @@ qx.Class.define("playground.c.lib.Node",
         if (! bExecuting)
         {
           // Ensure all symbols are defined for this statement block
-          this.children[0].process(data, bExecuting);
+          this.children[0].process(data, bExecuting, success, failure);
           break;
         }
         
@@ -1576,7 +1602,7 @@ qx.Class.define("playground.c.lib.Node",
                  },
                  failure);
              }.bind(this))();
-          },
+          }.bind(this),
           
           // catch
           function(error, succ, fail)
@@ -1597,7 +1623,7 @@ qx.Class.define("playground.c.lib.Node",
               // It's not a break. Re-throw the error
               this._throwIt(error, succ, fail);
             }
-          },
+          }.bind(this),
 
           success,
           failure);
@@ -1615,6 +1641,7 @@ qx.Class.define("playground.c.lib.Node",
         // Only applicable before executing
         if (bExecuting)
         {
+          success();
           break;
         }
         
@@ -1705,20 +1732,24 @@ qx.Class.define("playground.c.lib.Node",
         // Only applicable before executing
         if (bExecuting)
         {
+          success();
           break;
         }
         
         data.specifiers.setStorage("extern");
+        success();
         break;
 
       case "float" :
         // Only applicable before executing
         if (bExecuting)
         {
+          success();
           break;
         }
         
         data.specifiers.setType("float");
+        success();
         break;
 
       case "for" :
@@ -1827,7 +1858,7 @@ qx.Class.define("playground.c.lib.Node",
                   failure);
               }.bind(this),
               failure);
-          },
+          }.bind(this),
           
           // catch
           function(error, succ, fail)
@@ -1847,7 +1878,7 @@ qx.Class.define("playground.c.lib.Node",
               // It's not a break. Re-throw the error
               this._throwIt(error, succ, fail);
             }
-          },
+          }.bind(this),
 
           success,
           failure);
@@ -1861,6 +1892,7 @@ qx.Class.define("playground.c.lib.Node",
          */
         if (! bExecuting)
         {
+          success();
           break;
         }
         
@@ -1956,7 +1988,7 @@ qx.Class.define("playground.c.lib.Node",
                 }
               }.bind(this),
               failure);
-            });
+          }.bind(this));
         break;
 
       case "function_decl" :
@@ -1969,6 +2001,7 @@ qx.Class.define("playground.c.lib.Node",
         // Only applicable before executing
         if (bExecuting)
         {
+          success();
           break;
         }
         
@@ -2096,43 +2129,48 @@ qx.Class.define("playground.c.lib.Node",
               bExecuting,
               function()
               {
-
                 // Process the compound statement
-                this.children[3].process(data, bExecuting);
-
-                // Create a specifier for the value
-                specOrDecl = 
-                  new playground.c.lib.Specifier(this,
-                                                 "int", "char", "unsigned");
-
-                // A return statement in the function will cause the catch()
-                // block to be executed. If one doesn't exist, create an
-                // arbitrary return value.
-                value3 =
+                this.children[3].process(
+                  data,
+                  bExecuting,
+                  function()
                   {
-                    value       : Math.floor(Math.random() * 256),
-                    specAndDecl : [ specOrDecl ]
-                  };
+                    // Create a specifier for the value
+                    specOrDecl = 
+                      new playground.c.lib.Specifier(this,
+                                                     "int", "char", "unsigned");
 
-                // Pop this function's symbol table from the stack
-                playground.c.lib.Symtab.popStack();
+                    // A return statement in the function will cause the catch()
+                    // block to be executed. If one doesn't exist, create an
+                    // arbitrary return value.
+                    value3 =
+                      {
+                        value       : Math.floor(Math.random() * 256),
+                        specAndDecl : [ specOrDecl ]
+                      };
 
-                // Obtain the symbol table entry for this function
-                entry = symtab.getParent().get(this._functionName, true);
+                    // Pop this function's symbol table from the stack
+                    playground.c.lib.Symtab.popStack();
 
-                // Get the specifier/declarator list for this function
-                specAndDecl = entry.getSpecAndDecl();
+                    // Obtain the symbol table entry for this function
+                    entry = symtab.getParent().get(this._functionName, true);
 
-                // Remove the "function" declarator, to leave the return type
-                specAndDecl.shift();
+                    // Get the specifier/declarator list for this function
+                    specAndDecl = entry.getSpecAndDecl();
 
-                // Set this specAndDecl for the return value
-                value3.specAndDecl = specAndDecl;
+                    // Remove the "function" declarator, to leave the return
+                    // type
+                    specAndDecl.shift();
 
-                success(value3);
+                    // Set this specAndDecl for the return value
+                    value3.specAndDecl = specAndDecl;
+
+                    success(value3);
+                  }.bind(this),
+                  fail);
               }.bind(this),
               fail);
-          },
+          }.bind(this),
         
           // catch
           function(error, succ, fail)
@@ -2173,7 +2211,7 @@ qx.Class.define("playground.c.lib.Node",
               this._throwIt(error, succ, fail);
             }
 
-          },
+          }.bind(this),
         
           success,
           failure);
@@ -2274,6 +2312,7 @@ qx.Class.define("playground.c.lib.Node",
             this.error("Identifier '" + this.value + "' " +
                        "was previously declared near line " +
                        entry.getLine());
+            success();
             break;
           }
           
@@ -2414,21 +2453,25 @@ qx.Class.define("playground.c.lib.Node",
         // Only applicable before executing
         if (bExecuting)
         {
+          success();
           break;
         }
         
         data.specifiers.setType("int");
+        success();
         break;
 
       case "label" :
         // Only applicable before executing
         if (bExecuting)
         {
+          success();
           break;
         }
         
         data.specifiers.setType("label");
         throw new Error("Not yet implemented: label");
+        success();
         break;
 
       case "left-shift" :
@@ -2482,6 +2525,7 @@ qx.Class.define("playground.c.lib.Node",
         // Only applicable when executing
         if (! bExecuting)
         {
+          success();
           break;
         }
 
@@ -2574,10 +2618,12 @@ qx.Class.define("playground.c.lib.Node",
         // Only applicable before executing
         if (bExecuting)
         {
+          success();
           break;
         }
         
         data.specifiers.setSize("long");
+        success();
         break;
 
       case "mod" :
@@ -2628,6 +2674,7 @@ qx.Class.define("playground.c.lib.Node",
         // Only applicable when executing
         if (! bExecuting)
         {
+          success();
           break;
         }
 
@@ -2688,6 +2735,7 @@ qx.Class.define("playground.c.lib.Node",
         // Only applicable when executing
         if (! bExecuting)
         {
+          success();
           break;
         }
 
@@ -2880,9 +2928,8 @@ qx.Class.define("playground.c.lib.Node",
                         // specifiers and declarators
                         data.entry.calculateOffset();
                       }
-                      
-                      success();
                     }
+                    success();
                   }.bind(this),
                   failure);
               }.bind(this),
@@ -2965,6 +3012,7 @@ qx.Class.define("playground.c.lib.Node",
         // Only applicable when executing
         if (! bExecuting)
         {
+          success();
           break;
         }
 
@@ -3000,6 +3048,7 @@ qx.Class.define("playground.c.lib.Node",
         // Only applicable when executing
         if (! bExecuting)
         {
+          success();
           break;
         }
 
@@ -3023,6 +3072,7 @@ qx.Class.define("playground.c.lib.Node",
         // Only applicable when executing
         if (! bExecuting)
         {
+          success();
           break;
         }
 
@@ -3047,6 +3097,7 @@ qx.Class.define("playground.c.lib.Node",
         // Only applicable when executing
         if (! bExecuting)
         {
+          success();
           break;
         }
 
@@ -3065,10 +3116,12 @@ qx.Class.define("playground.c.lib.Node",
         // Only applicable before executing
         if (bExecuting)
         {
+          success();
           break;
         }
         
         data.specifiers.setStorage("register");
+        success();
         break;
 
       case "return" :
@@ -3171,6 +3224,7 @@ qx.Class.define("playground.c.lib.Node",
         // Only applicable when executing
         if (! bExecuting)
         {
+          success();
           break;
         }
 
@@ -3187,20 +3241,24 @@ qx.Class.define("playground.c.lib.Node",
         // Only applicable before executing
         if (bExecuting)
         {
+          success();
           break;
         }
         
         data.specifiers.setSize("short");
+        success();
         break;
 
       case "signed" :
         // Only applicable before executing
         if (bExecuting)
         {
+          success();
           break;
         }
         
         data.specifiers.setSigned("signed");
+        success();
         break;
 
       case "sizeof" :
@@ -3224,10 +3282,12 @@ qx.Class.define("playground.c.lib.Node",
         // Only applicable before executing
         if (bExecuting)
         {
+          success();
           break;
         }
         
         data.specifiers.setStorage("static");
+        success();
         break;
 
       case "string_literal" :
@@ -3269,11 +3329,12 @@ qx.Class.define("playground.c.lib.Node",
         specAndDecl.push(new playground.c.lib.Specifier(this, "int", "char"));
 
         // Return the pointer to the string in global memory
-        return (
+        success(
           {
             value       : this._mem, 
             specAndDecl : specAndDecl
           });
+        break;
 
       case "struct" :
         /*
@@ -3285,11 +3346,13 @@ qx.Class.define("playground.c.lib.Node",
         // Only applicable before executing
         if (bExecuting)
         {
+          success();
           break;
         }
         
         data.specifiers.setType("struct");
         throw new Error("Not yet implemented: struct");
+        success();
         break;
 
       case "struct_declaration" :
@@ -3424,6 +3487,7 @@ qx.Class.define("playground.c.lib.Node",
         // Only applicable when executing
         if (! bExecuting)
         {
+          success();
           break;
         }
 
@@ -3618,7 +3682,7 @@ qx.Class.define("playground.c.lib.Node",
                 }
               }.bind(this),
               failure);
-          },
+          }.bind(this),
         
           // catch
           function(error, succ, fail)
@@ -3638,7 +3702,7 @@ qx.Class.define("playground.c.lib.Node",
               // It's not a break. Re-throw the error
               this._throwIt(error, succ, fail);
             }
-          },
+          }.bind(this),
           
           success,
           failure);
@@ -3664,6 +3728,7 @@ qx.Class.define("playground.c.lib.Node",
          */
         if (! bExecuting)
         {
+          success();
           break;
         }
 
@@ -3692,10 +3757,12 @@ qx.Class.define("playground.c.lib.Node",
         // Only applicable before executing
         if (bExecuting)
         {
+          success();
           break;
         }
         
         data.specifiers.setStorage("typedef");
+        success();
         break;
 
       case "type_definition" :
@@ -3725,6 +3792,7 @@ qx.Class.define("playground.c.lib.Node",
         // Only applicable before executing
         if (bExecuting)
         {
+          success();
           break;
         }
         
@@ -3736,30 +3804,36 @@ qx.Class.define("playground.c.lib.Node",
         // Only applicable before executing
         if (bExecuting)
         {
+          success();
           break;
         }
         
         data.specifiers.setSigned("unsigned");
+        success();
         break;
 
       case "void" :
         // Only applicable before executing
         if (bExecuting)
         {
+          success();
           break;
         }
         
         data.specifiers.setType("void");
+        success();
         break;
 
       case "volatile" :
         // Only applicable before executing
         if (bExecuting)
         {
+          success();
           break;
         }
         
         data.specifiers.setVolatile("volatile");
+        success();
         break;
 
       case "xor-assign" :
@@ -3772,6 +3846,7 @@ qx.Class.define("playground.c.lib.Node",
         // Only applicable when executing
         if (! bExecuting)
         {
+          success();
           break;
         }
 
@@ -3786,10 +3861,9 @@ qx.Class.define("playground.c.lib.Node",
 
       default:
         console.log("Unexpected node type: " + this.type);
+        failure(new Error("Unexpected node type: " + this.type));
         break;
       }
-      
-      return null;
     },
 
 
