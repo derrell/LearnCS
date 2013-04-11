@@ -378,6 +378,11 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
                 true,
                 function()
                 {
+                  var             application;
+                  var             editor;
+                  var             memData;
+                  var             model;
+
                   if (playground.c.AbstractSyntaxTree.debugFlags.rts)
                   {
                     mem.prettyPrint("Stack",
@@ -399,14 +404,58 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
                                     Memory.info.gas.length);
                   }
 
-                  // We're finished with this activation record.
-                  mem.endActivationRecord();
+                  try
+                  {
+                    // We have stored some "global" variables in user data of
+                    // the app
+                    application = qx.core.Init.getApplication();
+
+                    // Retrieve the editor object
+                    editor = application.getUserData("sourceeditor");
+
+                    // Remove any decoration on the previous line
+                    if (playground.c.lib.Node._prevLine >= 0)
+                    {
+                      editor.removeGutterDecoration(
+                        playground.c.lib.Node._prevLine - 1, "current-line");
+                    }
+                  }
+                  catch (e)
+                  {
+                    // Ignore failure. It will fail when not in GUI environment
+                  }
+
+                  // Turn off single-step mode, and reset previous line for
+                  // running the program again.
+                  playground.c.lib.Node._bStep = false;
+                  playground.c.lib.Node._prevLine = 0;                  
 
                   // Restore the previous frame pointer
                   symtab.restoreFramePointer();
 
                   // Restore the original stack pointer
                   mem.setReg("SP", "unsigned int", origSp);
+
+                  // We're finished with this activation record.
+                  mem.endActivationRecord();
+
+                  try
+                  {
+                    // Yup, we're stopped. Retrieve the data in memory, ...
+                    memData =
+                      playground.c.machine.Memory.getInstance().getDataModel();
+
+                    // ... convert it to a qx.data.Array, ...
+                    model = qx.data.marshal.Json.createModel(memData);
+
+                    // ... and update the memory template view.
+                    application.memTemplate.setModel(model);
+                  }
+                  catch(e)
+                  {
+                    // Ignore failure. It will fail when not in GUI environment
+                  }
+
                 }.bind(entryNode),
                 catchError);
             }
