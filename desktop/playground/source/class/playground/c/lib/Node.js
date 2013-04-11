@@ -2061,7 +2061,19 @@ qx.Class.define("playground.c.lib.Node",
             {
               data.args = [];
             }
+            else
+            {
+              // This is a real function (not built-in). Begin the activation
+              // record
+              mem.beginActivationRecord(origSp);
 
+              // Name this activation record
+              declarator = value2.children[1];
+              function_decl = declarator.children[0];
+              mem.nameActivationRecord(
+                "Activation Record: " + function_decl.children[0].value);
+            }
+            
             // Push the arguments onto the stack
             this.children[1].process(
               data,
@@ -2115,6 +2127,9 @@ qx.Class.define("playground.c.lib.Node",
                     {
                       value3 = v;
                       
+                      // We're finished with this activation record.
+                      mem.endActivationRecord();
+
                       // Restore the previous frame pointer
                       value2._symtab.restoreFramePointer();
 

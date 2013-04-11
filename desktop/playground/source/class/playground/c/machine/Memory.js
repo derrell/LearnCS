@@ -656,7 +656,22 @@ qx.Class.define("playground.c.machine.Memory",
      */
     endActivationRecord : function()
     {
-      var ar = this.__activationRecordsBegin.pop();
+      var             ar;
+      var             symbol;
+
+      // Remove, but get a reference to, the ending activation record
+      ar = this.__activationRecordsBegin.pop();
+      
+      // Clear out any obsolete symbol info
+      for (symbol in this._symbolInfo)
+      {
+        // Is this symbol in the now-obsolete activation record?
+        if (this._symbolInfo[symbol].addr < ar.addr)
+        {
+          // Yup. Delete it.
+          delete this._symbolInfo[symbol];
+        }
+      }
     },
 
     /**
