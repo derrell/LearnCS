@@ -40,7 +40,7 @@ qx.Class.define("playground.view.Editor",
           "playground/editor/ace.js",
           "playground/editor/theme-eclipse.js",
           "playground/editor/mode-c_cpp.js"
-  //        "playground/editor/mode-javascript.js"
+//djl        "playground/editor/mode-javascript.js"
         ];
         var load = function(list) {
           if (list.length == 0) {
@@ -165,6 +165,20 @@ qx.Class.define("playground.view.Editor",
       qx.bom.Stylesheet.createElement(
         ".ace_editor {border: 0px solid #9F9F9F !important;}"
       );
+      
+      // Provide a style for the breakpoint indicator
+      qx.bom.Stylesheet.createElement(
+        ".ace_gutter-cell.ace_breakpoint{" +
+          "border-radius: 20px 0px 0px 20px;" +
+          "box-shadow: 0px 0px 1px 1px #ff0000 inset;}"
+      );
+
+      // Provide a style for the current line when stopped at a breakpoint
+      qx.bom.Stylesheet.createElement(
+        ".ace_gutter-cell.current-line{" +
+          "border-radius: 20px 0px 0px 20px;" +
+          "background-color: #ffff22;}"
+      );
 
       // chech the initial highlight state
       var shouldHighligth = qx.bom.Cookie.get("playgroundHighlight") !== "false";
@@ -206,6 +220,105 @@ qx.Class.define("playground.view.Editor",
           editor.setBehavioursEnabled(true);
           editor.setDisplayIndentGuides(true);
 
+          // djl: Keep breakpoints with their line even when other lines are
+          // inserted or deleted.
+          // This is based on code from:
+          // https://github.com/MikeRatcliffe/Acebug/
+          //    blob/master/chrome/content/ace++/startup.js#L66-104
+          var updateDataOnDocChange = function(e) 
+          {
+            var delta = e.data;
+            var range = delta.range;
+            var len, firstRow, f1;
+            var args;
+            var rem;
+            var oldBP;
+            var i;
+            
+            if (range.end.row == range.start.row) {
+              return;
+            }
+
+            if (delta.action == "insertText") {
+              len = range.end.row - range.start.row;
+              firstRow = 
+                range.start.column == 0 ? range.start.row: range.start.row + 1;
+            } else if (delta.action == "insertLines") {
+              len = range.end.row - range.start.row;
+              firstRow = range.start.row;
+            } else if (delta.action == "removeText") {
+              len = range.start.row - range.end.row;
+              firstRow = range.start.row;
+            } else if (delta.action == "removeLines") {
+              len = range.start.row - range.end.row;
+              firstRow = range.start.row;
+            }
+
+            // Retrieve the breakpoint list. This is session's INTERNAL list,
+            // so we can modify it and simply emit the changeBreakpoint event
+            // to have it fully updated.
+            var breakpoints = session.getBreakpoints();
+
+            if (len > 0) {
+              args = Array(len);
+              args.unshift(firstRow, 0);
+              breakpoints.splice.apply(breakpoints, args);
+            } else if (len < 0) {
+              rem = breakpoints.splice(firstRow + 1, -len);
+
+              if(! breakpoints[firstRow]) {
+                for (i = 0; i < rem.length; i++) {
+                  oldBP = rem[i];
+                  if (oldBP) {
+                    breakpoints[firstRow] = oldBP;
+                    break;
+                  }
+                }
+              }
+            }
+
+            session._emit("changeBreakpoint", {});
+          };
+
+          session.doc.on("change", updateDataOnDocChange);
+
+          // djl: enable/disable breakpoints by click in gutter
+          editor.on(
+            "guttermousedown", 
+            function(e)
+            {
+              var target = e.domEvent.target;
+              if (target.className.indexOf("ace_gutter-cell") == -1)
+              {
+                return;
+              }
+              if (!editor.isFocused())
+              {
+                return;
+              }
+              if (e.clientX > 25 + target.getBoundingClientRect().left)
+              {
+                return;
+              }
+
+              // 'session' is in e.editor.session, but we have it already
+
+              var row = e.getDocumentPosition().row;
+              
+              // Is there already a breakpoint on this line?
+              if (! session.getBreakpoints()[row])
+              {
+                // Nope. Set one.
+                session.setBreakpoint(row);
+              }
+              else
+              {
+                // There is already a breakpoint here. Clear it.
+                session.clearBreakpoint(row);
+              }
+              e.stop();
+            });
+
           // copy the inital value
           session.setValue(this.__textarea.getValue() || "");
 
@@ -221,6 +334,44 @@ qx.Class.define("playground.view.Editor",
       }, this, 500);
     },
 
+
+    /**
+     * Add a gutter decoration
+     */
+    addGutterDecoration : function(row, className)
+    {
+      if (this.__ace)
+      {
+        this.__ace.getSession().addGutterDecoration(row, className);
+      }
+    },
+    
+    /**
+     * Remove a gutter decoration
+     */
+    removeGutterDecoration : function(row, className)
+    {
+      if (this.__ace)
+      {
+        this.__ace.getSession().removeGutterDecoration(row, className);
+      }
+    },
+
+    /**
+     * Returns the current set of breakpoints
+     * 
+     * @return {Array}
+     *   An array containing a truthy value in each element corresponding to a
+     *   line that has a breakpoint set.
+     */
+    getBreakpoints : function() {
+      if (this.__ace)
+      {
+        return this.__ace.getSession().getBreakpoints();
+      }
+      
+      return [];
+    },
 
     /**
      * Returns the current set code of the editor.

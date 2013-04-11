@@ -217,6 +217,9 @@ qx.Class.define("playground.Application",
         this.init("ace");
       }, this);
       
+      // Make the editor available, for such things as its getBreakpoints()
+      qx.core.Init.getApplication().setUserData("sourceeditor", this.__editor);
+      
       // Add the source editor to the page
       page.add(this.__editor, { flex : 1 });
       

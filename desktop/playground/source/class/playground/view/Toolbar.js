@@ -60,16 +60,6 @@ qx.Class.define("playground.view.Toolbar",
 
     // djl...
 
-/*
-    // next button
-    var nextButton = new qx.ui.toolbar.Button(
-      this.tr("Next"), "icon/22/actions/go-down.png");
-    this.add(nextButton);
-    nextButton.setToolTipText(
-      this.tr("Run current line of the program, then stop at next line"));
-    qx.core.Init.getApplication().setUserData("nextButton", nextButton);
-*/
-
     // step button
     var stepButton = new qx.ui.toolbar.Button(
       this.tr("Step"), "icon/22/actions/go-next.png");
@@ -78,6 +68,15 @@ qx.Class.define("playground.view.Toolbar",
       this.tr("Run current line of the program, then stop in called " +
               "function, or at next line"));
     qx.core.Init.getApplication().setUserData("stepButton", stepButton);
+
+    // continue button
+    var continueButton = new qx.ui.toolbar.Button(
+      this.tr("Continue"), "icon/22/actions/go-down.png");
+    this.add(continueButton);
+    continueButton.setToolTipText(
+      this.tr("Continue running the program until the next breakpoint " +
+              "or the program ends"));
+    qx.core.Init.getApplication().setUserData("continueButton", continueButton);
 
     // ...djl
 

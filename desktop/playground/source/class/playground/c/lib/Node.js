@@ -396,6 +396,11 @@ qx.Class.define("playground.c.lib.Node",
       var             mem;
       var             memTemplate;
       var             args;
+      var             breakpoints;
+      var             application;
+      var             editor;
+      var             stepButton;
+      var             continueButton;
       var             WORDSIZE = playground.c.machine.Memory.WORDSIZE;
 
       if (bExecuting)
@@ -413,41 +418,110 @@ qx.Class.define("playground.c.lib.Node",
             this.type != "_null_" &&
             this.line !== playground.c.lib.Node._prevLine)
         {
-          // Retrieve the data in memory
-          memData = playground.c.machine.Memory.getInstance().getDataModel();
+          // We have stored some "global" variables in user data of the app
+          application = qx.core.Init.getApplication();
 
-          // Convert it to a qx.data.Array
-          model = qx.data.marshal.Json.createModel(memData);
-          qx.core.Init.getApplication().memTemplate.setModel(model);
+          // Retrieve the editor object
+          editor = application.getUserData("sourceeditor");
           
+          // Remove any decoration on the previous line
+          if (playground.c.lib.Node._prevLine > 0)
+          {
+            editor.removeGutterDecoration(
+              playground.c.lib.Node._prevLine, "current-line");
+          }
+
           // Save the current line to prevent reentry until line number changes
           playground.c.lib.Node._prevLine = this.line;
           
           // Save the arguments to this function
           args = qx.lang.Array.cast(arguments, Array);
 
-          qx.core.Init.getApplication().getUserData(
-            "stepButton").addListenerOnce(
-              "execute",
-              function()
+          // Do we need to stop at a breakpoint?
+          breakpoints = editor.getBreakpoints();
+
+          stepButton = application.getUserData("stepButton");
+          continueButton = application.getUserData("continueButton");
+          
+          // If there is a Step button listener active...
+          if (playground.c.lib.Node._stepListenerId)
+          {
+            // ... then remove the listener
+            stepButton.removeListenerById(
+              playground.c.lib.Node._stepListenerId);
+            
+            // There's no active listener now.
+            playground.c.lib.Node._stepListenerId = null;
+          }
+
+          // If there is a Continue button listener active...
+          if (playground.c.lib.Node._continueListenerId)
+          {
+            // ... then remove the listener
+            continueButton.removeListenerById(
+              playground.c.lib.Node._continueListenerId);
+            
+            // There's no active listener now.
+            playground.c.lib.Node._continueListenerId = null;
+          }
+
+          // Is there a breakpoint at the current line?
+          if (breakpoints[this.line] || playground.c.lib.Node._bStep)
+          {
+            // Yup, we're stopped. Retrieve the data in memory, ...
+            memData = playground.c.machine.Memory.getInstance().getDataModel();
+
+            // ... convert it to a qx.data.Array, ...
+            model = qx.data.marshal.Json.createModel(memData);
+            
+            // ... and update the memory template view.
+            application.memTemplate.setModel(model);
+
+            // Mark the line we're stopped at
+            editor.addGutterDecoration(this.line, "current-line");
+
+            // Wait for them to press the Step or Continue button
+            playground.c.lib.Node._stepListenerId =
+              stepButton.addListenerOnce(
+                  "execute",
+                  function()
+                  {
+                    // Note that they pressed the Step button, to break at
+                    // next line.
+                    playground.c.lib.Node._bStep = true;
+                    
+                    // Process the next node
+                    this.process.apply(this, args);
+                  },
+                  this);
+
+            playground.c.lib.Node._continueListenerId =
+              continueButton.addListenerOnce(
+                  "execute",
+                  function()
+                  {
+                    // Do not break at the next line (unless there's a
+                    // breakpoint at that line)
+                    playground.c.lib.Node._bStep = false;
+                    
+                    // Process the next nodes (until a breakpoint)
+                    this.process.apply(this, args);
+                  },
+                  this);
+          }
+          else
+          {
+            // There's no breakpoint. Just unwind the stack; continue shortly.
+            qx.util.TimerManager.getInstance().start(
+              function(userData, timerId)
               {
                 this.process.apply(this, args);
               },
-              this);
-/*
-          // Provide an opportunity for the gui to update
-          qx.util.TimerManager.getInstance().start(
-            function(userData, timerId)
-            {
-              console.log("Executing line " + this.line);
-              this.process.apply(this, args);
-            },
-            0,
-            this,
-            null,
-            2000);
-*/
-          
+              0,
+              this,
+              null,
+              0);
+          }
           return;
         }
       }
