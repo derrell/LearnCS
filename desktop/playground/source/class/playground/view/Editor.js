@@ -169,15 +169,16 @@ qx.Class.define("playground.view.Editor",
       // Provide a style for the breakpoint indicator
       qx.bom.Stylesheet.createElement(
         ".ace_gutter-cell.ace_breakpoint{" +
-          "border-radius: 20px 0px 0px 20px;" +
-          "box-shadow: 0px 0px 1px 1px #ff0000 inset;}"
+          "background-image:" +
+          " url('resource/playground/images/breakpoint.png');" +
+          "background-position: 4px center;"
       );
 
       // Provide a style for the current line when stopped at a breakpoint
       qx.bom.Stylesheet.createElement(
         ".ace_gutter-cell.current-line{" +
           "border-radius: 20px 0px 0px 20px;" +
-          "background-color: #ffff22;}"
+          "box-shadow: 0px 0px 1px 1px red inset;}"
       );
 
       // chech the initial highlight state
