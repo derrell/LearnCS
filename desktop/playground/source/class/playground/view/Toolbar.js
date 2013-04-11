@@ -36,16 +36,6 @@ qx.Class.define("playground.view.Toolbar",
 
     this.__menuItemStore = {};
 
-    // run button
-    var runButton = new qx.ui.toolbar.Button(
-      this.tr("Run"), "icon/22/actions/media-playback-start.png"
-    );
-    this.add(runButton);
-    runButton.setToolTipText(this.tr("Run the source code"));
-    runButton.addListener("execute", function() {
-      this.fireEvent("run");
-    }, this);
-
     // sample button
     this.__samplesCheckButton = new qx.ui.form.ToggleButton(
       this.tr("Samples"), "icon/22/actions/edit-copy.png"
@@ -58,6 +48,39 @@ qx.Class.define("playground.view.Toolbar",
       this.fireDataEvent("changeSample", e.getData(), e.getOldData());
     }, this);
 
+    // run button
+    var runButton = new qx.ui.toolbar.Button(
+      this.tr("Run"), "icon/22/actions/media-playback-start.png"
+    );
+    this.add(runButton);
+    runButton.setToolTipText(this.tr("Run the source code"));
+    runButton.addListener("execute", function() {
+      this.fireEvent("run");
+    }, this);
+
+    // djl...
+
+/*
+    // next button
+    var nextButton = new qx.ui.toolbar.Button(
+      this.tr("Next"), "icon/22/actions/go-down.png");
+    this.add(nextButton);
+    nextButton.setToolTipText(
+      this.tr("Run current line of the program, then stop at next line"));
+    qx.core.Init.getApplication().setUserData("nextButton", nextButton);
+*/
+
+    // step button
+    var stepButton = new qx.ui.toolbar.Button(
+      this.tr("Step"), "icon/22/actions/go-next.png");
+    this.add(stepButton);
+    stepButton.setToolTipText(
+      this.tr("Run current line of the program, then stop in called " +
+              "function, or at next line"));
+    qx.core.Init.getApplication().setUserData("stepButton", stepButton);
+
+    // ...djl
+
     // highlighting button
     this.__highlightButton = new qx.ui.form.ToggleButton(
       this.tr("Syntax Highlighting"), "icon/22/actions/check-spelling.png"
@@ -69,6 +92,7 @@ qx.Class.define("playground.view.Toolbar",
     }, this);
     var initValue = qx.bom.Cookie.get("playgroundHighlight") !== "false";
     this.__highlightButton.setValue(initValue);
+    this.__highlightButton.exclude(); // djl
 
     // spacer
     this.addSpacer();

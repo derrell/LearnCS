@@ -426,6 +426,15 @@ qx.Class.define("playground.c.lib.Node",
           // Save the arguments to this function
           args = qx.lang.Array.cast(arguments, Array);
 
+          qx.core.Init.getApplication().getUserData(
+            "stepButton").addListenerOnce(
+              "execute",
+              function()
+              {
+                this.process.apply(this, args);
+              },
+              this);
+/*
           // Provide an opportunity for the gui to update
           qx.util.TimerManager.getInstance().start(
             function(userData, timerId)
@@ -437,6 +446,7 @@ qx.Class.define("playground.c.lib.Node",
             this,
             null,
             2000);
+*/
           
           return;
         }
