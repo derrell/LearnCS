@@ -479,7 +479,6 @@ qx.Class.define("playground.c.lib.Node",
 
             // Mark the line we're stopped at
             editor.addGutterDecoration(this.line - 1, "current-line");
-console.log("current line: " + this.line);
 
             // Wait for them to press the Step or Continue button
             playground.c.lib.Node._stepListenerId =
@@ -527,7 +526,7 @@ console.log("current line: " + this.line);
         }
       }
 
-      console.log("process: " + this.type);
+//      console.log("process: " + this.type);
 
       // Yup. See what type it is.
       switch(this.type)

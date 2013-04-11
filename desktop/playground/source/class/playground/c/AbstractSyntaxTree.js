@@ -235,8 +235,6 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
           // exists, to run the program
           if (entryNode)
           {
-            console.log("Preparing to call main()");
-
             // Prepare to call main(). Reset the machine.
             machine.initAll();
 
@@ -409,8 +407,6 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
 
                   // Restore the original stack pointer
                   mem.setReg("SP", "unsigned int", origSp);
-                  
-                  console.log("Done");
                 }.bind(entryNode),
                 catchError);
             }

@@ -177,7 +177,7 @@ qx.Class.define("playground.view.Editor",
       // Provide a style for the current line when stopped at a breakpoint
       qx.bom.Stylesheet.createElement(
         ".ace_gutter-cell.current-line{" +
-          "border-radius: 20px 0px 0px 20px;" +
+          "border-radius: 0px 20px 20px 0px;" +
           "box-shadow: 0px 0px 1px 1px red inset;}"
       );
 
