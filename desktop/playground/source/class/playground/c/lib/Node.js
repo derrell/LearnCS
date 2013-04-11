@@ -425,10 +425,10 @@ qx.Class.define("playground.c.lib.Node",
           editor = application.getUserData("sourceeditor");
           
           // Remove any decoration on the previous line
-          if (playground.c.lib.Node._prevLine > 0)
+          if (playground.c.lib.Node._prevLine >= 0)
           {
             editor.removeGutterDecoration(
-              playground.c.lib.Node._prevLine, "current-line");
+              playground.c.lib.Node._prevLine - 1, "current-line");
           }
 
           // Save the current line to prevent reentry until line number changes
@@ -466,7 +466,7 @@ qx.Class.define("playground.c.lib.Node",
           }
 
           // Is there a breakpoint at the current line?
-          if (breakpoints[this.line] || playground.c.lib.Node._bStep)
+          if (breakpoints[this.line - 1] || playground.c.lib.Node._bStep)
           {
             // Yup, we're stopped. Retrieve the data in memory, ...
             memData = playground.c.machine.Memory.getInstance().getDataModel();
@@ -478,7 +478,8 @@ qx.Class.define("playground.c.lib.Node",
             application.memTemplate.setModel(model);
 
             // Mark the line we're stopped at
-            editor.addGutterDecoration(this.line, "current-line");
+            editor.addGutterDecoration(this.line - 1, "current-line");
+console.log("current line: " + this.line);
 
             // Wait for them to press the Step or Continue button
             playground.c.lib.Node._stepListenerId =
