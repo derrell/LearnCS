@@ -43,7 +43,7 @@ This version has been modified by Derrell Lipman:
  * 
  * @lint ignoreUndefined(require)
  */
-if (typeof qx === "undefined" && typeof window === "undefined")
+if (typeof qx === "undefined")
 {
   require("./machine/Memory");
 }

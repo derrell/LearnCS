@@ -9,15 +9,18 @@
 
 /*
 #ignore(require)
+#ignore(qx.bConsole)
  */
 
 /**
  * @lint ignoreUndefined(require)
+ * @lint ignoreUndefined(qx.bConsole)
  */
-if (typeof qx === "undefined" && typeof window === "undefined")
+if (typeof qx === "undefined" || qx.bConsole)
 {
   var printf = require("printf");
   qx = require("qooxdoo");
+  qx.bConsole = true;
   require("./Symtab");
   require("./NodeArray");
   require("./Specifier");
@@ -150,6 +153,11 @@ qx.Class.define("playground.c.lib.Node",
       var             specAndDecl;
       var             specOrDecl;
       
+      if (typeof value == "undefined")
+      {
+        throw new Error("Internal error: getExpressionValue of undefined");
+      }
+
       // Retrieve the specifier/declarator list, and its first entry
       specAndDecl =
         value instanceof playground.c.lib.SymtabEntry
@@ -257,7 +265,7 @@ qx.Class.define("playground.c.lib.Node",
       {
         if (this.type == "_null_")
         {
-          console.log(parts.join("") + "null");
+          console.log(parts.join("") + "null*");
         }
         else
         {
@@ -2577,34 +2585,15 @@ qx.Class.define("playground.c.lib.Node",
         }
         else
         {
-          // We're executing. Retrieve the symbol table entry for this
-          // variable.
-          this.children[0].process(
-            data,
-            bExecuting,
-            function(entry)
-            {
-              // If we're executing, all we need to do is process the
-              // initializer
-              this.children[1].process(
-                data, 
-                bExecuting,
-                function(v)
-                {
-                  value = v;
+          // We're executing. Assign the initial value
+          this.__assignHelper(data, 
+                              function(oldVal, newVal)
+                              {
+                                return newVal;
+                              },
+                              success,
+                              failure);
 
-                  // If there was an initializer, save it.
-                  if (typeof value != "undefined")
-                  {
-                    playground.c.lib.Node.__mem.set(entry.getAddr(), 
-                                                    entry.getType(), 
-                                                    value.value);
-                  }
-                  success();
-                }.bind(this),
-                failure);
-            }.bind(this),
-            failure);
         }
         break;
 
@@ -4259,8 +4248,15 @@ console.log("case=" + value);
               true,
               function(v)
               {
-                value3 = this.getExpressionValue(v, data);
-                saveAndReturn.bind(this)();
+                if (typeof v != "undefined")
+                {
+                  value3 = this.getExpressionValue(v, data);
+                  saveAndReturn.bind(this)();
+                }
+                else
+                {
+                  success();
+                }
               }.bind(this),
               failure);
           }

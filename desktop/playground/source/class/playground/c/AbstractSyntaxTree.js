@@ -16,7 +16,7 @@
  * 
  * @lint ignoreUndefined(require)
  */
-if (typeof qx === "undefined" && typeof window === "undefined")
+if (typeof qx === "undefined")
 {
   var             bConsole = true;
 
@@ -39,6 +39,9 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
       symtab : false
     },
 
+    /**
+     * @lint ignoreUndefined(process.exit)
+     */
     main : function(parser)
     {
       var             argv;

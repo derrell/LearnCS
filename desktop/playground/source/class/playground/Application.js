@@ -191,21 +191,6 @@ qx.Class.define("playground.Application",
       var container;
       var page;
         
-      // Create the page for the Block editor
-      page = new qx.ui.tabview.Page("Blocks");
-      page.setLayout(new qx.ui.layout.VBox());
-      this.__blockEditor = new playground.view.Blockly();
-      playground.view.Blockly.loadBlockly(function() {
-          this.init("blockly");
-        },
-        this);
-      
-      // Add the block editor to the page
-      page.add(this.__blockEditor, { flex : 1 });
-
-      // Add the page to the tabview
-      tabview.add(page);
-
       // Create the page for the Source editor
       page = new qx.ui.tabview.Page("C Source");
       page.setLayout(new qx.ui.layout.VBox());
@@ -226,6 +211,21 @@ qx.Class.define("playground.Application",
       // Add the page to the tabview
       tabview.add(page);
 
+      // Create the page for the Block editor
+      page = new qx.ui.tabview.Page("Blocks");
+      page.setLayout(new qx.ui.layout.VBox());
+      this.__blockEditor = new playground.view.Blockly();
+      playground.view.Blockly.loadBlockly(function() {
+          this.init("blockly");
+        },
+        this);
+      
+      // Add the block editor to the page
+      page.add(this.__blockEditor, { flex : 1 });
+
+      // Add the page to the tabview
+      tabview.add(page);
+      
       this.__editorsplit.add(this.__samplesPane, 1);
       this.__editorsplit.add(tabview, 4);
       this.__mainsplit.add(this.__editorsplit, 6);

@@ -9,14 +9,17 @@
 
 /*
 #ignore(require)
+#ignore(qx.bConsole)
  */
 
 /**
  * @lint ignoreUndefined(require)
+ * @lint ignoreUndefined(qx.bConsole)
  */
-if (typeof qx === "undefined" && typeof window === "undefined")
+if (typeof qx === "undefined" || qx.bConsole)
 {
   qx = require("qooxdoo");
+  qx.bConsole = true;
   require("../machine/Memory");
 }
 

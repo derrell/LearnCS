@@ -18,16 +18,19 @@
 #ignore(Uint32Array)
 #ignore(Uint8Array)
 #ignore(Float32Array)
+#ignore(qx.bConsole)
  */
 
 /**
  * Code used during testing with Node; ignored when in playground
  * 
  * @lint ignoreUndefined(require)
+ * @lint ignoreUndefined(qx.bConsole)
  */
-if (typeof qx === "undefined" && typeof window === "undefined")
+if (typeof qx === "undefined" || qx.bConsole)
 {
   qx = require("qooxdoo");
+  qx.bConsole = true;
 }
 
 

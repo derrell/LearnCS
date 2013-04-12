@@ -9,16 +9,19 @@
 
 /*
 #ignore(require)
+#ignore(qx.bConsole)
  */
 
 /**
  * Code used during testing with Node; ignored when in playground
  * 
  * @lint ignoreUndefined(require)
+ * @lint ignoreUndefined(qx.bConsole)
  */
-if (typeof qx === "undefined" && typeof window === "undefined")
+if (typeof qx === "undefined" || qx.bConsole)
 {
   qx = require("qooxdoo");
+  qx.bConsole = true;
 }
 
 qx.Class.define("playground.c.lib.RuntimeError",
