@@ -1729,14 +1729,14 @@ qx.Class.define("playground.c.lib.Node",
                 {
                   if (value)
                   {
-                    do_while_try_statement_block(succ, failure);
+                    do_while_try_statement_block(succ, fail);
                   }
                   else
                   {
                     succ();
                   }
                 }.bind(this),
-                failure);
+                fail);
             }.bind(this);
 
             // This is a do/while, so we process the statement block initially
@@ -1745,9 +1745,9 @@ qx.Class.define("playground.c.lib.Node",
                do_while_while_statement_block(
                  function()
                  {
-                   do_while_while_condition(success, failure);
+                   do_while_while_condition(success, fail);
                  },
-                 failure);
+                 fail);
              }.bind(this))();
           }.bind(this),
           
@@ -2003,9 +2003,9 @@ qx.Class.define("playground.c.lib.Node",
                         fail);
                     }
                   }.bind(this),
-                  failure);
+                  fail);
               }.bind(this),
-              failure);
+              fail);
           }.bind(this),
           
           // catch
@@ -3706,7 +3706,7 @@ qx.Class.define("playground.c.lib.Node",
                 var             i;
 
                 value1 = this.getExpressionValue(v, data);
-console.log("Found expression to switch: " + value1);
+console.log("Found expression to switch: value=" + value1.value);
 
                 // Get a reference to the statement list
                 subnode = this.children[1].children[1];
@@ -3724,7 +3724,6 @@ console.log("Found expression to switch: " + value1);
                     i = 0;
                     (function(child)
                      {
-                       var             i;
                        var             map;
                        var             value;
                        var             fSelf = arguments.callee;
@@ -3779,7 +3778,7 @@ console.log("case=" + value);
                                switch_find_case.bind(this)();
                              }
                            }.bind(this),
-                           failure);
+                           fail);
                          
                          return;
                        }
@@ -3867,7 +3866,7 @@ console.log("case=" + value);
                              success();
                            }
                          }.bind(this),
-                         failure);
+                         fail);
                      }).bind(this)();
                   }
                   else
@@ -3876,7 +3875,7 @@ console.log("case=" + value);
                   }
                 }
               }.bind(this),
-              failure);
+              fail);
           }.bind(this),
         
           // catch
