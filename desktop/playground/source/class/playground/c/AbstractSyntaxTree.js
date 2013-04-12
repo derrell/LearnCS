@@ -16,7 +16,7 @@
  * 
  * @lint ignoreUndefined(require)
  */
-if (typeof qx === 'undefined')
+if (typeof qx === "undefined" && typeof window === "undefined")
 {
   var             bConsole = true;
 
@@ -251,7 +251,7 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
 
             // Save the stack pointer, so we can restore it after the function
             // call
-            origSp = playground.c.lib.Node.__mem.getReg("SP", "unsigned int");
+            origSp = mem.getReg("SP", "unsigned int");
 
             // Push the arguments onto the stack. First, if there are no
             // arguments provided, create one.
@@ -333,7 +333,7 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
             // Adjust the stack pointer back to a word boundary
             sp = p - playground.c.machine.Memory.WORDSIZE;;
             sp -= p % playground.c.machine.Memory.WORDSIZE;
-            playground.c.lib.Node.__mem.setReg("SP", "unsigned int", sp);
+            mem.setReg("SP", "unsigned int", sp);
 
             // This is the beginning of an activation record.
             mem.beginActivationRecord(sp);
@@ -345,20 +345,19 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
               "Activation Record: " + function_decl.children[0].value);
 
             // Push the address of the argv array onto the stack
-            playground.c.lib.Node.__mem.stackPush("pointer", p);
+            mem.stackPush("pointer", p);
 
             // Push the argument count onto the stack
-            playground.c.lib.Node.__mem.stackPush("int", argv.length);
+            mem.stackPush("int", argv.length);
 
             // Retrieve the symbol table for main()
             symtab = entryNode._symtab;
 
             // Save the new frame pointer
-            symtab.setFramePointer(
-              playground.c.lib.Node.__mem.getReg("SP", "unsigned int"));
+            symtab.setFramePointer(mem.getReg("SP", "unsigned int"));
 
             // Push the return address (our current line number) onto the stack
-            sp = playground.c.lib.Node.__mem.stackPush("unsigned int", 0);
+            sp = mem.stackPush("unsigned int", 0);
             mem.setSymbolInfo(
               sp,
               {

@@ -14,9 +14,9 @@
 /**
  * @lint ignoreUndefined(require)
  */
-if (typeof qx === 'undefined')
+if (typeof qx === "undefined" && typeof window === "undefined")
 {
-  var qx = require("qooxdoo");
+  qx = require("qooxdoo");
   require("./RuntimeError");
 }
 
