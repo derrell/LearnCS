@@ -39,7 +39,7 @@ qx.Class.define("playground.view.Header",
     // /////////
 
     var version = 
-      new qxc.ui.versionlabel.VersionLabel(this.tr("learnCS"), 0.001);
+      new qxc.ui.versionlabel.VersionLabel(this.tr("learnCS"), 0.002);
     version.setFont("default");
     
     var consoleButton = new qx.ui.form.RadioButton(this.tr("Console Mode"));
