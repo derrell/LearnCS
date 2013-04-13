@@ -629,6 +629,7 @@ qx.Class.define("playground.c.machine.Memory",
           addr       : addr,
           name       : symbol.getName(),
           type       : symbol.getType(),
+          unsigned   : symbol.getUnsigned(),
           size       : symbol.getSize(),
           pointer    : symbol.getPointerCount(),
           array      : symbol.getArraySizes(),
@@ -827,14 +828,15 @@ qx.Class.define("playground.c.machine.Memory",
           {
             data = 
               {
-                addr    : addr,
-                name    : "",
-                type    : null,
-                size    : 0,
-                pointer : 0,
-                array   : [],
-                param   : false,
-                group   : group
+                addr     : addr,
+                name     : "",
+                type     : null,
+                unsigned : "signed",
+                size     : 0,
+                pointer  : 0,
+                array    : [],
+                param    : false,
+                group    : group
               };
           }
           
@@ -858,10 +860,15 @@ qx.Class.define("playground.c.machine.Memory",
         // Is it typed?
         if (datum.type)
         {
-          // If this is really a pointer, change its type
           // Save the type and its size
           type = datum.type;
           
+          // Is it an unsigned type?
+          if (datum.unsigned)
+          {
+            datum.type = "unsigned " + type;
+          }
+
           // Arrays are actually pointers if they are parameters, but an array
           // of pointers that are not parameters are not considered to be a
           // pointer.

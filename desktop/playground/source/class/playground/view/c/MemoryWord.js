@@ -26,19 +26,14 @@ qx.Class.define("playground.view.c.MemoryWord",
 
     this.base(arguments);
     
+/*
     this.addListener(
       "changeModel",
       function(e)
       {
         var             model = this.getModel();
-        
-//        if (model.getAddr() == 40688)
-        {
-          console.log("type=" + model.getType() + 
-                      ", array=" + JSON.stringify(model.getArray().toArray()) +
-                      ", pointer=" + model.getPointer());
-        }
       });
+*/
 
     // Create a grid layout. Leave some horizontal space between elements.
     this.gridLayout = new qx.ui.layout.Grid(8, 0);
@@ -337,9 +332,6 @@ qx.Class.define("playground.view.c.MemoryWord",
 
       // Retrieve the full model for this word
       model = this.getModel();
-console.log(JSON.stringify(model.getAddr()));
-var debug = (model.getAddr() == 40688);
-debug && console.log("MemoryWord Debugging enabled");
 
       // Determine the actual type. Record whether it's really a pointer.
       pointer = model.getPointer();
@@ -350,7 +342,6 @@ debug && console.log("MemoryWord Debugging enabled");
                                                   ? "pointer" : value])
       {
       case 1:
-debug && console.log("typeSize = 1");
         this.getChildControl("addr1").setVisibility("visible");
         this.getChildControl("addr2").setVisibility("excluded");
         this.getChildControl("addr4").setVisibility("excluded");
@@ -371,7 +362,6 @@ debug && console.log("typeSize = 1");
         break;
         
       case 2:
-debug && console.log("typeSize = 2");
         this.getChildControl("addr1").setVisibility("excluded");
         this.getChildControl("addr2").setVisibility("visible");
         this.getChildControl("addr4").setVisibility("excluded");
@@ -392,7 +382,6 @@ debug && console.log("typeSize = 2");
         break;
         
       case 4:
-debug && console.log("typeSize = 4");
         this.getChildControl("addr1").setVisibility("excluded");
         this.getChildControl("addr2").setVisibility("excluded");
         this.getChildControl("addr4").setVisibility("visible");
@@ -420,7 +409,6 @@ debug && console.log("typeSize = 4");
       if (! model.getName())
       {
         // ... then we won't display the value
-debug && console.log("No name, so setting type to ''");
         this.getChildControl("type").setValue("");
         return;
       }
@@ -429,7 +417,6 @@ debug && console.log("No name, so setting type to ''");
       if (! bIsPointer && array.getLength() === 0)
       {
         // ... then simply display the type value as is
-debug && console.log("not pointer and array length 0. set type to " + value);
         this.getChildControl("type").setValue(value);
         return;
       }
@@ -442,7 +429,6 @@ debug && console.log("not pointer and array length 0. set type to " + value);
         {
           value += "*";
         }
-debug && console.log("added * " + pointer + " times");
       }
       
       // Now add array size. 
@@ -453,20 +439,17 @@ debug && console.log("added * " + pointer + " times");
         if (array.getLength() == 1 && array.getItem(0) == -1)
         {
           value += "[]";
-debug && console.log("added []");
         }
         else
         {
           for (i = 0; i < array.getLength(); i++)
           {
             value += "[" + array.getItem(i) + "]";
-debug && console.log("added array index " + array.getItem(i));
           }
         }
       }
 
       // Display tne calculated type value
-debug && console.log("finally, setting type to: " + value);
       this.getChildControl("type").setValue(value);
     },
     
@@ -542,7 +525,7 @@ debug && console.log("finally, setting type to: " + value);
           ("0000" + value.toString(16)).substr(-4) +
           "</span>";
       }
-      else if (type == "char" || type == "unsigned char")
+      else if (type == "char")
       {
         // It's a character type. Display the character itself, if possible
         // Is it a normal, printable character?

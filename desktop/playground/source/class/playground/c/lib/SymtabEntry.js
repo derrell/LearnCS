@@ -97,6 +97,7 @@ qx.Class.define("playground.c.lib.SymtabEntry",
     {
       var             i;
       var             type;
+      var             bUnsigned = false;
       var             description;
       var             count;
       var             parts = [];
@@ -124,6 +125,7 @@ qx.Class.define("playground.c.lib.SymtabEntry",
           // Add unsigned, if needed
           if (sd.getSigned() === "unsigned")
           {
+            bUnsigned = true;
             parts.push("unsigned");
           }
 
@@ -221,6 +223,7 @@ qx.Class.define("playground.c.lib.SymtabEntry",
       if (obj)
       {
         obj.__type = type;
+        obj.__bUnsigned = bUnsigned;
         obj.__pointerCount = pointerCount;
         obj.__arraySizes = arraySizes;
       }
@@ -228,6 +231,7 @@ qx.Class.define("playground.c.lib.SymtabEntry",
       return (
         {
           type         : type,
+          bUnsigned    : bUnsigned,
           pointerCount : pointerCount,
           arraySizes   : arraySizes,
           description  : description
@@ -403,6 +407,19 @@ qx.Class.define("playground.c.lib.SymtabEntry",
       }
       
       return this.__type;
+    },
+
+    getUnsigned : function()
+    {
+      // Have we already determined this symbol's info?
+      if (this.__type === null)
+      {
+        // Calculate this symbol's info by traversing the symbol's
+        // specifier/declarator list.
+        playground.c.lib.SymtabEntry.getInfo(this.__specAndDecl, this);
+      }
+      
+      return this.__bUnsigned;
     },
 
     getSize : function()

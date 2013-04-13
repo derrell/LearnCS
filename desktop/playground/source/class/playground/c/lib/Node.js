@@ -2121,6 +2121,7 @@ qx.Class.define("playground.c.lib.Node",
                         return "called from line #"; 
                       },
                       getType         : function() { return "int"; },
+                      getUnsigned     : function() { return false; },
                       getSize         : function() { return intSize; },
                       getPointerCount : function() { return 0; },
                       getArraySizes   : function() { return []; },
