@@ -866,6 +866,7 @@ qx.Class.define("playground.c.machine.Memory",
           // Is it an unsigned type?
           if (datum.unsigned)
           {
+            // Yup. Indicate such.
             datum.type = "unsigned " + type;
           }
 
