@@ -48,7 +48,7 @@ if (typeof qx === "undefined")
   require("./machine/Memory");
 }
 
-qx.Class.define("playground.c.Stdio",
+qx.Class.define("playground.c.Printf",
 {
   extend : qx.core.Object,
   
@@ -94,7 +94,7 @@ qx.Class.define("playground.c.Stdio",
       var formatAddr;
 
       formatAddr = args.shift();
-      var formatter = new playground.c.Stdio(formatAddr);
+      var formatter = new playground.c.Printf(formatAddr);
       var string = formatter.format.apply(formatter, args);
       
       return string;

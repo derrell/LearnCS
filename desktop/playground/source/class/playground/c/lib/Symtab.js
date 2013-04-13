@@ -23,7 +23,7 @@ if (typeof qx === "undefined" || qx.bConsole)
   qx = require("qooxdoo");
   qx.bConsole = true;
   require("./SymtabEntry");
-  require("../Stdio");
+  require("../Printf");
 }
 
 qx.Class.define("playground.c.lib.Symtab",
@@ -126,7 +126,7 @@ qx.Class.define("playground.c.lib.Symtab",
       declarator.setBuiltIn(
         function()
         {
-          var str = playground.c.Stdio.printf.apply(null, arguments);
+          var str = playground.c.Printf.printf.apply(null, arguments);
           
           // We'll be outputting the string using console.log, which appends a
           // newline. If the string to be output has a trailing newline, get
