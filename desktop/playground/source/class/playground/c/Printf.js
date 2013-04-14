@@ -56,11 +56,10 @@ qx.Class.define("playground.c.Printf",
    * PRIVATE constructor!
    *   
    * Do not instantiate this class yourself.
-   * Instead, use its static methods.
+   * Instead, use its static method.
    */
   construct : function(formatAddr)
   {
-    var tokens = [];
     var format = [];
     var i;
 
