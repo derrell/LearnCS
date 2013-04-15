@@ -127,16 +127,8 @@ qx.Class.define("playground.c.lib.Symtab",
         function()
         {
           var str = playground.c.Printf.printf.apply(null, arguments);
-          
-          // We'll be outputting the string using console.log, which appends a
-          // newline. If the string to be output has a trailing newline, get
-          // rid of it.
-          if (str.charAt(str.length - 1) == "\n")
-          {
-            str = str.substr(0, str.length - 1);
-          }
-          
-          console.log(str);
+
+          qx.core.Init.getApplication().getUserData("terminal").addOutput(str);
           return { value : str, type : "pointer" };
         });
       
