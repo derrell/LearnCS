@@ -267,7 +267,7 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
           if (entryNode)
           {
             playground.c.AbstractSyntaxTree.output(
-              "\n*** Running program ***\n",
+              "\n>>> Running program\n",
               true);
 
             // Prepare to call main(). Reset the machine.
@@ -422,9 +422,8 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
 
                   // 'try' will fail when not in GUI environment
                   playground.c.AbstractSyntaxTree.output(
-                    "*** " +
-                    "Program exited with exit code " + value.value + " " +
-                    "***");
+                    ">>> " +
+                    "Program exited with exit code " + value.value);
 
                   if (playground.c.AbstractSyntaxTree.debugFlags.rts)
                   {

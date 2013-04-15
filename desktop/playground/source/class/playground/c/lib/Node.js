@@ -77,6 +77,12 @@ qx.Class.define("playground.c.lib.Node",
     /** Node which calls a built-in function */
     _currentNode : null,
 
+    /** Maximum number of recursive calls before unwind */
+    _unwindInit : 10,
+
+    /** Number of recursive calls remaining before we must unwind via timeout */
+    _unwindCount : null,        // initialized in defer
+
     /** Mappings of types of numbers to their types */
     NumberType :
     {
@@ -491,6 +497,10 @@ qx.Class.define("playground.c.lib.Node",
             // Mark the line we're stopped at
             editor.addGutterDecoration(this.line - 1, "current-line");
 
+            // Reset unwind count, since we're unwinding by awaiting an event
+            playground.c.lib.Node._unwindCount =
+              playground.c.lib.Node._unwindInit;
+
             // Wait for them to press the Step or Continue button
             playground.c.lib.Node._stepListenerId =
               stepButton.addListenerOnce(
@@ -518,12 +528,17 @@ qx.Class.define("playground.c.lib.Node",
                     // Process the next nodes (until a breakpoint)
                     this.process.apply(this, args);
                   },
-                  this);
+                this);
+            return;
           }
-          else
+          else if (playground.c.lib.Node._unwindCount-- === 0)
           {
-            // There's no breakpoint. Just unwind the stack; continue shortly.
-            qx.util.TimerManager.getInstance().start(
+            // There's no breakpoint. Reset the unwind count.
+            playground.c.lib.Node._unwindCount =
+              playground.c.lib.Node._unwindInit;
+
+            // Unwind the stack by executing via timeout to continue shortly.
+            window.setTimeout(
               function(userData, timerId)
               {
                 try
@@ -534,13 +549,38 @@ qx.Class.define("playground.c.lib.Node",
                 {
                   failure(e);
                 }
-              },
-              0,
-              this,
-              null,
+              }.bind(this),
               0);
+            return;
           }
-          return;
+        }
+        else if (! memTemplate)
+        {
+          if (playground.c.lib.Node._unwindCount-- === 0)
+          {
+            // There's no breakpoint. Reset the unwind count.
+            playground.c.lib.Node._unwindCount =
+              playground.c.lib.Node._unwindInit;
+
+            // Save the arguments to this function
+            args = qx.lang.Array.cast(arguments, Array);
+
+            // Unwind the stack by executing via timeout to continue shortly.
+            window.setTimeout(
+              function(userData, timerId)
+              {
+                try
+                {
+                  this.process.apply(this, args);
+                }
+                catch(e)
+                {
+                  failure(e);
+                }
+              }.bind(this),
+              0);
+            return;
+          }
         }
       }
 
@@ -1248,21 +1288,6 @@ qx.Class.define("playground.c.lib.Node",
           this._symtab = symtab;
         }
 
-        // Process the declaration list
-        this.children[0].process(
-          data,
-          bExecuting,
-          function()
-          {
-            // Process the statement list
-            this.children[1].process(
-              data,
-              bExecuting,
-              compound_statement_finalize.bind(this),
-              failure);
-          }.bind(this),
-          failure);
-          
         function compound_statement_finalize()
         {
           // If we're executing...
@@ -1277,6 +1302,21 @@ qx.Class.define("playground.c.lib.Node",
           
           success();
         };
+
+        // Process the declaration list
+        this.children[0].process(
+          data,
+          bExecuting,
+          function()
+          {
+            // Process the statement list
+            this.children[1].process(
+              data,
+              bExecuting,
+              compound_statement_finalize.bind(this),
+              failure);
+          }.bind(this),
+          failure);
         break;
 
       case "const" :
@@ -4478,6 +4518,10 @@ console.log("case=" + value);
   
   defer : function(statics)
   {
+    // Retrieve a reference to memory, for easy access
     playground.c.lib.Node.__mem = playground.c.machine.Memory.getInstance();
+
+    // Initialize the unwind count
+    playground.c.lib.Node._unwindCount = playground.c.lib.Node._unwindInit;
   }
 });
