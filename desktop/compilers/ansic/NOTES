@@ -1,0 +1,21 @@
+Works at home:
+
+void foo(void)
+{
+    unsigned char    b[3];
+    
+    b[1] = 42;
+    return;
+}
+
+int main(int argc, char * argv[])
+{
+    double  d = 2.3;
+    char    a[3];
+    
+    a[0] = 0x23;
+    foo();
+    return 0;
+}
+
+------------------------------------------------------------------------------
