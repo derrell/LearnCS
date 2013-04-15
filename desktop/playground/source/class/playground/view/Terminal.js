@@ -27,15 +27,16 @@ qx.Class.define("playground.view.Terminal",
     // Create the embedded text field, which is the actual point of user
     // interaction
     this._textArea = new qx.ui.form.TextArea();
-    this._textArea.setDecorator(null);
-    
+
     // The terminal must use a fixed-width font, and we want events on every
     // key input
     this._textArea.set(
       {
         font       : "monospace",
+        decorator  : null,
         liveUpdate : true,
-        value      : ""
+        value      : "",
+        wrap       : false
       });
     this.add(this._textArea, { flex : 1 });
     
@@ -83,6 +84,7 @@ qx.Class.define("playground.view.Terminal",
       
       // Add the next text to the terminal
       textArea.setValue(textArea.getValue() + text);
+      textArea.getContentElement().scrollToY(100000);
     },
 
     /** Event listener for keypress event */
@@ -105,6 +107,7 @@ qx.Class.define("playground.view.Terminal",
         
         // Add a newline to the text field
         textArea.setValue(textArea.getValue() + "\n");
+        textArea.getContentElement().scrollToY(100000);
         break;
         
       case "Backspace" :
@@ -117,6 +120,7 @@ qx.Class.define("playground.view.Terminal",
           // Remove the final character from the text field
           value = textArea.getValue();
           textArea.setValue(value.substr(0, value.length - 1));
+          textArea.getContentElement().scrollToY(100000);
         }
         break;
         
@@ -140,6 +144,7 @@ qx.Class.define("playground.view.Terminal",
 
       // Add this character to the text field
       textArea.setValue(textArea.getValue() + inputChar);
+      textArea.getContentElement().scrollToY(100000);
       
       // Prevent the character from being echoed
       e.preventDefault();

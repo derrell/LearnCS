@@ -391,13 +391,18 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
                   var             editor;
                   var             memData;
                   var             model;
+                  var             message;
+                  
+                  message = 
+                    value.value === 0
+                    ? "completed successfully."
+                    : "was NOT SUCCESSFUL. Exit code: " + value.value;
 
                   qx.core.Init.getApplication().
                     getUserData("terminal").addOutput(
                       "*** " +
-                      "Program execution complete. " +
-                      "Exit code: " + value.value + " " +
-                      "***");
+                      "Program execution " + message + " " +
+                      "***\n");
 
                   if (playground.c.AbstractSyntaxTree.debugFlags.rts)
                   {
