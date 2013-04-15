@@ -47,7 +47,7 @@ if (typeof qx === "undefined")
   require("./machine/Memory");
 }
 
-qx.Class.define("playground.c.Printf",
+qx.Class.define("playground.c.Scanf",
 {
   extend : qx.core.Object,
   
@@ -66,7 +66,10 @@ qx.Class.define("playground.c.Printf",
 
     this.retArr = [];
     this._NWS = /\S/;
-    this.args = arguments;
+    this._args = arguments;
+    this._width = 0;
+    this._assign = true;
+
 
     // Get memory as an array
     this._mem = playground.c.machine.Memory.getInstance();
@@ -105,21 +108,22 @@ qx.Class.define("playground.c.Printf",
   {
     fscanf : function(stream)
     {
-      var             args = Array.prototype.slice.call(arguments);
       var             inputStrAddr;
       var             formatAddr;
       var             scanf;
       var             numConversions;
       
+      this._args = Array.prototype.slice.call(arguments);
+
       // Obtain the input and format string addresses, and get an instace of a
       // Scanf class (which will obtain the input and format strings from the
       // given addresses)
-      inputStrAddr = args.shift();
-      formatAddr = args.shift();
+      inputStrAddr = this._args.shift();
+      formatAddr = this._args.shift();
       scanf = new playground.c.Scanf(inputStrAddr, formatAddr);
 
       // Now process the request
-      numConversions = scanf.process.apply(scanf, args);
+      numConversions = scanf.process.apply(scanf, this._args);
       return numConversions;
     }
   },
@@ -131,9 +135,6 @@ qx.Class.define("playground.c.Printf",
       // PROCESS
       for (var i = 0, j = 0; i < this.format.length; i++) 
       {
-        var width = 0,
-          assign = true;
-
         if (this.format.charAt(i) === '%') 
         {
           if (this.format.charAt(i + 1) === '%') 
@@ -144,7 +145,7 @@ qx.Class.define("playground.c.Printf",
               continue;
             }
             // Format indicated a percent literal, but not actually present
-            return _setExtraConversionSpecs(i + 2);
+            return this._setExtraConversionSpecs(i + 2);
           }
 
           // CHARACTER FOLLOWING PERCENT IS NOT A PERCENT
@@ -162,8 +163,8 @@ qx.Class.define("playground.c.Printf",
           }
           this.digit = preConvs[1] ? parseInt(preConvs[1], 10) - 1 : undefined;
 
-          assign = ! preConvs[2];
-          width = parseInt(preConvs[3], 10);
+          this._assign = ! preConvs[2];
+          this._width = parseInt(preConvs[3], 10);
           var sizeCode = preConvs[4];
           i += prePattern.lastIndex;
 
@@ -225,7 +226,7 @@ qx.Class.define("playground.c.Printf",
             case 'i':
               // Integer with base detection (Equivalent of 'd', but base 0
               // instead of 10)
-              j = _addNext(
+              j = this._addNext(
                 (sizeCode == "h"
                    ? "short"
                    : (sizeCode == "l"
@@ -259,14 +260,15 @@ qx.Class.define("playground.c.Printf",
               // shouldn't be whitespace in format anyways, so no difference
               // here)
               // Non-greedy match
-              j = _addNext("char", j, new RegExp('.{1,' + (width || 1) + '}'));
+              j = this._addNext(
+                "char", j, new RegExp('.{1,' + (this._width || 1) + '}'));
               break;
 
             case 'D':
               // sscanf documented decimal number; equivalent of 'd';
             case 'd':
               // Optionally signed decimal integer
-              j = _addNext(
+              j = this._addNext(
                 (sizeCode == "h"
                    ? "short"
                    : (sizeCode == "l"
@@ -305,7 +307,7 @@ qx.Class.define("playground.c.Printf",
               // These don't discriminate here as both allow exponential float
               // of either case
             case 'e':
-              j = _addNext(
+              j = this._addNext(
                 (sizeCode == "l"
                    ? "double"
                    : "float"),
@@ -325,7 +327,7 @@ qx.Class.define("playground.c.Printf",
             case 'u':
               // unsigned decimal integer
               // We won't deal with integer overflows due to signs
-              j = _addNext(
+              j = this._addNext(
                 (sizeCode == "h"
                    ? "short"
                    : (sizeCode == "l"
@@ -360,7 +362,7 @@ qx.Class.define("playground.c.Printf",
 
             case 'o':
               // Octal integer // Fix: add overflows as above?
-              j = _addNext(
+              j = this._addNext(
                 (sizeCode == "h"
                    ? "short"
                    : (sizeCode == "l"
@@ -376,7 +378,7 @@ qx.Class.define("playground.c.Printf",
 
             case 's':
               // Greedy match
-              j = _addNext("pointer", j, /\S+/);
+              j = this._addNext("pointer", j, /\S+/);
               break;
 
             case 'X':
@@ -384,7 +386,7 @@ qx.Class.define("playground.c.Printf",
             case 'x':
               // Fix: add overflows as above?
               // Initial 0x not necessary here
-              j = _addNext(
+              j = this._addNext(
                 (sizeCode == "h"
                    ? "short"
                    : (sizeCode == "l"
@@ -412,7 +414,7 @@ qx.Class.define("playground.c.Printf",
           {
             if (e === 'No match in string')
             { // Allow us to exit
-              return _setExtraConversionSpecs(i + 2);
+              return this._setExtraConversionSpecs(i + 2);
             }
           }
           ++i; // Calculate skipping beyond initial percent too
@@ -424,7 +426,7 @@ qx.Class.define("playground.c.Printf",
           if ((this._NWS).test(this._inputStr.charAt(j)) ||
               this._inputStr.charAt(j) === '')
           { // Whitespace doesn't need to be an exact match)
-            return _setExtraConversionSpecs(i + 1);
+            return this._setExtraConversionSpecs(i + 1);
           }
           else
           {
@@ -442,7 +444,7 @@ qx.Class.define("playground.c.Printf",
       }
 
       // POST-PROCESSING
-      return _finish();
+      return this._finish();
     },
 
     _setExtraConversionSpecs : function(offset) 
@@ -472,7 +474,7 @@ qx.Class.define("playground.c.Printf",
         }
       }
 
-      return _finish();
+      return this._finish();
     },
 
     _finish : function() 
@@ -482,7 +484,7 @@ qx.Class.define("playground.c.Printf",
       var             addr;
       var             ret;
 
-      if (args.length === 2) 
+      if (this._args.length === 2) 
       {
         if (false)              // djl: this isn't # of conversions. Wrong.
         {
@@ -522,10 +524,10 @@ qx.Class.define("playground.c.Printf",
 
     _addNext : function(type, j, regex, cb)
     {
-      if (assign) 
+      if (this._assign) 
       {
         var remaining = this._inputStr.slice(j);
-        var check = width ? remaining.substr(0, width) : remaining;
+        var check = this._width ? remaining.substr(0, this._width) : remaining;
         var match = regex.exec(check);
         var testNull = match ? (cb ? cb.apply(null, match) : match[0]) : null;
         if (testNull === null) 
