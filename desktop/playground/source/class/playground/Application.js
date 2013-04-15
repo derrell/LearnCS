@@ -156,7 +156,7 @@ qx.Class.define("playground.Application",
       // info split (right side of the main split)
       var infosplit = new qx.ui.splitpane.Pane("vertical");
       infosplit.setDecorator(null);
-
+      
       // examples pane
       this.__samplesPane = new playground.view.Samples();
       this.__samplesPane.addListener("save", this.__onSave, this);
@@ -186,6 +186,10 @@ qx.Class.define("playground.Application",
       }
       this.__store.bind("model", this.__samplesPane, "model");
 
+      // Create a split for the tabview and the terminal
+      this.__terminalsplit = new qx.ui.splitpane.Pane("vertical");
+      this.__terminalsplit.setDecorator(null); // get rid of the 3px broder
+      
       // Create a tabview to hold the Source and Block Editors
       var tabview = new qx.ui.tabview.TabView();
       var container;
@@ -226,8 +230,14 @@ qx.Class.define("playground.Application",
       // Add the page to the tabview
       tabview.add(page);
       
+      // Create a terminal window
+      var terminal = new playground.view.Terminal();
+      qx.core.Init.getApplication().setUserData("terminal", terminal);
+
       this.__editorsplit.add(this.__samplesPane, 1);
-      this.__editorsplit.add(tabview, 4);
+      this.__terminalsplit.add(tabview, 4);
+      this.__terminalsplit.add(terminal, 2);
+      this.__editorsplit.add(this.__terminalsplit, 4);
       this.__mainsplit.add(this.__editorsplit, 6);
       this.__mainsplit.add(infosplit, 3);
 

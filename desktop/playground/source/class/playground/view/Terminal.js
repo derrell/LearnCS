@@ -9,41 +9,140 @@
 
 qx.Class.define("playground.view.Terminal",
 {
-  extend : qx.ui.groupbox.GroupBox,
+  extend : qx.ui.container.Composite,
   
   construct : function()
   {
-    // Call the superclass constructor, and give us a legend.
-    this.base(arguments, "Terminal");
+    var             legend; 
+
+    // Call the superclass constructor
+    this.base(arguments);
+    this._setLayout(new qx.ui.layout.VBox(2));
     
+    // Add a legend
+    legend = new qx.ui.basic.Label("Terminal");
+    legend.setFont("bold");
+    this.add(legend);
+
     // Create the embedded text field, which is the actual point of user
     // interaction
-    this._textField = new qx.ui.form.TextField();
+    this._textArea = new qx.ui.form.TextArea();
+    this._textArea.setDecorator(null);
     
-    // The terminal must use a fixed-width font, and we want a changeValue
-    // event on every key input
-    this._textField.set(
+    // The terminal must use a fixed-width font, and we want events on every
+    // key input
+    this._textArea.set(
       {
         font       : "monospace",
-        liveUpdate : true
+        liveUpdate : true,
+        value      : ""
       });
+    this.add(this._textArea, { flex : 1 });
     
     // Trap keyboard input
-    this.addListener("changeValue", this._onChangeValue);
+    this._textArea.addListener("keypress", this._onKeyPress, this);
+    this._textArea.addListener("keyinput", this._onKeyInput, this);
     
     // Prepare to store input characters
-    this._inbuf = [];
+    this._linebuf = [];
   },
   
+  events :
+  {
+    // Fired when a line of text has been entered
+    "textline" : "qx.event.type.Data"
+  },
+
   members :
   {
-    /** Input buffer */
-    _inbuf : null,
+    /** Line buffer, contains chars typed on one line. Flushed on Enter. */
+    _linebuf : null,
 
-    /** Event listener for changeValue event */
-    _onChangeValue : function(e)
+    /**
+     * Clear the terminal window and flush all prior input
+     */
+    clear : function()
     {
+      // Clear the terminal window
+      this._textArea.setValue("");
       
+      // Flush prior input
+      this._linebuf = [];
+    },
+
+    /**
+     * Add text output to the terminal. This is intended for things like
+     * printf() to place its output in the terminal window.
+     *
+     * @param text {String}
+     *   Text to be appended ot the terminal window
+     */
+    addOutput : function(text)
+    {
+      var             textArea = this._textArea;
+      
+      // Add the next text to the terminal
+      textArea.setValue(textArea.getValue() + text);
+    },
+
+    /** Event listener for keypress event */
+    _onKeyPress : function(e)
+    {
+      var             keyId = e.getKeyIdentifier();
+      var             textArea = this._textArea;
+      var             value;
+      
+      switch(keyId)
+      {
+      case "Enter" :
+        console.log("Firing data event with: " + this._linebuf.join(""));
+
+        // Fire an event with this line data
+        this.fireDataEvent("textline", this._linebuf.join(""));
+
+        // Clear the line buffer. Can't backspace past beginning of line
+        this._linebuf = [];
+        
+        // Add a newline to the text field
+        textArea.setValue(textArea.getValue() + "\n");
+        break;
+        
+      case "Backspace" :
+        // Is there anything in the line buffer?
+        if (this._linebuf.length > 0)
+        {
+          // Yup. Remove the final character from the line buffer
+          this._linebuf.pop();
+          
+          // Remove the final character from the text field
+          value = textArea.getValue();
+          textArea.setValue(value.substr(0, value.length - 1));
+        }
+        break;
+        
+      default:
+        // Everything else is ignored here, and handled on keyinput event
+        break;
+      }
+      
+      // Prevent the character from being echoed
+      e.preventDefault();
+    },
+
+    /** Event listener for keyinput event */
+    _onKeyInput : function(e)
+    {
+      var             textArea = this._textArea;
+      var             inputChar = e.getChar();
+
+      // Add this character to the line buffer
+      this._linebuf.push(inputChar);
+
+      // Add this character to the text field
+      textArea.setValue(textArea.getValue() + inputChar);
+      
+      // Prevent the character from being echoed
+      e.preventDefault();
     }
   }
 });
