@@ -1945,12 +1945,15 @@ qx.Class.define("playground.c.lib.Node",
             // Save current symbol table so we know where to pop to upon return
             symtab = playground.c.lib.Symtab.getCurrent();
 
-            // We're executing. Process the loop.
+            // We're executing. Process the loop. First, initialization.
             this.children[0].process(
               data,
               bExecuting,
               function()
               {
+                var             fSelf = arguments.callee;
+
+                // Process the 'while' condition
                 this.children[1].process(
                   data,
                   bExecuting,
@@ -1959,6 +1962,7 @@ qx.Class.define("playground.c.lib.Node",
                     value = this.getExpressionValue(v, data);
                     if (value.value)
                     {
+                      // 'while' condition evaluates to true. Now, statements.
                       this._tryIt(
                         function(succ, fail)
                         {
@@ -1972,9 +1976,16 @@ qx.Class.define("playground.c.lib.Node",
                             bExecuting,
                             function()
                             {
-                              // After each iteration
+                              // After each iteration. Upon success, return to
+                              // processing the 'while' condition.
                               this.children[3].process(
-                                data, bExecuting, succ, fail);
+                                data, 
+                                bExecuting,
+                                function()
+                                {
+                                  fSelf.bind(this)();
+                                }.bind(this),
+                                fail);
                             }.bind(this),
                             fail);
                         }.bind(this),
@@ -2001,6 +2012,10 @@ qx.Class.define("playground.c.lib.Node",
                         }.bind(this),
                         succ,
                         fail);
+                    }
+                    else
+                    {
+                      success();
                     }
                   }.bind(this),
                   fail);
@@ -3707,7 +3722,6 @@ qx.Class.define("playground.c.lib.Node",
                 var             i;
 
                 value1 = this.getExpressionValue(v, data);
-console.log("Found expression to switch: value=" + value1.value);
 
                 // Get a reference to the statement list
                 subnode = this.children[1].children[1];
