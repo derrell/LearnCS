@@ -2347,7 +2347,8 @@ qx.Class.define("playground.c.lib.Node",
               value3 = error.returnCode;
               specAndDecl = value3.specAndDecl;
 
-              // Retore symbol table to where it was when we called the function
+              // Retore symbol table to where it was when we called the
+              // function
               while (playground.c.lib.Symtab.getCurrent() != symtab)
               {
                 playground.c.lib.Symtab.popStack();
@@ -3329,7 +3330,7 @@ qx.Class.define("playground.c.lib.Node",
                                                  "int", "char", "unsigned");
                 value3 =
                   {
-                    value       : Math.floor(Math.random() * 256),
+                    value       : 127,
                     specAndDecl : [ specOrDecl ]
                   };
 
