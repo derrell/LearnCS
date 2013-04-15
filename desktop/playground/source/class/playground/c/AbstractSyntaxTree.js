@@ -238,6 +238,10 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
           // exists, to run the program
           if (entryNode)
           {
+            qx.core.Init.getApplication().getUserData("terminal").clear();
+            qx.core.Init.getApplication().getUserData("terminal").addOutput(
+              "\n*** Running program ***\n");
+
             // Prepare to call main(). Reset the machine.
             machine.initAll();
 
@@ -381,12 +385,19 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
               entryNode.process(
                 data,
                 true,
-                function()
+                function(value)
                 {
                   var             application;
                   var             editor;
                   var             memData;
                   var             model;
+
+                  qx.core.Init.getApplication().
+                    getUserData("terminal").addOutput(
+                      "*** " +
+                      "Program execution complete. " +
+                      "Exit code: " + value.value + " " +
+                      "***");
 
                   if (playground.c.AbstractSyntaxTree.debugFlags.rts)
                   {

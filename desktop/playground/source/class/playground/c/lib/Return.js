@@ -27,8 +27,9 @@ qx.Class.define("playground.c.lib.Return",
 {
   extend : playground.c.lib.RuntimeError,
   
-  construct : function(returnCode)
+  construct : function(node, returnCode)
   {
+    this.base(arguments, node, "Return from function");
     this.returnCode = returnCode;
   }
 });

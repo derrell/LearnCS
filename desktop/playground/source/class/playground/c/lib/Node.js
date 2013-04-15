@@ -2301,16 +2301,15 @@ qx.Class.define("playground.c.lib.Node",
                   function()
                   {
                     // Create a specifier for the value
-                    specOrDecl = 
-                      new playground.c.lib.Specifier(this,
-                                                     "int", "char", "unsigned");
+                    specOrDecl = new playground.c.lib.Specifier(
+                      this, "int", "char", "unsigned");
 
-                    // A return statement in the function will cause the catch()
-                    // block to be executed. If one doesn't exist, create an
-                    // arbitrary return value.
+                    // A return statement in the function will cause the
+                    // catch() block to be executed. If one doesn't exist,
+                    // use 127.
                     value3 =
                       {
-                        value       : Math.floor(Math.random() * 256),
+                        value       : 127,
                         specAndDecl : [ specOrDecl ]
                       };
 
@@ -3323,7 +3322,7 @@ qx.Class.define("playground.c.lib.Node",
               }
               else
               {
-                // There was no return expression. We'll choose one at random.
+                // There was no return expression. Use 127.
                 // Create a specifier for the value
                 specOrDecl = 
                   new playground.c.lib.Specifier(this,
