@@ -19,3 +19,14 @@ int main(int argc, char * argv[])
 }
 
 ------------------------------------------------------------------------------
+
+Fails to work at school:
+
+int main(void)
+{
+    char a[3];
+    
+    a[0] = 23;
+    a[2] = 42;
+    return 0;
+}
