@@ -46,6 +46,7 @@ This version has been modified by Derrell Lipman:
 if (typeof qx === "undefined")
 {
   require("./machine/Memory");
+  require("./lib/RuntimeError");
 }
 
 qx.Class.define("playground.c.Printf",
@@ -179,7 +180,11 @@ qx.Class.define("playground.c.Printf",
             var num = parseInt(token.arg);
             if (num < 0 || num > 127)
             {
-              throw new Error('invalid character code passed to %c in printf');
+              throw new playground.c.lib.RuntimeError(
+                playground.c.lib.Node._currentNode,
+                "The decimal value of the character passed to %c in printf " +
+                "must be in the range [1, 127]; " +
+                "received character with decimal value " + num);
             }
 
             token.arg = isNaN(num) ? '' + num : String.fromCharCode(num);

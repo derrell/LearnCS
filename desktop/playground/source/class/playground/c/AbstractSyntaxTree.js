@@ -98,10 +98,10 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
 
             if (str)
             {
-              errStr += "\t" + str;
+              errStr += "\t" + str + "\n";
             }
 
-            console.log(errStr);
+            playground.c.AbstractSyntaxTree.output(errStr);
           }
           else
           {
@@ -139,6 +139,32 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
       };
     },
 
+    output : function(str, bClear)
+    {
+      var             terminal;
+
+      try
+      {
+        terminal = qx.core.Init.getApplication().getUserData("terminal");
+        if (bClear)
+        {
+          terminal.clear();
+        }
+        terminal.addOutput(str);
+      }
+      catch(e)
+      {
+        if (str.charAt(str.length - 1) == "\n")
+        {
+          console.log(str.substr(0, str.length - 1));
+        }
+        else
+        {
+          console.log(str);
+        }
+      }
+    },
+
     process : function(root, argv)
     {
       var             p;
@@ -155,6 +181,7 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
       var             entryNode;
       var             declarator;
       var             function_decl;
+      var             str;
       var             Memory = playground.c.machine.Memory;
       var             mem = Memory.getInstance();
 
@@ -184,26 +211,27 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
         // Determine what type of error we encountered
         if (error instanceof playground.c.lib.Break)
         {
-          console.log(
+          playground.c.AbstractSyntaxTree.output(
             "Error: line " + error.node.line + ": " + 
             "Found 'break' not in a loop, " +
-            "nor immediately within a 'switch'");
+            "nor immediately within a 'switch'\n");
         }
         else if (error instanceof playground.c.lib.Continue)
         {
-          console.log(
+          playground.c.AbstractSyntaxTree.output(
             "Error: line " + error.node.line + ": " + 
-            "Found 'continue' not immediately within a loop");
+            "Found 'continue' not immediately within a loop\n");
         }
         else if (error instanceof playground.c.lib.RuntimeError)
         {
-          console.log(
-            "Error: line " + error.node.line + ": " + error.message);
+          playground.c.AbstractSyntaxTree.output(
+            "Error: line " + error.node.line + ": " + error.message + "\n");
         }
         else
         {
-          console.log("Programmer error: " + error);
-          console.log(error.stack);
+          playground.c.AbstractSyntaxTree.output("Programmer error: " + 
+                                                 error + "\n");
+          playground.c.AbstractSyntaxTree.output(error.stack + "\n");
         }
       };
 
@@ -238,9 +266,9 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
           // exists, to run the program
           if (entryNode)
           {
-            qx.core.Init.getApplication().getUserData("terminal").clear();
-            qx.core.Init.getApplication().getUserData("terminal").addOutput(
-              "\n*** Running program ***\n");
+            playground.c.AbstractSyntaxTree.output(
+              "\n*** Running program ***\n",
+              true);
 
             // Prepare to call main(). Reset the machine.
             machine.initAll();
@@ -391,18 +419,12 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
                   var             editor;
                   var             memData;
                   var             model;
-                  var             message;
-                  
-                  message = 
-                    value.value === 0
-                    ? "completed successfully."
-                    : "was NOT SUCCESSFUL. Exit code: " + value.value;
 
-                  qx.core.Init.getApplication().
-                    getUserData("terminal").addOutput(
-                      "*** " +
-                      "Program execution " + message + " " +
-                      "***\n");
+                  // 'try' will fail when not in GUI environment
+                  playground.c.AbstractSyntaxTree.output(
+                    "*** " +
+                    "Program exited with exit code " + value.value + " " +
+                    "***");
 
                   if (playground.c.AbstractSyntaxTree.debugFlags.rts)
                   {
@@ -487,7 +509,8 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
           }
           else
           {
-            console.log("Missing main() function\n");
+            playground.c.AbstractSyntaxTree.output(
+              "Missing main() function\n");
           } 
         }.bind(root),
         catchError);

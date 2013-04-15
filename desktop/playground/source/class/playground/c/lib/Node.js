@@ -71,8 +71,11 @@ qx.Class.define("playground.c.lib.Node",
     /** The Memory singleton instance */
     __mem : null,
     
-    /** Previous line number (used to know when a new instruction is executed */
+    /** Previous line number (to know when a new instruction is executed */
     _prevLine : 0,
+
+    /** Node which calls a built-in function */
+    _currentNode : null,
 
     /** Mappings of types of numbers to their types */
     NumberType :
@@ -523,7 +526,14 @@ qx.Class.define("playground.c.lib.Node",
             qx.util.TimerManager.getInstance().start(
               function(userData, timerId)
               {
-                this.process.apply(this, args);
+                try
+                {
+                  this.process.apply(this, args);
+                }
+                catch(e)
+                {
+                  failure(e);
+                }
               },
               0,
               this,
@@ -1745,7 +1755,7 @@ qx.Class.define("playground.c.lib.Node",
                do_while_while_statement_block(
                  function()
                  {
-                   do_while_while_condition(success, fail);
+                   do_while_while_condition(succ, fail);
                  },
                  fail);
              }.bind(this))();
@@ -2106,7 +2116,10 @@ qx.Class.define("playground.c.lib.Node",
                 // Is this a built-in function, or a user-generated one?
                 if (value1.getSpecAndDecl()[0].getType() == "builtIn")
                 {
-                  // Save the return value in value3
+                  // Make the current node available to the built-in function
+                  playground.c.lib.Node._currentNode = this;
+
+                  // Call the built-in funciton. Save return value in value3
                   value3 = value2.apply(null, data.args);
 
                   // Remove our argument array
