@@ -139,6 +139,10 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
       };
     },
 
+    /**
+     * @lint ignoreUndefined(process.stdout)
+     * @lint ignoreUndefined(process.stdout.write)
+     */
     output : function(str, bClear)
     {
       var             terminal;
@@ -154,14 +158,7 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
       }
       catch(e)
       {
-        if (str.charAt(str.length - 1) == "\n")
-        {
-          console.log(str.substr(0, str.length - 1));
-        }
-        else
-        {
-          console.log(str);
-        }
+        process.stdout.write(str);
       }
     },
 
@@ -423,7 +420,7 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
                   // 'try' will fail when not in GUI environment
                   playground.c.AbstractSyntaxTree.output(
                     ">>> " +
-                    "Program exited with exit code " + value.value);
+                    "Program exited with exit code " + value.value + "\n");
 
                   if (playground.c.AbstractSyntaxTree.debugFlags.rts)
                   {

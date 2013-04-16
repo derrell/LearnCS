@@ -1,5 +1,6 @@
 /**
- * FILE structure, common to Stdin, Stdout, and files opened with fopen
+ * An abstract FILE structure, common to Stdin, Stdout, and files opened with
+ * fopen.
  *
  * Copyright (c) 2013 Derrell Lipman
  * 
@@ -16,14 +17,36 @@ qx.Class.define("playground.c.stdio.AbstractFile",
   {
     this.base(arguments);
     
-    // Save the mode, one of "r", "w", "a", "rw"
-    this._mode = mode;
+    // Save the mode, one of "r", "w", "rw"
+    switch(mode)
+    {
+    case "r" :
+      this._mode = 0x01;
+      break;
+      
+    case "w" :
+      this._mode = 0x02;
+      break;
+      
+    case "rw" :
+      this._mode = 0x03;
+      break;
+      
+    default :
+      throw new Error("Unrecognized stdio mode: " + mode);
+    }
     
     // Create arrays for input/output buffering
     this._inBuf = [];
     this._outBuf = [];
   },
   
+  events :
+  {
+    /** Fired when new input data is available */
+    "inputdata" : "qx.event.type.Event"
+  },
+
   members :
   {
     /** The input buffer (array) */
@@ -32,69 +55,219 @@ qx.Class.define("playground.c.stdio.AbstractFile",
     /** The output buffer (array) */
     _outBuf : null,
     
-    /** Size of the input buffer. */
-    _inBufLen : 512,
-    
-    /** Size of the output buffer. Flush when this length is reached. */
-    _outBufLen : 512,
+    /** Size of the input and output buffers. */
+    _bufLen : 512,
     
     /** Whether this (output) file is line-buffered, i.e., flush at '\n' */
     _bLineBuf : false,
 
-    open : function(name, succ, fail)
-    {
-      throw new Error("open() is abstract");
-    },
-    
-    close : function(succ, fail)
-    {
-      throw new Error("close() is abstract");
-    },
-    
+    /**
+     * Read one character from the file. This function blocks until the
+     * character is available to be read and returned.
+     * 
+     * @param succ {Function}
+     *   Function to call upon having successfully read a character from the
+     *   file. The function is passed, as the one and only argument, the
+     *   character that was read.
+     * 
+     * @param fail {Function}
+     *   Function to call upon error reading a character. The function will be
+     *   called with a playground.c.lib.RuntimeError instance.
+     */
     getc : function(succ, fail)
     {
+      // Ensure the file is opened for reading
+      if (! (this._mode & 0x01))
+      {
+        fail(new playground.c.lib.RuntimeError(
+               playground.c.lib.Node._currentNode,
+               "Can not call getc() on this file. " +
+               "It is not open for reading."));
+      }
+
       // If there's a character available in the input buffer...
       if (this._inBuf.length > 0)
       {
-        // ... then immediately return that character
+        // ... then return that character, removing it from the input buffer
         succ(this._inBuf.shift());
+        return;
       }
-      else
-      {
-        // Otherwise, await more input and then return a character
-        this._awaitInput(
-          function()
-          {
-            getc(succ, fail);
-          },
-          fail);
-      }
+
+      // Wait for new characters to be available in inbuf, and then try again.
+      this.addListenerOnce(
+        "inputdata",
+        function(e)
+        {
+          this.getc(succ, fail);
+        },
+        this);
     },
     
+    /**
+     * Put a character back onto the input stream.
+     * 
+     * @param c {String}
+     *   The single character to put back onto the input stream.
+     * 
+     * @param succ {Function}
+     *   Function to call upon having successfully put the character back onto
+     *   the input stream. No arguments are passed to this function.
+     * 
+     * @param fail {Function}
+     *   Function to call upon error putting the character back onto the input
+     *   stream. The function will be called with an instance of
+     *   playground.c.lib.RuntimeError.
+     */
     ungetc : function(c, succ, fail)
     {
+      // Ensure the file is opened for reading
+      if (! (this._mode & 0x01))
+      {
+        fail(new playground.c.lib.RuntimeError(
+               playground.c.lib.Node._currentNode,
+               "Can not call ungetc() on this file. " +
+               "It is not open for reading."));
+      }
+
+      // Put the character onto the input stream, as the next character to read
+      this._inBuf.unshift(c);
       
+      // Fire an event, in case someone is waiting on a read
+      this.fireEvent("inputdata");
+      
+      succ();
     },
 
+    /**
+     * Read bytes from the file. This function blocks until the specified
+     * number of bytes are available to be read and returned.
+     *
+     * @param numBytes {Integer}
+     *   The number of bytes to read from the file.
+     *
+     * @param succ {Function}
+     *   Function to call upon having successfully read a character from the
+     *   file. The function is passed, as the one and only argument, the
+     *   character that was read.
+     * 
+     * @param fail {Function}
+     *   Function to call upon error reading a character. The function will be
+     *   called with a playground.c.lib.RuntimeError instance.
+     */
+    read : function(numBytes, succ, fail)
+    {
+      var             ret;
+
+      // Ensure the file is opened for reading
+      if (! (this._mode & 0x01))
+      {
+        fail(new playground.c.lib.RuntimeError(
+               playground.c.lib.Node._currentNode,
+               "Can not call read() on this file. " +
+               "It is not open for reading."));
+      }
+
+      // Do we have enough data in the input buffer to fulfill the request?
+      if (this._inBuf.length > numBytes)
+      {
+        // Yup. Get the return data by copying the beginning portion of inbuf.
+        ret = this._inBuf.slice(0, numBytes);
+        
+        // Now strip those bytes off of the beginning of inbuf
+        this._inBuf.splice(0, numBytes);
+        
+        // Give 'em what they came for!
+        succ(ret);
+        
+        return;
+      }
+
+      // Wait for new characters to be available in inbuf, and then try again.
+      this.addListenerOnce(
+        "inputdata",
+        function(e)
+        {
+          this.read(numBytes, succ, fail);
+        },
+        this);
+    },
+    
+    /**
+     * Append a character to a output buffer for the file. If the output
+     * buffer size is exceeded, the buffer is flushed. Alternatively, if the
+     * file is line-buffered and there are embedded newlines, data in the
+     * output buffer is flushed up through the final newline.
+     * 
+     * @param c {String}
+     *   The character to be written to the file.
+     * 
+     * @param succ {Function}
+     *   Function to call upon having successfully written the character to
+     *   the output stream. No arguments are passed to this function.
+     * 
+     * @param fail {Function}
+     *   Function to call upon error writing the character to the output
+     *   stream. The function will be called with an instance of
+     *   playground.c.lib.RuntimeError.
+     */
     putc : function(c, succ, fail)
     {
+      // Ensure the file is opened for writing
+      if (! (this._mode & 0x02))
+      {
+        fail(new playground.c.lib.RuntimeError(
+               playground.c.lib.Node._currentNode,
+               "Can not call write() on this file. " +
+               "It is not open for writing."));
+      }
+
       // Append this character to the output buffer
       this._outBuf.push(c);
       
-      // Begin outputing of characters
+      // If the buffering mode indicates to flush now...
       if (this._shouldOutputNow())
       {
-        this._outputChar(succ, fail);
+        // ... then let listeners know there's data available, and flush the
+        // output buffer.
+        this._output(this._outBuf.length);
       }
-      else
-      {
-        succ();
-      }
+      succ();
     },
     
+    /**
+     * Append bytes to the output buffer for the file. If the output buffer
+     * size is exceeded, the buffer is flushed. Alternatively, if the file is
+     * line-buffered and there are embedded newlines, data in the output
+     * buffer is flushed up through the final newline.
+     *
+     * FIXME: Currently, only the final character is inspected for
+     *   newline. The flushing mechanism should be adjusted to work as
+     *   documented above.
+     *
+     * @param c {String|Array}
+     *   The string, or array of bytes, to be written to the file
+     *
+     * @param succ {Function}
+     *   Function to call upon having successfully written the bytes to the
+     *   output stream. No arguments are passed to this function.
+     *
+     * @param fail {Function}
+     *   Function to call upon error writing the bytes to the output
+     *   stream. The function will be called with an instance of
+     *   playground.c.lib.RuntimeError.
+     */
     write : function(bytes, succ, fail)
     {
       var             byteArr;
+
+      // Ensure the file is opened for writing
+      if (! (this._mode & 0x02))
+      {
+        fail(new playground.c.lib.RuntimeError(
+               playground.c.lib.Node._currentNode,
+               "Can not call write() on this file. " +
+               "It is not open for writing."));
+      }
 
       // If there are no bytes to write...
       if (bytes.length === 0)
@@ -115,38 +288,103 @@ qx.Class.define("playground.c.stdio.AbstractFile",
         Array.prototype.push.apply(this._outBuf, bytes);
       }
       
-      // Begin outputing of characters
+      // If the buffering mode indicates to flush now...
       if (this._shouldOutputNow())
       {
-        this._output(succ, fail);
+        // ... then let listeners know there's data available, and flush the
+        // output buffer.
+        this._output(this._outBuf.length);
       }
-    },
-    
-    read : function(numBytes, succ, fail)
-    {
       
+      succ();
     },
-    
+
+    /**
+     * Flush the output buffer to the file
+     * 
+     * @param succ {Function}
+     *   Function to call upon having successfully flushed the output buffer
+     *   to the file. No arguments are passed to this function.
+     *
+     * @param fail {Function}
+     *   Function to call upon error flushing the output buffer to the
+     *   file. The function will be called with an instance of
+     *   playground.c.lib.RuntimeError.
+     */
     flush : function(succ, fail)
     {
+      // Ensure the file is opened for writing. It isn't a failure if not;
+      // there's just nothing to do. We will generate a warning, though, since
+      // it's not a reliable thing to do in any environment.
+      if (this._mode & 0x02)
+      {
+        // If there's any data in the output buffer...
+        if (this._outBuf.length > 0)
+        {
+          // ... then let listeners know there's data available, and flush the
+          // output buffer.
+          this._output(this._outBuf.length);
+        }
+      }
+      else if (this._mode == 0x01)
+      {
+        playground.c.AbstractSyntaxTree.output(
+          "\n\n" +
+          "WARNING: calling flush() on a file opened only for reading\n" +
+            "does not flush input characters. Flushing input reliably is\n" +
+            "non-trivial.\n\n");
+      }
       
+      succ();
     },
 
-    setbuf : function(buffer, maxLen)
+    /**
+     * Modify the line buffering flag. Output files that are line-buffered are
+     * flushed upon receiving a newline character, rather than waiting until
+     * the max buffer length is reached or the file is manually flushed.
+     * 
+     * @param bLineBuffered {Boolean}
+     *   true to turn on line buffering; false otherwise.
+     */
+    setLineBuf : function(bLineBuffered)
     {
-      
+      // Set the line buffering flag
+      this._bLineBuf = !! bLineBuffered;
     },
-    
+
+    /**
+     * Check whether it's time to flush the output buffer.
+     * 
+     * @return {Boolean}
+     *   true if the output buffer should be flushed; false otherwise.
+     */
     _shouldOutputNow : function()
     {
+      // If there's nothing in the output buffer...
+      if (this._outBuf.length === 0)
+      {
+        // ... then they don't need to send any output.
+        return false;
+      }
+
+      // If the buffer length has been reached...
+      if (this._outBuf.length >= this._bufLen)
+      {
+        // ... then tell 'em to send the output.
+        return true;
+      }
       
+      // If we're line-buffered and the last character is a newline...
+      if (this._bLineBuf && this._outBuf[this._outBuf - 1] == '\n')
+      {
+        // ... then tell 'em to send the output
+        return true;
+      }
+      
+      // Otherwise, it's not yet time to send any output.
+      return false;
     },
 
-    _output : function(succ, fail)
-    {
-      throw new Error("_output is abstract");
-    },
-    
     _awaitInput : function(succ, fail)
     {
       var             terminal;
@@ -162,6 +400,26 @@ qx.Class.define("playground.c.stdio.AbstractFile",
         },
         this);
 /***************************************************************************/
+    },
+    
+    /*
+     * Write output buffer data to the file. The output buffer will be
+     * truncated by the length output to the file.
+     * 
+     * @param len {Integer} 
+     *   The number of bytes to write. In most cases, this is the entire
+     *   output buffer, but in the case of a write() to a line-buffered file,
+     *   where there are embedded newlines in the data but trailing data after
+     *   the final newline, this may not be the entire buffer.
+     */
+    _output : function(len)
+    {
+      throw new Error("_output() is abstract");
     }
+  },
+  
+  destruct : function()
+  {
+    qx.event.Registration.removeAllListeners(this);    
   }
 });
