@@ -1777,9 +1777,9 @@ qx.Class.define("playground.c.lib.Node",
                 bExecuting,
                 function(value)
                 {
-                  if (value)
+                  if (value.value)
                   {
-                    do_while_try_statement_block(succ, fail);
+                    do_while_main(succ, fail);
                   }
                   else
                   {
@@ -1790,15 +1790,17 @@ qx.Class.define("playground.c.lib.Node",
             }.bind(this);
 
             // This is a do/while, so we process the statement block initially
-            (function()
-             {
-               do_while_while_statement_block(
-                 function()
-                 {
-                   do_while_while_condition(succ, fail);
-                 },
-                 fail);
-             }.bind(this))();
+            var do_while_main = function(succ, fail)
+            {
+              do_while_while_statement_block(
+                function()
+                {
+                  do_while_while_condition(succ, fail);
+                }.bind(this),
+                fail);
+            }.bind(this);
+            
+            do_while_main(succ, fail);
           }.bind(this),
           
           // catch
@@ -3812,7 +3814,6 @@ qx.Class.define("playground.c.lib.Node",
                            function(v)
                            {
                              value = this.getExpressionValue(v, data).value;
-console.log("case=" + value);
 
                              // Does this value already exist in the cases map
                              if (subnode.cases[value])
