@@ -229,7 +229,7 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
         }
         else
         {
-          playground.c.AbstractSyntaxTree.output("Programmer error: " + 
+          playground.c.AbstractSyntaxTree.output("Internal error: " + 
                                                  error + "\n");
           playground.c.AbstractSyntaxTree.output(error.stack + "\n");
         }

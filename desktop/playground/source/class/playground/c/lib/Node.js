@@ -969,7 +969,7 @@ qx.Class.define("playground.c.lib.Node",
               bExecuting,
               function(v)
               {
-                value2 = v;
+                value2 = this.getExpressionValue(v, data);
                 
                 // We'd better have a specifier to say what type this is.
                 specOrDecl = value2.specAndDecl[0];
