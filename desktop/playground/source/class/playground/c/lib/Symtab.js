@@ -23,7 +23,7 @@ if (typeof qx === "undefined" || qx.bConsole)
   qx = require("qooxdoo");
   qx.bConsole = true;
   require("./SymtabEntry");
-  require("../Printf");
+  require("../stdio/Printf");
 }
 
 qx.Class.define("playground.c.lib.Symtab",
@@ -126,7 +126,7 @@ qx.Class.define("playground.c.lib.Symtab",
       declarator.setBuiltIn(
         function()
         {
-          var str = playground.c.Printf.printf.apply(null, arguments);
+          var str = playground.c.stdio.Printf.printf.apply(null, arguments);
 
           playground.c.AbstractSyntaxTree.output(str);
           return { value : str, type : "pointer" };

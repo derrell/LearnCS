@@ -47,7 +47,7 @@ if (typeof qx === "undefined")
   require("./machine/Memory");
 }
 
-qx.Class.define("playground.c.Scanf",
+qx.Class.define("playground.c.stdio.Scanf",
 {
   extend : qx.core.Object,
   
@@ -84,8 +84,8 @@ qx.Class.define("playground.c.Scanf",
       inputStr.push(memBytes[i]);
     }
     
-    // Convert each character code into its actual character, and join it back
-    // together into a single JavaScript string
+    // Convert each character code in the input string into its actual
+    // character, and join it back together into a single JavaScript string
     this._inputStr = (String.fromCharCode.apply(null, inputStr)).join("");
 
 
@@ -97,16 +97,14 @@ qx.Class.define("playground.c.Scanf",
       format.push(memBytes[i]);
     }
     
-    // Convert each character code into its actual character, and join it back
-    // together into a single JavaScript string
+    // Convert each character code in the format string into its actual
+    // character, and join it back together into a single JavaScript string
     this._format = (String.fromCharCode.apply(null, format)).join("");
-
-    
   },
   
   statics :
   {
-    fscanf : function(stream)
+    _fscanf : function(stream)
     {
       var             inputStrAddr;
       var             formatAddr;
@@ -114,23 +112,26 @@ qx.Class.define("playground.c.Scanf",
       var             numConversions;
       
       this._args = Array.prototype.slice.call(arguments);
+      
+      // Strip out the stram argument
+      this._args.shift();
 
       // Obtain the input and format string addresses, and get an instace of a
       // Scanf class (which will obtain the input and format strings from the
       // given addresses)
       inputStrAddr = this._args.shift();
       formatAddr = this._args.shift();
-      scanf = new playground.c.Scanf(inputStrAddr, formatAddr);
+      scanf = new playground.c.stdio.Scanf(inputStrAddr, formatAddr);
 
       // Now process the request
-      numConversions = scanf.process.apply(scanf, this._args);
+      numConversions = scanf._process.apply(scanf, this._args);
       return numConversions;
     }
   },
   
   members :
   {
-    process : function()
+    _process : function()
     {
       // PROCESS
       for (var i = 0, j = 0; i < this.format.length; i++) 

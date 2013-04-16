@@ -49,7 +49,7 @@ if (typeof qx === "undefined")
   require("./lib/RuntimeError");
 }
 
-qx.Class.define("playground.c.Printf",
+qx.Class.define("playground.c.stdio.Printf",
 {
   extend : qx.core.Object,
   
@@ -94,7 +94,7 @@ qx.Class.define("playground.c.Printf",
       var formatAddr;
 
       formatAddr = args.shift();
-      var formatter = new playground.c.Printf(formatAddr);
+      var formatter = new playground.c.stdio.Printf(formatAddr);
       var string = formatter.format.apply(formatter, args);
       
       return string;
