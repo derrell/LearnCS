@@ -3252,15 +3252,15 @@ qx.Class.define("playground.c.lib.Node",
         }
 
         // Assign the new value
-        return this.__assignHelper(data, 
-                                   function(oldVal, newVal)
-                                   {
-                                     return oldVal - 1;
-                                   },
-                                   success,
-                                   failure,
-                                   true,
-                                   true);
+        this.__assignHelper(data, 
+                            function(oldVal, newVal)
+                            {
+                              return oldVal - 1;
+                            },
+                            success,
+                            failure,
+                            true,
+                            true);
 
       case "primary_expression" :
         /*
