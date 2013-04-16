@@ -53,6 +53,5 @@ qx.Class.define("playground.c.stdio.Stdin",
           this.fireDataEvent("inputdata");
         }.bind(this));
     }
-
   }
 });

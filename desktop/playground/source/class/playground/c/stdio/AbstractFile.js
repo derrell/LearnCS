@@ -47,6 +47,12 @@ qx.Class.define("playground.c.stdio.AbstractFile",
     "inputdata" : "qx.event.type.Event"
   },
 
+  statics :
+  {
+    /** Value returned upon end of file */
+    EOF : -1
+  },
+
   members :
   {
     /** The input buffer (array) */
@@ -63,7 +69,7 @@ qx.Class.define("playground.c.stdio.AbstractFile",
 
     /**
      * Read one character from the file. This function blocks until the
-     * character is available to be read and returned.
+     * character is available to be read and returned, or EOF is encountered.
      * 
      * @param succ {Function}
      *   Function to call upon having successfully read a character from the
@@ -90,6 +96,14 @@ qx.Class.define("playground.c.stdio.AbstractFile",
       {
         // ... then return that character, removing it from the input buffer
         succ(this._inBuf.shift());
+        return;
+      }
+
+      // If we're at end-of-file...
+      if (this._isEof())
+      {
+        // Yup. Indicate EOF.
+        fail(new playground.c.stdio.EofError);
         return;
       }
 
@@ -179,6 +193,14 @@ qx.Class.define("playground.c.stdio.AbstractFile",
         // Give 'em what they came for!
         succ(ret);
         
+        return;
+      }
+
+      // If we're at end-of-file...
+      if (this._isEof())
+      {
+        // Yup. Indicate EOF.
+        fail(new playground.c.stdio.EofError);
         return;
       }
 
@@ -385,23 +407,19 @@ qx.Class.define("playground.c.stdio.AbstractFile",
       return false;
     },
 
-    _awaitInput : function(succ, fail)
+    /**
+     * Determine if the stream is at end-of-file. 
+     * 
+     * This function will often be overridden by subclasses.
+     * 
+     * @return {Boolean}
+     *   true if the stream is at end-of-file; false otherwise.
+     */
+    _isEof : function()
     {
-      var             terminal;
-      
-/******* replace this with playground.c.AbstractSyntaxTree.input() *********/
-      terminal = qx.core.Init.getApplication().getUserData("terminal");
-      terminal.addListenerOnce(
-        "textline",
-        function(e)
-        {
-          Array.prototype.push.apply(this._inBuf, e.getData());
-          succ();
-        },
-        this);
-/***************************************************************************/
+      return false;
     },
-    
+
     /*
      * Write output buffer data to the file. The output buffer will be
      * truncated by the length output to the file.
