@@ -350,7 +350,7 @@ qx.Class.define("playground.c.stdio.AbstractFile",
       }
       else if (this._mode == 0x01)
       {
-        playground.c.AbstractSyntaxTree.output(
+        playground.c.Main.output(
           "\n\n" +
           "WARNING: calling flush() on a file opened only for reading\n" +
             "does not flush input characters. Flushing input reliably is\n" +

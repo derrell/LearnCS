@@ -128,7 +128,7 @@ qx.Class.define("playground.c.lib.Symtab",
         {
           var str = playground.c.stdio.Printf.printf.apply(null, arguments);
 
-          playground.c.AbstractSyntaxTree.output(str);
+          playground.c.Main.output(str);
           return { value : str, type : "pointer" };
         });
       

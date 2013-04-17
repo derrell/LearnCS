@@ -36,7 +36,7 @@ start_sym
     parser.yy.R("start_sym : translation_unit");
     if (playground.c.lib.Node.getError().errorCount == 0)
     {
-      playground.c.AbstractSyntaxTree.process($1);
+      playground.c.Main.process($1);
     }
     else
     {
@@ -1995,5 +1995,5 @@ rbrace
 
 %%
 
-require("../../playground/source/class/playground/c/AbstractSyntaxTree.js");
-playground.c.AbstractSyntaxTree.main(parser);
+require("../../playground/source/class/playground/c/Main.js");
+playground.c.Main.main(parser);

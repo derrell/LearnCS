@@ -1014,7 +1014,7 @@ qx.Class.define("playground.Application",
       require(["resource/playground/script/ansic.js"],
               function(ansic)
               {
-                playground.c.AbstractSyntaxTree.main(ansic);
+                playground.c.Main.main(ansic);
                 ansic.parse(code);
               });
 //      this.__updatePlayground();

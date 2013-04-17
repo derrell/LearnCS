@@ -23,7 +23,7 @@ qx.Class.define("playground.c.stdio.Stdout",
     _output : function(len)
     {
       // Send the requested number of bytes to the terminal
-      playground.c.AbstractSyntaxTree.output(this._outBuf.slice(0, len));
+      playground.c.Main.output(this._outBuf.slice(0, len));
       
       // Strip that many bytes off of the output buffer
       this._outBuf.splice(0, len);

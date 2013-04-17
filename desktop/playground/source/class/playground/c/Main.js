@@ -27,7 +27,7 @@ if (typeof qx === "undefined")
 }
 
 
-qx.Class.define("playground.c.AbstractSyntaxTree",
+qx.Class.define("playground.c.Main",
 {
   extend : Object,
   
@@ -65,11 +65,11 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
         }
         
         // Set flags
-        playground.c.AbstractSyntaxTree.debugFlags.ast    = !!argv["ast"];
-        playground.c.AbstractSyntaxTree.debugFlags.symtab = !!argv["symtab"];
-        playground.c.AbstractSyntaxTree.debugFlags.rts    = !!argv["rts"];
-        playground.c.AbstractSyntaxTree.debugFlags.heap   = !!argv["heap"];
-        playground.c.AbstractSyntaxTree.debugFlags.gas    = !!argv["gas"];
+        playground.c.Main.debugFlags.ast    = !!argv["ast"];
+        playground.c.Main.debugFlags.symtab = !!argv["symtab"];
+        playground.c.Main.debugFlags.rts    = !!argv["rts"];
+        playground.c.Main.debugFlags.heap   = !!argv["heap"];
+        playground.c.Main.debugFlags.gas    = !!argv["gas"];
       }
 
       var error =
@@ -101,7 +101,7 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
               errStr += "\t" + str + "\n";
             }
 
-            playground.c.AbstractSyntaxTree.output(errStr);
+            playground.c.Main.output(errStr);
           }
           else
           {
@@ -189,7 +189,7 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
       root.fixLineNumbers();
 
       // Display the abstract syntax tree
-      if (playground.c.AbstractSyntaxTree.debugFlags.ast)
+      if (playground.c.Main.debugFlags.ast)
       {
         root.display();
       }
@@ -208,27 +208,27 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
         // Determine what type of error we encountered
         if (error instanceof playground.c.lib.Break)
         {
-          playground.c.AbstractSyntaxTree.output(
+          playground.c.Main.output(
             "Error: line " + error.node.line + ": " + 
             "Found 'break' not in a loop, " +
             "nor immediately within a 'switch'\n");
         }
         else if (error instanceof playground.c.lib.Continue)
         {
-          playground.c.AbstractSyntaxTree.output(
+          playground.c.Main.output(
             "Error: line " + error.node.line + ": " + 
             "Found 'continue' not immediately within a loop\n");
         }
         else if (error instanceof playground.c.lib.RuntimeError)
         {
-          playground.c.AbstractSyntaxTree.output(
+          playground.c.Main.output(
             "Error: line " + error.node.line + ": " + error.message + "\n");
         }
         else
         {
-          playground.c.AbstractSyntaxTree.output("Internal error: " + 
+          playground.c.Main.output("Internal error: " + 
                                                  error + "\n");
-          playground.c.AbstractSyntaxTree.output(error.stack + "\n");
+          playground.c.Main.output(error.stack + "\n");
         }
       };
 
@@ -238,7 +238,7 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
         false,
         function()
         {
-          if (playground.c.AbstractSyntaxTree.debugFlags.symtab)
+          if (playground.c.Main.debugFlags.symtab)
           {
             playground.c.lib.Symtab.display();
           }
@@ -263,7 +263,7 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
           // exists, to run the program
           if (entryNode)
           {
-            playground.c.AbstractSyntaxTree.output(
+            playground.c.Main.output(
               "\n>>> Running program\n",
               true);
 
@@ -418,25 +418,25 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
                   var             model;
 
                   // 'try' will fail when not in GUI environment
-                  playground.c.AbstractSyntaxTree.output(
+                  playground.c.Main.output(
                     ">>> " +
                     "Program exited with exit code " + value.value + "\n");
 
-                  if (playground.c.AbstractSyntaxTree.debugFlags.rts)
+                  if (playground.c.Main.debugFlags.rts)
                   {
                     mem.prettyPrint("Stack",
                                     Memory.info.rts.start,
                                     Memory.info.rts.length);
                   }
 
-                  if (playground.c.AbstractSyntaxTree.debugFlags.heap)
+                  if (playground.c.Main.debugFlags.heap)
                   {
                     mem.prettyPrint("Stack",
                                     Memory.info.heap.start,
                                     Memory.info.heap.length);
                   }
 
-                  if (playground.c.AbstractSyntaxTree.debugFlags.gas)
+                  if (playground.c.Main.debugFlags.gas)
                   {
                     mem.prettyPrint("Globals", 
                                     Memory.info.gas.start, 
@@ -505,7 +505,7 @@ qx.Class.define("playground.c.AbstractSyntaxTree",
           }
           else
           {
-            playground.c.AbstractSyntaxTree.output(
+            playground.c.Main.output(
               "Missing main() function\n");
           } 
         }.bind(root),

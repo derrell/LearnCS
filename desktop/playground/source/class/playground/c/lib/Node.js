@@ -3261,6 +3261,7 @@ qx.Class.define("playground.c.lib.Node",
                             failure,
                             true,
                             true);
+        break;
 
       case "primary_expression" :
         /*
