@@ -2161,15 +2161,24 @@ qx.Class.define("playground.c.lib.Node",
                   // Make the current node available to the built-in function
                   playground.c.lib.Node._currentNode = this;
 
-                  // Call the built-in funciton. Save return value in value3
-                  value3 = value2.apply(null, data.args);
+                  // Prepend failure and then the success functions
+                  data.args.unshift(failure);
+                  data.args.unshift(
+                    function(ret)
+                    {
+                      // Save the return value
+                      value3 = ret;
 
-                  // Remove our argument array
-                  delete data.args;
+                      // Remove our argument array
+                      delete data.args;
 
-                  // Restore the stack pointer
-                  mem.setReg("SP", "unsigned int", origSp);
-                  success(value3);
+                      // Restore the stack pointer
+                      mem.setReg("SP", "unsigned int", origSp);
+                      success(value3);
+                    });
+                  
+                  // Call the function now
+                  value2.apply(null, data.args);
                 }
                 else
                 {

@@ -130,18 +130,6 @@ qx.Class.define("playground.c.lib.Symtab",
           var args = Array.prototype.slice.call(arguments);
           var retval;
 
-          // Prepend failure and then the success functions
-          args.unshift(function() 
-                       {
-                         console.log("failure from printf");
-                       });
-          args.unshift(function(ret)
-                       {
-                         // Save the return value
-                         retval = ret;
-                         console.log("success from printf");
-                       });
-
           playground.c.stdio.Printf.printf.apply(null, args);
 
           return { value : retval, type : "pointer" };

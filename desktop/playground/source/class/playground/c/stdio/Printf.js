@@ -120,14 +120,14 @@ qx.Class.define("playground.c.stdio.Printf",
      * @param optargs {Any}
      *   Additional arguments, as specified by the format string
      */
-    fprintf : function(succ, fail, stream, formatAddr, optargs)
+    fprintf : function(success, failure, stream, formatAddr, optargs)
     {
       var             args = Array.prototype.slice.call(arguments);
       var             formatter;
       var             string;
 
-      // Delete the four fixed parameters (succ, fail, stream, formatAddr).
-      // We have them as named parameters already.
+      // Delete the four fixed parameters (success, failure, stream,
+      // formatAddr). We have them as named parameters already.
       args.splice(0, 4);
 
       try
@@ -137,13 +137,22 @@ qx.Class.define("playground.c.stdio.Printf",
         stream.write(string.split(""), 
                      function()
                      {
-                       succ(23); // FIXME! Return the number of conversions.
+                       var             specOrDecl;
+
+                       // Create a specifier for the return value
+                       specOrDecl = new playground.c.lib.Specifier(this, "int");
+
+                       success(
+                         {
+                           value       : 23, // FIXME! Return # of conversions.
+                           specAndDecl : [ specOrDecl ]
+                         });
                      },
-                     fail);
+                     failure);
       }
       catch(e)
       {
-        fail(e);
+        failure(e);
       }
     }
   },

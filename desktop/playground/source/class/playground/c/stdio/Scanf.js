@@ -57,7 +57,7 @@ qx.Class.define("playground.c.stdio.Scanf",
    * Do not instantiate this class yourself.
    * Instead, use its static method.
    */
-  construct : function(inputStrAddr, formatAddr)
+  construct : function(formatAddr)
   {
     var             inputStr = [];
     var             format = [];
@@ -76,19 +76,6 @@ qx.Class.define("playground.c.stdio.Scanf",
     memBytes = this._mem.toArray(0);
     
 
-    // Copy the null-terminated input string (which is represented as the
-    // ASCII character codes of each character) from the given address, one
-    // character at a time, into an array.
-    for (i = inputStrAddr; memBytes[i] != 0 && i < memBytes.length; i++)
-    {
-      inputStr.push(memBytes[i]);
-    }
-    
-    // Convert each character code in the input string into its actual
-    // character, and join it back together into a single JavaScript string
-    this._inputStr = (String.fromCharCode.apply(null, inputStr)).join("");
-
-
     // Copy the null-terminated format string (which is represented as the
     // ASCII character codes of each character) from the given address, one
     // character at a time, into an array.
@@ -104,34 +91,48 @@ qx.Class.define("playground.c.stdio.Scanf",
   
   statics :
   {
-    _fscanf : function(stream)
+    scanf : function(success, failure, formatAddr, optargs)
     {
-      var             inputStrAddr;
-      var             formatAddr;
+      var args = Array.prototype.slice.call(arguments);
+      var stream = playground.c.Main.stdout;
+      
+      // Insert stdin as the stream argument to fscanf
+      args.splice(2, 0, playground.c.Main.stdin);
+      
+      // Now fscanf can handle this.
+      playground.c.stdio.Scanf.fscanf.apply(null, args);
+    },
+
+    fscanf : function(success, failure, stream, formatAddr, optargs)
+    {
       var             scanf;
       var             numConversions;
       
       this._args = Array.prototype.slice.call(arguments);
       
-      // Strip out the stram argument
-      this._args.shift();
+      try
+      {
+        // Get a Scanf instance, which retrieves the format string from memory
+        scanf = new playground.c.stdio.Scanf(formatAddr);
 
-      // Obtain the input and format string addresses, and get an instace of a
-      // Scanf class (which will obtain the input and format strings from the
-      // given addresses)
-      inputStrAddr = this._args.shift();
-      formatAddr = this._args.shift();
-      scanf = new playground.c.stdio.Scanf(inputStrAddr, formatAddr);
+        // Delete the formatAddr parameter since we've already determined the
+        // format string (and it's been stored in this.format).
+        this._args.splice(3, 1);
 
-      // Now process the request
-      numConversions = scanf._process.apply(scanf, this._args);
-      return numConversions;
+        // Now process the request
+        numConversions = scanf._process.apply(scanf, this._args);
+        success(numConversions);
+      }
+      catch(e)
+      {
+        failure(e);
+      }
     }
   },
   
   members :
   {
-    _process : function()
+    _process : function(success, failure, stream)
     {
       // PROCESS
       for (var i = 0, j = 0; i < this.format.length; i++) 
@@ -152,7 +153,8 @@ qx.Class.define("playground.c.stdio.Scanf",
           // CHARACTER FOLLOWING PERCENT IS NOT A PERCENT
 
           // We need 'g' set to get lastIndex
-          var prePattern = new RegExp('^(?:(\\d+)\\$)?(\\*)?(\\d*)([hlL]?)', 'g');
+          var prePattern =
+            new RegExp('^(?:(\\d+)\\$)?(\\*)?(\\d*)([hlL]?)', 'g');
 
           var preConvs = prePattern.exec(this.format.slice(i + 1));
 
