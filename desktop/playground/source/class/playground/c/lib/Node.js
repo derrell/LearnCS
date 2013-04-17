@@ -3314,15 +3314,15 @@ qx.Class.define("playground.c.lib.Node",
         }
 
         // Assign the new value
-        return this.__assignHelper(data, 
-                                   function(oldVal, newVal)
-                                   {
-                                     return oldVal - 1;
-                                   },
-                                   success,
-                                   failure,
-                                   true,
-                                   false);
+        this.__assignHelper(data, 
+                            function(oldVal, newVal)
+                            {
+                              return oldVal - 1;
+                            },
+                            success,
+                            failure,
+                            true,
+                            false);
         break;
 
       case "pre_increment_op" :
@@ -4117,13 +4117,14 @@ qx.Class.define("playground.c.lib.Node",
         }
 
         // Assign the new value
-        return this.__assignHelper(data, 
-                                   function(oldVal, newVal)
-                                   {
-                                     return oldVal ^ newVal;
-                                   },
-                                   success,
-                                   failure);
+        this.__assignHelper(data, 
+                            function(oldVal, newVal)
+                            {
+                              return oldVal ^ newVal;
+                            },
+                            success,
+                            failure);
+        break;
 
       default:
         console.log("Unexpected node type: " + this.type);
