@@ -126,10 +126,25 @@ qx.Class.define("playground.c.lib.Symtab",
       declarator.setBuiltIn(
         function()
         {
-          var str = playground.c.stdio.Printf.printf.apply(null, arguments);
+          // Get the arguments as passed to this funciton
+          var args = Array.prototype.slice.call(arguments);
+          var retval;
 
-          playground.c.Main.output(str);
-          return { value : str, type : "pointer" };
+          // Prepend failure and then the success functions
+          args.unshift(function() 
+                       {
+                         console.log("failure from printf");
+                       });
+          args.unshift(function(ret)
+                       {
+                         // Save the return value
+                         retval = ret;
+                         console.log("success from printf");
+                       });
+
+          playground.c.stdio.Printf.printf.apply(null, args);
+
+          return { value : retval, type : "pointer" };
         });
       
       // Add the declarator to the symbol table entry

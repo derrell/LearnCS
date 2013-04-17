@@ -397,7 +397,7 @@ qx.Class.define("playground.c.stdio.AbstractFile",
       }
       
       // If we're line-buffered and the last character is a newline...
-      if (this._bLineBuf && this._outBuf[this._outBuf - 1] == '\n')
+      if (this._bLineBuf && this._outBuf[this._outBuf.length - 1] == '\n')
       {
         // ... then tell 'em to send the output
         return true;

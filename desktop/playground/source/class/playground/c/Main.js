@@ -24,8 +24,15 @@ if (typeof qx === "undefined")
   require("./lib/Node.js");
   require("./machine/Memory.js");
   require("./machine/Machine.js");
+  require("./stdio/AbstractFile.js");
+  require("./stdio/EofError.js");
+  require("./stdio/Printf.js");
+  require("./stdio/Scanf.js");
+  require("./stdio/Stdin.js");
+  require("./stdio/Stdout.js");
+  require("./stdio/StringIn.js");
+  require("./stdio/StringOut.js");
 }
-
 
 qx.Class.define("playground.c.Main",
 {
@@ -131,6 +138,26 @@ qx.Class.define("playground.c.Main",
 
       // Create the root-level symbol table
       new playground.c.lib.Symtab(null, null, 0);
+
+      // If there was a prior stdin and/or stdout, destroy them (cancel
+      // timers), and create new instances.
+      [ 
+        "stdin",
+        "stdout"
+      ].forEach(
+        function(stream)
+        {
+          // If there's a prior instance of this stream...
+          if (playground.c.Main[stream])
+          {
+            // ... then destroy it
+            playground.c.Main[stream].dispose();
+          }
+          
+          // Now create a new instance
+          playground.c.Main[stream] = 
+            new playground.c.stdio[qx.lang.String.capitalize(stream)];
+        });
 
       // Function to display rules as they are parsed
       parser.yy.R = function(rule)

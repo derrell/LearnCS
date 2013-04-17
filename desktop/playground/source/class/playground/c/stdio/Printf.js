@@ -87,17 +87,64 @@ qx.Class.define("playground.c.stdio.Printf",
   
   statics :
   {
-    printf : function()
+    /**
+     * Print a formatted string to stdout
+     * 
+     * @param formatAddr {Integer}
+     *   The address of the format string
+     * 
+     * @param optargs {Any}
+     *   Additional arguments, as specified by the format string
+     */
+    printf : function(success, failure, formatAddr, optargs)
     {
       var args = Array.prototype.slice.call(arguments);
-      var stream;
-      var formatAddr;
-
-      formatAddr = args.shift();
-      var formatter = new playground.c.stdio.Printf(formatAddr);
-      var string = formatter.format.apply(formatter, args);
+      var stream = playground.c.Main.stdout;
       
-      return string;
+      // Insert stdout as the stream argument to fprintf
+      args.splice(2, 0, playground.c.Main.stdout);
+      
+      // Now fprintf can handle this.
+      playground.c.stdio.Printf.fprintf.apply(null, args);
+    },
+    
+    /**
+     * Print a formatted string to a specified stream
+     *
+     * @param stream {playground.c.stdio.AbstractFile}
+     *   The stream to which output should be written
+     *
+     * @param formatAddr {Integer}
+     *   The address of the format string
+     *
+     * @param optargs {Any}
+     *   Additional arguments, as specified by the format string
+     */
+    fprintf : function(succ, fail, stream, formatAddr, optargs)
+    {
+      var             args = Array.prototype.slice.call(arguments);
+      var             formatter;
+      var             string;
+
+      // Delete the four fixed parameters (succ, fail, stream, formatAddr).
+      // We have them as named parameters already.
+      args.splice(0, 4);
+
+      try
+      {
+        formatter = new playground.c.stdio.Printf(formatAddr);
+        string = formatter.format.apply(formatter, args);
+        stream.write(string.split(""), 
+                     function()
+                     {
+                       succ(23); // FIXME! Return the number of conversions.
+                     },
+                     fail);
+      }
+      catch(e)
+      {
+        fail(e);
+      }
     }
   },
   
