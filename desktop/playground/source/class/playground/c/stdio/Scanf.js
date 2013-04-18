@@ -35,17 +35,9 @@ qx.Class.define("playground.c.stdio.Scanf",
    */
   construct : function(formatAddr)
   {
-    var             inputStr = [];
     var             format = [];
     var             memBytes;
     var             i;
-
-    this.retArr = [];
-    this._NWS = /\S/;
-    this._args = arguments;
-    this._width = 0;
-    this._assign = true;
-
 
     // Get memory as an array
     this._mem = playground.c.machine.Memory.getInstance();
@@ -61,8 +53,13 @@ qx.Class.define("playground.c.stdio.Scanf",
     }
     
     // Convert each character code in the format string into its actual
-    // character, and join it back together into a single JavaScript string
-    this._format = (String.fromCharCode.apply(null, format)).join("");
+    // character.
+    this._format = (String.fromCharCode.apply(null, format));
+    
+    // As characters are removed from the format array, they're shifted onto
+    // this 'used' array, for the few cases where peeks at prior characters
+    // are needed.
+    this._formatUsed = [];
   },
   
   statics :
@@ -100,7 +97,6 @@ qx.Class.define("playground.c.stdio.Scanf",
 
         // Now process the request
         numConversions = scanf._doscan.apply(scanf, this._args);
-        success(numConversions);
       }
       catch(e)
       {
@@ -148,7 +144,7 @@ qx.Class.define("playground.c.stdio.Scanf",
 
       switch (type)
       {
-      case 'i':       /* i means octal, decimal or hexadecimal */
+      case 'i':       // i means octal, decimal or hexadecimal
       case 'p':
       case 'x':
       case 'X':
@@ -562,22 +558,504 @@ qx.Class.define("playground.c.stdio.Scanf",
     },
 
     /*
-     * the routine that does the scanning 
+     * The routine that does the scanning 
      *
      * @param success {Function}
-     *   Function to call upon successful completion of this call
+     *   Function to call upon successful completion of this call. This
+     *   function is passed the number of successful conversions.
      * 
      * @param failure {Function}
      *   Function to call upon failed completion of this call
      *
      * @param stream {playground.c.stdio.AbstractFile}
      *   The stream from which to retrieve input characters
-     * 
-     * @return {Number}
-     *   The number of successful conversions
      */
-    _doscan : function(success, failure, stream)
+    _doscan : function(success, failure, stream, optargs)
     {
+      var             done = 0;       // number of items done 
+      var             nrchars = 0;    // number of characters read 
+      var             conv = 0;       // # of conversions 
+      var             base;           // conversion base 
+      var             val;            // an integer value 
+      var             str;           // temporary pointer 
+      var             tmp_string;    // ditto 
+      var             width = 0;      // width of field 
+      var             flags;          // some flags 
+      var             reverse;        // reverse the checking in [...] 
+      var             kind;
+      var             ic = EOF;       // the input character 
+      var             ld_val;         // long double
+
+      // Retrieve one character from the format string. That same character is
+      // also saved on a 'used' list, for the few cases where we need to look
+      // at previously-retrieved characters.
+      var getFormatChar = function()
+      {
+        // Retrieve a character from the format string
+        var             ch = this._format.shift();
+        
+        // Copy it into the 'used' array
+        this._formatUsed.unshift(ch);
+        
+        // Return the retrieved character
+        return ch;
+      }.bind(this);
+
+
+      // Strip off the fixed arguments (success, failure, stream) from our
+      // argument vector
+      this._args.splice(0, 3);
+
+      if (this._format.length === 0)
+      {
+        success(0);
+        return;
+      }
+
+      while (1)
+      {
+        if (isspace(this._format[0]))
+        {
+          while (isspace(this._format[0]))
+          {
+            getFormatChar();    // skip whitespace
+          }
+
+          ic = getc(stream);
+          nrchars++;
+          while (isspace (ic))
+          {
+            ic = getc(stream);
+            nrchars++;
+          }
+          if (ic != EOF)
+          {
+            stream.ungetc(ic);
+          }
+          nrchars--;
+        }
+
+        if (this._format.length === 0)
+        {
+          break;    // end of format
+        }
+
+        if (this._format[0] != '%')
+        {
+          ic = getc(stream);
+          nrchars++;
+          if (ic != getFormatChar())
+          {
+            break;     /* error */
+          }
+          continue;
+        }
+        getFormatChar();
+
+        if (this._format[0] == '%')
+        {
+          ic = getc(stream);
+          nrchars++;
+          if (ic == '%')
+          {
+            getFormatChar();
+            continue;
+          }
+          else
+          {
+            break;
+          }
+        }
+
+        flags = 0;
+
+        if (this._format[0] == '*')
+        {
+          getFormatChar();
+          flags |= FL_NOASSIGN;
+        }
+
+        if (isdigit(this._format[0]))
+        {
+          flags |= FL_WIDTHSPEC;
+          for (width = 0; isdigit(this._format[0]); )
+          {
+// FIXME
+            width = width * 10 + getFormatChar() - '';
+          }
+        }
+
+        switch (this._format[0])
+        {
+        case 'h':
+          flags |= FL_SHORT;
+          getFormatChar();
+          break;
+
+        case 'l':
+          flags |= FL_LONG;
+          getFormatChar();
+          break;
+        }
+
+        kind = this._format[0];
+
+        if ((kind != 'c') && (kind != '[') && (kind != 'n'))
+        {
+          do
+          {
+            ic = getc(stream);
+            nrchars++;
+          } while (isspace(ic));
+
+          if (ic == EOF)
+          {
+            break;              // outer while
+          }
+        }
+        else if (kind != 'n')
+        {                       // %c or %[
+          ic = getc(stream);
+          if (ic == EOF)
+          {
+            break;              // outer while
+          }
+          nrchars++;
+        }
+
+        switch (kind)
+        {
+        default:
+          // not recognized, like %q
+          success(conv || (ic != EOF) ? done : EOF);
+          return;
+
+        case 'n':
+          if (! (flags & FL_NOASSIGN))
+          {                     // silly, though
+            if (flags & FL_SHORT)
+            {
+              this._mem.set(this._args.shift(), "short", nrchars);
+            }
+            else if (flags & FL_LONG)
+            {
+              this._mem.set(this._args.shift(), "long", nrchars);
+            }
+            else
+            {
+              this._mem.set(this._args.shift(), "int", nrchars);
+            }
+          }
+          break;
+
+        case 'p':               // pointer
+          set_pointer(flags);
+          /* fallthrough */
+
+        case 'b':               // binary
+        case 'd':               // decimal
+        case 'i':               // general integer
+        case 'o':               // octal
+        case 'u':               // unsigned
+        case 'x':               // hexadecimal
+        case 'X':               // ditto
+          if (! (flags & FL_WIDTHSPEC) || width > NUMLEN)
+          {
+            width = NUMLEN;
+          }
+
+          if (!width)
+          {
+            success(done);
+            return;
+          }
+
+          str = o_collect(ic, stream, kind, width, &base);
+          if (str < inp_buf || (str == inp_buf && (*str == '-' || *str == '+')))
+          {
+            success(done);
+            return;
+          }
+
+           // Although the length of the number is str-inp_buf+1
+           // we don't add the 1 since we counted it already
+          nrchars += str - inp_buf;
+
+          if (! (flags & FL_NOASSIGN))
+          {
+            if (kind == 'd' || kind == 'i')
+            {
+              val = strtol(inp_buf, &tmp_string, base);
+            }
+            else
+            {
+              val = strtoul(inp_buf, &tmp_string, base);
+            }
+
+            if (flags & FL_LONG)
+            {
+              this._mem.set(this._args.shift(), "unsigned long", val);
+            }
+            else if (flags & FL_SHORT)
+            {
+              this._mem.set(this._args.shift(), "unsigned short", val);
+            }
+            else
+            {
+              this._mem.set(this._args.shift(), "unsigned int", val);
+            }
+          }
+          break;
+
+        case 'c':
+          if (! (flags & FL_WIDTHSPEC))
+          {
+            width = 1;
+          }
+
+          if (! (flags & FL_NOASSIGN))
+          {
+            this._args.shift();
+          }
+
+          if (!width)
+          {
+            success(done);
+            return;
+          }
+
+          while (width && ic != EOF)
+          {
+            if (! (flags & FL_NOASSIGN))
+            {
+              *str++ = (char) ic;
+            }
+
+            if (--width)
+            {
+              ic = getc(stream);
+              nrchars++;
+            }
+          }
+
+          if (width)
+          {
+            if (ic != EOF)
+            {
+              ungetc(ic,stream);
+            }
+            nrchars--;
+          }
+          break;
+
+        case 's':
+          if (! (flags & FL_WIDTHSPEC))
+          {
+            width = 0xffff;
+          }
+
+          if (! (flags & FL_NOASSIGN))
+          {
+            str = va_arg(ap, char *);
+          }
+
+          if (!width)
+          {
+            success(done);
+            return;
+          }
+
+          while (width && ic != EOF && !isspace(ic))
+          {
+            if (! (flags & FL_NOASSIGN))
+            {
+              *str++ = (char) ic;
+            }
+
+            if (--width)
+            {
+              ic = getc(stream);
+              nrchars++;
+            }
+          }
+
+          // terminate the string
+          if (! (flags & FL_NOASSIGN))
+          {
+            *str = '\0';    
+          }
+
+          if (width)
+          {
+            if (ic != EOF)
+            {
+              ungetc(ic,stream);
+            }
+            nrchars--;
+          }
+          break;
+
+        case '[':
+          if (! (flags & FL_WIDTHSPEC))
+          {
+            width = 0xffff;
+          }
+
+          if (!width)
+          {
+            success(done);
+            return;
+          }
+
+          if (getFormatChar() == '^' )
+          {
+            reverse = 1;
+            getFormatChar();
+          }
+          else
+          {
+            reverse = 0;
+          }
+
+          for (str = Xtable; str < &Xtable[NR_CHARS]; str++)
+          {
+            *str = 0;
+          }
+
+          if (this._format[0] == ']')
+          {
+            Xtable[getFormatChar()] = 1;
+          }
+
+          while (this._format.length > 0 && this._format[0] != ']')
+          {
+            Xtable[getFormatChar()] = 1;
+
+            if (this._format[0] == '-')
+            {
+              getFormatChar();
+
+              if (this._format.length > 0 &&
+                  this._format[0] != ']' &&
+                  this._format[0] >= this._formatUsed[1])
+              {
+                var c;
+
+                for (c = this._formatUsed[1] + 1; c <= this._format[0] ; c++)
+                {
+                  Xtable[c] = 1;
+                }
+                getFormatChar();
+              }
+              else
+              {
+                Xtable['-'] = 1;
+              }
+            }
+          }
+
+          if (this._format.length === 0)
+          {
+            success(done);
+            return;
+          }
+
+          if (! (Xtable[ic] ^ reverse))
+          {
+            ungetc(ic, stream);
+            success(done);
+            return;
+          }
+
+          if (! (flags & FL_NOASSIGN))
+          {
+            str = va_arg(ap, char *);
+          }
+
+          do
+          {
+            if (! (flags & FL_NOASSIGN))
+            {
+              *str++ = (char) ic;
+            }
+
+            if (--width)
+            {
+              ic = getc(stream);
+              nrchars++;
+            }
+          } while (width && ic != EOF && (Xtable[ic] ^ reverse));
+
+          if (width)
+          {
+            if (ic != EOF)
+            {
+              stream.ungetc(ic);
+            }
+            nrchars--;
+          }
+
+          if (! (flags & FL_NOASSIGN))
+          {                     // terminate string
+            *str = '\0';    
+          }
+          break;
+
+        case 'e':
+        case 'E':
+        case 'f':
+        case 'g':
+        case 'G':
+          if (! (flags & FL_WIDTHSPEC) || width > NUMLEN)
+          {
+            width = NUMLEN;
+          }
+
+          if (!width)
+          {
+            success(done);
+            return;
+          }
+
+          str = f_collect(ic, stream, width);
+
+          if (str < inp_buf || (str == inp_buf && (*str == '-' || *str == '+')))
+          {
+            success(done);
+            return;
+          }
+
+           // Although the length of the number is str-inp_buf+1
+           // we don't add the 1 since we counted it already
+          nrchars += str - inp_buf;
+
+          if (! (flags & FL_NOASSIGN))
+          {
+            ld_val = strtod(inp_buf, &tmp_string);
+
+            if (flags & FL_LONG)
+            {
+              this._mem.set(this._args.shift(), "double", val);
+            }
+            else
+            {
+              this._mem.set(this._args.shift(), "float", val);
+            }
+          }
+          break;
+        }
+        conv++;
+
+        if (! (flags & FL_NOASSIGN) && kind != 'n')
+        {
+          done++;
+        }
+
+        getFormatChar();
+      }
+
+      success(conv || (ic != EOF) ? done : EOF);
+      return;
     }
   }
 });
