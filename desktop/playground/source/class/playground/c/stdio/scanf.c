@@ -68,7 +68,7 @@ o_collect(int c, FILE *stream, char type,
     }
   }
   
-  if (width && c == '' && base == 16)
+  if (width && c == '0' && base == 16)
   {
     *bufp++ = c;
     if (--width)
