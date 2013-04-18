@@ -23,6 +23,34 @@ if (typeof qx === "undefined")
   require("./machine/Memory");
 }
 
+//
+// ctype functions
+//
+
+var isdigit = function(c)
+{
+  return c >= '0' && c <= '9';
+};
+
+var isxdigit = function(c)
+{
+  return (
+    (c >= '0' && c <= '9') || 
+    (c >= 'a' && c <= 'f') ||
+    (c >= 'A' && c <= 'F'));
+};
+
+var isspace = function(c)
+{
+  return (c == ' '  || 
+          c == '\t' || 
+          c == '\n' || 
+          c == '\v' || 
+          c == '\f' || 
+          c == '\r');
+};
+
+
 qx.Class.define("playground.c.stdio.Scanf",
 {
   extend : qx.core.Object,
@@ -60,6 +88,23 @@ qx.Class.define("playground.c.stdio.Scanf",
     // this 'used' array, for the few cases where peeks at prior characters
     // are needed.
     this._formatUsed = [];
+
+    // Gain easy access to EOF
+    this.EOF = playground.c.stdio.AbstractFile.EOF;
+    
+    // Create flags
+    this.Flags =
+      {
+        LONG       : 0x01,
+        LONGDOUBLE : 0x02,
+        SHORT      : 0x04,
+        POINTER    : 0x08,
+        NOASSIGN   : 0x10,
+        WIDTHSPEC  : 0x20
+      };
+    
+    // Maximum length of a number. (Clearly excessive)
+    this.NUMLEN = 512;
   },
   
   statics :
@@ -171,8 +216,8 @@ qx.Class.define("playground.c.stdio.Scanf",
             {
               c = ch;
               o_collect_1(success, failure);
-            },
-            fail);
+            }.bind(this),
+            failure);
         }
       }
       else
@@ -188,13 +233,12 @@ qx.Class.define("playground.c.stdio.Scanf",
           this._inpBuf.push(c);
           if (--width)
           {
-            c = getc(stream);
             stream.getc(
               function(ch)
               {
                 c = ch;
                 o_collect_1_1(succ, fail);
-              },
+              }.bind(this),
               fail);
           }
           else
@@ -223,7 +267,7 @@ qx.Class.define("playground.c.stdio.Scanf",
                   {
                     c = ch;
                     o_collect_2(succ, fail);
-                  },
+                  }.bind(this),
                   fail);
               }
               else
@@ -231,14 +275,14 @@ qx.Class.define("playground.c.stdio.Scanf",
                 o_collect_2(succ, fail);
               }
             }
-          };
+          }.bind(this);
         }
         else if (type == 'i')
         {
           base = 10;
           o_collect_2(succ, fail);
         }
-      };
+      }.bind(this);
 
       var o_collect_2 = function(succ, fail)
       {
@@ -258,7 +302,7 @@ qx.Class.define("playground.c.stdio.Scanf",
                 {
                   c = ch;
                   o_collect_2(succ, fail);
-                },
+                }.bind(this),
                 fail);
             }
             else
@@ -275,11 +319,11 @@ qx.Class.define("playground.c.stdio.Scanf",
         {
           o_collect_3(succ, fail);
         }
-      };
+      }.bind(this);
 
       var o_collect_3 = function(succ, fail)
       {
-        if (width && c != EOF)
+        if (width && c != this.EOF)
         {
           stream.ungetc(c);
         }
@@ -290,7 +334,7 @@ qx.Class.define("playground.c.stdio.Scanf",
         }
 
         succ(base);
-      };
+      }.bind(this);
     },
 
     /* 
@@ -332,18 +376,18 @@ qx.Class.define("playground.c.stdio.Scanf",
             function(ch)
             {
               c = ch;
-              f_collect_1(succ, fail);
-            },
-            fail);
+              f_collect_1(success, failure);
+            }.bind(this),
+            failure);
         }
         else
         {
-          f_collect_1(succ, fail);
+          f_collect_1(success, failure);
         }
       }
       else
       {
-        f_collect_1(succ, fail);
+        f_collect_1(success, failure);
       }
       return;
 
@@ -360,7 +404,7 @@ qx.Class.define("playground.c.stdio.Scanf",
               {
                 c = ch;
                 f_collect_1(succ, fail);
-              },
+              }.bind(this),
               fail);
           }
           else
@@ -372,7 +416,7 @@ qx.Class.define("playground.c.stdio.Scanf",
         {
           f_collect_2(succ, fail);
         }
-      };
+      }.bind(this);
 
       var f_collect_2 = function(succ, fail)
       {
@@ -381,13 +425,12 @@ qx.Class.define("playground.c.stdio.Scanf",
           this._inpBuf.push(c);
           if(--width)
           {
-            c = getc(stream);
             stream.getc(
               function(ch)
               {
                 c = ch;
                 f_collect_2_1(succ, fail);
-              },
+              }.bind(this),
               fail);
           }
           else
@@ -404,13 +447,12 @@ qx.Class.define("playground.c.stdio.Scanf",
               this._inpBuf.push(c);
               if (--width)
               {
-                c = getc(stream);
                 stream.getc(
                   function(ch)
                   {
                     c = ch;
                     f_collect_2_1(succ, fail);
-                  },
+                  }.bind(this),
                   fail);
               }
               else
@@ -422,19 +464,19 @@ qx.Class.define("playground.c.stdio.Scanf",
             {
               f_collect_3(succ, fail);
             }
-          };
+          }.bind(this);
         }
         else
         {
           f_collect_3(succ, fail);
         }
-      };
+      }.bind(this);
 
       var f_collect_3 = function(succ, fail)
       {
         if (!digit_seen)
         {
-          if (width && c != EOF)
+          if (width && c != this.EOF)
           {
             stream.ungetc(c);
           }
@@ -445,7 +487,7 @@ qx.Class.define("playground.c.stdio.Scanf",
           digit_seen = 0;
           f_collect_4(succ, fail);
         }
-      };
+      }.bind(this);
 
       var f_collect_4 = function(succ, fail)
       {
@@ -459,7 +501,7 @@ qx.Class.define("playground.c.stdio.Scanf",
               {
                 c = ch;
                 f_collect_4_1(succ, fail);
-              },
+              }.bind(this),
               fail);
           }
           else
@@ -480,7 +522,7 @@ qx.Class.define("playground.c.stdio.Scanf",
                   {
                     c = ch;
                     f_collect_4_2(succ, fail);
-                  },
+                  }.bind(this),
                   fail);
               }
               else
@@ -492,7 +534,7 @@ qx.Class.define("playground.c.stdio.Scanf",
             {
               f_collect_4_2(succ, fail);
             }
-          };
+          }.bind(this);
 
           var f_collect_4_2 = function(succ, fail)
           {
@@ -502,13 +544,12 @@ qx.Class.define("playground.c.stdio.Scanf",
               this._inpBuf.push(c);
               if (--width)
               {
-                c = getc(stream);
                 stream.getc(
                   function(ch)
                   {
                     c = ch;
                     f_collect_4_2(succ, fail);
-                  },
+                  }.bind(this),
                   fail);
               }
               else
@@ -520,13 +561,13 @@ qx.Class.define("playground.c.stdio.Scanf",
             {
               f_collect_4_3(succ, fail);
             }
-          };
+          }.bind(this);
 
           var f_collect_4_3 = function(succ, fail)
           {
             if (!digit_seen)
             {
-              if (width && c != EOF)
+              if (width && c != this.EOF)
               {
                 stream.ungetc(c);
               }
@@ -536,22 +577,22 @@ qx.Class.define("playground.c.stdio.Scanf",
             {
               f_collect_5(succ, fail);
             }
-          };
+          }.bind(this);
         }
         else
         {
           f_collect_5(succ, fail);
         }
-      };
+      }.bind(this);
 
       var f_collect_5 = function(succ, fail)
       {
-        if (width && c != EOF)
+        if (width && c != this.EOF)
         {
           stream.ungetc(c);
         }
         succ();
-      };
+      }.bind(this);
     },
 
     /*
@@ -566,6 +607,10 @@ qx.Class.define("playground.c.stdio.Scanf",
      *
      * @param stream {playground.c.stdio.AbstractFile}
      *   The stream from which to retrieve input characters
+     * 
+     * @param optargs... {Any}
+     *   Additional arguments containing addresses in which to store 
+     *   conversions made according to the format string.
      */
     doscan : function(success, failure, stream, optargs)
     {
@@ -580,7 +625,7 @@ qx.Class.define("playground.c.stdio.Scanf",
       var             flags;          // some flags 
       var             reverse;        // reverse the checking in [...] 
       var             kind;
-      var             ic = EOF;       // the input character 
+      var             ic = this.EOF;  // the input character 
       var             ld_val;         // long double
       var             xtable;
 
@@ -630,7 +675,7 @@ qx.Class.define("playground.c.stdio.Scanf",
              {
                succ();
              }
-           },
+           }.bind(this),
            fail);
        })(success, failure);
 
@@ -643,13 +688,13 @@ qx.Class.define("playground.c.stdio.Scanf",
             getFormatChar();    // skip whitespace
           }
 
-          ic = getc(stream);
           stream.getc(
             function(ch)
             {
+              ic = ch;
               nrchars++;
-              do_scan_1_1(succ, fail);
-            },
+              doscan_1_1(succ, fail);
+            }.bind(this),
             fail);
           return;
           
@@ -664,26 +709,26 @@ qx.Class.define("playground.c.stdio.Scanf",
                   ic = ch;
                   nrchars++;
                   doscan_1_1(succ, fail);
-                },
+                }.bind(this),
                 fail);
             }
             else
             {
               doscan_1_2(succ, fail);
             }
-          };
+          }.bind(this);
 
           var doscan_1_2 = function(succ, fail)
           {
-            if (ic != EOF)
+            if (ic != this.EOF)
             {
               stream.ungetc(ic);
             }
             nrchars--;
             doscan_2(succ, fail);
-          };
+          }.bind(this);
         }
-      };
+      }.bind(this);
 
       var doscan_2 = function(succ, fail)
       {
@@ -694,7 +739,7 @@ qx.Class.define("playground.c.stdio.Scanf",
         }
 
         doscan_3(succ, fail);
-      };
+      }.bind(this);
 
       var doscan_3 = function(succ, fail)
       {
@@ -712,14 +757,14 @@ qx.Class.define("playground.c.stdio.Scanf",
               {
                 succ(true);   // continue
               }
-            },
+            }.bind(this),
             fail);
         }
         else
         {
           doscan_4(succ, fail);
         }
-      };
+      }.bind(this);
 
       var doscan_4 = function(succ, fail)
       {
@@ -741,14 +786,14 @@ qx.Class.define("playground.c.stdio.Scanf",
               {
                 succ(false);        // break
               }
-            },
+            }.bind(this),
             fail);
         }
         else
         {
           doscan_5(succ, fail);
         }
-      };
+      }.bind(this);
 
       var doscan_5 = function(succ, fail)
       {
@@ -757,28 +802,27 @@ qx.Class.define("playground.c.stdio.Scanf",
         if (this._format[0] == '*')
         {
           getFormatChar();
-          flags |= FL_NOASSIGN;
+          flags |= this.Flags.NOASSIGN;
         }
 
         if (isdigit(this._format[0]))
         {
-          flags |= FL_WIDTHSPEC;
+          flags |= this.Flags.WIDTHSPEC;
           for (width = 0; isdigit(this._format[0]); )
           {
-// FIXME
-            width = width * 10 + getFormatChar() - '';
+            width = width * 10 + getFormatChar().charCodeAt(0)- '';
           }
         }
 
         switch (this._format[0])
         {
         case 'h':
-          flags |= FL_SHORT;
+          flags |= this.Flags.SHORT;
           getFormatChar();
           break;
 
         case 'l':
-          flags |= FL_LONG;
+          flags |= this.Flags.LONG;
           getFormatChar();
           break;
         }
@@ -806,7 +850,7 @@ qx.Class.define("playground.c.stdio.Scanf",
               function(ch)
               {
                 ic = ch;
-                if (ic == EOF)
+                if (ic == this.EOF)
                 {
                   succ(false);        // break: outer while
                   return;
@@ -821,22 +865,21 @@ qx.Class.define("playground.c.stdio.Scanf",
                 {
                   doscan_5_2(succ, fail);
                 }
-              },
+              }.bind(this),
               fail);
-          };
+          }.bind(this);
 
           doscan_5_1_1(succ, fail);
           return;
-        };
+        }.bind(this);
 
         var doscan_5_2 = function(succ, fail)
         {                       // %c or %[
-          ic = getc(stream);
           stream.getc(
             function(ch)
             {
               ic = ch;
-              if (ic == EOF)
+              if (ic == this.EOF)
               {
                 succ(fail);         // break: outer while
                 return;
@@ -844,10 +887,10 @@ qx.Class.define("playground.c.stdio.Scanf",
 
               nrchars++;
               doscan_6(succ, fail);
-            },
+            }.bind(this),
             fail);
-        };
-      };
+        }.bind(this);
+      }.bind(this);
 
       var doscan_6 = function(succ, fail)
       {
@@ -858,17 +901,17 @@ qx.Class.define("playground.c.stdio.Scanf",
         {
         default:
           // not recognized, like %q
-          success(conv || ic != EOF ? done : EOF); // ultimate return
+          success(conv || ic != this.EOF ? done : this.EOF); // ultimate return
           return;
 
         case 'n':
-          if (! (flags & FL_NOASSIGN))
+          if (! (flags & this.Flags.NOASSIGN))
           {                     // silly, though
-            if (flags & FL_SHORT)
+            if (flags & this.Flags.SHORT)
             {
               this._mem.set(this._args.shift(), "short", nrchars);
             }
-            else if (flags & FL_LONG)
+            else if (flags & this.Flags.LONG)
             {
               this._mem.set(this._args.shift(), "long", nrchars);
             }
@@ -881,7 +924,7 @@ qx.Class.define("playground.c.stdio.Scanf",
           break;
 
         case 'p':               // pointer
-          set_pointer(flags);
+          flags |= this.Flags.POINTER;
           /* fallthrough */
 
         case 'b':               // binary
@@ -891,9 +934,9 @@ qx.Class.define("playground.c.stdio.Scanf",
         case 'u':               // unsigned
         case 'x':               // hexadecimal
         case 'X':               // ditto
-          if (! (flags & FL_WIDTHSPEC) || width > NUMLEN)
+          if (! (flags & this.Flags.WIDTHSPEC) || width > this.NUMLEN)
           {
-            width = NUMLEN;
+            width = this.NUMLEN;
           }
 
           if (!width)
@@ -919,15 +962,15 @@ qx.Class.define("playground.c.stdio.Scanf",
               // characters is the input buffer length - 1.
               nrchars += this._inpBuf.length - 1;
 
-              if (! (flags & FL_NOASSIGN))
+              if (! (flags & this.Flags.NOASSIGN))
               {
                 val = parseInt(this._inpBuf.join(""), base);
 
-                if (flags & FL_LONG)
+                if (flags & this.Flags.LONG)
                 {
                   this._mem.set(this._args.shift(), "unsigned long", val);
                 }
-                else if (flags & FL_SHORT)
+                else if (flags & this.Flags.SHORT)
                 {
                   this._mem.set(this._args.shift(), "unsigned short", val);
                 }
@@ -938,17 +981,17 @@ qx.Class.define("playground.c.stdio.Scanf",
               }
               
               doscan_7(succ, fail);
-            },
+            }.bind(this),
             fail);
           break;
 
         case 'c':
-          if (! (flags & FL_WIDTHSPEC))
+          if (! (flags & this.Flags.WIDTHSPEC))
           {
             width = 1;
           }
 
-          if (! (flags & FL_NOASSIGN))
+          if (! (flags & this.Flags.NOASSIGN))
           {
             addr = this._args.shift();
           }
@@ -964,9 +1007,9 @@ qx.Class.define("playground.c.stdio.Scanf",
 
           var doscan_6_case_c_1 = function(succ, fail)
           {
-            if (width && ic != EOF)
+            if (width && ic != this.EOF)
             {
-              if (! (flags & FL_NOASSIGN))
+              if (! (flags & this.Flags.NOASSIGN))
               {
                   this._mem.set(addr + i++, "char", ic);
               }
@@ -979,7 +1022,7 @@ qx.Class.define("playground.c.stdio.Scanf",
                     ic = ch;
                     nrchars++;
                     doscan_6_case_c_1(succ, fail);
-                  },
+                  }.bind(this),
                   fail);
               }
               else
@@ -991,13 +1034,13 @@ qx.Class.define("playground.c.stdio.Scanf",
             {
               doscan_6_case_c_2(succ, fail);
             }
-          };
+          }.bind(this);
 
           var doscan_6_case_c_2 = function(succ, fail)
           {
             if (width)
             {
-              if (ic != EOF)
+              if (ic != this.EOF)
               {
                 stream.ungetc(ic);
               }
@@ -1005,16 +1048,16 @@ qx.Class.define("playground.c.stdio.Scanf",
             }
             
             doscan_7(succ, fail);
-          };
+          }.bind(this);
           break;
 
         case 's':
-          if (! (flags & FL_WIDTHSPEC))
+          if (! (flags & this.Flags.WIDTHSPEC))
           {
             width = 0xffff;
           }
 
-          if (! (flags & FL_NOASSIGN))
+          if (! (flags & this.Flags.NOASSIGN))
           {
             addr = this._args.shift();
           }
@@ -1027,9 +1070,9 @@ qx.Class.define("playground.c.stdio.Scanf",
 
           var doscan_6_case_s_1 = function(succ, fail)
           {
-            if (width && ic != EOF && !isspace(ic))
+            if (width && ic != this.EOF && !isspace(ic))
             {
-              if (! (flags & FL_NOASSIGN))
+              if (! (flags & this.Flags.NOASSIGN))
               {
                   this._mem.set(addr + i++, "char", ic);
               }
@@ -1042,7 +1085,7 @@ qx.Class.define("playground.c.stdio.Scanf",
                     ic = ch;
                     nrchars++;
                     doscan_6_case_s_1(succ, fail);
-                  },
+                  }.bind(this),
                   fail);
               }
               else
@@ -1054,19 +1097,19 @@ qx.Class.define("playground.c.stdio.Scanf",
             {
               doscan_6_case_s_2(succ, fail);
             }
-          };
+          }.bind(this);
 
           var doscan_6_case_s_2 = function(succ, fail)
           {
             // terminate the string
-            if (! (flags & FL_NOASSIGN))
+            if (! (flags & this.Flags.NOASSIGN))
             {
               this._mem.set(addr + i++, "char", 0);
             }
 
             if (width)
             {
-              if (ic != EOF)
+              if (ic != this.EOF)
               {
                 stream.ungetc(ic);
               }
@@ -1074,11 +1117,11 @@ qx.Class.define("playground.c.stdio.Scanf",
             }
             
             doscan_7(succ, fail);
-          };
+          }.bind(this);
           break;
 
         case '[':
-          if (! (flags & FL_WIDTHSPEC))
+          if (! (flags & this.Flags.WIDTHSPEC))
           {
             width = 0xffff;
           }
@@ -1146,7 +1189,7 @@ qx.Class.define("playground.c.stdio.Scanf",
             return;
           }
 
-          if (! (flags & FL_NOASSIGN))
+          if (! (flags & this.Flags.NOASSIGN))
           {
             addr = this._args.shift();
           }
@@ -1155,7 +1198,7 @@ qx.Class.define("playground.c.stdio.Scanf",
 
           var doscan_6_case_charset_1 = function(succ, fail)
           {
-            if (! (flags & FL_NOASSIGN))
+            if (! (flags & this.Flags.NOASSIGN))
             {
               this._mem.set(addr + i++, "char", ic);
             }
@@ -1168,7 +1211,7 @@ qx.Class.define("playground.c.stdio.Scanf",
                   ic = ch;
                   nrchars++;
                   
-                  if (width && ic != EOF && ((xtable[ic] || 0) ^ reverse))
+                  if (width && ic != this.EOF && ((xtable[ic] || 0) ^ reverse))
                   {
                     doscan_6_case_charset_1(succ, fail);
                   }
@@ -1176,29 +1219,29 @@ qx.Class.define("playground.c.stdio.Scanf",
                   {
                     doscan_6_case_charset_2(succ, fail);
                   }
-                },
+                }.bind(this),
                 fail);
             }
-          };
+          }.bind(this);
 
           var doscan_6_case_charset_2 = function(succ, fail)
           {
             if (width)
             {
-              if (ic != EOF)
+              if (ic != this.EOF)
               {
                 stream.ungetc(ic);
               }
               nrchars--;
             }
 
-            if (! (flags & FL_NOASSIGN))
+            if (! (flags & this.Flags.NOASSIGN))
             {                     // terminate string
               this._mem.set(addr + i++, "char", 0);
             }
             
             succ(true);         // continue
-          };
+          }.bind(this);
           break;
 
         case 'e':
@@ -1206,9 +1249,9 @@ qx.Class.define("playground.c.stdio.Scanf",
         case 'f':
         case 'g':
         case 'G':
-          if (! (flags & FL_WIDTHSPEC) || width > NUMLEN)
+          if (! (flags & this.Flags.WIDTHSPEC) || width > this.NUMLEN)
           {
-            width = NUMLEN;
+            width = this.NUMLEN;
           }
 
           if (!width)
@@ -1217,48 +1260,58 @@ qx.Class.define("playground.c.stdio.Scanf",
             return;
           }
 
-          str = f_collect(ic, stream, width);
-
-          if (str < inp_buf || (str == inp_buf && (*str == '-' || *str == '+')))
-          {
-            success(done);      // ultimate return
-            return;
-          }
-
-           // Although the length of the number is str-inp_buf+1
-           // we don't add the 1 since we counted it already
-          nrchars += str - inp_buf;
-
-          if (! (flags & FL_NOASSIGN))
-          {
-            ld_val = strtod(inp_buf, &tmp_string);
-
-            if (flags & FL_LONG)
+          this.f_collect(
+            function()
             {
-              this._mem.set(this._args.shift(), "double", val);
-            }
-            else
-            {
-              this._mem.set(this._args.shift(), "float", val);
-            }
-          }
+              if (this._inpBuf.length == 0 ||
+                  (this._inpBuf.length == 1 &&
+                   (this._inpBuf[0] == '-' || this._inpBuf[0] == '+')))
+              {
+                success(done);      // ultimate return
+                return;
+              }
+
+              // We had already counted the first character, so the number of
+              // characters is the input buffer length - 1.
+              nrchars += this._inpBuf.length - 1;
+
+              if (! (flags & this.Flags.NOASSIGN))
+              {
+                ld_val = parseFloat(this._InpBuf.join(""));
+
+                if (flags & this.Flags.LONG)
+                {
+                  this._mem.set(this._args.shift(), "double", val);
+                }
+                else
+                {
+                  this._mem.set(this._args.shift(), "float", val);
+                }
+              }
+              
+              doscan_7(succ, fail);
+            }.bind(this),
+            fail,
+            ic,
+            stream,
+            width);
           break;
         }
-      };
+      }.bind(this);
 
       var doscan_7 = function(succ, fail)
       {
         conv++;
 
-        if (! (flags & FL_NOASSIGN) && kind != 'n')
+        if (! (flags & this.Flags.NOASSIGN) && kind != 'n')
         {
           done++;
         }
 
         getFormatChar();
 
-        success(conv || (ic != EOF) ? done : EOF); // ultimate return
-      };
+        success(conv || (ic != this.EOF) ? done : this.EOF); // ultimate return
+      }.bind(this);
     }
   }
 });
