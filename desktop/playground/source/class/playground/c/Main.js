@@ -156,7 +156,7 @@ qx.Class.define("playground.c.Main",
           
           // Now create a new instance
           playground.c.Main[stream] = 
-            new playground.c.stdio[qx.lang.String.capitalize(stream)];
+            new playground.c.stdio[qx.lang.String.firstUp(stream)];
         });
 
       // Function to display rules as they are parsed

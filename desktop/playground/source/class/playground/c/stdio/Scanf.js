@@ -83,9 +83,6 @@ qx.Class.define("playground.c.stdio.Scanf",
       
       this._args = Array.prototype.slice.call(arguments);
       
-      // Prepare the character set table
-      this._Xtable = new Array(256);
-
       try
       {
         // Get a Scanf instance, which retrieves the format string from memory
@@ -96,7 +93,7 @@ qx.Class.define("playground.c.stdio.Scanf",
         this._args.splice(3, 1);
 
         // Now process the request
-        numConversions = scanf._doscan.apply(scanf, this._args);
+        numConversions = scanf.doscan.apply(scanf, this._args);
       }
       catch(e)
       {
@@ -301,9 +298,9 @@ qx.Class.define("playground.c.stdio.Scanf",
      * floating-point number. The function returns as soon as a format-error
      * is encountered, leaving the offending character in the input. This
      * means that 1.el leaves the 'l' in the input queue. Since all detection
-     * of format errors is done here, _doscan() doesn't call strtod() when
+     * of format errors is done here, doscan() doesn't call parseFloat() when
      * it's not necessary, although the use of the width field can cause
-     * incomplete numbers to be passed to strtod(). (e.g. 1.3e+)
+     * incomplete numbers to be passed to parseFloat(). (e.g. 1.3e+)
      * 
      * @param success {Function}
      *   Function to call upon successful completion of this call
@@ -570,7 +567,7 @@ qx.Class.define("playground.c.stdio.Scanf",
      * @param stream {playground.c.stdio.AbstractFile}
      *   The stream from which to retrieve input characters
      */
-    _doscan : function(success, failure, stream, optargs)
+    doscan : function(success, failure, stream, optargs)
     {
       var             done = 0;       // number of items done 
       var             nrchars = 0;    // number of characters read 
@@ -585,10 +582,14 @@ qx.Class.define("playground.c.stdio.Scanf",
       var             kind;
       var             ic = EOF;       // the input character 
       var             ld_val;         // long double
+      var             xtable;
 
       // Retrieve one character from the format string. That same character is
       // also saved on a 'used' list, for the few cases where we need to look
       // at previously-retrieved characters.
+      //
+      // This function is called frequently, simply to advance to the next
+      // character of the format, so the return value is ignored.
       var getFormatChar = function()
       {
         // Retrieve a character from the format string
@@ -608,11 +609,32 @@ qx.Class.define("playground.c.stdio.Scanf",
 
       if (this._format.length === 0)
       {
-        success(0);
+        success(0);             // ultimate return
         return;
       }
 
-      while (1)
+      // Main Loop. Returns early via direct call to success() in doscan_1, or
+      // can break by returning false or continue by returning true.
+      (function(succ, fail)
+       {
+         var             fSelf = arguments.callee;
+
+         doscan_1(
+           function(bContinue)
+           {
+             if (bContinue)
+             {
+               fSelf(succ, fail);
+             }
+             else
+             {
+               succ();
+             }
+           },
+           fail);
+       })(success, failure);
+
+      var doscan_1 = function(succ, fail)
       {
         if (isspace(this._format[0]))
         {
@@ -622,51 +644,114 @@ qx.Class.define("playground.c.stdio.Scanf",
           }
 
           ic = getc(stream);
-          nrchars++;
-          while (isspace (ic))
+          stream.getc(
+            function(ch)
+            {
+              nrchars++;
+              do_scan_1_1(succ, fail);
+            },
+            fail);
+          return;
+          
+          // loop to skip whitespace in input
+          var doscan_1_1 = function(succ, fail)
           {
-            ic = getc(stream);
-            nrchars++;
-          }
-          if (ic != EOF)
-          {
-            stream.ungetc(ic);
-          }
-          nrchars--;
-        }
+            if (isspace(ic))
+            {
+              stream.getc(
+                function(ch)
+                {
+                  ic = ch;
+                  nrchars++;
+                  doscan_1_1(succ, fail);
+                },
+                fail);
+            }
+            else
+            {
+              doscan_1_2(succ, fail);
+            }
+          };
 
+          var doscan_1_2 = function(succ, fail)
+          {
+            if (ic != EOF)
+            {
+              stream.ungetc(ic);
+            }
+            nrchars--;
+            doscan_2(succ, fail);
+          };
+        }
+      };
+
+      var doscan_2 = function(succ, fail)
+      {
         if (this._format.length === 0)
         {
-          break;    // end of format
+          succ(false);          // break: end of format
+          return;
         }
 
+        doscan_3(succ, fail);
+      };
+
+      var doscan_3 = function(succ, fail)
+      {
         if (this._format[0] != '%')
         {
-          ic = getc(stream);
-          nrchars++;
-          if (ic != getFormatChar())
-          {
-            break;     /* error */
-          }
-          continue;
+          stream.getc(
+            function(ch)
+            {
+              ic = ch;
+              nrchars++;
+              if (ic != getFormatChar())
+              {
+                succ(false);  // break: error
+              }
+              {
+                succ(true);   // continue
+              }
+            },
+            fail);
         }
+        else
+        {
+          doscan_4(succ, fail);
+        }
+      };
+
+      var doscan_4 = function(succ, fail)
+      {
         getFormatChar();
 
         if (this._format[0] == '%')
         {
-          ic = getc(stream);
-          nrchars++;
-          if (ic == '%')
-          {
-            getFormatChar();
-            continue;
-          }
-          else
-          {
-            break;
-          }
+          stream.getc(
+            function(ch)
+            {
+              ic = ch;
+              nrchars++;
+              if (ic == '%')
+              {
+                getFormatChar();
+                succ(true);         // continue
+              }
+              else
+              {
+                succ(false);        // break
+              }
+            },
+            fail);
         }
+        else
+        {
+          doscan_5(succ, fail);
+        }
+      };
 
+      var doscan_5 = function(succ, fail)
+      {
         flags = 0;
 
         if (this._format[0] == '*')
@@ -702,32 +787,78 @@ qx.Class.define("playground.c.stdio.Scanf",
 
         if ((kind != 'c') && (kind != '[') && (kind != 'n'))
         {
-          do
-          {
-            ic = getc(stream);
-            nrchars++;
-          } while (isspace(ic));
-
-          if (ic == EOF)
-          {
-            break;              // outer while
-          }
+          doscan_5_1(succ, fail);
         }
         else if (kind != 'n')
+        {
+          doscan_5_2(succ, fail);
+        }
+        else
+        {
+          doscan_6(succ, fail);
+        }
+
+        var doscan_5_1 = function(succ, fail)
+        {
+          var doscan_5_1_1 = function(succ, fail)
+          {
+            stream.getc(
+              function(ch)
+              {
+                ic = ch;
+                if (ic == EOF)
+                {
+                  succ(false);        // break: outer while
+                  return;
+                }
+
+                nrchars++;
+                if (isspace(ic))
+                {
+                  doscan_5_1_1(succ, fail); // repeat this do-while loop
+                }
+                else
+                {
+                  doscan_5_2(succ, fail);
+                }
+              },
+              fail);
+          };
+
+          doscan_5_1_1(succ, fail);
+          return;
+        };
+
+        var doscan_5_2 = function(succ, fail)
         {                       // %c or %[
           ic = getc(stream);
-          if (ic == EOF)
-          {
-            break;              // outer while
-          }
-          nrchars++;
-        }
+          stream.getc(
+            function(ch)
+            {
+              ic = ch;
+              if (ic == EOF)
+              {
+                succ(fail);         // break: outer while
+                return;
+              }
+
+              nrchars++;
+              doscan_6(succ, fail);
+            },
+            fail);
+        };
+      };
+
+      var doscan_6 = function(succ, fail)
+      {
+        var             i = 0;
+        var             addr;
 
         switch (kind)
         {
         default:
           // not recognized, like %q
-          success(conv || (ic != EOF) ? done : EOF);
+          success(conv || ic != EOF ? done : EOF); // ultimate return
           return;
 
         case 'n':
@@ -746,6 +877,7 @@ qx.Class.define("playground.c.stdio.Scanf",
               this._mem.set(this._args.shift(), "int", nrchars);
             }
           }
+          doscan_7(succ, fail);
           break;
 
         case 'p':               // pointer
@@ -766,45 +898,48 @@ qx.Class.define("playground.c.stdio.Scanf",
 
           if (!width)
           {
-            success(done);
+            success(done);      // ultimate return
             return;
           }
 
-          str = o_collect(ic, stream, kind, width, &base);
-          if (str < inp_buf || (str == inp_buf && (*str == '-' || *str == '+')))
-          {
-            success(done);
-            return;
-          }
+          this.o_collect(
+            function(b)
+            {
+              base = b;
 
-           // Although the length of the number is str-inp_buf+1
-           // we don't add the 1 since we counted it already
-          nrchars += str - inp_buf;
+              if (this._inpBuf.length == 0 ||
+                  (this._inpBuf.length == 1 && 
+                   (this._inpBuf[0] == '-' || this._inpBuf[0] == '+')))
+              {
+                success(done);      // ultimate return
+                return;
+              }
 
-          if (! (flags & FL_NOASSIGN))
-          {
-            if (kind == 'd' || kind == 'i')
-            {
-              val = strtol(inp_buf, &tmp_string, base);
-            }
-            else
-            {
-              val = strtoul(inp_buf, &tmp_string, base);
-            }
+              // We had already counted the first character, so the number of
+              // characters is the input buffer length - 1.
+              nrchars += this._inpBuf.length - 1;
 
-            if (flags & FL_LONG)
-            {
-              this._mem.set(this._args.shift(), "unsigned long", val);
-            }
-            else if (flags & FL_SHORT)
-            {
-              this._mem.set(this._args.shift(), "unsigned short", val);
-            }
-            else
-            {
-              this._mem.set(this._args.shift(), "unsigned int", val);
-            }
-          }
+              if (! (flags & FL_NOASSIGN))
+              {
+                val = parseInt(this._inpBuf.join(""), base);
+
+                if (flags & FL_LONG)
+                {
+                  this._mem.set(this._args.shift(), "unsigned long", val);
+                }
+                else if (flags & FL_SHORT)
+                {
+                  this._mem.set(this._args.shift(), "unsigned short", val);
+                }
+                else
+                {
+                  this._mem.set(this._args.shift(), "unsigned int", val);
+                }
+              }
+              
+              doscan_7(succ, fail);
+            },
+            fail);
           break;
 
         case 'c':
@@ -815,37 +950,62 @@ qx.Class.define("playground.c.stdio.Scanf",
 
           if (! (flags & FL_NOASSIGN))
           {
-            this._args.shift();
+            addr = this._args.shift();
           }
 
           if (!width)
           {
-            success(done);
+            success(done);      // ultimate return
             return;
           }
 
-          while (width && ic != EOF)
-          {
-            if (! (flags & FL_NOASSIGN))
-            {
-              *str++ = (char) ic;
-            }
+          i = 0;
+          doscan_6_case_c_1(succ, fail);
 
-            if (--width)
-            {
-              ic = getc(stream);
-              nrchars++;
-            }
-          }
-
-          if (width)
+          var doscan_6_case_c_1 = function(succ, fail)
           {
-            if (ic != EOF)
+            if (width && ic != EOF)
             {
-              ungetc(ic,stream);
+              if (! (flags & FL_NOASSIGN))
+              {
+                  this._mem.set(addr + i++, "char", ic);
+              }
+
+              if (--width)
+              {
+                stream.getc(
+                  function(ch)
+                  {
+                    ic = ch;
+                    nrchars++;
+                    doscan_6_case_c_1(succ, fail);
+                  },
+                  fail);
+              }
+              else
+              {
+                doscan_6_case_c_2(succ, fail);
+              }
             }
-            nrchars--;
-          }
+            else
+            {
+              doscan_6_case_c_2(succ, fail);
+            }
+          };
+
+          var doscan_6_case_c_2 = function(succ, fail)
+          {
+            if (width)
+            {
+              if (ic != EOF)
+              {
+                stream.ungetc(ic);
+              }
+              nrchars--;
+            }
+            
+            doscan_7(succ, fail);
+          };
           break;
 
         case 's':
@@ -856,43 +1016,65 @@ qx.Class.define("playground.c.stdio.Scanf",
 
           if (! (flags & FL_NOASSIGN))
           {
-            str = va_arg(ap, char *);
+            addr = this._args.shift();
           }
 
           if (!width)
           {
-            success(done);
+            success(done);      // ultimate return
             return;
           }
 
-          while (width && ic != EOF && !isspace(ic))
+          var doscan_6_case_s_1 = function(succ, fail)
           {
+            if (width && ic != EOF && !isspace(ic))
+            {
+              if (! (flags & FL_NOASSIGN))
+              {
+                  this._mem.set(addr + i++, "char", ic);
+              }
+
+              if (--width)
+              {
+                stream.getc(
+                  function(ch)
+                  {
+                    ic = ch;
+                    nrchars++;
+                    doscan_6_case_s_1(succ, fail);
+                  },
+                  fail);
+              }
+              else
+              {
+                doscan_6_case_s_2(succ, fail);
+              }
+            }
+            else
+            {
+              doscan_6_case_s_2(succ, fail);
+            }
+          };
+
+          var doscan_6_case_s_2 = function(succ, fail)
+          {
+            // terminate the string
             if (! (flags & FL_NOASSIGN))
             {
-              *str++ = (char) ic;
+              this._mem.set(addr + i++, "char", 0);
             }
 
-            if (--width)
+            if (width)
             {
-              ic = getc(stream);
-              nrchars++;
+              if (ic != EOF)
+              {
+                stream.ungetc(ic);
+              }
+              nrchars--;
             }
-          }
-
-          // terminate the string
-          if (! (flags & FL_NOASSIGN))
-          {
-            *str = '\0';    
-          }
-
-          if (width)
-          {
-            if (ic != EOF)
-            {
-              ungetc(ic,stream);
-            }
-            nrchars--;
-          }
+            
+            doscan_7(succ, fail);
+          };
           break;
 
         case '[':
@@ -903,7 +1085,7 @@ qx.Class.define("playground.c.stdio.Scanf",
 
           if (!width)
           {
-            success(done);
+            success(done);      // ultimate return
             return;
           }
 
@@ -917,19 +1099,16 @@ qx.Class.define("playground.c.stdio.Scanf",
             reverse = 0;
           }
 
-          for (str = Xtable; str < &Xtable[NR_CHARS]; str++)
-          {
-            *str = 0;
-          }
-
+          xtable = {};
+          
           if (this._format[0] == ']')
           {
-            Xtable[getFormatChar()] = 1;
+            xtable[getFormatChar()] = 1;
           }
 
           while (this._format.length > 0 && this._format[0] != ']')
           {
-            Xtable[getFormatChar()] = 1;
+            xtable[getFormatChar()] = 1;
 
             if (this._format[0] == '-')
             {
@@ -943,62 +1122,83 @@ qx.Class.define("playground.c.stdio.Scanf",
 
                 for (c = this._formatUsed[1] + 1; c <= this._format[0] ; c++)
                 {
-                  Xtable[c] = 1;
+                  xtable[c] = 1;
                 }
                 getFormatChar();
               }
               else
               {
-                Xtable['-'] = 1;
+                xtable['-'] = 1;
               }
             }
           }
 
           if (this._format.length === 0)
           {
-            success(done);
+            success(done);      // ultimate return
             return;
           }
 
-          if (! (Xtable[ic] ^ reverse))
+          if (! ((xtable[ic] || 0) ^ reverse))
           {
-            ungetc(ic, stream);
-            success(done);
+            stream.ungetc(ic);
+            success(done);      // ultimate return
             return;
           }
 
           if (! (flags & FL_NOASSIGN))
           {
-            str = va_arg(ap, char *);
+            addr = this._args.shift();
           }
 
-          do
+          doscan_6_case_charset_1(succ, fail);
+
+          var doscan_6_case_charset_1 = function(succ, fail)
           {
             if (! (flags & FL_NOASSIGN))
             {
-              *str++ = (char) ic;
+              this._mem.set(addr + i++, "char", ic);
             }
 
             if (--width)
             {
-              ic = getc(stream);
-              nrchars++;
+              stream.getc(
+                function(ch)
+                {
+                  ic = ch;
+                  nrchars++;
+                  
+                  if (width && ic != EOF && ((xtable[ic] || 0) ^ reverse))
+                  {
+                    doscan_6_case_charset_1(succ, fail);
+                  }
+                  else
+                  {
+                    doscan_6_case_charset_2(succ, fail);
+                  }
+                },
+                fail);
             }
-          } while (width && ic != EOF && (Xtable[ic] ^ reverse));
+          };
 
-          if (width)
+          var doscan_6_case_charset_2 = function(succ, fail)
           {
-            if (ic != EOF)
+            if (width)
             {
-              stream.ungetc(ic);
+              if (ic != EOF)
+              {
+                stream.ungetc(ic);
+              }
+              nrchars--;
             }
-            nrchars--;
-          }
 
-          if (! (flags & FL_NOASSIGN))
-          {                     // terminate string
-            *str = '\0';    
-          }
+            if (! (flags & FL_NOASSIGN))
+            {                     // terminate string
+              this._mem.set(addr + i++, "char", 0);
+            }
+            
+            succ(true);         // continue
+          };
           break;
 
         case 'e':
@@ -1013,7 +1213,7 @@ qx.Class.define("playground.c.stdio.Scanf",
 
           if (!width)
           {
-            success(done);
+            success(done);      // ultimate return
             return;
           }
 
@@ -1021,7 +1221,7 @@ qx.Class.define("playground.c.stdio.Scanf",
 
           if (str < inp_buf || (str == inp_buf && (*str == '-' || *str == '+')))
           {
-            success(done);
+            success(done);      // ultimate return
             return;
           }
 
@@ -1044,6 +1244,10 @@ qx.Class.define("playground.c.stdio.Scanf",
           }
           break;
         }
+      };
+
+      var doscan_7 = function(succ, fail)
+      {
         conv++;
 
         if (! (flags & FL_NOASSIGN) && kind != 'n')
@@ -1052,10 +1256,9 @@ qx.Class.define("playground.c.stdio.Scanf",
         }
 
         getFormatChar();
-      }
 
-      success(conv || (ic != EOF) ? done : EOF);
-      return;
+        success(conv || (ic != EOF) ? done : EOF); // ultimate return
+      };
     }
   }
 });
