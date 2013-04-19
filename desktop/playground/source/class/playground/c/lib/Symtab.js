@@ -24,6 +24,7 @@ if (typeof qx === "undefined" || qx.bConsole)
   qx.bConsole = true;
   require("./SymtabEntry");
   require("../stdio/Printf");
+  require("../stdio/Scanf");
 }
 
 qx.Class.define("playground.c.lib.Symtab",
@@ -113,31 +114,43 @@ qx.Class.define("playground.c.lib.Symtab",
     // If this is the root symbol table...
     if (! parent)
     {
+      //
       // ... then add built-in functions.
-      entry = this.add("printf", 0, false);
-      declarator = new playground.c.lib.Declarator(
+      //
+      [
+        "printf",
+        "scanf"
+      ].forEach(
+        function(name)
         {
-          line : line,
-          toString : function()
-          {
-            return "printf";
-          }
-        });
-      declarator.setBuiltIn(
-        function()
-        {
-          // Get the arguments as passed to this funciton
-          var args = Array.prototype.slice.call(arguments);
-          var retval;
+          // Add printf
+          entry = this.add(name, 0, false);
+          declarator = new playground.c.lib.Declarator(
+            {
+              line : line,
+              toString : function()
+              {
+                return name;
+              }
+            });
+          declarator.setBuiltIn(
+            function()
+            {
+              // Get the arguments as passed to this funciton
+              var args = Array.prototype.slice.call(arguments);
+              var retval;
+              var stdio = playground.c.stdio;
 
-          playground.c.stdio.Printf.printf.apply(null, args);
+              stdio[qx.lang.String.firstUp(name)][name].apply(null, args);
 
-          return { value : retval, type : "pointer" };
-        });
-      
-      // Add the declarator to the symbol table entry
-      entry.setSpecAndDecl( [ declarator ]);
-      
+              return { value : retval, type : "pointer" };
+            });
+
+          // Add the declarator to the symbol table entry
+          entry.setSpecAndDecl( [ declarator ]);
+        },
+        this);
+
       // Save this root symbol table for ready access
       playground.c.lib.Symtab._root = this;
     }

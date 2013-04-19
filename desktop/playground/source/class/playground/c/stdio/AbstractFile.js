@@ -122,25 +122,16 @@ qx.Class.define("playground.c.stdio.AbstractFile",
      * 
      * @param c {String}
      *   The single character to put back onto the input stream.
-     * 
-     * @param succ {Function}
-     *   Function to call upon having successfully put the character back onto
-     *   the input stream. No arguments are passed to this function.
-     * 
-     * @param fail {Function}
-     *   Function to call upon error putting the character back onto the input
-     *   stream. The function will be called with an instance of
-     *   playground.c.lib.RuntimeError.
      */
     ungetc : function(c, succ, fail)
     {
       // Ensure the file is opened for reading
       if (! (this._mode & 0x01))
       {
-        fail(new playground.c.lib.RuntimeError(
-               playground.c.lib.Node._currentNode,
-               "Can not call ungetc() on this file. " +
-               "It is not open for reading."));
+        throw new playground.c.lib.RuntimeError(
+          playground.c.lib.Node._currentNode,
+          "Can not call ungetc() on this file. " +
+          "It is not open for reading.");
       }
 
       // Put the character onto the input stream, as the next character to read
@@ -148,8 +139,6 @@ qx.Class.define("playground.c.stdio.AbstractFile",
       
       // Fire an event, in case someone is waiting on a read
       this.fireEvent("inputdata");
-      
-      succ();
     },
 
     /**

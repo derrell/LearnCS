@@ -82,7 +82,7 @@ qx.Class.define("playground.c.stdio.Scanf",
     
     // Convert each character code in the format string into its actual
     // character.
-    this._format = (String.fromCharCode.apply(null, format));
+    this._format = (String.fromCharCode.apply(null, format).split(""));
     
     // As characters are removed from the format array, they're shifted onto
     // this 'used' array, for the few cases where peeks at prior characters
@@ -126,19 +126,20 @@ qx.Class.define("playground.c.stdio.Scanf",
       var             scanf;
       var             numConversions;
       
-      this._args = Array.prototype.slice.call(arguments);
-      
       try
       {
         // Get a Scanf instance, which retrieves the format string from memory
         scanf = new playground.c.stdio.Scanf(formatAddr);
 
+        // Copy the arguments
+        scanf._args = Array.prototype.slice.call(arguments);
+      
         // Delete the formatAddr parameter since we've already determined the
         // format string (and it's been stored in this.format).
-        this._args.splice(3, 1);
+        scanf._args.splice(3, 1);
 
         // Now process the request
-        numConversions = scanf.doscan.apply(scanf, this._args);
+        numConversions = scanf.doscan.apply(scanf, scanf._args);
       }
       catch(e)
       {
@@ -181,50 +182,6 @@ qx.Class.define("playground.c.stdio.Scanf",
     o_collect : function(success, failure, c, stream, type, width)
     {
       var             base;
-      
-      this._inpBuf = [];
-
-      switch (type)
-      {
-      case 'i':       // i means octal, decimal or hexadecimal
-      case 'p':
-      case 'x':
-      case 'X':
-        base = 16;
-        break;
-
-      case 'd':
-      case 'u':
-        base = 10;
-        break;
-
-      case 'o':
-        base = 8;
-        break;
-      case 'b':
-        base = 2;
-        break;
-      }
-
-      if (c == '-' || c == '+')
-      {
-        this._inpBuf.push(c);
-        if (--width)
-        {
-          stream.getc(
-            function(ch)
-            {
-              c = ch;
-              o_collect_1(success, failure);
-            }.bind(this),
-            failure);
-        }
-      }
-      else
-      {
-        o_collect_1(success, failure);
-      }
-      return;
 
       var o_collect_1 = function(succ, fail)
       {
@@ -282,6 +239,10 @@ qx.Class.define("playground.c.stdio.Scanf",
           base = 10;
           o_collect_2(succ, fail);
         }
+        else
+        {
+          o_collect_2(succ, fail);
+        }
       }.bind(this);
 
       var o_collect_2 = function(succ, fail)
@@ -335,6 +296,50 @@ qx.Class.define("playground.c.stdio.Scanf",
 
         succ(base);
       }.bind(this);
+
+      
+      this._inpBuf = [];
+
+      switch (type)
+      {
+      case 'i':       // i means octal, decimal or hexadecimal
+      case 'p':
+      case 'x':
+      case 'X':
+        base = 16;
+        break;
+
+      case 'd':
+      case 'u':
+        base = 10;
+        break;
+
+      case 'o':
+        base = 8;
+        break;
+      case 'b':
+        base = 2;
+        break;
+      }
+
+      if (c == '-' || c == '+')
+      {
+        this._inpBuf.push(c);
+        if (--width)
+        {
+          stream.getc(
+            function(ch)
+            {
+              c = ch;
+              o_collect_1(success, failure);
+            }.bind(this),
+            failure);
+        }
+      }
+      else
+      {
+        o_collect_1(success, failure);
+      }
     },
 
     /* 
@@ -365,32 +370,6 @@ qx.Class.define("playground.c.stdio.Scanf",
     {
       var             digit_seen = 0;
       
-      this._inpBuf = [];
-
-      if (c == '-' || c == '+')
-      {
-        this._inpBuf.push(c);
-        if (--width)
-        {
-          stream.getc(
-            function(ch)
-            {
-              c = ch;
-              f_collect_1(success, failure);
-            }.bind(this),
-            failure);
-        }
-        else
-        {
-          f_collect_1(success, failure);
-        }
-      }
-      else
-      {
-        f_collect_1(success, failure);
-      }
-      return;
-
       var f_collect_1 = function(succ, fail)
       {
         if (width && isdigit(c))
@@ -422,23 +401,6 @@ qx.Class.define("playground.c.stdio.Scanf",
       {
         if (width && c == '.')
         {
-          this._inpBuf.push(c);
-          if(--width)
-          {
-            stream.getc(
-              function(ch)
-              {
-                c = ch;
-                f_collect_2_1(succ, fail);
-              }.bind(this),
-              fail);
-          }
-          else
-          {
-            f_collect_2_1(succ, fail);
-          }
-          return;
-
           var f_collect_2_1 = function(succ, fail)
           {
             if (width && isdigit(c))
@@ -465,6 +427,22 @@ qx.Class.define("playground.c.stdio.Scanf",
               f_collect_3(succ, fail);
             }
           }.bind(this);
+
+          this._inpBuf.push(c);
+          if(--width)
+          {
+            stream.getc(
+              function(ch)
+              {
+                c = ch;
+                f_collect_2_1(succ, fail);
+              }.bind(this),
+              fail);
+          }
+          else
+          {
+            f_collect_2_1(succ, fail);
+          }
         }
         else
         {
@@ -493,23 +471,6 @@ qx.Class.define("playground.c.stdio.Scanf",
       {
         if (width && (c == 'e' || c == 'E'))
         {
-          this._inpBuf.push(c);
-          if (--width)
-          {
-            stream.getc(
-              function(ch)
-              {
-                c = ch;
-                f_collect_4_1(succ, fail);
-              }.bind(this),
-              fail);
-          }
-          else
-          {
-            f_collect_4_1(succ, fail);
-          }
-          return;
-
           var f_collect_4_1 = function(succ, fail)
           {
             if (width && (c == '+' || c == '-'))
@@ -578,6 +539,22 @@ qx.Class.define("playground.c.stdio.Scanf",
               f_collect_5(succ, fail);
             }
           }.bind(this);
+
+          this._inpBuf.push(c);
+          if (--width)
+          {
+            stream.getc(
+              function(ch)
+              {
+                c = ch;
+                f_collect_4_1(succ, fail);
+              }.bind(this),
+              fail);
+          }
+          else
+          {
+            f_collect_4_1(succ, fail);
+          }
         }
         else
         {
@@ -593,6 +570,31 @@ qx.Class.define("playground.c.stdio.Scanf",
         }
         succ();
       }.bind(this);
+
+      this._inpBuf = [];
+
+      if (c == '-' || c == '+')
+      {
+        this._inpBuf.push(c);
+        if (--width)
+        {
+          stream.getc(
+            function(ch)
+            {
+              c = ch;
+              f_collect_1(success, failure);
+            }.bind(this),
+            failure);
+        }
+        else
+        {
+          f_collect_1(success, failure);
+        }
+      }
+      else
+      {
+        f_collect_1(success, failure);
+      }
     },
 
     /*
@@ -658,46 +660,10 @@ qx.Class.define("playground.c.stdio.Scanf",
         return;
       }
 
-      // Main Loop. Returns early via direct call to success() in doscan_1, or
-      // can break by returning false or continue by returning true.
-      (function(succ, fail)
-       {
-         var             fSelf = arguments.callee;
-
-         doscan_1(
-           function(bContinue)
-           {
-             if (bContinue)
-             {
-               fSelf(succ, fail);
-             }
-             else
-             {
-               succ();
-             }
-           }.bind(this),
-           fail);
-       })(success, failure);
-
       var doscan_1 = function(succ, fail)
       {
         if (isspace(this._format[0]))
         {
-          while (isspace(this._format[0]))
-          {
-            getFormatChar();    // skip whitespace
-          }
-
-          stream.getc(
-            function(ch)
-            {
-              ic = ch;
-              nrchars++;
-              doscan_1_1(succ, fail);
-            }.bind(this),
-            fail);
-          return;
-          
           // loop to skip whitespace in input
           var doscan_1_1 = function(succ, fail)
           {
@@ -727,6 +693,24 @@ qx.Class.define("playground.c.stdio.Scanf",
             nrchars--;
             doscan_2(succ, fail);
           }.bind(this);
+
+          while (isspace(this._format[0]))
+          {
+            getFormatChar();    // skip whitespace
+          }
+
+          stream.getc(
+            function(ch)
+            {
+              ic = ch;
+              nrchars++;
+              doscan_1_1(succ, fail);
+            }.bind(this),
+            fail);
+        }
+        else
+        {
+          doscan_2(succ, fail);
         }
       }.bind(this);
 
@@ -797,6 +781,55 @@ qx.Class.define("playground.c.stdio.Scanf",
 
       var doscan_5 = function(succ, fail)
       {
+        var doscan_5_1 = function(succ, fail)
+        {
+          var doscan_5_1_1 = function(succ, fail)
+          {
+            stream.getc(
+              function(ch)
+              {
+                ic = ch;
+                if (ic == this.EOF)
+                {
+                  succ(false);        // break: outer while
+                  return;
+                }
+
+                nrchars++;
+                if (isspace(ic))
+                {
+                  doscan_5_1_1(succ, fail); // repeat this do-while loop
+                }
+                else
+                {
+                  doscan_6(succ, fail);
+                }
+              }.bind(this),
+              fail);
+          }.bind(this);
+
+          doscan_5_1_1(succ, fail);
+          return;
+        }.bind(this);
+
+        var doscan_5_2 = function(succ, fail)
+        {                       // %c or %[
+          stream.getc(
+            function(ch)
+            {
+              ic = ch;
+              if (ic == this.EOF)
+              {
+                succ(fail);         // break: outer while
+                return;
+              }
+
+              nrchars++;
+              doscan_6(succ, fail);
+            }.bind(this),
+            fail);
+        }.bind(this);
+
         flags = 0;
 
         if (this._format[0] == '*')
@@ -841,55 +874,6 @@ qx.Class.define("playground.c.stdio.Scanf",
         {
           doscan_6(succ, fail);
         }
-
-        var doscan_5_1 = function(succ, fail)
-        {
-          var doscan_5_1_1 = function(succ, fail)
-          {
-            stream.getc(
-              function(ch)
-              {
-                ic = ch;
-                if (ic == this.EOF)
-                {
-                  succ(false);        // break: outer while
-                  return;
-                }
-
-                nrchars++;
-                if (isspace(ic))
-                {
-                  doscan_5_1_1(succ, fail); // repeat this do-while loop
-                }
-                else
-                {
-                  doscan_5_2(succ, fail);
-                }
-              }.bind(this),
-              fail);
-          }.bind(this);
-
-          doscan_5_1_1(succ, fail);
-          return;
-        }.bind(this);
-
-        var doscan_5_2 = function(succ, fail)
-        {                       // %c or %[
-          stream.getc(
-            function(ch)
-            {
-              ic = ch;
-              if (ic == this.EOF)
-              {
-                succ(fail);         // break: outer while
-                return;
-              }
-
-              nrchars++;
-              doscan_6(succ, fail);
-            }.bind(this),
-            fail);
-        }.bind(this);
       }.bind(this);
 
       var doscan_6 = function(succ, fail)
@@ -982,7 +966,11 @@ qx.Class.define("playground.c.stdio.Scanf",
               
               doscan_7(succ, fail);
             }.bind(this),
-            fail);
+            fail,
+            ic,
+            stream,
+            kind,
+            width);
           break;
 
         case 'c':
@@ -1003,7 +991,6 @@ qx.Class.define("playground.c.stdio.Scanf",
           }
 
           i = 0;
-          doscan_6_case_c_1(succ, fail);
 
           var doscan_6_case_c_1 = function(succ, fail)
           {
@@ -1049,25 +1036,11 @@ qx.Class.define("playground.c.stdio.Scanf",
             
             doscan_7(succ, fail);
           }.bind(this);
+
+          doscan_6_case_c_1(succ, fail);
           break;
 
         case 's':
-          if (! (flags & this.Flags.WIDTHSPEC))
-          {
-            width = 0xffff;
-          }
-
-          if (! (flags & this.Flags.NOASSIGN))
-          {
-            addr = this._args.shift();
-          }
-
-          if (!width)
-          {
-            success(done);      // ultimate return
-            return;
-          }
-
           var doscan_6_case_s_1 = function(succ, fail)
           {
             if (width && ic != this.EOF && !isspace(ic))
@@ -1118,6 +1091,22 @@ qx.Class.define("playground.c.stdio.Scanf",
             
             doscan_7(succ, fail);
           }.bind(this);
+
+          if (! (flags & this.Flags.WIDTHSPEC))
+          {
+            width = 0xffff;
+          }
+
+          if (! (flags & this.Flags.NOASSIGN))
+          {
+            addr = this._args.shift();
+          }
+
+          if (!width)
+          {
+            success(done);      // ultimate return
+            return;
+          }
           break;
 
         case '[':
@@ -1194,8 +1183,6 @@ qx.Class.define("playground.c.stdio.Scanf",
             addr = this._args.shift();
           }
 
-          doscan_6_case_charset_1(succ, fail);
-
           var doscan_6_case_charset_1 = function(succ, fail)
           {
             if (! (flags & this.Flags.NOASSIGN))
@@ -1242,6 +1229,8 @@ qx.Class.define("playground.c.stdio.Scanf",
             
             succ(true);         // continue
           }.bind(this);
+
+          doscan_6_case_charset_1(succ, fail);
           break;
 
         case 'e':
@@ -1312,6 +1301,27 @@ qx.Class.define("playground.c.stdio.Scanf",
 
         success(conv || (ic != this.EOF) ? done : this.EOF); // ultimate return
       }.bind(this);
+
+      // Main Loop. Returns early via direct call to success() in doscan_1, or
+      // can break by returning false or continue by returning true.
+      (function(succ, fail)
+       {
+         var             fSelf = arguments.callee;
+
+         doscan_1(
+           function(bContinue)
+           {
+             if (bContinue)
+             {
+               fSelf(succ, fail);
+             }
+             else
+             {
+               succ();
+             }
+           }.bind(this),
+           fail);
+       })(success, failure);
     }
   }
 });

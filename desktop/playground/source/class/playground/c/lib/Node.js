@@ -691,11 +691,18 @@ qx.Class.define("playground.c.lib.Node",
               // not reached
             }
 
+            // Retrieve a copy of the specifier/declarator list for this symbol
+            specAndDecl = entry.getSpecAndDecl().slice(0);
+            
+            // Prepend a "pointer" declarator"
+            specAndDecl.unshift(new playground.c.lib.Declarator(this,
+                                                                "pointer"));
+
             // Complete the operation
             success(
               { 
                 value : entry.getAddr(),
-                specAndDecl  : "pointer"
+                specAndDecl  : specAndDecl
               });
           }.bind(this),
           failure);

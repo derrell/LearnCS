@@ -97,6 +97,9 @@ qx.Class.define("playground.view.Terminal",
       switch(keyId)
       {
       case "Enter" :
+        // Append a newline to the line buffer
+        this._linebuf.push("\n");
+
         console.log("Firing data event with: " + this._linebuf.join(""));
 
         // Fire an event with this line data
