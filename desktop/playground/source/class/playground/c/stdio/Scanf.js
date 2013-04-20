@@ -138,6 +138,25 @@ qx.Class.define("playground.c.stdio.Scanf",
         // format string (and it's been stored in this.format).
         scanf._args.splice(3, 1);
 
+        // Remove the success function and replace it with one of our own,
+        // which converts the integer return value into a value/specAndDecl
+        // object.
+        scanf._args.shift();
+        scanf._args.unshift(
+          function(ret)
+          {
+            var             specOrDecl;
+
+            // Create a specifier for the return value
+            specOrDecl = new playground.c.lib.Specifier(this, "int");
+
+            success(
+              {
+                value       : ret,
+                specAndDecl : [ specOrDecl ]
+              });
+          });
+
         // Now process the request
         numConversions = scanf.doscan.apply(scanf, scanf._args);
       }

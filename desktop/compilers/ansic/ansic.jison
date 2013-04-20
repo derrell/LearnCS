@@ -1486,6 +1486,7 @@ selection_statement
     $$ = new playground.c.lib.Node("if", yytext, yylineno);
     $$.children.push($3);
     $$.children.push($5);
+    $$.children.push(playground.c.lib.Node.getNull()); // else statement
   }
   | IF '(' expression ')' statement ELSE statement
   {

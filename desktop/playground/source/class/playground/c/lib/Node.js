@@ -614,36 +614,39 @@ qx.Class.define("playground.c.lib.Node",
          *   0 : additive_expression
          *   1 : multiplicative_expression
          */
-        if (bExecuting)
+        if (! bExecuting)
         {
-          // We're executing. Get the value of the left and right expressions
-          this.children[0].process(
-            data,
-            bExecuting,
-            function(v)
-            {
-              value1 = this.getExpressionValue(v, data);
-              
-              this.children[1].process(
-                data,
-                bExecuting,
-                function(v)
-                {
-                  value2 = this.getExpressionValue(v, data);
-                  
-                  // Complete the operation, coercing to the appropriate type
-                  specAndDecl = this.__coerce(value1.specAndDecl,
-                                              value2.specAndDecl);
-                  success(
-                    { 
-                      value       : value1.value + value2.value,
-                      specAndDecl : specAndDecl
-                    });
-                }.bind(this),
-                failure);
-            }.bind(this),
-            failure);
+          success();
+          break;
         }
+
+        // We're executing. Get the value of the left and right expressions
+        this.children[0].process(
+          data,
+          bExecuting,
+          function(v)
+          {
+            value1 = this.getExpressionValue(v, data);
+
+            this.children[1].process(
+              data,
+              bExecuting,
+              function(v)
+              {
+                value2 = this.getExpressionValue(v, data);
+
+                // Complete the operation, coercing to the appropriate type
+                specAndDecl = this.__coerce(value1.specAndDecl,
+                                            value2.specAndDecl);
+                success(
+                  { 
+                    value       : value1.value + value2.value,
+                    specAndDecl : specAndDecl
+                  });
+              }.bind(this),
+              failure);
+          }.bind(this),
+          failure);
         break;
 
       case "add-assign" :
@@ -719,36 +722,39 @@ qx.Class.define("playground.c.lib.Node",
          *   0 : logical_and_expression
          *   1 : inclusive_or_expression
          */
-        if (bExecuting)
+        if (! bExecuting)
         {
-          // We're executing. Get the value of the left and right expressions
-          this.children[0].process(
-            data, 
-            bExecuting,
-            function(v)
-            {
-              value1 = this.getExpressionValue(v, data);
-
-              this.children[1].process(
-                data,
-                bExecuting,
-                function(v)
-                {
-                  value2 = this.getExpressionValue(v, data);
-                  
-                  // Create a specifier for the value
-                  specOrDecl = new playground.c.lib.Specifier(this, "int");
-
-                  success(
-                    { 
-                      value       : value1.value && value2.value ? 1 : 0,
-                      specAndDecl : [ specOrDecl ]
-                    });
-                }.bind(this),
-                failure);
-            }.bind(this),
-            failure);
+          success();
+          break;
         }
+
+        // We're executing. Get the value of the left and right expressions
+        this.children[0].process(
+          data, 
+          bExecuting,
+          function(v)
+          {
+            value1 = this.getExpressionValue(v, data);
+
+            this.children[1].process(
+              data,
+              bExecuting,
+              function(v)
+              {
+                value2 = this.getExpressionValue(v, data);
+
+                // Create a specifier for the value
+                specOrDecl = new playground.c.lib.Specifier(this, "int");
+
+                success(
+                  { 
+                    value       : value1.value && value2.value ? 1 : 0,
+                    specAndDecl : [ specOrDecl ]
+                  });
+              }.bind(this),
+              failure);
+          }.bind(this),
+          failure);
         break;
 
       case "argument_expression_list" :
@@ -1059,36 +1065,39 @@ qx.Class.define("playground.c.lib.Node",
          *   0 : and_expression
          *   1 : equality_expression
          */
-        if (bExecuting)
+        if (! bExecuting)
         {
-          // We're executing. Get the value of the left and right expressions
-          this.children[0].process(
-            data, 
-            bExecuting,
-            function(v)
-            {
-              value1 = this.getExpressionValue(v, data);
-
-              this.children[1].process(
-                data,
-                bExecuting,
-                function(v)
-                {
-                  value2 = this.getExpressionValue(v, data);
-                  
-                  // Complete the operation, coercing to the appropriate type
-                  specAndDecl = this.__coerce(value1.specAndDecl,
-                                              value2.specAndDecl);
-                  success(
-                    { 
-                      value       : value1.value & value2.value,
-                      specAndDecl : specAndDecl
-                    });
-                }.bind(this),
-                failure);
-            }.bind(this),
-            failure);
+          success();
+          break;
         }
+
+        // We're executing. Get the value of the left and right expressions
+        this.children[0].process(
+          data, 
+          bExecuting,
+          function(v)
+          {
+            value1 = this.getExpressionValue(v, data);
+
+            this.children[1].process(
+              data,
+              bExecuting,
+              function(v)
+              {
+                value2 = this.getExpressionValue(v, data);
+
+                // Complete the operation, coercing to the appropriate type
+                specAndDecl = this.__coerce(value1.specAndDecl,
+                                            value2.specAndDecl);
+                success(
+                  { 
+                    value       : value1.value & value2.value,
+                    specAndDecl : specAndDecl
+                  });
+              }.bind(this),
+              failure);
+          }.bind(this),
+          failure);
         break;
 
       case "bit-and-assign" :
@@ -1120,25 +1129,28 @@ qx.Class.define("playground.c.lib.Node",
          * bit_invert :
          *   0 : unary_expression
          */
-        if (bExecuting)
+        if (! bExecuting)
         {
-          // We're executing. Get the value of the unary expression
-          this.children[0].process(
-            data,
-            bExecuting,
-            function(v)
-            {
-              value1 = this.getExpressionValue(v, data);
-
-              // Complete the operation
-              success(
-                { 
-                  value       : ~ value1.value,
-                  specAndDecl : value1.specAndDecl
-                });
-            }.bind(this),
-            failure);
+          success();
+          break;
         }
+
+        // We're executing. Get the value of the unary expression
+        this.children[0].process(
+          data,
+          bExecuting,
+          function(v)
+          {
+            value1 = this.getExpressionValue(v, data);
+
+            // Complete the operation
+            success(
+              { 
+                value       : ~ value1.value,
+                specAndDecl : value1.specAndDecl
+              });
+          }.bind(this),
+          failure);
         break;
 
       case "bit-or" :
@@ -1147,36 +1159,39 @@ qx.Class.define("playground.c.lib.Node",
          *   0 : inclusive_or_expression
          *   1 : exclusive_or_expression
          */
-        if (bExecuting)
+        if (! bExecuting)
         {
-          // We're executing. Get the value of the left and right expressions
-          this.children[0].process(
-            data, 
-            bExecuting,
-            function(v)
-            {
-              value1 = this.getExpressionValue(v, data);
-
-              this.children[1].process(
-                data,
-                bExecuting,
-                function(v)
-                {
-                  value2 = this.getExpressionValue(v, data);
-                  
-                  // Complete the operation, coercing to the appropriate type
-                  specAndDecl = this.__coerce(value1.specAndDecl,
-                                              value2.specAndDecl);
-                  success(
-                    { 
-                      value       : value1.value | value2.value,
-                      specAndDecl : specAndDecl
-                    });
-                }.bind(this),
-                failure);
-            }.bind(this),
-            failure);
+          success();
+          break;
         }
+
+        // We're executing. Get the value of the left and right expressions
+        this.children[0].process(
+          data, 
+          bExecuting,
+          function(v)
+          {
+            value1 = this.getExpressionValue(v, data);
+
+            this.children[1].process(
+              data,
+              bExecuting,
+              function(v)
+              {
+                value2 = this.getExpressionValue(v, data);
+
+                // Complete the operation, coercing to the appropriate type
+                specAndDecl = this.__coerce(value1.specAndDecl,
+                                            value2.specAndDecl);
+                success(
+                  { 
+                    value       : value1.value | value2.value,
+                    specAndDecl : specAndDecl
+                  });
+              }.bind(this),
+              failure);
+          }.bind(this),
+          failure);
         break;
 
       case "bit-or-assign" :
@@ -1395,11 +1410,14 @@ qx.Class.define("playground.c.lib.Node",
          * continue
          *   (no children)
          */
-        if (bExecuting)
+        if (! bExecuting)
         {
-          // Throw a Continue error, which will be caught by loops.
-          this._throwIt(new playground.c.lib.Continue(this), success, failure);
+          success();
+          break;
         }
+
+        // Throw a Continue error, which will be caught by loops.
+        this._throwIt(new playground.c.lib.Continue(this), success, failure);
         break;
 
       case "declaration" :
@@ -1651,36 +1669,39 @@ qx.Class.define("playground.c.lib.Node",
          *   0 : multiplicative_expression
          *   1 : cast_expression
          */
-        if (bExecuting)
+        if (! bExecuting)
         {
-          // We're executing. Get the value of the left and right expressions
-          this.children[0].process(
-            data, 
-            bExecuting,
-            function(v)
-            {
-              value1 = this.getExpressionValue(v, data);
-
-              this.children[1].process(
-                data,
-                bExecuting,
-                function(v)
-                {
-                  value2 = this.getExpressionValue(v, data);
-                  
-                  // Complete the operation, coercing to the appropriate type
-                  specAndDecl = this.__coerce(value1.specAndDecl,
-                                              value2.specAndDecl);
-                  success(
-                    { 
-                      value       : value1.value / value2.value,
-                      specAndDecl : specAndDecl
-                    });
-                }.bind(this),
-                failure);
-            }.bind(this),
-            failure);
+          success();
+          break;
         }
+
+        // We're executing. Get the value of the left and right expressions
+        this.children[0].process(
+          data, 
+          bExecuting,
+          function(v)
+          {
+            value1 = this.getExpressionValue(v, data);
+
+            this.children[1].process(
+              data,
+              bExecuting,
+              function(v)
+              {
+                value2 = this.getExpressionValue(v, data);
+
+                // Complete the operation, coercing to the appropriate type
+                specAndDecl = this.__coerce(value1.specAndDecl,
+                                            value2.specAndDecl);
+                success(
+                  { 
+                    value       : value1.value / value2.value,
+                    specAndDecl : specAndDecl
+                  });
+              }.bind(this),
+              failure);
+          }.bind(this),
+          failure);
         break;
 
       case "divide-assign" :
@@ -1866,36 +1887,39 @@ qx.Class.define("playground.c.lib.Node",
          *   0 : equality_expression
          *   1 : relational_expression
          */
-        if (bExecuting)
+        if (! bExecuting)
         {
-          // We're executing. Get the value of the left and right expressions
-          this.children[0].process(
-            data, 
-            bExecuting,
-            function(v)
-            {
-              value1 = this.getExpressionValue(v, data);
-              
-              this.children[1].process(
-                data,
-                bExecuting,
-                function(v)
-                {
-                  value2 = this.getExpressionValue(v, data);
-                  
-                  // Create a specifier for the value
-                  specOrDecl = new playground.c.lib.Specifier(this, "int");
-
-                  success(
-                    { 
-                      value       : value1.value === value2.value ? 1 : 0,
-                      specAndDecl : [ specOrDecl ]
-                    });
-                }.bind(this),
-                failure);
-            }.bind(this),
-            failure);
+          success();
+          break;
         }
+
+        // We're executing. Get the value of the left and right expressions
+        this.children[0].process(
+          data, 
+          bExecuting,
+          function(v)
+          {
+            value1 = this.getExpressionValue(v, data);
+
+            this.children[1].process(
+              data,
+              bExecuting,
+              function(v)
+              {
+                value2 = this.getExpressionValue(v, data);
+
+                // Create a specifier for the value
+                specOrDecl = new playground.c.lib.Specifier(this, "int");
+
+                success(
+                  { 
+                    value       : value1.value === value2.value ? 1 : 0,
+                    specAndDecl : [ specOrDecl ]
+                  });
+              }.bind(this),
+              failure);
+          }.bind(this),
+          failure);
         break;
 
       case "exclusive-or" :
@@ -1904,36 +1928,39 @@ qx.Class.define("playground.c.lib.Node",
          *   0 : exclusive_or_expression
          *   1 : and_expression
          */
-        if (bExecuting)
+        if (! bExecuting)
         {
-          // We're executing. Get the value of the left and right expressions
-          this.children[0].process(
-            data, 
-            bExecuting,
-            function(v)
-            {
-              value1 = this.getExpressionValue(v, data);
-
-              this.children[1].process(
-                data,
-                bExecuting,
-                function(v)
-                {
-                  value2 = this.getExpressionValue(v, data);
-                  
-                  // Complete the operation, coercing to the appropriate type
-                  specAndDecl = this.__coerce(value1.specAndDecl,
-                                              value2.specAndDecl);
-                  success(
-                    { 
-                      value       : value1.value ^ value2.value,
-                      specAndDecl : specAndDecl
-                    });
-                }.bind(this),
-                failure);
-            }.bind(this),
-            failure);
+          success();
+          break;
         }
+
+        // We're executing. Get the value of the left and right expressions
+        this.children[0].process(
+          data, 
+          bExecuting,
+          function(v)
+          {
+            value1 = this.getExpressionValue(v, data);
+
+            this.children[1].process(
+              data,
+              bExecuting,
+              function(v)
+              {
+                value2 = this.getExpressionValue(v, data);
+
+                // Complete the operation, coercing to the appropriate type
+                specAndDecl = this.__coerce(value1.specAndDecl,
+                                            value2.specAndDecl);
+                success(
+                  { 
+                    value       : value1.value ^ value2.value,
+                    specAndDecl : specAndDecl
+                  });
+              }.bind(this),
+              failure);
+          }.bind(this),
+          failure);
         break;
 
       case "expression" :
@@ -2484,36 +2511,39 @@ qx.Class.define("playground.c.lib.Node",
          *   0 : relational_expression
          *   1 : shift_expression
          */
-        if (bExecuting)
+        if (! bExecuting)
         {
-          // We're executing. Get the value of the left and right expressions
-          this.children[0].process(
-            data, 
-            bExecuting,
-            function(v)
-            {
-              value1 = this.getExpressionValue(v, data);
-
-              this.children[1].process(
-                data,
-                bExecuting,
-                function(v)
-                {
-                  value2 = this.getExpressionValue(v, data);
-                  
-                  // Create a specifier for the value
-                  specOrDecl = new playground.c.lib.Specifier(this, "int");
-
-                  success(
-                    { 
-                      value       : value1.value >= value2.value ? 1 : 0,
-                      specAndDecl : [ specOrDecl ]
-                    });
-                }.bind(this),
-                failure);
-            }.bind(this),
-            failure);
+          success();
+          break;
         }
+
+        // We're executing. Get the value of the left and right expressions
+        this.children[0].process(
+          data, 
+          bExecuting,
+          function(v)
+          {
+            value1 = this.getExpressionValue(v, data);
+
+            this.children[1].process(
+              data,
+              bExecuting,
+              function(v)
+              {
+                value2 = this.getExpressionValue(v, data);
+
+                // Create a specifier for the value
+                specOrDecl = new playground.c.lib.Specifier(this, "int");
+
+                success(
+                  { 
+                    value       : value1.value >= value2.value ? 1 : 0,
+                    specAndDecl : [ specOrDecl ]
+                  });
+              }.bind(this),
+              failure);
+          }.bind(this),
+          failure);
         break;
 
       case "greater-than" :
@@ -2522,36 +2552,39 @@ qx.Class.define("playground.c.lib.Node",
          *   0 : relational_expression
          *   1 : shift_expression
          */
-        if (bExecuting)
+        if (! bExecuting)
         {
-          // We're executing. Get the value of the left and right expressions
-          this.children[0].process(
-            data, 
-            bExecuting,
-            function(v)
-            {
-              value1 = this.getExpressionValue(v, data);
-
-              this.children[1].process(
-                data,
-                bExecuting,
-                function(v)
-                {
-                  value2 = this.getExpressionValue(v, data);
-                  
-                  // Create a specifier for the value
-                  specOrDecl = new playground.c.lib.Specifier(this, "int");
-
-                  success(
-                    { 
-                      value       : value1.value > value2.value ? 1 : 0,
-                      specAndDecl : [ specOrDecl ]
-                    });
-                }.bind(this),
-                failure);
-            }.bind(this),
-            failure);
+          success();
+          break;
         }
+
+        // We're executing. Get the value of the left and right expressions
+        this.children[0].process(
+          data, 
+          bExecuting,
+          function(v)
+          {
+            value1 = this.getExpressionValue(v, data);
+
+            this.children[1].process(
+              data,
+              bExecuting,
+              function(v)
+              {
+                value2 = this.getExpressionValue(v, data);
+
+                // Create a specifier for the value
+                specOrDecl = new playground.c.lib.Specifier(this, "int");
+
+                success(
+                  { 
+                    value       : value1.value > value2.value ? 1 : 0,
+                    specAndDecl : [ specOrDecl ]
+                  });
+              }.bind(this),
+              failure);
+          }.bind(this),
+          failure);
         break;
 
       case "identifier" :
@@ -2733,39 +2766,40 @@ qx.Class.define("playground.c.lib.Node",
          *   0 : shift_expression
          *   1 : additive_expression
          */
-        if (bExecuting)
+        if (! bExecuting)
         {
-          // We're executing. Get the value of the left and right expressions
-          this.children[0].process(
-            data, 
-            bExecuting,
-            function(v)
-            {
-              value1 = this.getExpressionValue(v, data);
-              
-              this.children[1].process(
-                data,
-                bExecuting,
-                function(v)
-                {
-                  value2 = this.getExpressionValue(v, data);
-                  
-                  // Complete the operation, coercing to the appropriate type
-                  specOrDecl = 
-                    new playground.c.lib.Specifier(this, "int", "unsigned");
-
-                  success(
-                    { 
-                      value       : value1.value << value2.value,
-                      specAndDecl : [ specAndDecl ]
-                    });
-                }.bind(this),
-                failure);
-            }.bind(this),
-            failure);
+          success();
+          break;
         }
-        
-        success();
+
+        // We're executing. Get the value of the left and right expressions
+        this.children[0].process(
+          data, 
+          bExecuting,
+          function(v)
+          {
+            value1 = this.getExpressionValue(v, data);
+
+            this.children[1].process(
+              data,
+              bExecuting,
+              function(v)
+              {
+                value2 = this.getExpressionValue(v, data);
+
+                // Complete the operation, coercing to the appropriate type
+                specOrDecl = 
+                  new playground.c.lib.Specifier(this, "int", "unsigned");
+
+                success(
+                  { 
+                    value       : value1.value << value2.value,
+                    specAndDecl : [ specAndDecl ]
+                  });
+              }.bind(this),
+              failure);
+          }.bind(this),
+          failure);
         break;
 
       case "left-shift-assign" :
@@ -2798,36 +2832,39 @@ qx.Class.define("playground.c.lib.Node",
          *   0 : relational_expression
          *   1 : shift_expression
          */
-        if (bExecuting)
+        if (! bExecuting)
         {
-          // We're executing. Get the value of the left and right expressions
-          this.children[0].process(
-            data, 
-            bExecuting,
-            function(v)
-            {
-              value1 = this.getExpressionValue(v, data);
-
-              this.children[1].process(
-                data,
-                bExecuting,
-                function(v)
-                {
-                  value2 = this.getExpressionValue(v, data);
-                  
-                  // Create a specifier for the value
-                  specOrDecl = new playground.c.lib.Specifier(this, "int");
-
-                  success(
-                    { 
-                      value       : value1.value <= value2.value ? 1 : 0,
-                      specAndDecl : [ specOrDecl ]
-                    });
-                }.bind(this),
-                failure);
-            }.bind(this),
-            failure);
+          success();
+          break;
         }
+
+        // We're executing. Get the value of the left and right expressions
+        this.children[0].process(
+          data, 
+          bExecuting,
+          function(v)
+          {
+            value1 = this.getExpressionValue(v, data);
+
+            this.children[1].process(
+              data,
+              bExecuting,
+              function(v)
+              {
+                value2 = this.getExpressionValue(v, data);
+
+                // Create a specifier for the value
+                specOrDecl = new playground.c.lib.Specifier(this, "int");
+
+                success(
+                  { 
+                    value       : value1.value <= value2.value ? 1 : 0,
+                    specAndDecl : [ specOrDecl ]
+                  });
+              }.bind(this),
+              failure);
+          }.bind(this),
+          failure);
         break;
 
       case "less-than" :
@@ -2836,36 +2873,39 @@ qx.Class.define("playground.c.lib.Node",
          *   0 : relational_expression
          *   1 : shift_expression
          */
-        if (bExecuting)
+        if (! bExecuting)
         {
-          // We're executing. Get the value of the left and right expressions
-          this.children[0].process(
-            data, 
-            bExecuting,
-            function(v)
-            {
-              value1 = this.getExpressionValue(v, data);
-              
-              this.children[1].process(
-                data,
-                bExecuting,
-                function(v)
-                {
-                  value2 = this.getExpressionValue(v, data);
-
-                  // Create a specifier for the value
-                  specOrDecl = new playground.c.lib.Specifier(this, "int");
-
-                  success(
-                    { 
-                      value       : value1.value < value2.value ? 1 : 0,
-                      specAndDecl : [ specOrDecl ]
-                    });
-                }.bind(this),
-                failure);
-            }.bind(this),
-            failure);
+          success();
+          break;
         }
+
+        // We're executing. Get the value of the left and right expressions
+        this.children[0].process(
+          data, 
+          bExecuting,
+          function(v)
+          {
+            value1 = this.getExpressionValue(v, data);
+
+            this.children[1].process(
+              data,
+              bExecuting,
+              function(v)
+              {
+                value2 = this.getExpressionValue(v, data);
+
+                // Create a specifier for the value
+                specOrDecl = new playground.c.lib.Specifier(this, "int");
+
+                success(
+                  { 
+                    value       : value1.value < value2.value ? 1 : 0,
+                    specAndDecl : [ specOrDecl ]
+                  });
+              }.bind(this),
+              failure);
+          }.bind(this),
+          failure);
         break;
 
       case "long" :
@@ -2886,36 +2926,39 @@ qx.Class.define("playground.c.lib.Node",
          *   0 : multiplicative_expression
          *   1 : cast_expression
          */
-        if (bExecuting)
+        if (! bExecuting)
         {
-          // We're executing. Get the value of the left and right expressions
-          this.children[0].process(
-            data,
-            bExecuting,
-            function(v)
-            {
-              value1 = this.getExpressionValue(v, data);
-
-              this.children[1].process(
-                data,
-                bExecuting,
-                function(v)
-                {
-                  value2 = this.getExpressionValue(v, data);
-                  
-                  // Complete the operation, coercing to the appropriate type
-                  specAndDecl =
-                    this.__coerce(value1.specAndDecl, value2.specAndDecl);
-                  success(
-                    { 
-                      value       : value1.value % value2.value,
-                      specAndDecl : specAndDecl
-                    });
-                }.bind(this),
-                failure);
-            }.bind(this),
-            failure);
+          success();
+          break;
         }
+
+        // We're executing. Get the value of the left and right expressions
+        this.children[0].process(
+          data,
+          bExecuting,
+          function(v)
+          {
+            value1 = this.getExpressionValue(v, data);
+
+            this.children[1].process(
+              data,
+              bExecuting,
+              function(v)
+              {
+                value2 = this.getExpressionValue(v, data);
+
+                // Complete the operation, coercing to the appropriate type
+                specAndDecl =
+                  this.__coerce(value1.specAndDecl, value2.specAndDecl);
+                success(
+                  { 
+                    value       : value1.value % value2.value,
+                    specAndDecl : specAndDecl
+                  });
+              }.bind(this),
+              failure);
+          }.bind(this),
+          failure);
         break;
 
       case "mod-assign" :
@@ -2948,36 +2991,39 @@ qx.Class.define("playground.c.lib.Node",
          *   0 : multiplicative_expression
          *   1 : cast_expression
          */
-        if (bExecuting)
+        if (! bExecuting)
         {
-          // We're executing. Get the value of the left and right expressions
-          this.children[0].process(
-            data,
-            bExecuting,
-            function(v)
-            {
-              value1 = this.getExpressionValue(v, data);
-
-              this.children[1].process(
-                data,
-                bExecuting,
-                function(v)
-                {
-                  value2 = this.getExpressionValue(v, data);
-                  
-                  // Complete the operation, coercing to the appropriate type
-                  specAndDecl =
-                    this.__coerce(value1.specAndDecl, value2.specAndDecl);
-                  success(
-                    { 
-                      value       : value1.value * value2.value,
-                      specAndDecl : specAndDecl
-                    });
-                }.bind(this),
-                failure);
-            }.bind(this),
-            failure);
+          success();
+          break;
         }
+
+        // We're executing. Get the value of the left and right expressions
+        this.children[0].process(
+          data,
+          bExecuting,
+          function(v)
+          {
+            value1 = this.getExpressionValue(v, data);
+
+            this.children[1].process(
+              data,
+              bExecuting,
+              function(v)
+              {
+                value2 = this.getExpressionValue(v, data);
+
+                // Complete the operation, coercing to the appropriate type
+                specAndDecl =
+                  this.__coerce(value1.specAndDecl, value2.specAndDecl);
+                success(
+                  { 
+                    value       : value1.value * value2.value,
+                    specAndDecl : specAndDecl
+                  });
+              }.bind(this),
+              failure);
+          }.bind(this),
+          failure);
         break;
 
       case "multiply-assign" :
@@ -3009,25 +3055,28 @@ qx.Class.define("playground.c.lib.Node",
          * negative :
          *   0 : unary_expression
          */
-        if (bExecuting)
+        if (! bExecuting)
         {
-          // We're executing. Get the value of the unary expression
-          this.children[0].process(
-            data,
-            bExecuting,
-            function(v)
-            {
-              value1 = this.getExpressionValue(v, data);
-
-              // Complete the operation
-              success(
-                { 
-                  value       : - value1.value,
-                  specAndDecl : value1.specAndDecl
-                });
-            }.bind(this),
-            failure);
+          success();
+          break;
         }
+
+        // We're executing. Get the value of the unary expression
+        this.children[0].process(
+          data,
+          bExecuting,
+          function(v)
+          {
+            value1 = this.getExpressionValue(v, data);
+
+            // Complete the operation
+            success(
+              { 
+                value       : - value1.value,
+                specAndDecl : value1.specAndDecl
+              });
+          }.bind(this),
+          failure);
         break;
 
       case "not" :
@@ -3035,28 +3084,31 @@ qx.Class.define("playground.c.lib.Node",
          * not :
          *   0 : unary_expression
          */
-        if (bExecuting)
+        if (! bExecuting)
         {
-          // We're executing. Get the value of the unary expression
-          this.children[0].process(
-            data,
-            bExecuting,
-            function(v)
-            {
-              value1 = this.getExpressionValue(v, data);
-              
-              // Create a specifier for the value
-              specOrDecl = new playground.c.lib.Specifier(this, "int");
-
-              // Complete the operation
-              success(
-                { 
-                  value       : ! value1.value,
-                  specAndDecl : [ specOrDecl ]
-                });
-            }.bind(this),
-            failure);
+          success();
+          break;
         }
+
+        // We're executing. Get the value of the unary expression
+        this.children[0].process(
+          data,
+          bExecuting,
+          function(v)
+          {
+            value1 = this.getExpressionValue(v, data);
+
+            // Create a specifier for the value
+            specOrDecl = new playground.c.lib.Specifier(this, "int");
+
+            // Complete the operation
+            success(
+              { 
+                value       : ! value1.value,
+                specAndDecl : [ specOrDecl ]
+              });
+          }.bind(this),
+          failure);
         break;
 
       case "not-equal" :
@@ -3065,37 +3117,40 @@ qx.Class.define("playground.c.lib.Node",
          *   0 : equality_expression
          *   1 : relational_expression
          */
-        if (bExecuting)
+        if (! bExecuting)
         {
-          // We're executing. Get the value of the left and right expressions
-          this.children[0].process(
-            data, 
-            bExecuting,
-            function(v)
-            {
-              value1 = this.getExpressionValue(v, data);
-              
-              this.children[1].process(
-                data,
-                bExecuting,
-                function(v)
-                {
-                  value2 = this.getExpressionValue(v, data);
-                  
-                  // Create a specifier for the value
-                  specOrDecl = new playground.c.lib.Specifier(this, "int");
-
-                  // Complete the operation, coercing to the appropriate type
-                  success(
-                    { 
-                      value       : value1.value !== value2.value ? 1 : 0,
-                      specAndDecl : [ specOrDecl ]
-                    });
-                }.bind(this),
-                failure);
-            }.bind(this),
-            failure);
+          success();
+          break;
         }
+
+        // We're executing. Get the value of the left and right expressions
+        this.children[0].process(
+          data, 
+          bExecuting,
+          function(v)
+          {
+            value1 = this.getExpressionValue(v, data);
+
+            this.children[1].process(
+              data,
+              bExecuting,
+              function(v)
+              {
+                value2 = this.getExpressionValue(v, data);
+
+                // Create a specifier for the value
+                specOrDecl = new playground.c.lib.Specifier(this, "int");
+
+                // Complete the operation, coercing to the appropriate type
+                success(
+                  { 
+                    value       : value1.value !== value2.value ? 1 : 0,
+                    specAndDecl : [ specOrDecl ]
+                  });
+              }.bind(this),
+              failure);
+          }.bind(this),
+          failure);
         break;
 
       case "or" :
@@ -3104,36 +3159,39 @@ qx.Class.define("playground.c.lib.Node",
          *   0 : logical_or_expression
          *   1 : logical_and_expression
          */
-        if (bExecuting)
+        if (! bExecuting)
         {
-          // We're executing. Get the value of the left and right expressions
-          this.children[0].process(
-            data, 
-            bExecuting,
-            function(v)
-            {
-              value1 = this.getExpressionValue(v, data);
-              
-              this.children[1].process(
-                data,
-                bExecuting,
-                function(v)
-                {
-                  value2 = this.getExpressionValue(v, data);
-                  
-                  // Create a specifier for the value
-                  specOrDecl = new playground.c.lib.Specifier(this, "int");
-
-                  success(
-                    { 
-                      value       : value1.value || value2.value ? 1 : 0,
-                      specAndDecl : [ specOrDecl ]
-                    });
-                }.bind(this),
-                failure);
-            }.bind(this),
-            failure);
+          success();
+          break;
         }
+
+        // We're executing. Get the value of the left and right expressions
+        this.children[0].process(
+          data, 
+          bExecuting,
+          function(v)
+          {
+            value1 = this.getExpressionValue(v, data);
+
+            this.children[1].process(
+              data,
+              bExecuting,
+              function(v)
+              {
+                value2 = this.getExpressionValue(v, data);
+
+                // Create a specifier for the value
+                specOrDecl = new playground.c.lib.Specifier(this, "int");
+
+                success(
+                  { 
+                    value       : value1.value || value2.value ? 1 : 0,
+                    specAndDecl : [ specOrDecl ]
+                  });
+              }.bind(this),
+              failure);
+          }.bind(this),
+          failure);
         break;
 
       case "parameter_declaration" :
@@ -3244,19 +3302,22 @@ qx.Class.define("playground.c.lib.Node",
          * positive :
          *   0 : unary_expression
          */
-        if (bExecuting)
+        if (! bExecuting)
         {
-          // We're executing. Get the value of the unary expression
-          this.children[0].process(
-            data,
-            bExecuting,
-            function(v)
-            {
-              value1 = this.getExpressionValue(v, data);
-              success(value1);
-            }.bind(this),
-            failure);
+          success();
+          break;
         }
+
+        // We're executing. Get the value of the unary expression
+        this.children[0].process(
+          data,
+          bExecuting,
+          function(v)
+          {
+            value1 = this.getExpressionValue(v, data);
+            success(value1);
+          }.bind(this),
+          failure);
         break;
 
       case "post_decrement_op" :
@@ -3440,37 +3501,40 @@ qx.Class.define("playground.c.lib.Node",
          *   0 : shift_expression
          *   1 : additive_expression
          */
-        if (bExecuting)
+        if (! bExecuting)
         {
-          // We're executing. Get the value of the left and right expressions
-          this.children[0].process(
-            data, 
-            bExecuting,
-            function(v)
-            {
-              value1 = this.getExpressionValue(v, data);
-              
-              this.children[1].process(
-                data,
-                bExecuting,
-                function(v)
-                {
-                  value2 = this.getExpressionValue(v, data);
-                  
-                  // Create a specifier for the value
-                  specOrDecl = 
-                    new playground.c.lib.Specifier(this, "int", "unsigned");
-
-                  success(
-                    { 
-                      value       : value1.value >> value2.value,
-                      specAndDecl : [ specOrDecl ]
-                    });
-                }.bind(this),
-                failure);
-            }.bind(this),
-            failure);
+          success();
+          break;
         }
+
+        // We're executing. Get the value of the left and right expressions
+        this.children[0].process(
+          data, 
+          bExecuting,
+          function(v)
+          {
+            value1 = this.getExpressionValue(v, data);
+
+            this.children[1].process(
+              data,
+              bExecuting,
+              function(v)
+              {
+                value2 = this.getExpressionValue(v, data);
+
+                // Create a specifier for the value
+                specOrDecl = 
+                  new playground.c.lib.Specifier(this, "int", "unsigned");
+
+                success(
+                  { 
+                    value       : value1.value >> value2.value,
+                    specAndDecl : [ specOrDecl ]
+                  });
+              }.bind(this),
+              failure);
+          }.bind(this),
+          failure);
         break;
 
       case "right-shift-assign" :
@@ -3705,37 +3769,40 @@ qx.Class.define("playground.c.lib.Node",
          *   0 : additive_expression
          *   1 : multiplicative_expression
          */
-        if (bExecuting)
+        if (! bExecuting)
         {
-          // We're executing. Get the value of the left and right expressions
-          this.children[0].process(
-            data, 
-            bExecuting,
-            function(v)
-            {
-              value1 = this.getExpressionValue(v, data);
-              
-              this.children[1].process(
-                data,
-                bExecuting,
-                function(v)
-                {
-                  value2 = this.getExpressionValue(v, data);
-
-                  // Complete the operation, coercing to the appropriate type
-                  specAndDecl = 
-                    this.__coerce(value1.specAndDecl, value2.specAndDecl);
-
-                  success(
-                    { 
-                      value       : value1.value - value2.value,
-                      specAndDecl : specAndDecl
-                    });
-                }.bind(this),
-                failure);
-            }.bind(this),
-            failure);
+          success();
+          break;
         }
+
+        // We're executing. Get the value of the left and right expressions
+        this.children[0].process(
+          data, 
+          bExecuting,
+          function(v)
+          {
+            value1 = this.getExpressionValue(v, data);
+
+            this.children[1].process(
+              data,
+              bExecuting,
+              function(v)
+              {
+                value2 = this.getExpressionValue(v, data);
+
+                // Complete the operation, coercing to the appropriate type
+                specAndDecl = 
+                  this.__coerce(value1.specAndDecl, value2.specAndDecl);
+
+                success(
+                  { 
+                    value       : value1.value - value2.value,
+                    specAndDecl : specAndDecl
+                  });
+              }.bind(this),
+              failure);
+          }.bind(this),
+          failure);
         break;
 
       case "subtract-assign" :
