@@ -718,7 +718,7 @@ qx.Class.define("playground.c.stdio.Scanf",
       {
         if (this._format.length === 0)
         {
-          succ(false);          // break: end of format
+          doscan_return();      // break: end of format
           return;
         }
 
@@ -736,10 +736,10 @@ qx.Class.define("playground.c.stdio.Scanf",
               nrchars++;
               if (ic != getFormatChar())
               {
-                succ(false);  // break: error
+                doscan_return(); // break: error
               }
               {
-                succ(true);   // continue
+                succ(true);     // continue
               }
             }.bind(this),
             fail);
@@ -764,11 +764,11 @@ qx.Class.define("playground.c.stdio.Scanf",
               if (ic == '%')
               {
                 getFormatChar();
-                succ(true);         // continue
+                succ(true);     // continue
               }
               else
               {
-                succ(false);        // break
+                doscan_return(); // break
               }
             }.bind(this),
             fail);
@@ -791,7 +791,7 @@ qx.Class.define("playground.c.stdio.Scanf",
                 ic = ch;
                 if (ic == this.EOF)
                 {
-                  succ(false);        // break: outer while
+                  doscan_return(); // break: outer while
                   return;
                 }
 
@@ -843,7 +843,8 @@ qx.Class.define("playground.c.stdio.Scanf",
           flags |= this.Flags.WIDTHSPEC;
           for (width = 0; isdigit(this._format[0]); )
           {
-            width = width * 10 + getFormatChar().charCodeAt(0)- '';
+            width =
+              width * 10 + getFormatChar().charCodeAt(0) - '0'.charCodeAt(0);
           }
         }
 
@@ -998,7 +999,7 @@ qx.Class.define("playground.c.stdio.Scanf",
             {
               if (! (flags & this.Flags.NOASSIGN))
               {
-                  this._mem.set(addr + i++, "char", ic);
+                this._mem.set(addr + i++, "char", ic.charCodeAt(0));
               }
 
               if (--width)
@@ -1047,7 +1048,7 @@ qx.Class.define("playground.c.stdio.Scanf",
             {
               if (! (flags & this.Flags.NOASSIGN))
               {
-                  this._mem.set(addr + i++, "char", ic);
+                this._mem.set(addr + i++, "char", ic.charCodeAt(0));
               }
 
               if (--width)
@@ -1107,6 +1108,9 @@ qx.Class.define("playground.c.stdio.Scanf",
             success(done);      // ultimate return
             return;
           }
+          
+          i = 0;
+          doscan_6_case_s_1(succ, fail);
           break;
 
         case '[':
@@ -1187,7 +1191,7 @@ qx.Class.define("playground.c.stdio.Scanf",
           {
             if (! (flags & this.Flags.NOASSIGN))
             {
-              this._mem.set(addr + i++, "char", ic);
+              this._mem.set(addr + i++, "char", ic.charCodeAt(0));
             }
 
             if (--width)
@@ -1298,7 +1302,13 @@ qx.Class.define("playground.c.stdio.Scanf",
         }
 
         getFormatChar();
-
+        
+        // do next iteration of main while() loop
+        doscan_1(succ, fail);
+      }.bind(this);
+      
+      var doscan_return = function()
+      {
         success(conv || (ic != this.EOF) ? done : this.EOF); // ultimate return
       }.bind(this);
 

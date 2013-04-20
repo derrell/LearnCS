@@ -222,9 +222,14 @@ qx.Class.define("playground.c.lib.Node",
             ? "pointer"
             : value.specAndDecl[0].getCType();
 
-          // Replace the symbol's address with the symbol's current value
-          value.value = 
-            playground.c.lib.Node.__mem.get(value.value, type); 
+          // If we were given an array name, use the already-retrieved address
+          // as the value.  Otherwise, replace the symbol's address with the
+          // symbol's current value.
+          if (specOrDecl.getType() != "array")
+          {
+            value.value = 
+              playground.c.lib.Node.__mem.get(value.value, type); 
+          }
         }
       }
 

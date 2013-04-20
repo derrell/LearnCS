@@ -93,6 +93,7 @@ qx.Class.define("playground.view.Terminal",
       var             keyId = e.getKeyIdentifier();
       var             textArea = this._textArea;
       var             value;
+      var             data;
       
       switch(keyId)
       {
@@ -100,17 +101,18 @@ qx.Class.define("playground.view.Terminal",
         // Append a newline to the line buffer
         this._linebuf.push("\n");
 
-        console.log("Firing data event with: " + this._linebuf.join(""));
-
-        // Fire an event with this line data
-        this.fireDataEvent("textline", this._linebuf.join(""));
-
-        // Clear the line buffer. Can't backspace past beginning of line
-        this._linebuf = [];
-        
-        // Add a newline to the text field
+        // Add a newline to the text area  and scroll to the bottom
         textArea.setValue(textArea.getValue() + "\n");
         textArea.getContentElement().scrollToY(100000);
+
+        // Get the data string
+        data = this._linebuf.join("");
+        
+        // Clear the line buffer. Can't backspace past beginning of line
+        this._linebuf = [];
+
+        // Fire an event with this line data
+        this.fireDataEvent("textline", data);
         break;
         
       case "Backspace" :
