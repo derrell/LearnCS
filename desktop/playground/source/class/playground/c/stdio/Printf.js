@@ -740,12 +740,7 @@ qx.Class.define("playground.c.stdio.Printf",
     {
       if (token.maxWidth >= 0 && token.arg.length > token.maxWidth)
       {
-        return;
-        
-        // djl: It used to do this, but nothing uses the return value, and
-        // this function sometimes returned a value and sometimes didn't. Bad,
-        // bad, bad.
-        // return token.arg.substring(0, token.maxWidth);
+        token.arg = token.arg.substring(0, token.maxWidth);
       }
 
       if (token.zeroPad)
