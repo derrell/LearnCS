@@ -9,6 +9,7 @@
 
 qx.Class.define("playground.c.stdio.Stdin",
 {
+  type   : "singleton",
   extend : playground.c.stdio.AbstractFile,
   
   /**
@@ -52,6 +53,38 @@ qx.Class.define("playground.c.stdio.Stdin",
           // Notify our superclass that data is available
           this.fireDataEvent("inputdata");
         }.bind(this));
+    }
+  },
+  
+  members :
+  {
+    // overridden
+    getc : function(succ, fail)
+    {
+      var             base = arguments.callee.base.bind(this);
+
+      // flush stdout
+      playground.c.stdio.Stdout.getInstance().flush(
+        function()
+        {
+          // Now we can call the superclass to do all of the work
+          base(succ, fail);
+        }.bind(this),
+        fail);
+    },
+    
+    read : function(succ, fail)
+    {
+      var             base = arguments.callee.base.bind(this);
+
+      // flush stdout
+      playground.c.stdio.Stdout.getInstance().flush(
+        function()
+        {
+          // Now we can call the superclass to do all of the work
+          base(succ, fail);
+        }.bind(this),
+        fail);
     }
   }
 });

@@ -139,8 +139,8 @@ qx.Class.define("playground.c.Main",
       // Create the root-level symbol table
       new playground.c.lib.Symtab(null, null, 0);
 
-      // If there was a prior stdin and/or stdout, destroy them (cancel
-      // timers), and create new instances.
+      // If there was a prior stdin and/or stdout, cancel any of its pending
+      // timers, and flush output.
       [ 
         "stdin",
         "stdout"
@@ -150,13 +150,18 @@ qx.Class.define("playground.c.Main",
           // If there's a prior instance of this stream...
           if (playground.c.Main[stream])
           {
-            // ... then destroy it
-            playground.c.Main[stream].dispose();
+            // ... then remove any pending listeners
+            qx.event.Registration.removeAllListeners(playground.c.Main[stream]);
+
+            // Reinitialize the stream
+            playground.c.Main[stream].init();
           }
-          
-          // Now create a new instance
-          playground.c.Main[stream] = 
-            new playground.c.stdio[qx.lang.String.firstUp(stream)];
+          else
+          {
+            // Get the singleton instance of this stream
+            playground.c.Main[stream] = 
+              playground.c.stdio[qx.lang.String.firstUp(stream)].getInstance();
+          }
         });
 
       // Function to display rules as they are parsed

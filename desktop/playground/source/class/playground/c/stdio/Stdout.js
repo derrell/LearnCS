@@ -9,6 +9,7 @@
 
 qx.Class.define("playground.c.stdio.Stdout",
 {
+  type   : "singleton",
   extend : playground.c.stdio.AbstractFile,
   
   construct : function()

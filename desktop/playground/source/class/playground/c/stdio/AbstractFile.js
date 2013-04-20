@@ -36,9 +36,8 @@ qx.Class.define("playground.c.stdio.AbstractFile",
       throw new Error("Unrecognized stdio mode: " + mode);
     }
     
-    // Create arrays for input/output buffering
-    this._inBuf = [];
-    this._outBuf = [];
+    // Initialize this stream
+    this.init();
   },
   
   events :
@@ -66,6 +65,17 @@ qx.Class.define("playground.c.stdio.AbstractFile",
     
     /** Whether this (output) file is line-buffered, i.e., flush at '\n' */
     _bLineBuf : false,
+
+    /**
+     * Reinitialize this stream. This is used only internally, when re-running
+     * the program.
+     */
+    init : function()
+    {
+      // Create arrays for input/output buffering
+      this._inBuf = [];
+      this._outBuf = [];
+    },
 
     /**
      * Read one character from the file. This function blocks until the
