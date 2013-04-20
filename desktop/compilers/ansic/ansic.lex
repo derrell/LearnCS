@@ -13,15 +13,16 @@ H			[a-fA-F0-9]
 E			[Ee][+-]?{D}+
 FS			("f"|"F"|"l"|"L")
 IS			("u"|"U"|"l"|"L")*
-STAR                    ["*"]
+STAR                    [*]
 SLASH                   ("/")
 SQ                      ("'")
+NL                      [\n]
 
 %s typedef_mode
 
 %%
 {SLASH}{SLASH}.* { }
-{SLASH}{STAR}({SLASH}|.|{STAR}.)*{STAR}+{SLASH}	{ }
+{SLASH}{STAR}({SLASH}|(.|{NL})|{STAR}+(.|{NL}))*?{STAR}+{SLASH} { }
 
 "auto"			{ return(parser.symbols_.AUTO); }
 "break"			{ return(parser.symbols_.BREAK); }
