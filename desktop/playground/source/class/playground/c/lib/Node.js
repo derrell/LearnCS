@@ -427,13 +427,44 @@ qx.Class.define("playground.c.lib.Node",
 
       if (bExecuting)
       {
-        //
-        // TODO: only update the model when the program stops at a breakpoint,
-        // or upon program exit. This makes execution REALLY slow at present.
-        //
-        
+        function displayMemoryTemplateView()
+        {
+          // Retrieve the data in memory, ...
+          memData = playground.c.machine.Memory.getInstance().getDataModel();
+
+          // ... convert it to a qx.data.Array, ...
+          model = qx.data.marshal.Json.createModel(memData);
+
+          // ... and update the memory template view.
+          memTemplate.setModel(model);
+
+          // Cancel the timer that will redisplay the memory template view
+          window.clearTimeout(playground.c.lib.Node._memoryViewTimer);
+
+          // Start the timer to redisplay the memory template view
+          playground.c.lib.Node._memoryViewTimer = window.setTimeout(
+            displayMemoryTemplateView,
+            2000);
+        }
+
         // Use that model to render the memory template
         memTemplate = qx.core.Init && qx.core.Init.getApplication().memTemplate;
+
+        if (memTemplate)
+        {
+          // We have stored some "global" variables in user data of the app
+          application = qx.core.Init.getApplication();
+
+          // If we haven't yet initiated the periodic event to display the
+          // memory template view...
+          if (! playground.c.lib.Node._memoryViewTimer)
+          {
+            // ... then do so now
+            playground.c.lib.Node._memoryViewTimer = window.setTimeout(
+              displayMemoryTemplateView,
+              0);
+          }
+        }
 
         // See if the line number has changed
         if (memTemplate && 
@@ -490,14 +521,8 @@ qx.Class.define("playground.c.lib.Node",
           // Is there a breakpoint at the current line?
           if (breakpoints[this.line - 1] || playground.c.lib.Node._bStep)
           {
-            // Yup, we're stopped. Retrieve the data in memory, ...
-            memData = playground.c.machine.Memory.getInstance().getDataModel();
-
-            // ... convert it to a qx.data.Array, ...
-            model = qx.data.marshal.Json.createModel(memData);
-            
-            // ... and update the memory template view.
-            application.memTemplate.setModel(model);
+            // Display the memory template view
+            displayMemoryTemplateView();
 
             // Mark the line we're stopped at
             editor.addGutterDecoration(this.line - 1, "current-line");
@@ -544,7 +569,7 @@ qx.Class.define("playground.c.lib.Node",
 
             // Unwind the stack by executing via timeout to continue shortly.
             window.setTimeout(
-              function(userData, timerId)
+              function()
               {
                 try
                 {
