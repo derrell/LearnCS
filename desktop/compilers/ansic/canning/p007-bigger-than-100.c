@@ -1,7 +1,7 @@
 /*
  * Derrell Lipman
- * Computing 1, Problem 4
- * The scanf Function
+ * Computing 1, Problem 7
+ * Bigger than 100?
  */
 
 /**
@@ -19,23 +19,31 @@
 int main(int argc, char * argv[])
 {
     int             conv;       // number of conversions
-    int             input;      // user input
+    int             value;
 
     // Prompt for user input
     printf("Please enter a number: ");
 
     // Retrieve a number from the user
-    conv = scanf("%d", &input);
+    conv = scanf("%d", &value);
 
-    // Print the retrieved value, or an error
+    // Print a message based on the retrieved value, or an error
     if (conv != 1)
     {
-        printf("I asked you to enter a number. You entered something else.\n");
+        printf("Sorry, I asked you to enter a number.");
         return 1;
     }
 
-    // Print out their entered number.
-    printf("You entered %d\n", input);
-
+    // Is the entered number bigger than 100?
+    if (value > 100)
+    {
+        // Yup. Tell 'em so.
+        printf("The number is bigger than 100\n");
+    }
+    else
+    {
+        // It's not bigger than 100. Let 'em know.
+        printf("The number is not bigger than 100\n");
+    }
     return 0;
 }

@@ -1,7 +1,7 @@
 /*
  * Derrell Lipman
- * Computing 1, Problem 4
- * The scanf Function
+ * Computing 1, Problem 11
+ * Equal to Zero?
  */
 
 /**
@@ -19,23 +19,31 @@
 int main(int argc, char * argv[])
 {
     int             conv;       // number of conversions
-    int             input;      // user input
+    int             value;
 
     // Prompt for user input
     printf("Please enter a number: ");
 
     // Retrieve a number from the user
-    conv = scanf("%d", &input);
+    conv = scanf("%d", &value);
 
-    // Print the retrieved value, or an error
+    // Print a message based on the retrieved value, or an error
     if (conv != 1)
     {
-        printf("I asked you to enter a number. You entered something else.\n");
+        printf("Sorry, I asked you to enter a number.");
         return 1;
     }
 
-    // Print out their entered number.
-    printf("You entered %d\n", input);
-
+    // Is the entered number equal to zero?
+    if (value == 0)
+    {
+        // Yup. Tell 'em so.
+        printf("The number is equal to zero.\n");
+    }
+    else
+    {
+        // It's not equal to zero. Let 'em know.
+        printf("The number is not equal to zero.\n");
+    }
     return 0;
 }

@@ -23,21 +23,19 @@ int main(int argc, char * argv[])
     int             value2;
 
     // Prompt for user input
-    printf("Please enter two number, separated by whitespace: ");
+    printf("Please enter two numbers, separated by whitespace: ");
 
     // Retrieve two numbers from the user
     conv = scanf("%d %d", &value1, &value2);
 
-    // Print the retrieved value, or an error
-    if (conv == 2)
-    {
-        printf("The sum of %d and %d is %d\n",
-               value1, value2, value1 + value2);
-    }
-    else
+    // Print the sum of the retrieved values, or an error
+    if (conv != 2)
     {
         printf("Sorry, I asked you to enter two numbers.");
+        return 1;
     }
 
+    // Print out their entered numbers, and the sum.
+    printf("The sum of %d and %d is %d\n", value1, value2, value1 + value2);
     return 0;
 }
