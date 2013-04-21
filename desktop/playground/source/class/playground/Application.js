@@ -215,6 +215,45 @@ qx.Class.define("playground.Application",
       // Add the page to the tabview
       tabview.add(page);
 
+      // Create the page for the Preprocessor output
+      page = new qx.ui.tabview.Page("Preprocessor Output");
+      page.setLayout(new qx.ui.layout.VBox());
+      
+      this.__cppOutput = new qx.ui.form.TextArea();
+      this.__cppOutput.set(
+        {
+          font       : "monospace",
+          decorator  : null,
+          value      : "",
+          wrap       : false,
+          readOnly   : true
+        });
+      
+      // Add the preprocessor output text area to the page
+      page.add(this.__cppOutput, { flex : 1 });
+
+      // Make the preprocessor output available
+      qx.core.Init.getApplication().setUserData("cppoutput", this.__cppOutput);
+
+      // Add the page to the tabview
+      tabview.add(page);
+
+      // When the preprocessor page is selected, generate preprocessed output
+      var             cppPage = page;
+      tabview.addListener(
+        "changeSelection",
+        function(e)
+        {
+          if (e.getData()[0] == cppPage)
+          {
+            this.__cppOutput.setValue(
+              playground.c.lib.Preprocessor.preprocess(
+                this.__editor.getCode()).join("\n"));
+          }
+        },
+        this);
+
+
       // Create the page for the Block editor
       page = new qx.ui.tabview.Page("Blocks");
       page.setLayout(new qx.ui.layout.VBox());
