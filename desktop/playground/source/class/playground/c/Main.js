@@ -448,6 +448,9 @@ qx.Class.define("playground.c.Main",
                   var             editor;
                   var             memData;
                   var             model;
+                  
+                  // Handle stdio clean-up
+                  playground.c.stdio.AbstractFile.onProgramEnd();
 
                   // 'try' will fail when not in GUI environment
                   playground.c.Main.output(
@@ -526,7 +529,6 @@ qx.Class.define("playground.c.Main",
                   {
                     // Ignore failure. It will fail when not in GUI environment
                   }
-
                 }.bind(entryNode),
                 catchError);
             }

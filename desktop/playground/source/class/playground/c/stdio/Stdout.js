@@ -24,6 +24,19 @@ qx.Class.define("playground.c.stdio.Stdout",
   members :
   {
     // overridden
+    init : function()
+    {
+      // Flush any pending output
+      if (this._outBuf && this._outBuf.length > 0)
+      {
+        this._output(this._outBuf.length);
+      }
+      
+      // Now call the superclass method to complete the (re)initialization
+      this.base(arguments);
+    },
+
+    // overridden
     _output : function(len)
     {
       // Send the requested number of bytes to the terminal
@@ -31,6 +44,22 @@ qx.Class.define("playground.c.stdio.Stdout",
       
       // Strip that many bytes off of the output buffer
       this._outBuf.splice(0, len);
+    },
+    
+    // overridden
+    flush : function(succ, fail, bQuiet)
+    {
+      // If this is program shut-down (bQuiet is true), and there's no
+      // trailing new-line on the output to be flushed, we'll add one.
+      if (bQuiet && 
+          this._outBuf.length > 0 && 
+          this._outBuf[this._outBuf.length - 1] != "\n")
+      {
+        this._outBuf.push("\n");
+      }
+      
+      // Now we can call the superclass
+      this.base(arguments, succ, fail, bQuiet);
     }
   }
 });

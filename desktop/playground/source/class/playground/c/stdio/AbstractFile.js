@@ -49,7 +49,62 @@ qx.Class.define("playground.c.stdio.AbstractFile",
   statics :
   {
     /** Value returned upon end of file */
-    EOF : -1
+    EOF : -1,
+    
+    /** Open files that need to be flushed upon program completion */
+    _openFiles : [],
+    
+    /**
+     *  Called upon program completion to flush output and close all files
+     *  other than stdin, stdout
+     */
+    onProgramEnd : function()
+    {
+      var             i;
+      var             stdin;
+      var             stdout;
+      var             openFiles;
+      
+      // Get the two always-open files
+      stdin = playground.c.stdio.Stdin.getInstance();
+      stdout = playground.c.stdio.Stdout.getInstance();
+      
+      // Get the open file array for quick access
+      openFiles = playground.c.stdio.AbstractFile._openFiles;
+
+      // For each open file...
+      (function(i)
+       {
+         var             fSelf = arguments.callee;
+         var             handle;
+         
+         // Get the current file's handle
+         handle = openFiles[i];
+         
+         // Call this file's flush function with the 'quiet' flag
+         handle.flush(
+           function()
+           {
+             // If there are more entries in the open file array...
+             if (i < openFiles.length - 1)
+             {
+               // ... then call the outer function again
+               fSelf(i + 1);
+               
+               // While unwinding, remove array entries other than stdin/stdout
+               if (handle != stdin && handle != stdout)
+               {
+                 openFiles.splice(i, 1);
+               }
+             }
+           },
+           function()
+           {
+             throw new Error("Failed to flush files on program end");
+           },
+           true);
+       })(0);
+    }
   },
 
   members :
@@ -75,6 +130,13 @@ qx.Class.define("playground.c.stdio.AbstractFile",
       // Create arrays for input/output buffering
       this._inBuf = [];
       this._outBuf = [];
+      
+      // If this file isn't already in the open files array...
+      if (playground.c.stdio.AbstractFile._openFiles.indexOf(this) === -1)
+      {
+        // ... then add it to the array
+        playground.c.stdio.AbstractFile._openFiles.push(this);
+      }
     },
 
     /**
@@ -331,8 +393,12 @@ qx.Class.define("playground.c.stdio.AbstractFile",
      *   Function to call upon error flushing the output buffer to the
      *   file. The function will be called with an instance of
      *   playground.c.lib.RuntimeError.
+     * 
+     * @param bQuiet {Boolean}
+     *   Whether to prevent the warning about flushing a file not open for
+     *   writing.
      */
-    flush : function(succ, fail)
+    flush : function(succ, fail, bQuiet)
     {
       // Ensure the file is opened for writing. It isn't a failure if not;
       // there's just nothing to do. We will generate a warning, though, since
@@ -347,7 +413,7 @@ qx.Class.define("playground.c.stdio.AbstractFile",
           this._output(this._outBuf.length);
         }
       }
-      else if (this._mode == 0x01)
+      else if (! bQuiet)
       {
         playground.c.Main.output(
           "\n\n" +
