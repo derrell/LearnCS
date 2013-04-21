@@ -73,37 +73,41 @@ qx.Class.define("playground.c.stdio.AbstractFile",
       openFiles = playground.c.stdio.AbstractFile._openFiles;
 
       // For each open file...
-      (function(i)
-       {
-         var             fSelf = arguments.callee;
-         var             handle;
-         
-         // Get the current file's handle
-         handle = openFiles[i];
-         
-         // Call this file's flush function with the 'quiet' flag
-         handle.flush(
-           function()
-           {
-             // If there are more entries in the open file array...
-             if (i < openFiles.length - 1)
+      if (openFiles.length > 0)
+      {
+        (function(i)
+         {
+           var             fSelf = arguments.callee;
+           var             handle;
+
+           // Get the current file's handle
+           handle = openFiles[i];
+
+           // Call this file's flush function with the 'quiet' flag
+           handle.flush(
+             function()
              {
-               // ... then call the outer function again
-               fSelf(i + 1);
-               
-               // While unwinding, remove array entries other than stdin/stdout
-               if (handle != stdin && handle != stdout)
+               // If there are more entries in the open file array...
+               if (i < openFiles.length - 1)
                {
-                 openFiles.splice(i, 1);
+                 // ... then call the outer function again
+                 fSelf(i + 1);
+
+                 // While unwinding, remove array entries other than
+                 // stdin/stdout
+                 if (handle != stdin && handle != stdout)
+                 {
+                   openFiles.splice(i, 1);
+                 }
                }
-             }
-           },
-           function()
-           {
-             throw new Error("Failed to flush files on program end");
-           },
-           true);
-       })(0);
+             },
+             function()
+             {
+               throw new Error("Failed to flush files on program end");
+             },
+             true);
+         })(0);
+      }
     }
   },
 
