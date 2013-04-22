@@ -118,33 +118,52 @@ qx.Class.define("playground.c.lib.Symtab",
       // ... then add built-in functions.
       //
       [
-        "printf",
-        "scanf"
+        {
+          name : "printf",
+          func : function()
+          {
+            var args = Array.prototype.slice.call(arguments);
+            playground.c.stdio.Printf.printf.apply(null, args);
+          }
+        },
+        {
+          name : "scanf",
+          func : function()
+          {
+            var args = Array.prototype.slice.call(arguments);
+            playground.c.stdio.Scanf.scanf.apply(null, args);
+          }
+        },
+        {
+          name : "fscanf",
+          func : function()
+          {
+            var args = Array.prototype.slice.call(arguments);
+            playground.c.stdio.Scanf.fscanf.apply(null, args);
+          }
+        },
+        {
+          name : "fopen",
+          func : function()
+          {
+            var args = Array.prototype.slice.call(arguments);
+            playground.c.stdio.Fopen.fopen.apply(null, args);
+          }
+        }
       ].forEach(
-        function(name)
+        function(classInfo)
         {
           // Add printf
-          entry = this.add(name, 0, false);
+          entry = this.add(classInfo.name, 0, false);
           declarator = new playground.c.lib.Declarator(
             {
               line : line,
               toString : function()
               {
-                return name;
+                return classInfo.name;
               }
             });
-          declarator.setBuiltIn(
-            function()
-            {
-              // Get the arguments as passed to this funciton
-              var args = Array.prototype.slice.call(arguments);
-              var retval;
-              var stdio = playground.c.stdio;
-
-              stdio[qx.lang.String.firstUp(name)][name].apply(null, args);
-
-              return { value : retval, type : "pointer" };
-            });
+          declarator.setBuiltIn(classInfo.func);
 
           // Add the declarator to the symbol table entry
           entry.setSpecAndDecl( [ declarator ]);
