@@ -49,7 +49,15 @@ qx.Class.define("playground.c.stdio.AbstractFile",
   statics :
   {
     /** Value returned upon end of file */
-    EOF : -1
+    EOF : -1,
+    
+    /** Open failure codes */
+    FailureCode :
+    {
+      Unknown          : 0,
+      FileNotFound     : 1,
+      PermissionDenied : 2
+    }
   },
 
   members :
@@ -66,6 +74,9 @@ qx.Class.define("playground.c.stdio.AbstractFile",
     /** Whether this (output) file is line-buffered, i.e., flush at '\n' */
     _bLineBuf : false,
 
+    /** Whether it is ok to return fewer bytes than requested, near EOF */
+    _bPartialReadOk : false,
+
     /**
      * Reinitialize this stream. This is used only internally, when re-running
      * the program.
@@ -75,6 +86,27 @@ qx.Class.define("playground.c.stdio.AbstractFile",
       // Create arrays for input/output buffering
       this._inBuf = [];
       this._outBuf = [];
+    },
+
+    /**
+     * Open a named file
+     *
+     * @param succ {Function}
+     *   Function to call upon having successfully opened the file. The
+     *   function is passed no arguments.
+     *
+     * @param fail {Function}
+
+     *   Function to call upon error opening the file. The function will be
+     *   called with a map containing a string (type) which is one of
+     *   'failed', timeout', or 'aborted'; and, if type is 'failed', an
+     *   integer status code (statusCode).
+     */
+    open : function(succ, fail, path)
+    {
+      // Each subclass which needs to do something other than simply return
+      // success should override this function.
+      succ();
     },
 
     /**
@@ -195,10 +227,23 @@ qx.Class.define("playground.c.stdio.AbstractFile",
         return;
       }
 
-      // If we're at end-of-file...
+      // If there is any data available in the input buffer...
+      if (this._bPartialReadOk && this._inBuf.length > 0)
+      {
+        // ... then provide that data.
+        ret = this._inBuf.slice(0);
+        
+        // The buffer is now empty
+        this._inBuf = [];
+        
+        // Give 'em their data
+        succ(ret);
+      }
+
+      // There were no bytes in the input buffer. If we're at end-of-file...
       if (this._isEof())
       {
-        // Yup. Indicate EOF.
+        // ... then indicate EOF.
         fail(new playground.c.stdio.EofError);
         return;
       }

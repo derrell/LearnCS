@@ -1,9 +1,11 @@
 /*
-This code is derived from the Minix version of doprint.c, which is found, among other places, at:
+This code is derived from the Minix version of doprint.c, which is found,
+among other places, at:
 
  http://www.cise.ufl.edu/~cop4600/cgi-bin/lxr/http/source.cgi/lib/stdio/doscan.c
 
-That code is licensed such that educational use and modification is permitted. The license is at:
+That code is licensed such that educational use and modification is
+permitted. The license is at:
 
  http://www.cise.ufl.edu/~cop4600/cgi-bin/lxr/http/source.cgi/LICENSE
 
@@ -59,7 +61,7 @@ qx.Class.define("playground.c.stdio.Scanf",
    * PRIVATE constructor!
    *   
    * Do not instantiate this class yourself.
-   * Instead, use its static method.
+   * Instead, use its static methods.
    */
   construct : function(formatAddr)
   {
