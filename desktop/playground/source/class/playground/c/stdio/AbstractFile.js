@@ -212,7 +212,7 @@ qx.Class.define("playground.c.stdio.AbstractFile",
       if (this._isEof())
       {
         // Yup. Indicate EOF.
-        fail(new playground.c.stdio.EofError);
+        succ(playground.c.stdio.AbstractFile.EOF);
         return;
       }
 
@@ -311,7 +311,7 @@ qx.Class.define("playground.c.stdio.AbstractFile",
       if (this._isEof())
       {
         // ... then indicate EOF.
-        fail(new playground.c.stdio.EofError);
+        fail([]);
         return;
       }
 

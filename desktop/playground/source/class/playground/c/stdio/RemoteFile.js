@@ -25,16 +25,18 @@ qx.Class.define("playground.c.stdio.RemoteFile",
   members :
   {
     // overridden
-    open : function(succ, fail, path)
+    open : function(succ, fail, pathAddr)
     {
+      var             i;
       var             failureCode;
+      var             path = [];
 
       // If the file is to be opened for writing, fail the request. We don't
       // yet support writing to files.
       if (this._mode & 0x02)
       {
         failureCode = 
-          playground.c.stdio.ABstractFile.FailureCode.PermissionDenied;
+          playground.c.stdio.AbstractFile.FailureCode.PermissionDenied;
 
         fail(
           {
@@ -44,6 +46,20 @@ qx.Class.define("playground.c.stdio.RemoteFile",
 
         return;
       }
+
+      // Get memory as an array
+      this._mem = playground.c.machine.Memory.getInstance().toArray(0);
+
+      // Copy the null-terminated path string (which is represented as the
+      // ASCII character codes of each character) from the given address, one
+      // character at a time, into an array.
+      for (i = pathAddr; this._mem[i] != 0 && i < this._mem.length; i++)
+      {
+        path.push(this._mem[i]);
+      }
+
+      // Convert each character code into its actual character
+      path = String.fromCharCode.apply(null, path);
 
       // We'll retrieve this file from a remote store
       var req = new qx.io.remote.Request(path, "GET","text/plain");
@@ -73,7 +89,7 @@ qx.Class.define("playground.c.stdio.RemoteFile",
               type       : "failed",
               statusCode : failureCode
             });
-        });
+        }.bind(this));
 
       // Prepare for timeout
       req.addListener(
@@ -84,7 +100,7 @@ qx.Class.define("playground.c.stdio.RemoteFile",
             {
               type       : "timeout"
             });
-        });
+        }.bind(this));
 
       // Prepare for an aborted request (should never occur)
       req.addListener(
@@ -95,7 +111,7 @@ qx.Class.define("playground.c.stdio.RemoteFile",
             {
               type       : "aborted"
             });
-        });
+        }.bind(this));
 
       // Prepare for successfully opening the file
       req.addListener(
@@ -106,7 +122,7 @@ qx.Class.define("playground.c.stdio.RemoteFile",
           // our new input buffer.
           this._inBuf = e.getContent().split("");
           succ();
-        });
+        }.bind(this));
 
       // Send the request for the file data
       req.send();

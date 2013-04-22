@@ -23,6 +23,7 @@ if (typeof qx === "undefined" || qx.bConsole)
   qx = require("qooxdoo");
   qx.bConsole = true;
   require("./SymtabEntry");
+  require("../stdio/Stdio");
   require("../stdio/Printf");
   require("../stdio/Scanf");
 }
@@ -119,11 +120,27 @@ qx.Class.define("playground.c.lib.Symtab",
       //
       [
         {
+          name : "fopen",
+          func : function()
+          {
+            var args = Array.prototype.slice.call(arguments);
+            playground.c.stdio.Stdio.fopen.apply(null, args);
+          }
+        },
+        {
+          name : "fclose",
+          func : function()
+          {
+            var args = Array.prototype.slice.call(arguments);
+            playground.c.stdio.Stdio.fclose.apply(null, args);
+          }
+        },
+        {
           name : "printf",
           func : function()
           {
             var args = Array.prototype.slice.call(arguments);
-            playground.c.stdio.Printf.printf.apply(null, args);
+            playground.c.stdio.Stdio.printf.apply(null, args);
           }
         },
         {
@@ -131,7 +148,7 @@ qx.Class.define("playground.c.lib.Symtab",
           func : function()
           {
             var args = Array.prototype.slice.call(arguments);
-            playground.c.stdio.Scanf.scanf.apply(null, args);
+            playground.c.stdio.Stdio.scanf.apply(null, args);
           }
         },
         {
@@ -139,15 +156,7 @@ qx.Class.define("playground.c.lib.Symtab",
           func : function()
           {
             var args = Array.prototype.slice.call(arguments);
-            playground.c.stdio.Scanf.fscanf.apply(null, args);
-          }
-        },
-        {
-          name : "fopen",
-          func : function()
-          {
-            var args = Array.prototype.slice.call(arguments);
-            playground.c.stdio.Fopen.fopen.apply(null, args);
+            playground.c.stdio.Stdio.fscanf.apply(null, args);
           }
         }
       ].forEach(

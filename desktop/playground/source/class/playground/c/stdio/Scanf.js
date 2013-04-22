@@ -109,66 +109,6 @@ qx.Class.define("playground.c.stdio.Scanf",
     this.NUMLEN = 512;
   },
   
-  statics :
-  {
-    scanf : function(success, failure, formatAddr, optargs)
-    {
-      var args = Array.prototype.slice.call(arguments);
-      var stream = playground.c.Main.stdout;
-      
-      // Insert stdin as the stream argument to fscanf
-      args.splice(2, 0, playground.c.Main.stdin);
-      
-      // Now fscanf can handle this.
-      playground.c.stdio.Scanf.fscanf.apply(null, args);
-    },
-
-    fscanf : function(success, failure, stream, formatAddr, optargs)
-    {
-      var             scanf;
-      var             numConversions;
-      
-      try
-      {
-        // Get a Scanf instance, which retrieves the format string from memory
-        scanf = new playground.c.stdio.Scanf(formatAddr);
-
-        // Copy the arguments
-        scanf._args = Array.prototype.slice.call(arguments);
-      
-        // Delete the formatAddr parameter since we've already determined the
-        // format string (and it's been stored in this.format).
-        scanf._args.splice(3, 1);
-
-        // Remove the success function and replace it with one of our own,
-        // which converts the integer return value into a value/specAndDecl
-        // object.
-        scanf._args.shift();
-        scanf._args.unshift(
-          function(ret)
-          {
-            var             specOrDecl;
-
-            // Create a specifier for the return value
-            specOrDecl = new playground.c.lib.Specifier(this, "int");
-
-            success(
-              {
-                value       : ret,
-                specAndDecl : [ specOrDecl ]
-              });
-          });
-
-        // Now process the request
-        numConversions = scanf.doscan.apply(scanf, scanf._args);
-      }
-      catch(e)
-      {
-        failure(e);
-      }
-    }
-  },
-  
   members :
   {
     /** An input buffer used internally for collecting digits of numbers */
