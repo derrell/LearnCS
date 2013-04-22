@@ -30,6 +30,7 @@ if (typeof qx === "undefined")
   require("./stdio/Scanf.js");
   require("./stdio/Stdin.js");
   require("./stdio/Stdout.js");
+  require("./stdio/RemoteFile.js");
   require("./stdio/StringIn.js");
   require("./stdio/StringOut.js");
 }

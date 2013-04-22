@@ -72,7 +72,28 @@ qx.Class.define("playground.c.stdio.Stdio",
               specAndDecl : [ declPointer, specVoid ]
             });
         },
-        failure,
+        function(reason)
+        {
+          var             declPointer;
+          var             specVoid;
+
+          // Create a pointer declarator for the return value
+          declPointer = new playground.c.lib.Declarator(
+            playground.c.lib.Node._currentNode,
+            "pointer");
+          
+          // The return value is a pointer to void
+          specVoid = new playground.c.lib.Specifier(
+            playground.c.lib.Node._currentNode,
+            "void");
+
+          // Convert the failure to success(EOF)
+          success(
+            {
+              value       : playground.c.stdio.AbstractFile.EOF,
+              specAndDecl : [ declPointer, specVoid ]
+            });
+        },
         path);
     },
 

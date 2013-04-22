@@ -7,6 +7,21 @@
  *   GPL Version 2: http://www.gnu.org/licenses/gpl-2.0.html 
  */
 
+if (typeof qx === "undefined" || qx.bConsole)
+{
+  qx = require("qooxdoo");
+  qx.bConsole = true;
+  require("./AbstractFile.js");
+  require("./EofError.js");
+  require("./Printf.js");
+  require("./Scanf.js");
+  require("./Stdin.js");
+  require("./Stdout.js");
+  require("./RemoteFile.js");
+  require("./StringIn.js");
+  require("./StringOut.js");
+}
+
 qx.Class.define("playground.c.stdio.RemoteFile",
 {
   extend : playground.c.stdio.AbstractFile,
@@ -61,71 +76,85 @@ qx.Class.define("playground.c.stdio.RemoteFile",
       // Convert each character code into its actual character
       path = String.fromCharCode.apply(null, path);
 
-      // We'll retrieve this file from a remote store
-      var req = new qx.io.remote.Request(path, "GET","text/plain");
+      try
+      {
+        // We'll retrieve this file from a remote store
+        var req = new qx.io.remote.Request(path, "GET","text/plain");
 
-      // Prepare for failure
-      req.addListener(
-        "failed",
-        function(e)
-        {
-          var             status = e.getStatusCode();
-          var             failureCode;
-
-          switch(status)
+        // Prepare for failure
+        req.addListener(
+          "failed",
+          function(e)
           {
-          case 404 :
-            failureCode = 
-              playground.c.stdio.AbstractFile.FailureCode.FileNotFound;
-            break;
+            var             status = e.getStatusCode();
+            var             failureCode;
 
-          default:
-            failureCode =
-              playground.c.stdio.AbstractFile.FailureCode.Unknown;
-          }
-
-          fail(
+            switch(status)
             {
-              type       : "failed",
-              statusCode : failureCode
-            });
-        }.bind(this));
+            case 404 :
+              failureCode = 
+                playground.c.stdio.AbstractFile.FailureCode.FileNotFound;
+              break;
 
-      // Prepare for timeout
-      req.addListener(
-        "timeout",
-        function(e)
-        {
-          fail(
-            {
-              type       : "timeout"
-            });
-        }.bind(this));
+            default:
+              failureCode =
+                playground.c.stdio.AbstractFile.FailureCode.Unknown;
+            }
 
-      // Prepare for an aborted request (should never occur)
-      req.addListener(
-        "aborted",
-        function(e)
-        {
-          fail(
-            {
-              type       : "aborted"
-            });
-        }.bind(this));
+            fail(
+              {
+                type       : "failed",
+                statusCode : failureCode
+              });
+          }.bind(this));
 
-      // Prepare for successfully opening the file
-      req.addListener(
-        "completed",
-        function(e)
-        {
-          // Split the file data up into its constituent bytes. That becomes
-          // our new input buffer.
-          this._inBuf = e.getContent().split("");
-          succ();
-        }.bind(this));
+        // Prepare for timeout
+        req.addListener(
+          "timeout",
+          function(e)
+          {
+            fail(
+              {
+                type       : "timeout"
+              });
+          }.bind(this));
 
-      // Send the request for the file data
-      req.send();
+        // Prepare for an aborted request (should never occur)
+        req.addListener(
+          "aborted",
+          function(e)
+          {
+            fail(
+              {
+                type       : "aborted"
+              });
+          }.bind(this));
+
+        // Prepare for successfully opening the file
+        req.addListener(
+          "completed",
+          function(e)
+          {
+            // Split the file data up into its constituent bytes. That becomes
+            // our new input buffer.
+            this._inBuf = e.getContent().split("");
+            succ();
+          }.bind(this));
+
+        // Send the request for the file data
+        req.send();
+      }
+      catch(e)
+      {
+        // We're not in the GUI environment and don't have qx.io.remote.Request
+        // so just fail the request.
+        failureCode = playground.c.stdio.AbstractFile.FailureCode.FileNotFound;
+        fail(
+          {
+            type       : "failed",
+            statusCode : failureCode
+          });
+      }
     },
     
     // overridden
