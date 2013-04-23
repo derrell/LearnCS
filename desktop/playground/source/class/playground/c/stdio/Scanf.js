@@ -699,6 +699,7 @@ qx.Class.define("playground.c.stdio.Scanf",
               {
                 doscan_return(); // break: error
               }
+              else
               {
                 succ(true);     // continue
               }
