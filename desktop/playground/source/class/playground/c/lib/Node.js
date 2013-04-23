@@ -3538,7 +3538,7 @@ qx.Class.define("playground.c.lib.Node",
         this.__assignHelper(data, 
                             function(oldVal, newVal)
                             {
-                              return oldVal - 1;
+                              return oldVal - newVal;
                             },
                             success,
                             failure,
@@ -3575,7 +3575,7 @@ qx.Class.define("playground.c.lib.Node",
         this.__assignHelper(data, 
                             function(oldVal, newVal)
                             {
-                              return oldVal + 1;
+                              return oldVal + newVal;
                             },
                             success,
                             failure,
@@ -3600,7 +3600,7 @@ qx.Class.define("playground.c.lib.Node",
         this.__assignHelper(data, 
                             function(oldVal, newVal)
                             {
-                              return oldVal - 1;
+                              return oldVal - newVal;
                             },
                             success,
                             failure,
@@ -3625,7 +3625,7 @@ qx.Class.define("playground.c.lib.Node",
         this.__assignHelper(data, 
                             function(oldVal, newVal)
                             {
-                              return oldVal + 1;
+                              return oldVal + newVal;
                             },
                             success,
                             failure,
@@ -4602,6 +4602,7 @@ qx.Class.define("playground.c.lib.Node",
       var             value;
       var             value1;
       var             value3;
+      var             multiplier = 1;
       var             specOrDecl;
       var             specAndDecl;
       var             bFirst;
@@ -4691,11 +4692,21 @@ qx.Class.define("playground.c.lib.Node",
           // value. Otherwise, get the value from the rhs of the expression.
           if (bUnary)
           {
+            // If the value being assigned to is a pointer...
+            if (value1.specAndDecl[0].getType() == "pointer")
+            {
+              // ... then figure out the size of what's pointed to
+              specAndDecl = value1.specAndDecl.slice(1);
+              multiplier =
+                specAndDecl[0].calculateByteCount(1, specAndDecl, 0);
+            }
+
             value3 = 
               { 
-                value       : value, 
-                specAndDecl : specAndDecl.slice(0)
+                value       : 1, 
+                specAndDecl : [ new playground.c.lib.Specifier("int") ]
               };
+            
             saveAndReturn.bind(this)();
           }
           else
@@ -4705,7 +4716,6 @@ qx.Class.define("playground.c.lib.Node",
               true,
               function(v)
               {
-                var             byteCount;
                 var             specAndDecl;
 
                 if (typeof v != "undefined")
@@ -4720,11 +4730,8 @@ qx.Class.define("playground.c.lib.Node",
                   {
                     // ... then figure out the size of what's pointed to
                     specAndDecl = value1.specAndDecl.slice(1);
-                    byteCount =
+                    multiplier =
                       specAndDecl[0].calculateByteCount(1, specAndDecl, 0);
-
-                    // Add the size of a pointed-to item to the pointer address
-                    value3.value *= byteCount;
                   }
 
                   saveAndReturn.bind(this)();
@@ -4743,7 +4750,7 @@ qx.Class.define("playground.c.lib.Node",
             playground.c.lib.Node.__mem.set(
               value1.value,
               type,
-              fOp(value, value3.value));
+              fOp(value, value3.value * multiplier));
 
             // If this is not a post-increment or post-decrement...
             if (! bPostOp)
