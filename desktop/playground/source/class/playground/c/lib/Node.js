@@ -4715,7 +4715,13 @@ qx.Class.define("playground.c.lib.Node",
             break;
             
           default :
-            throw new Error("Can not coerce to type " + type);
+            throw new playground.c.lib.RuntimeError(
+              this, 
+              "Operation [" + opDescription + "] between '" +
+                playground.c.lib.SymtabEntry.getInfo(specAndDecl1).description +
+                "' and '" +
+                playground.c.lib.SymtabEntry.getInfo(specAndDecl2).description +
+                "' makes no sense");
           }
         });
       
@@ -4748,12 +4754,11 @@ qx.Class.define("playground.c.lib.Node",
 
       // If one of the operands is unsigned long long, then coerce to
       // unsigned long long.
-
-      if (type1 == "unsigned long long")
+      if (type1 == "int" && sign1 == "unsigned" && size1 == "long long")
       {
         return specAndDecl1;
       }
-      if (type2 == "unsigned long long")
+      if (type2 == "int" && sign2 == "unsigned" && size2 == "long long")
       {
         return specAndDecl2;
       }
@@ -4783,7 +4788,7 @@ qx.Class.define("playground.c.lib.Node",
       {
         return specAndDecl1;
       }
-      if (type2 == "int" && sign2 == "unsigned" && size2 == null)
+      if (type2 == "int" && sign2 == "unsigned" && size2 === null)
       {
         return specAndDecl2;
       }
