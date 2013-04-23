@@ -225,7 +225,8 @@ qx.Class.define("playground.c.lib.Node",
           // If we were given an array name, use the already-retrieved address
           // as the value.  Otherwise, replace the symbol's address with the
           // symbol's current value.
-          if (specOrDecl.getType() != "array")
+          if (specOrDecl.getType() != "array" && 
+              specOrDecl.getType() != "address")
           {
             value.value = 
               playground.c.lib.Node.__mem.get(value.value, type); 
@@ -676,7 +677,8 @@ qx.Class.define("playground.c.lib.Node",
 
                 // Complete the operation, coercing to the appropriate type
                 specAndDecl = this.__coerce(value1.specAndDecl,
-                                            value2.specAndDecl);
+                                            value2.specAndDecl,
+                                            "add (+)");
                 success(
                   { 
                     value       : value1.value + value2.value,
@@ -729,26 +731,35 @@ qx.Class.define("playground.c.lib.Node",
         this.children[0].process(
           data,
           bExecuting,
-          function(entry)
+          function(value)
           {
-            // Ensure we found a symbol
-            if (! (entry instanceof playground.c.lib.SymtabEntry))
+            var             addr;
+
+            // If we found a symbol...
+            if (value instanceof playground.c.lib.SymtabEntry)
             {
-              this.error("Address-of operator requires a variable", true);
-              // not reached
+              // ... then retrieve its address
+              addr = value.getAddr();
+
+              // Retrieve a copy of the specifier/declarator list for this
+              // symbol
+              specAndDecl = value.getSpecAndDecl().slice(0);
+            }
+            else
+            {
+              // It's not a symbol, so must already be an address
+              addr = value.value;
+              specAndDecl = value.specAndDecl;
             }
 
-            // Retrieve a copy of the specifier/declarator list for this symbol
-            specAndDecl = entry.getSpecAndDecl().slice(0);
-            
-            // Prepend a "pointer" declarator"
+            // Prepend an "address" declarator"
             specAndDecl.unshift(new playground.c.lib.Declarator(this,
-                                                                "pointer"));
+                                                                "address"));
 
             // Complete the operation
             success(
               { 
-                value : entry.getAddr(),
+                value        : addr,
                 specAndDecl  : specAndDecl
               });
           }.bind(this),
@@ -1127,7 +1138,8 @@ qx.Class.define("playground.c.lib.Node",
 
                 // Complete the operation, coercing to the appropriate type
                 specAndDecl = this.__coerce(value1.specAndDecl,
-                                            value2.specAndDecl);
+                                            value2.specAndDecl,
+                                            "bit-wise AND (&)");
                 success(
                   { 
                     value       : value1.value & value2.value,
@@ -1221,7 +1233,8 @@ qx.Class.define("playground.c.lib.Node",
 
                 // Complete the operation, coercing to the appropriate type
                 specAndDecl = this.__coerce(value1.specAndDecl,
-                                            value2.specAndDecl);
+                                            value2.specAndDecl,
+                                           "bit-wise OR (|)");
                 success(
                   { 
                     value       : value1.value | value2.value,
@@ -1824,7 +1837,8 @@ qx.Class.define("playground.c.lib.Node",
 
                 // Complete the operation, coercing to the appropriate type
                 specAndDecl = this.__coerce(value1.specAndDecl,
-                                            value2.specAndDecl);
+                                            value2.specAndDecl,
+                                            "divide (/)");
                 success(
                   { 
                     value       : value1.value / value2.value,
@@ -2083,7 +2097,8 @@ qx.Class.define("playground.c.lib.Node",
 
                 // Complete the operation, coercing to the appropriate type
                 specAndDecl = this.__coerce(value1.specAndDecl,
-                                            value2.specAndDecl);
+                                            value2.specAndDecl,
+                                            "exclusive-or (^)");
                 success(
                   { 
                     value       : value1.value ^ value2.value,
@@ -3081,7 +3096,9 @@ qx.Class.define("playground.c.lib.Node",
 
                 // Complete the operation, coercing to the appropriate type
                 specAndDecl =
-                  this.__coerce(value1.specAndDecl, value2.specAndDecl);
+                  this.__coerce(value1.specAndDecl, 
+                                value2.specAndDecl,
+                                "mod (%)");
                 success(
                   { 
                     value       : value1.value % value2.value,
@@ -3146,7 +3163,9 @@ qx.Class.define("playground.c.lib.Node",
 
                 // Complete the operation, coercing to the appropriate type
                 specAndDecl =
-                  this.__coerce(value1.specAndDecl, value2.specAndDecl);
+                  this.__coerce(value1.specAndDecl, 
+                                value2.specAndDecl,
+                                "multiply (*)");
                 success(
                   { 
                     value       : value1.value * value2.value,
@@ -3924,7 +3943,9 @@ qx.Class.define("playground.c.lib.Node",
 
                 // Complete the operation, coercing to the appropriate type
                 specAndDecl = 
-                  this.__coerce(value1.specAndDecl, value2.specAndDecl);
+                  this.__coerce(value1.specAndDecl, 
+                                value2.specAndDecl,
+                                "subtraction (-)");
 
                 success(
                   { 
@@ -4640,20 +4661,47 @@ qx.Class.define("playground.c.lib.Node",
      * @param specAndDecl2 {String}
      *   A specifier/declarator list for the second type to be tested
      *
+     * @param opDescription {String}
+     *   Description of the operation for which these types are being
+     *   coerced.
+     *
      * @return {String}
      *   The C type to which to coerce the operands of an operation between
      *   operands originally of type1 and type2.
      */
-    __coerce : function(specAndDecl1, specAndDecl2)
+    __coerce : function(specAndDecl1, specAndDecl2, opDescription)
     {
-      var             spec1 = specAndDecl1[0];
-      var             spec2 = specAndDecl2[0];
-      var             type1 = spec1.getType();
-      var             type2 = spec2.getType();
-      var             sign1 = spec1.getSigned();
-      var             sign2 = spec2.getSigned();
-      var             size1 = spec1.getSize();
-      var             size2 = spec2.getSize();
+      var             spec1;
+      var             spec2;
+      var             type1;
+      var             type2;
+      var             sign1;
+      var             sign2;
+      var             size1;
+      var             size2;
+      
+      spec1 = specAndDecl1[0];
+      spec2 = specAndDecl2[0];
+      
+      // Ensure that we have native types
+      if (! (spec1 instanceof playground.c.lib.Specifier) ||
+          ! (spec2 instanceof playground.c.lib.Specifier))
+      {
+        throw new playground.c.lib.RuntimeError(
+          this, 
+          "Operation [" + opDescription + "] between '" +
+            playground.c.lib.SymtabEntry.getInfo(specAndDecl1).description +
+            "' and '" +
+            playground.c.lib.SymtabEntry.getInfo(specAndDecl2).description +
+            "' makes no sense");
+      }
+
+      type1 = spec1.getType();
+      type2 = spec2.getType();
+      sign1 = spec1.getSigned();
+      sign2 = spec2.getSigned();
+      size1 = spec1.getSize();
+      size2 = spec2.getSize();
       
       // Ensure that we got types that can be coerced
       [ type1, type2 ].forEach(
