@@ -147,7 +147,7 @@ qx.Class.define("playground.c.lib.SymtabEntry",
           break;
 
         case "void" :
-          throw new Error("Don't yet know type/size of void");
+          parts.push(type);
           break;
 
         case "struct" :
