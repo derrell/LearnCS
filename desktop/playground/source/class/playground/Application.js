@@ -215,6 +215,7 @@ qx.Class.define("playground.Application",
       // Add the page to the tabview
       tabview.add(page);
 
+/*
       // Create the page for the Preprocessor output
       page = new qx.ui.tabview.Page("Preprocessor Output");
       page.setLayout(new qx.ui.layout.VBox());
@@ -252,7 +253,7 @@ qx.Class.define("playground.Application",
           }
         },
         this);
-
+*/
 
       // Create the page for the Block editor
       page = new qx.ui.tabview.Page("Blocks");
