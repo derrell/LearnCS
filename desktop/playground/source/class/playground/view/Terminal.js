@@ -60,6 +60,24 @@ qx.Class.define("playground.view.Terminal",
     _linebuf : null,
 
     /**
+     * Focus the text area
+     */
+    focus : function()
+    {
+      var             pos;
+
+      // On terminal focus, focus the text area
+      this._textArea.focus();
+      
+      // Scroll to the bottom
+      this._textArea.getContentElement().scrollToY(10000);
+      
+      // Set the cursor at the bottom
+      pos = this._textArea.getValue().length;
+      this._textArea.setTextSelection(pos, pos);
+    },
+
+    /**
      * Clear the terminal window and flush all prior input
      */
     clear : function()

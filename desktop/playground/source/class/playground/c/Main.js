@@ -54,6 +54,7 @@ qx.Class.define("playground.c.Main",
     {
       var             argv;
       var             optimist;
+      var             terminal;
 
       if (bConsole)
       {
@@ -78,6 +79,12 @@ qx.Class.define("playground.c.Main",
         playground.c.Main.debugFlags.rts    = !!argv["rts"];
         playground.c.Main.debugFlags.heap   = !!argv["heap"];
         playground.c.Main.debugFlags.gas    = !!argv["gas"];
+      }
+      else
+      {
+        // Set focus to the terminal window
+        terminal = qx.core.Init.getApplication().getUserData("terminal");
+        terminal.focus();
       }
 
       var error =

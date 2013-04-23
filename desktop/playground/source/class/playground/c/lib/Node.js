@@ -537,10 +537,17 @@ qx.Class.define("playground.c.lib.Node",
                   "execute",
                   function()
                   {
+                    var             terminal;
+
                     // Note that they pressed the Step button, to break at
                     // next line.
                     playground.c.lib.Node._bStep = true;
                     
+                    // Set the focus on the terminal window
+                    terminal = 
+                      qx.core.Init.getApplication().getUserData("terminal");
+                    terminal.focus();
+
                     // Process the next node
                     this.process.apply(this, args);
                   },
@@ -551,9 +558,16 @@ qx.Class.define("playground.c.lib.Node",
                   "execute",
                   function()
                   {
+                    var             terminal;
+
                     // Do not break at the next line (unless there's a
                     // breakpoint at that line)
                     playground.c.lib.Node._bStep = false;
+                    
+                    // Set the focus on the terminal window
+                    terminal = 
+                      qx.core.Init.getApplication().getUserData("terminal");
+                    terminal.focus();
                     
                     // Process the next nodes (until a breakpoint)
                     this.process.apply(this, args);
