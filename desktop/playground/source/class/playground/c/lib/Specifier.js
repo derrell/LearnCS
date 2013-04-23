@@ -162,7 +162,7 @@ qx.Class.define("playground.c.lib.Specifier",
      */
     getType : function()
     {
-      return this.__type;
+      return this.__type || "int";
     },
     
     /**

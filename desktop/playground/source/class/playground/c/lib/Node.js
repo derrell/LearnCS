@@ -673,9 +673,59 @@ qx.Class.define("playground.c.lib.Node",
               bExecuting,
               function(v)
               {
+                var             byteCount;
+                var             specAndDecl;
+
                 value2 = this.getExpressionValue(v, data);
 
-                // Complete the operation, coercing to the appropriate type
+                // If the first value is a pointer and the second is a
+                // specifier, ...
+                if ((value1.specAndDecl[0].getType() == "pointer" ||
+                     value1.specAndDecl[0].getType() == "array") &&
+                    value2.specAndDecl[0] .getType() == "int")
+                {
+                  // ... then figure out the size of what's pointed to
+                  specAndDecl = value1.specAndDecl.slice(1);
+                  byteCount =
+                    specAndDecl[0].calculateByteCount(1, specAndDecl, 0);
+                  
+                  // Add the size of a pointed-to item to the pointer address
+                  value1.value += value2.value * byteCount;
+
+                  success(
+                    { 
+                      value       : value1.value,
+                      specAndDecl : value1.specAndDecl.slice(0)
+                    });
+                  
+                  return;
+                }
+
+                // If the second value is a pointer and the first is a
+                // specifier, ...
+                if ((value2.specAndDecl[0].getType() == "pointer" ||
+                     value2.specAndDecl[0].getType() == "array") &&
+                    value1.specAndDecl[0] .getType() == "int")
+                {
+                  // ... then figure out the size of what's pointed to
+                  specAndDecl = value2.specAndDecl.slice(1);
+                  byteCount =
+                    specAndDecl[0].calculateByteCount(1, specAndDecl, 0);
+                  
+                  // Add the size of a pointed-to item to the pointer address
+                  value2.value += value1.value * byteCount;
+
+                  success(
+                    { 
+                      value       : value2.value,
+                      specAndDecl : value2.specAndDecl.slice(0)
+                    });
+                  
+                  return;
+                }
+
+                // It's not pointer arithmetic. Complete the operation,
+                // coercing to the appropriate type
                 specAndDecl = this.__coerce(value1.specAndDecl,
                                             value2.specAndDecl,
                                             "add (+)");
@@ -3939,7 +3989,55 @@ qx.Class.define("playground.c.lib.Node",
               bExecuting,
               function(v)
               {
+                var             byteCount;
+
                 value2 = this.getExpressionValue(v, data);
+
+                // If the first value is a pointer and the second is a
+                // specifier, ...
+                if ((value1.specAndDecl[0].getType() == "pointer" ||
+                     value1.specAndDecl[0].getType() == "array") &&
+                    value2.specAndDecl[0] .getType() == "int")
+                {
+                  // ... then figure out the size of what's pointed to
+                  specAndDecl = value1.specAndDecl.slice(1);
+                  byteCount =
+                    specAndDecl[0].calculateByteCount(1, specAndDecl, 0);
+                  
+                  // Add the size of a pointed-to item to the pointer address
+                  value1.value -= value2.value * byteCount;
+
+                  success(
+                    { 
+                      value       : value1.value,
+                      specAndDecl : value1.specAndDecl.slice(0)
+                    });
+                  
+                  return;
+                }
+
+                // If the second value is a pointer and the first is a
+                // specifier, ...
+                if ((value2.specAndDecl[0].getType() == "pointer" ||
+                     value2.specAndDecl[0].getType() == "array") &&
+                    value1.specAndDecl[0] .getType() == "int")
+                {
+                  // ... then figure out the size of what's pointed to
+                  specAndDecl = value2.specAndDecl.slice(1);
+                  byteCount =
+                    specAndDecl[0].calculateByteCount(1, specAndDecl, 0);
+                  
+                  // Add the size of a pointed-to item to the pointer address
+                  value2.value -= value1.value * byteCount;
+
+                  success(
+                    { 
+                      value       : value2.value,
+                      specAndDecl : value2.specAndDecl.slice(0)
+                    });
+                  
+                  return;
+                }
 
                 // Complete the operation, coercing to the appropriate type
                 specAndDecl = 
@@ -4607,9 +4705,28 @@ qx.Class.define("playground.c.lib.Node",
               true,
               function(v)
               {
+                var             byteCount;
+                var             specAndDecl;
+
                 if (typeof v != "undefined")
                 {
                   value3 = this.getExpressionValue(v, data);
+
+                  // If the value being assigned to is a pointer and the
+                  // RHS's type is some sort of int...
+                  if ((value1.specAndDecl[0].getType() == "pointer" ||
+                       value1.specAndDecl[0].getType() == "array") &&
+                      value3.specAndDecl[0] .getType() == "int")
+                  {
+                    // ... then figure out the size of what's pointed to
+                    specAndDecl = value1.specAndDecl.slice(1);
+                    byteCount =
+                      specAndDecl[0].calculateByteCount(1, specAndDecl, 0);
+
+                    // Add the size of a pointed-to item to the pointer address
+                    value3.value *= byteCount;
+                  }
+
                   saveAndReturn.bind(this)();
                 }
                 else
