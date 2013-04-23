@@ -1288,12 +1288,105 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "cast_expression" :
-        throw new Error("Not yet implemented: cast_expression");
+        /*
+         * cast_expression
+         *   0: type_name
+         *   1: cast_expression
+         */
+        
+        // Get the cast data from the type-name. It consists of specAndDecl
+        // and size.
+        this.children[0].process(
+          data,
+          bExecuting,
+          function(castData)
+          {
+            // Retrieve the value being cast
+            this.children[1].process(
+              data,
+              bExecuting,
+              function(v)
+              {
+                var             oldType;
+                var             newType;
+                var             specAndDecl;
+                var             typeSize;
+
+                value1 = this.getExpressionValue(v, data);
+                
+                // Determine the type of the original value
+                specOrDecl = value1.specAndDecl[0];
+                if (specOrDecl instanceof playground.c.lib.Declarator)
+                {
+                  // We found a declarator, meaning the original type was
+                  // either a pointer or an array, both of which we take to be
+                  // pointer.
+                  oldType = "pointer";
+                }
+                else
+                {
+                  // Get the type from this specifier
+                  oldType = specOrDecl.getCType();
+                }
+                
+                // Determine the type in memory
+                specOrDecl = castData.specAndDecl[0];
+                if (specOrDecl instanceof playground.c.lib.Declarator)
+                {
+                  // We found a declarator, meaning the new type is
+                  // either a pointer or an array, both of which we take to be
+                  // pointer.
+                  newType = "pointer";
+                }
+                else
+                {
+                  // Get the type from this specifier
+                  newType = specOrDecl.getCType();
+                }
+                
+                // Determine the value's original size in bytes
+                typeSize = playground.c.machine.Memory.typeSize[oldType];
+                
+                // If it's less than the word size, we'll sign-extend.
+                if (typeSize < playground.c.machine.Memory.WORDSIZE)
+                {
+                  // Convert that size to a number of bits
+                  typeSize *= 8;
+
+                  // If the value's high bit is on...
+                  if (value1.value & (1 << (typeSize - 1)))
+                  {
+                    // ... then fill the register with 1s
+                    playground.c.lib.Node.__mem.setReg("R1", "long", -1);
+                  }
+                  else
+                  {
+                    // otherwise, fill the register with 0s.
+                    playground.c.lib.Node.__mem.setReg("R1", "long", 0);
+                  }
+                }
+
+                // Write the value to memory using the value's original
+                // specifier/declarator list
+                playground.c.lib.Node.__mem.setReg("R1", oldType, value1.value);
+                
+                // Read it back using the cast's specifier/declarator list
+                value1.value = 
+                  playground.c.lib.Node.__mem.getReg("R1", newType);
+                
+                // Assign the cast's specifier/declarator list to the value
+                value1.specAndDecl = castData.specAndDecl;
+                
+                success(value1);
+              }.bind(this),
+              failure);
+          }.bind(this),
+          failure);
         break;
 
       case "char" :
         // Only applicable before executing
-        if (bExecuting)
+        if (bExecuting && ! data.specifiers)
         {
           success();
           break;
@@ -1755,7 +1848,7 @@ qx.Class.define("playground.c.lib.Node",
 
       case "double" :
         // Only applicable before executing
-        if (bExecuting)
+        if (bExecuting && ! data.specifiers)
         {
           success();
           break;
@@ -2006,7 +2099,7 @@ qx.Class.define("playground.c.lib.Node",
 
       case "float" :
         // Only applicable before executing
-        if (bExecuting)
+        if (bExecuting && ! data.specifiers)
         {
           success();
           break;
@@ -2762,7 +2855,7 @@ qx.Class.define("playground.c.lib.Node",
 
       case "int" :
         // Only applicable before executing
-        if (bExecuting)
+        if (bExecuting && ! data.specifiers)
         {
           success();
           break;
@@ -2935,7 +3028,7 @@ qx.Class.define("playground.c.lib.Node",
 
       case "long" :
         // Only applicable before executing
-        if (bExecuting)
+        if (bExecuting && ! data.specifiers)
         {
           success();
           break;
@@ -3303,7 +3396,7 @@ qx.Class.define("playground.c.lib.Node",
 
       case "pointer" :
         // Only applicable before executing
-        if (bExecuting)
+        if (bExecuting && ! data.specAndDecl)
         {
           success();
           break;
@@ -3588,7 +3681,7 @@ qx.Class.define("playground.c.lib.Node",
 
       case "short" :
         // Only applicable before executing
-        if (bExecuting)
+        if (bExecuting && ! data.specifiers)
         {
           success();
           break;
@@ -3600,7 +3693,7 @@ qx.Class.define("playground.c.lib.Node",
 
       case "signed" :
         // Only applicable before executing
-        if (bExecuting)
+        if (bExecuting && ! data.specifiers)
         {
           success();
           break;
@@ -3693,7 +3786,7 @@ qx.Class.define("playground.c.lib.Node",
          */
         
         // Only applicable before executing
-        if (bExecuting)
+        if (bExecuting && ! data.specifiers)
         {
           success();
           break;
@@ -4153,14 +4246,62 @@ qx.Class.define("playground.c.lib.Node",
          * type_name
          *   0: specifier_qualifier_list
          *   1: abstract_declarator?
-         * 
-         * This node type is used only for sizeof and cast, so returns a map
-         * containing the textual type name (type) and its size (size). That
-         * information is static -- it can not change during the course of
-         * execution, so the map is cached as this.data, in case this node is
-         * traversed again.
+         *
+         * This node type is used only for sizeof and cast, so generates a map
+         * containing the specifier/declarator list, and the size of an object
+         * of this type. That information is static -- it can not change
+         * during the course of execution, so the map is cached as this.data,
+         * in case this node is traversed again. (Parent nodes may choose to
+         * copy that map, too.)
          */
-        throw new Error("Not yet implemented: type_name");
+
+        // Have we already generated the specifier/declarator list and size?
+        if (this.data)
+        {
+          // Yup. Nothing to do.
+          success(this.data);
+          break;
+        }
+
+        // Create our own data object with a new specifier for this declaration
+        data = 
+          {
+            id : "type_name",
+            specifiers : new playground.c.lib.Specifier(this),
+            specAndDecl : []
+          };
+
+        // Process the specifier_qualifier_list
+        this.children[0].process(
+          data,
+          bExecuting,
+          function()
+          {
+            // Process the declarators
+            this.children[1].process(
+              data,
+              bExecuting,
+              function()
+              {
+                // Add the specifier to the end of the specifier/declarator
+                // list
+                specAndDecl = data.specAndDecl;
+                specAndDecl.push(data.specifiers);
+
+                this.data =
+                  {
+                    specAndDecl : specAndDecl,
+                    size        : specAndDecl[0].calculateByteCount(1,
+                                                                    specAndDecl,
+                                                                    0)
+                  };
+
+                success(this.data);
+              }.bind(this),
+              failure);
+          }.bind(this),
+          failure);
+        
         break;
 
       case "type_qualifier_list" :
@@ -4169,7 +4310,7 @@ qx.Class.define("playground.c.lib.Node",
 
       case "union" :
         // Only applicable before executing
-        if (bExecuting)
+        if (bExecuting && ! data.specifiers)
         {
           success();
           break;
@@ -4181,7 +4322,7 @@ qx.Class.define("playground.c.lib.Node",
 
       case "unsigned" :
         // Only applicable before executing
-        if (bExecuting)
+        if (bExecuting && ! data.specifiers)
         {
           success();
           break;
@@ -4193,7 +4334,7 @@ qx.Class.define("playground.c.lib.Node",
 
       case "void" :
         // Only applicable before executing
-        if (bExecuting)
+        if (bExecuting && ! data.specifiers)
         {
           success();
           break;

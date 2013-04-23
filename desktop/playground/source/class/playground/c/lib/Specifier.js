@@ -399,7 +399,7 @@ qx.Class.define("playground.c.lib.Specifier",
       switch(this.__type)
       {
       case "int" :
-        return this.__size || "int";
+        return (this.__sign ? this.__sign + " " : "") + (this.__size || "int");
         
       case "float" :
       case "double" :

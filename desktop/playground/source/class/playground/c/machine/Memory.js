@@ -223,6 +223,7 @@ qx.Class.define("playground.c.machine.Memory",
       {
       case 0x00 :
       case "char" :
+      case "signed char" :
         return new Int8Array(this._memory, addr, numElem);
 
       case 0x01 :
@@ -232,6 +233,7 @@ qx.Class.define("playground.c.machine.Memory",
 
       case 0x02 :
       case "short" :
+      case "signed short" :
         return new Int16Array(this._memory, addr, numElem);
 
       case 0x03 :
@@ -241,6 +243,7 @@ qx.Class.define("playground.c.machine.Memory",
 
       case 0x04 :
       case "int" :
+      case "signed int" :
         return new Int32Array(this._memory, addr, numElem);
 
       case 0x05 :
@@ -250,6 +253,7 @@ qx.Class.define("playground.c.machine.Memory",
 
       case 0x06 :
       case "long" :
+      case "signed long" :
         return new Int32Array(this._memory, addr, numElem);
 
       case 0x07 :
@@ -261,6 +265,7 @@ qx.Class.define("playground.c.machine.Memory",
       case 0x08 :
       case "long long" :
       case "llong" :
+      case "signed long long" :
         return new Int32Array(this._memory, addr, numElem);
 
       case 0x09 :

@@ -1180,6 +1180,7 @@ type_name
     parser.yy.R("type_name : specifier_qualifier_list");
     $$ = new playground.c.lib.Node("type_name", yytext, yylineno);
     $$.children.push($1);
+    $$.children.push(playground.c.lib.Node.getNull());     // no abstract declarator
   }
   | specifier_qualifier_list abstract_declarator
   {
