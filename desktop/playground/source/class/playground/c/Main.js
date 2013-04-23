@@ -236,6 +236,92 @@ qx.Class.define("playground.c.Main",
       // Initialize the machine singleton, which initializes the registers
       machine = playground.c.machine.Machine.getInstance();
 
+      function completion()
+      {
+        var             application;
+        var             editor;
+        var             memData;
+        var             model;
+
+        // Handle stdio clean-up
+        playground.c.stdio.AbstractFile.onProgramEnd();
+
+        // Display any requested debugging output
+        if (playground.c.Main.debugFlags.rts)
+        {
+          mem.prettyPrint("Stack",
+                          Memory.info.rts.start,
+                          Memory.info.rts.length);
+        }
+
+        if (playground.c.Main.debugFlags.heap)
+        {
+          mem.prettyPrint("Stack",
+                          Memory.info.heap.start,
+                          Memory.info.heap.length);
+        }
+
+        if (playground.c.Main.debugFlags.gas)
+        {
+          mem.prettyPrint("Globals", 
+                          Memory.info.gas.start, 
+                          Memory.info.gas.length);
+        }
+
+        // 'try' will fail when not in GUI environment
+        try
+        {
+          // We have stored some "global" variables in user data of
+          // the app
+          application = qx.core.Init.getApplication();
+
+          // Retrieve the editor object
+          editor = application.getUserData("sourceeditor");
+
+          // Remove any decoration on the previous line
+          if (playground.c.lib.Node._prevLine >= 0)
+          {
+            editor.removeGutterDecoration(
+              playground.c.lib.Node._prevLine - 1, "current-line");
+          }
+        }
+        catch (e)
+        {
+          // Ignore failure. It will fail when not in GUI environment
+        }
+
+        // Turn off single-step mode, and reset previous line for
+        // running the program again.
+        playground.c.lib.Node._bStep = false;
+        playground.c.lib.Node._prevLine = 0;                  
+
+        // Restore the previous frame pointer
+        symtab.restoreFramePointer();
+
+        // Restore the original stack pointer
+        mem.setReg("SP", "unsigned int", origSp);
+
+        // We're finished with this activation record.
+        mem.endActivationRecord();
+
+        try
+        {
+          // We're stopped. Retrieve the data in memory, ...
+          memData =
+            playground.c.machine.Memory.getInstance().getDataModel();
+
+          // ... convert it to a qx.data.Array, ...
+          model = qx.data.marshal.Json.createModel(memData);
+
+          // ... and update the memory template view.
+          application.memTemplate.setModel(model);
+        }
+        catch(e)
+        {
+          // Ignore failure. It will fail when not in GUI environment
+        }
+      }
+
       function catchError(error)
       {
         // Determine what type of error we encountered
@@ -263,6 +349,9 @@ qx.Class.define("playground.c.Main",
                                                  error + "\n");
           playground.c.Main.output(error.stack + "\n");
         }
+        
+        // Clean up after program completion
+        completion();
       };
 
       // Process the abstract syntax tree to create symbol tables
@@ -445,91 +534,12 @@ qx.Class.define("playground.c.Main",
                 true,
                 function(value)
                 {
-                  var             application;
-                  var             editor;
-                  var             memData;
-                  var             model;
-                  
-                  // Handle stdio clean-up
-                  playground.c.stdio.AbstractFile.onProgramEnd();
-
-                  // 'try' will fail when not in GUI environment
+                  // Show them their exit value
                   playground.c.Main.output(
                     ">>> " +
                     "Program exited with exit code " + value.value + "\n");
 
-                  if (playground.c.Main.debugFlags.rts)
-                  {
-                    mem.prettyPrint("Stack",
-                                    Memory.info.rts.start,
-                                    Memory.info.rts.length);
-                  }
-
-                  if (playground.c.Main.debugFlags.heap)
-                  {
-                    mem.prettyPrint("Stack",
-                                    Memory.info.heap.start,
-                                    Memory.info.heap.length);
-                  }
-
-                  if (playground.c.Main.debugFlags.gas)
-                  {
-                    mem.prettyPrint("Globals", 
-                                    Memory.info.gas.start, 
-                                    Memory.info.gas.length);
-                  }
-
-                  try
-                  {
-                    // We have stored some "global" variables in user data of
-                    // the app
-                    application = qx.core.Init.getApplication();
-
-                    // Retrieve the editor object
-                    editor = application.getUserData("sourceeditor");
-
-                    // Remove any decoration on the previous line
-                    if (playground.c.lib.Node._prevLine >= 0)
-                    {
-                      editor.removeGutterDecoration(
-                        playground.c.lib.Node._prevLine - 1, "current-line");
-                    }
-                  }
-                  catch (e)
-                  {
-                    // Ignore failure. It will fail when not in GUI environment
-                  }
-
-                  // Turn off single-step mode, and reset previous line for
-                  // running the program again.
-                  playground.c.lib.Node._bStep = false;
-                  playground.c.lib.Node._prevLine = 0;                  
-
-                  // Restore the previous frame pointer
-                  symtab.restoreFramePointer();
-
-                  // Restore the original stack pointer
-                  mem.setReg("SP", "unsigned int", origSp);
-
-                  // We're finished with this activation record.
-                  mem.endActivationRecord();
-
-                  try
-                  {
-                    // Yup, we're stopped. Retrieve the data in memory, ...
-                    memData =
-                      playground.c.machine.Memory.getInstance().getDataModel();
-
-                    // ... convert it to a qx.data.Array, ...
-                    model = qx.data.marshal.Json.createModel(memData);
-
-                    // ... and update the memory template view.
-                    application.memTemplate.setModel(model);
-                  }
-                  catch(e)
-                  {
-                    // Ignore failure. It will fail when not in GUI environment
-                  }
+                  completion();
                 }.bind(entryNode),
                 catchError);
             }
