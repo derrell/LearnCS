@@ -99,11 +99,16 @@ qx.Class.define("playground.c.stdio.Stdio",
 
     fclose : function(success, failure, handle)
     {
+      var             stream;
+      
+      // Convert the handle to the stream object
+      stream = playground.c.stdio.Stdio._openFileHandles[handle];
+
       // See if this handle is in our open-files map
-      if (playground.c.stdio.Stdio._openFileHandles[handle])
+      if (stream)
       {
         // It is. Flush its output, ...
-        handle.flush(
+        stream.flush(
           function()
           {
             // ... remove it from the open files map, ...
@@ -112,7 +117,8 @@ qx.Class.define("playground.c.stdio.Stdio",
             // and let 'em know we're done.
             success();
           },
-          failure);
+          failure,
+          true);
       }
       else
       {
@@ -135,12 +141,11 @@ qx.Class.define("playground.c.stdio.Stdio",
     printf : function(success, failure, formatAddr, optargs)
     {
       var args = Array.prototype.slice.call(arguments);
-      var handle = playground.c.Main.stdout;
       
-      // Insert stdout as the handle argument to fprintf
+      // Insert stdout as the stream argument to fprintf
       args.splice(2, 0, playground.c.Main.stdout);
       
-      // Now fprintf can handle this.
+      // Now fprintf can take it from here.
       playground.c.stdio.Stdio.fprintf.apply(null, args);
     },
     
@@ -159,8 +164,10 @@ qx.Class.define("playground.c.stdio.Stdio",
     fprintf : function(success, failure, handle, formatAddr, optargs)
     {
       var             args = Array.prototype.slice.call(arguments);
+      var             stream;
       var             formatter;
       var             string;
+      var             specOrDecl;
 
       // Delete the four fixed parameters (success, failure, handle,
       // formatAddr). We have them as named parameters already.
@@ -168,9 +175,36 @@ qx.Class.define("playground.c.stdio.Stdio",
 
       try
       {
+        // If we don't already have an AbstractFile object...
+        if (! (handle instanceof playground.c.stdio.AbstractFile))
+        {
+          // ... retrieve it from the specified handle
+          stream = playground.c.stdio.Stdio._openFileHandles[handle];
+          
+          // Did we find one?
+          if (typeof stream == "undefined")
+          {
+            // Create a specifier for the return value
+            specOrDecl = new playground.c.lib.Specifier(
+              playground.c.lib.Node._currentNode,
+              "int");
+
+            success(
+              {
+                value       : playground.c.stdio.AbstractFile.EOF,
+                specAndDecl : [ specOrDecl ]
+              });
+            return;
+          }
+        }
+        else
+        {
+          stream = handle;
+        }
+
         formatter = new playground.c.stdio.Printf(formatAddr);
         string = formatter.format.apply(formatter, args);
-        handle.write(string.split(""), 
+        stream.write(string.split(""), 
                      function()
                      {
                        var             specOrDecl;
@@ -197,18 +231,18 @@ qx.Class.define("playground.c.stdio.Stdio",
     scanf : function(success, failure, formatAddr, optargs)
     {
       var args = Array.prototype.slice.call(arguments);
-      var handle = playground.c.Main.stdout;
       
-      // Insert stdin as the handle argument to fscanf
+      // Insert stdin as the stream argument to fscanf
       args.splice(2, 0, playground.c.Main.stdin);
       
-      // Now fscanf can handle this.
+      // Now fscanf can take it from here.
       playground.c.stdio.Stdio.fscanf.apply(null, args);
     },
 
     fscanf : function(success, failure, handle, formatAddr, optargs)
     {
       var             scanf;
+      var             stream;
       var             numConversions;
       var             specOrDecl;
       
@@ -218,10 +252,10 @@ qx.Class.define("playground.c.stdio.Stdio",
         if (! (handle instanceof playground.c.stdio.AbstractFile))
         {
           // ... retrieve it from the specified handle
-          handle = playground.c.stdio.Stdio._openFileHandles[handle];
+          stream = playground.c.stdio.Stdio._openFileHandles[handle];
           
           // Did we find one?
-          if (typeof handle == "undefined")
+          if (typeof stream == "undefined")
           {
             // Create a specifier for the return value
             specOrDecl = new playground.c.lib.Specifier(
@@ -236,6 +270,10 @@ qx.Class.define("playground.c.stdio.Stdio",
             return;
           }
         }
+        else
+        {
+          stream = handle;
+        }
 
         // Get a Scanf instance, which retrieves the format string from memory
         scanf = new playground.c.stdio.Scanf(formatAddr);
@@ -244,7 +282,7 @@ qx.Class.define("playground.c.stdio.Stdio",
         scanf._args = Array.prototype.slice.call(arguments);
       
         // Replace the handle with the one we've determined.
-        scanf._args[2] = handle;
+        scanf._args[2] = stream;
 
         // Delete the formatAddr parameter since we've already determined the
         // format string (and it's been stored in this.format).
