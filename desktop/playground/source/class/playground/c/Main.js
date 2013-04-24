@@ -418,7 +418,31 @@ qx.Class.define("playground.c.Main",
             // Retrieve the command line and push the arguments onto the stack. 
             cmdLine =
               qx.core.Init.getApplication().getUserData("cmdLine").getValue();
-            argv = cmdLine ? cmdLine.split(/ +/) : [];
+            argv = cmdLine ? cmdLine.split(/\s+/) : [];
+            
+            // Trim white space from all elements. (Applies to first/last)
+            argv.map(
+              function(arg)
+              {
+                return arg.trim();
+              });
+            
+            if (argv.length > 0)
+            {
+              // Leading whitespace leaves an empty argument. Is it there?
+              if (argv[0].length === 0)
+              {
+                // Yup. Remove it.
+                argv.shift();
+              }
+
+              // Trailing whitespace leaves an empty argument. Is it there?
+              if (argv[argv.length - 1].length === 0)
+              {
+                // Yup. Remove it.
+                argv.pop();
+              }
+            }
             
             // Push the program name onto the argument list
             argv.unshift("a.out");
