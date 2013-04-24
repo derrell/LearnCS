@@ -54,6 +54,6 @@ int main(int argc, char * argv[])
 
     // Finally, terminate output with a newline
     printf("\n");
-
+    fclose(hFile);
     return 0;
 }

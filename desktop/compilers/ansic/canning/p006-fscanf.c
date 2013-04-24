@@ -43,5 +43,6 @@ int main(int argc, char * argv[])
 
     // Print out the retrieved number
     printf("Found value %d\n", value);
+    fclose(hFile);
     return 0;
 }

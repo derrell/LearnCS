@@ -50,5 +50,6 @@ int main(int argc, char * argv[])
 
     // We've printed a complete line of asterisks. Add a newline.
     printf("\n");
+    fclose(hFile);
     return 0;
 }
