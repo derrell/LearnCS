@@ -1790,7 +1790,10 @@ qx.Class.define("playground.c.lib.Node",
               addr = value.getAddr();
 
               // Obtain the specifier/declarator list
-              specAndDecl = value.getSpecAndDecl();
+              specAndDecl = value.getSpecAndDecl().slice(0);
+
+              // Get the address contained in this pointer
+              addr = playground.c.lib.Node.__mem.get(addr, "pointer");
             }
             else
             {
@@ -1798,15 +1801,17 @@ qx.Class.define("playground.c.lib.Node",
               addr = value.value;
 
               // Obtain the specifier/declarator list
-              specAndDecl = value.specAndDecl;
+              specAndDecl = value.specAndDecl.slice(0);
             }
 
             // Pull the first specifier/declarator off of the list
             specOrDecl = specAndDecl.shift();
 
             // Ensure that we can dereference this thing. To be able to, it must
-            // be either a pointer.
-            if (specOrDecl.getType() != "pointer")
+            // be either a pointer whose value must be retrieved, or already
+            // an adderess.
+            if (specOrDecl.getType() != "pointer" &&
+                specOrDecl.getType() != "address")
             {
               this._throwIt(new playground.c.lib.RuntimeError(
                               this,
@@ -1820,33 +1825,45 @@ qx.Class.define("playground.c.lib.Node",
             // Get the first remaining specifier/declarator
             specOrDecl = specAndDecl[0];
 
-            // It must be a specifier, or we can't dereference
-            if (specOrDecl instanceof playground.c.lib.Declarator)
+            // Determine the type to dereference, from the remaining
+            // specifier/declarator
+            switch(specOrDecl.getType())
             {
+            case "pointer" :
+              type = "pointer";
+              break;
+
+            case "int" :
+            case "float" :
+            case "double" :
+              type = specOrDecl.getCType();
+              break;
+              
+            case "enum" :
+              type = "int";
+              break;
+              
+            default:
               this._throwIt(new playground.c.lib.RuntimeError(
                               this,
-                              "Can only dereference a native type " +
-                                "(e.g. short, unsigned long, float, etc.)"),
+                              "Can not dereference " + value.getName() + 
+                                " because what it points to is a " +
+                                specOrDecl.getType() + "."),
                             success,
                             failure);
               return;
             }
 
-            // Determine the type to dereference, from the remaining
-            // specifier/declarator
-            type = specAndDecl.getCType();
+            // Prepend an "address" declarator
+            specAndDecl.unshift(
+              new playground.c.lib.Declarator(this, "address"));
 
-            // Prepare the return value. We know it's specifier/declarator list.
+            // Prepare the return value. Get the value of the pointer.
             value3 = 
               {
-                specAndDecl : specAndDecl
+                specAndDecl : specAndDecl,
+                value       : addr
               };
-
-            // Get the address that the pointer points to
-            addr = playground.c.lib.Node.__mem.get(addr, "pointer"); 
-
-            // Now get the value from that address
-            value3.value = playground.c.lib.Node.__mem.get(addr, type); 
 
             // Complete the operation
             success(value3);
