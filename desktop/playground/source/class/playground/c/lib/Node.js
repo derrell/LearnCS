@@ -156,7 +156,7 @@ qx.Class.define("playground.c.lib.Node",
       }
     },
 
-    getExpressionValue : function(value, data)
+    getExpressionValue : function(value, data, bNoDerefAddress)
     {
       var             type;
       var             specAndDecl;
@@ -175,8 +175,7 @@ qx.Class.define("playground.c.lib.Node",
       specOrDecl = specAndDecl[0];
 
       // If it was a symbol table entry...
-      if (value instanceof playground.c.lib.SymtabEntry ||
-          specOrDecl.getType() == "address")
+      if (value instanceof playground.c.lib.SymtabEntry)
       {
         // ... then retrieve the symbol's address, unless we're in 'case'
         // mode (cases must be constant expressions)
@@ -198,23 +197,13 @@ qx.Class.define("playground.c.lib.Node",
 
         default:
           // need not be constant
-          
-          // See whether we got an address or a symbol table entry
-          if (value instanceof playground.c.lib.SymtabEntry)
-          {
-            // It's a symbol table entry. Retrieve the address and
-            // specifier/declarator list.
-            value =
-              {
-                value       : value.getAddr(), 
-                specAndDecl : value.getSpecAndDecl()
-              };
-          }
-          else
-          {
-            // It's an address. Remove the internal-use "address" declarator
-            value.specAndDecl.shift();
-          }
+          // It's a symbol table entry. Retrieve the address and
+          // specifier/declarator list.
+          value =
+            {
+              value       : value.getAddr(), 
+              specAndDecl : value.getSpecAndDecl()
+            };
 
           // Determine the memory type to use for saving the value
           type =
@@ -225,12 +214,44 @@ qx.Class.define("playground.c.lib.Node",
           // If we were given an array name, use the already-retrieved address
           // as the value.  Otherwise, replace the symbol's address with the
           // symbol's current value.
-          if (specOrDecl.getType() != "array" && 
-              specOrDecl.getType() != "address")
+          if (! bNoDerefAddress && specOrDecl.getType() != "array")
           {
             value.value = 
               playground.c.lib.Node.__mem.get(value.value, type); 
           }
+        }
+      }
+      else if (! bNoDerefAddress && specOrDecl.getType() == "address")
+      {
+        // Clone the specifier/declarator list and remove the address declarator
+        value.specAndDecl = value.specAndDecl.slice(0);
+        value.specAndDecl.shift();
+
+        // Determine what type to retrieve, based on the now-first spec/decl
+        specOrDecl = value.specAndDecl[0];
+        if (specOrDecl.getType() == "pointer")
+        {
+          type = "pointer";
+        }
+        else if (specOrDecl.getType() == "address")
+        {
+          type = "address";
+        }
+        else if (specOrDecl instanceof playground.c.lib.Specifier)
+        {
+          type = specOrDecl.getCType();
+        }
+        else
+        {
+          throw new playground.c.lib.RuntimeError(
+            this,
+            "Righthand side of assignment is not a valid type");
+        }
+
+        // Retrieve the value from the address
+        if (type != "address")
+        {
+          value.value = playground.c.lib.Node.__mem.get(value.value, type);
         }
       }
 
@@ -802,7 +823,10 @@ qx.Class.define("playground.c.lib.Node",
               specAndDecl = value.specAndDecl;
             }
 
-            // Prepend an "address" declarator"
+            // Prepend two "address" declarator" to preclude immediate
+            // dereferencing
+            specAndDecl.unshift(new playground.c.lib.Declarator(this,
+                                                                "address"));
             specAndDecl.unshift(new playground.c.lib.Declarator(this,
                                                                 "address"));
 
@@ -4630,19 +4654,9 @@ qx.Class.define("playground.c.lib.Node",
         true,
         function(v)
         {
-          value1 = v;
-
           // If it was a symbol table entry...
-          if (value1 instanceof playground.c.lib.SymtabEntry)
-          {
-            // ... then retrieve the symbol's address
-            value1 =
-              {
-                value        : value1.getAddr(), 
-                specAndDecl  : value1.getSpecAndDecl()
-              };
-          }
-          else if (value1.specAndDecl[0].getType() != "address")
+          if (! (v instanceof playground.c.lib.SymtabEntry) &&
+              v.specAndDecl[0].getType() != "address")
           {
             this.error("The left hand side of an assignment must be " +
                        "a variable, pointer dereference, " +
@@ -4650,6 +4664,9 @@ qx.Class.define("playground.c.lib.Node",
             success();
             return;
           }
+
+          // Retrieve the value
+          value1 = this.getExpressionValue(v, data, true);
 
           // Get a shallow copy of the specifier/declarator list
           specAndDecl = value1.specAndDecl.slice(0);
@@ -4733,7 +4750,9 @@ qx.Class.define("playground.c.lib.Node",
               true,
               function(v)
               {
+                var             type;
                 var             specAndDecl;
+                var             specOrDecl;
 
                 if (typeof v != "undefined")
                 {
