@@ -2288,7 +2288,22 @@ qx.Class.define("playground.c.lib.Node",
                   bExecuting,
                   function(v)
                   {
-                    value = this.getExpressionValue(v, data);
+                    // Did we find a while condition?
+                    if (typeof v == "undefined")
+                    {
+                      // Nope. Simulate true.
+                      value =
+                        {
+                          value       : 1
+                          
+                          // specAndDecl not used here, so don't bother with it
+                        };
+                    }
+                    else
+                    {
+                      // There's a while condition. Get its value.
+                      value = this.getExpressionValue(v, data);
+                    }
                     if (value.value)
                     {
                       // 'while' condition evaluates to true. Now, statements.
