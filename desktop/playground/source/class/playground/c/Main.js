@@ -218,6 +218,7 @@ qx.Class.define("playground.c.Main",
       var             entryNode;
       var             declarator;
       var             function_decl;
+      var             cmdLine;
       var             str;
       var             Memory = playground.c.machine.Memory;
       var             mem = Memory.getInstance();
@@ -414,9 +415,13 @@ qx.Class.define("playground.c.Main",
             // call
             origSp = mem.getReg("SP", "unsigned int");
 
-            // Push the arguments onto the stack. First, if there are no
-            // arguments provided, create one.
-            argv = argv || [ "test1", "hello", "world" ];
+            // Retrieve the command line and push the arguments onto the stack. 
+            cmdLine =
+              qx.core.Init.getApplication().getUserData("cmdLine").getValue();
+            argv = cmdLine ? cmdLine.split(/ +/) : [];
+            
+            // Push the program name onto the argument list
+            argv.unshift("a.out");
 
             // Explicitly null-terminate each of the argument strings and save
             // in its own array.

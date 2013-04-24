@@ -48,6 +48,33 @@ qx.Class.define("playground.view.Toolbar",
       this.fireDataEvent("changeSample", e.getData(), e.getOldData());
     }, this);
 
+    // Create an input area for command line arguments
+    var label = new qx.ui.basic.Label("Command line: ");
+    label.set(
+      {
+        marginTop : 14
+      });
+    this.add(label);
+    var cmdLine = new qx.ui.form.TextField();
+    cmdLine.set(
+      {
+        height    : 28,
+        width     : 200,
+        marginTop : 8
+      });
+    this.add(cmdLine);
+    cmdLine.setToolTipText(
+      this.tr("Command line arguments. Arguments are split at whitespace. "
+/*
+              +
+              "To include a space within an argument, precede it with a " +
+              "backslash. To include a backslash, enter two of them. " +
+              "Any other character preceded by a backslash is taken to be " +
+              "that character, with the backslash removed."
+*/
+             ));
+    qx.core.Init.getApplication().setUserData("cmdLine", cmdLine);
+
     // run button
     var runButton = new qx.ui.toolbar.Button(
       this.tr("Run"), "icon/22/actions/media-playback-start.png"
@@ -57,8 +84,6 @@ qx.Class.define("playground.view.Toolbar",
     runButton.addListener("execute", function() {
       this.fireEvent("run");
     }, this);
-
-    // djl...
 
     // step button
     var stepButton = new qx.ui.toolbar.Button(
@@ -77,8 +102,6 @@ qx.Class.define("playground.view.Toolbar",
       this.tr("Continue running the program until the next breakpoint " +
               "or the program ends"));
     qx.core.Init.getApplication().setUserData("continueButton", continueButton);
-
-    // ...djl
 
     // highlighting button
     this.__highlightButton = new qx.ui.form.ToggleButton(
