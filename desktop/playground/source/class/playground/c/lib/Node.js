@@ -3462,9 +3462,10 @@ qx.Class.define("playground.c.lib.Node",
         // Create our own data object with a new specifier for this declaration
         data = 
           {
-            id : "parameter_declaration",
-            specifiers  : new playground.c.lib.Specifier(this),
-            specAndDecl : []
+            id           : "parameter_declaration",
+            bIsParameter : data.bIsParameter,
+            specifiers   : new playground.c.lib.Specifier(this),
+            specAndDecl  : []
           };
 
         // Process the specifiers
