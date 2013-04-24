@@ -7,6 +7,14 @@
  *   GPL Version 2: http://www.gnu.org/licenses/gpl-2.0.html 
  */
 
+/*
+#ignore(require)
+ */
+
+/**
+ * @lint ignoreUndefined(require)
+ * @lint ignoreUndefined(qx.bConsole)
+ */
 if (typeof qx === "undefined" || qx.bConsole)
 {
   qx = require("qooxdoo");
@@ -48,7 +56,7 @@ qx.Class.define("playground.c.stdio.RemoteFile",
 
       // If the file is to be opened for writing, fail the request. We don't
       // yet support writing to files.
-      if (this._mode & 0x02)
+      if (this.mode & 0x02)
       {
         failureCode = 
           playground.c.stdio.AbstractFile.FailureCode.PermissionDenied;

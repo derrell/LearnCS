@@ -21,15 +21,15 @@ qx.Class.define("playground.c.stdio.AbstractFile",
     switch(mode)
     {
     case "r" :
-      this._mode = 0x01;
+      this.mode = 0x01;
       break;
       
     case "w" :
-      this._mode = 0x02;
+      this.mode = 0x02;
       break;
       
     case "rw" :
-      this._mode = 0x03;
+      this.mode = 0x03;
       break;
       
     default :
@@ -192,7 +192,7 @@ qx.Class.define("playground.c.stdio.AbstractFile",
     getc : function(succ, fail)
     {
       // Ensure the file is opened for reading
-      if (! (this._mode & 0x01))
+      if (! (this.mode & 0x01))
       {
         fail(new playground.c.lib.RuntimeError(
                playground.c.lib.Node._currentNode,
@@ -235,7 +235,7 @@ qx.Class.define("playground.c.stdio.AbstractFile",
     ungetc : function(c, succ, fail)
     {
       // Ensure the file is opened for reading
-      if (! (this._mode & 0x01))
+      if (! (this.mode & 0x01))
       {
         throw new playground.c.lib.RuntimeError(
           playground.c.lib.Node._currentNode,
@@ -271,7 +271,7 @@ qx.Class.define("playground.c.stdio.AbstractFile",
       var             ret;
 
       // Ensure the file is opened for reading
-      if (! (this._mode & 0x01))
+      if (! (this.mode & 0x01))
       {
         fail(new playground.c.lib.RuntimeError(
                playground.c.lib.Node._currentNode,
@@ -346,7 +346,7 @@ qx.Class.define("playground.c.stdio.AbstractFile",
     putc : function(c, succ, fail)
     {
       // Ensure the file is opened for writing
-      if (! (this._mode & 0x02))
+      if (! (this.mode & 0x02))
       {
         fail(new playground.c.lib.RuntimeError(
                playground.c.lib.Node._currentNode,
@@ -394,7 +394,7 @@ qx.Class.define("playground.c.stdio.AbstractFile",
       var             byteArr;
 
       // Ensure the file is opened for writing
-      if (! (this._mode & 0x02))
+      if (! (this.mode & 0x02))
       {
         fail(new playground.c.lib.RuntimeError(
                playground.c.lib.Node._currentNode,
@@ -453,7 +453,7 @@ qx.Class.define("playground.c.stdio.AbstractFile",
       // Ensure the file is opened for writing. It isn't a failure if not;
       // there's just nothing to do. We will generate a warning, though, since
       // it's not a reliable thing to do in any environment.
-      if (this._mode & 0x02)
+      if (this.mode & 0x02)
       {
         // If there's any data in the output buffer...
         if (this._outBuf.length > 0)
