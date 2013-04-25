@@ -434,6 +434,7 @@ qx.Class.define("playground.c.lib.Node",
       var             value3; // typically the return result
       var             assignData;
       var             bOldIsParameter;
+      var             bOldIsInitializer;
       var             process = playground.c.lib.Node.process;
       var             model;
       var             memData;
@@ -2963,13 +2964,20 @@ qx.Class.define("playground.c.lib.Node",
         }
         else
         {
+          bOldIsInitializer = data.bIsInitializer;
+          data.bIsInitializer = true;
+
           // We're executing. Assign the initial value
           this.__assignHelper(data, 
                               function(oldVal, newVal)
                               {
                                 return newVal;
                               },
-                              success,
+                              function()
+                              {
+                                data.bIsInitializer = bOldIsInitializer;
+                                success();
+                              },
                               failure);
 
         }
@@ -4798,6 +4806,18 @@ qx.Class.define("playground.c.lib.Node",
 
           function saveAndReturn()
           {
+            // Ensure they're not writing to a constant
+            if (! data.bIsInitializer && 
+                value1.specAndDecl[0] instanceof playground.c.lib.Specifier &&
+                value1.specAndDecl[0].getConstant() == "constant")
+            {
+              // They are! Bad programmer! Bad!
+              failure(new playground.c.lib.RuntimeError(
+                        this,
+                        "Can not alter a const variable."));
+              return;
+            }
+
             // Save the value at its new address
             playground.c.lib.Node.__mem.set(
               value1.value,

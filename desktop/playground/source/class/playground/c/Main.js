@@ -9,12 +9,14 @@
 
 /*
 #ignore(require)
+#ignore(process)
  */
 
 /**
  * Code used during testing with Node; ignored when in playground
  * 
  * @lint ignoreUndefined(require)
+ * @lint ignoreUndefined(process)
  */
 if (typeof qx === "undefined")
 {
