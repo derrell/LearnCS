@@ -4,6 +4,8 @@
  * One Horizontal Line of Asterisks
  */
 
+#include <stdio.h>
+
 /**
  * Main program entry point
  * 

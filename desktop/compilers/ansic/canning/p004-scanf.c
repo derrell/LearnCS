@@ -4,6 +4,8 @@
  * The scanf Function
  */
 
+#include <stdio.h>
+
 /**
  * Main program entry point
  * 

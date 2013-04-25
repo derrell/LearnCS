@@ -4,6 +4,8 @@
  * Reverse the Command Line
  */
 
+#include <stdio.h>
+
 /**
  * Main program entry point
  * 

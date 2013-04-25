@@ -4,6 +4,8 @@
  * Bigger than 100?
  */
 
+#include <stdio.h>
+
 /**
  * Main program entry point
  * 

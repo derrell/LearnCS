@@ -4,6 +4,8 @@
  * The fscanf Function
  */
 
+#include <stdio.h>
+
 /**
  * Main program entry point
  * 

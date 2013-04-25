@@ -4,6 +4,8 @@
  * One Dimensional Array
  */
 
+#include <stdio.h>
+
 /**
  * Main program entry point
  * 

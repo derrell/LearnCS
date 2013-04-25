@@ -4,6 +4,8 @@
  * Using a For Loop
  */
 
+#include <stdio.h>
+
 /**
  * Main program entry point
  * 

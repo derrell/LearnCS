@@ -4,6 +4,8 @@
  * The Value 6
  */
 
+#include <stdio.h>
+
 /**
  * Main program entry point
  * 

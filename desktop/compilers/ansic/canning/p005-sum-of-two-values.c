@@ -4,6 +4,8 @@
  * Sum of Two Values
  */
 
+#include <stdio.h>
+
 /**
  * Main program entry point
  * 

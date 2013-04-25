@@ -4,6 +4,8 @@
  * Equal to Zero?
  */
 
+#include <stdio.h>
+
 /**
  * Main program entry point
  * 

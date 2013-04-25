@@ -4,6 +4,8 @@
  * Positive, Negative, or Zero
  */
 
+#include <stdio.h>
+
 /**
  * Main program entry point
  * 

@@ -4,6 +4,8 @@
  * Solid box of asterisks
  */
 
+#include <stdio.h>
+
 /**
  * Main program entry point
  * 

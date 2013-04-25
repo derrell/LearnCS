@@ -4,6 +4,8 @@
  * Sum of a Bunch
  */
 
+#include <stdio.h>
+
 /**
  * Main program entry point
  * 
