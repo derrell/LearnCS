@@ -25,7 +25,6 @@
 %nonassoc IF_WITHOUT_ELSE
 %nonassoc ELSE
 
-
 %start start_sym
 
 %%
@@ -42,6 +41,10 @@ start_sym
     {
       console.log("\nErrors encountered: " +
                   playground.c.lib.Node.getError().errorCount + "\n");
+      if (typeof process != "undefined")
+      {
+        process.exit(1);
+      }
     }
   }
   ;

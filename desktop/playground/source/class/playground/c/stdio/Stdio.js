@@ -34,6 +34,81 @@ qx.Class.define("playground.c.stdio.Stdio",
     /** Next open file index */
     _nextFileHandle : 0x1000,
 
+    include : function(name, line)
+    {
+      var             rootSymtab;
+      
+      // Get the root symbol table
+      rootSymtab = playground.c.lib.Symtab.getByName("*");
+
+      //
+      // ... then add built-in functions.
+      //
+      [
+        {
+          name : "fopen",
+          func : function()
+          {
+            var args = Array.prototype.slice.call(arguments);
+            playground.c.stdio.Stdio.fopen.apply(null, args);
+          }
+        },
+        {
+          name : "fclose",
+          func : function()
+          {
+            var args = Array.prototype.slice.call(arguments);
+            playground.c.stdio.Stdio.fclose.apply(null, args);
+          }
+        },
+        {
+          name : "printf",
+          func : function()
+          {
+            var args = Array.prototype.slice.call(arguments);
+            playground.c.stdio.Stdio.printf.apply(null, args);
+          }
+        },
+        {
+          name : "scanf",
+          func : function()
+          {
+            var args = Array.prototype.slice.call(arguments);
+            playground.c.stdio.Stdio.scanf.apply(null, args);
+          }
+        },
+        {
+          name : "fscanf",
+          func : function()
+          {
+            var args = Array.prototype.slice.call(arguments);
+            playground.c.stdio.Stdio.fscanf.apply(null, args);
+          }
+        }
+      ].forEach(
+        function(classInfo)
+        {
+          var             entry;
+          var             declarator;
+
+          // Add printf
+          entry = rootSymtab.add(classInfo.name, 0, false);
+          declarator = new playground.c.lib.Declarator(
+            {
+              line : line,
+              toString : function()
+              {
+                return classInfo.name;
+              }
+            });
+          declarator.setBuiltIn(classInfo.func);
+
+          // Add the declarator to the symbol table entry
+          entry.setSpecAndDecl( [ declarator ]);
+        },
+        this);
+    },
+
     fopen : function(success, failure, path, rw)
     {
       var             remoteFile;

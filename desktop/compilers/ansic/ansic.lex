@@ -19,10 +19,13 @@ SQ                      ("'")
 NL                      [\n]
 
 %s typedef_mode
+%x inc
 
 %%
 {SLASH}{SLASH}.* { }
 {SLASH}{STAR}({SLASH}|(.|{NL})|{STAR}+(.|{NL}))*?{STAR}+{SLASH} { }
+
+"#include"              { this.begin('inc'); }
 
 "auto"			{ return(parser.symbols_.AUTO); }
 "break"			{ return(parser.symbols_.BREAK); }
@@ -127,5 +130,47 @@ NL                      [\n]
 
 [ \t\v\n\f]		{ }
 .			{ /* ignore bad characters */ }
+
+
+<inc>\"(\\.|[^\\"])*\"  {       playground.c.lib.Node.getError().parseError(
+        "Local file includes (with quotes) " +
+        "are not yet supported (" + yytext + ")\n" +
+        "If it's a system include file, you should use angle brackets: " +
+        " <" + yytext.substr(1, yytext.length - 2) + ">",
+        { line : yylineno });
+}
+
+<inc>\<(\\.|[^\\>])*\>  {
+                          var             f;
+                          var             name;
+
+                          name = yytext.substr(1, yytext.length - 2);
+                          switch(name)
+                          {
+                          case "stdio.h" :
+                            f = function()
+                            {
+                              playground.c.stdio.Stdio.include(name, yylineno);
+                            };
+                            break;
+
+                          default :
+                            playground.c.lib.Node.getError().parseError(
+                              "Include file not found (" + yytext + ")",
+                              { line : yylineno }); 
+                            return;
+                          }
+
+                          // Add this function to list of include initializers
+                          // so it'll be re-included after parsing
+                          playground.c.Main.includes.push(f);
+
+                          // Include it now, for continued parsing
+                          f();
+                        }
+
+<inc>[ \t\v\f]  	{ }
+
+<inc>{NL}               { this.begin('INITIAL'); }
 
 %%

@@ -47,6 +47,9 @@ qx.Class.define("playground.c.Main",
       symtab : false
     },
 
+    /** Functions to be called after parsing, to readd includes to symtab */
+    includes : [],
+
     /**
      * @lint ignoreUndefined(process.exit)
      */
@@ -360,6 +363,11 @@ qx.Class.define("playground.c.Main",
         
         // Clean up after program completion
         completion();
+
+        if (typeof process != "undefined")
+        {
+          process.exit(1);
+        }
       };
 
       // Process the abstract syntax tree to create symbol tables
@@ -416,9 +424,16 @@ qx.Class.define("playground.c.Main",
             origSp = mem.getReg("SP", "unsigned int");
 
             // Retrieve the command line and push the arguments onto the stack. 
-            cmdLine =
-              qx.core.Init.getApplication().getUserData("cmdLine").getValue();
-            argv = cmdLine ? cmdLine.split(/\s+/) : [];
+            try
+            {
+              cmdLine =
+                qx.core.Init.getApplication().getUserData("cmdLine").getValue();
+              argv = cmdLine ? cmdLine.split(/\s+/) : [];
+            }
+            catch(e)
+            {
+              argv = [];
+            }
             
             // Trim white space from all elements. (Applies to first/last)
             argv.map(
@@ -542,6 +557,13 @@ qx.Class.define("playground.c.Main",
             // Push the argument count onto the stack
             mem.stackPush("int", argv.length);
 
+            // Re-add any include files that were included
+            playground.c.Main.includes.forEach(
+              function(fInclude)
+              {
+                fInclude();
+              });
+
             // Retrieve the symbol table for main()
             symtab = entryNode._symtab;
 
@@ -576,6 +598,11 @@ qx.Class.define("playground.c.Main",
                     "Program exited with exit code " + value.value + "\n");
 
                   completion();
+                  
+                  if (typeof process != "undefined")
+                  {
+                    process.exit(value.value);
+                  }
                 }.bind(entryNode),
                 catchError);
             }

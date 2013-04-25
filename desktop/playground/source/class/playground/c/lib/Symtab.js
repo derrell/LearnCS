@@ -100,6 +100,10 @@ qx.Class.define("playground.c.lib.Symtab",
     this.nextOffset = 0;
 
     // Allow finding a symbol table by its name
+    if (playground.c.lib.Symtab._symtabs[name])
+    {
+      throw new Error("Duplicate symbol table: " + name);
+    }
     playground.c.lib.Symtab._symtabs[name] = this;
 
     // Push it onto the appropriate stack
@@ -115,71 +119,7 @@ qx.Class.define("playground.c.lib.Symtab",
     // If this is the root symbol table...
     if (! parent)
     {
-      //
-      // ... then add built-in functions.
-      //
-      [
-        {
-          name : "fopen",
-          func : function()
-          {
-            var args = Array.prototype.slice.call(arguments);
-            playground.c.stdio.Stdio.fopen.apply(null, args);
-          }
-        },
-        {
-          name : "fclose",
-          func : function()
-          {
-            var args = Array.prototype.slice.call(arguments);
-            playground.c.stdio.Stdio.fclose.apply(null, args);
-          }
-        },
-        {
-          name : "printf",
-          func : function()
-          {
-            var args = Array.prototype.slice.call(arguments);
-            playground.c.stdio.Stdio.printf.apply(null, args);
-          }
-        },
-        {
-          name : "scanf",
-          func : function()
-          {
-            var args = Array.prototype.slice.call(arguments);
-            playground.c.stdio.Stdio.scanf.apply(null, args);
-          }
-        },
-        {
-          name : "fscanf",
-          func : function()
-          {
-            var args = Array.prototype.slice.call(arguments);
-            playground.c.stdio.Stdio.fscanf.apply(null, args);
-          }
-        }
-      ].forEach(
-        function(classInfo)
-        {
-          // Add printf
-          entry = this.add(classInfo.name, 0, false);
-          declarator = new playground.c.lib.Declarator(
-            {
-              line : line,
-              toString : function()
-              {
-                return classInfo.name;
-              }
-            });
-          declarator.setBuiltIn(classInfo.func);
-
-          // Add the declarator to the symbol table entry
-          entry.setSpecAndDecl( [ declarator ]);
-        },
-        this);
-
-      // Save this root symbol table for ready access
+      // ... then save it ready access
       playground.c.lib.Symtab._root = this;
     }
   },
