@@ -435,6 +435,7 @@ qx.Class.define("playground.c.lib.Node",
       var             assignData;
       var             bOldIsParameter;
       var             bOldIsInitializer;
+      var             oldArgs;
       var             process = playground.c.lib.Node.process;
       var             model;
       var             memData;
@@ -2427,6 +2428,7 @@ qx.Class.define("playground.c.lib.Node",
             // stack, in case this is a built-in function being called.
             if (value1.getSpecAndDecl()[0].getType() == "builtIn")
             {
+              oldArgs = data.args;
               data.args = [];
             }
             else
@@ -2462,8 +2464,8 @@ qx.Class.define("playground.c.lib.Node",
                       // Save the return value
                       value3 = ret;
 
-                      // Remove our argument array
-                      delete data.args;
+                      // Restore the old argument array, if there was one.
+                      data.args = oldArgs;
 
                       // Restore the stack pointer
                       mem.setReg("SP", "unsigned int", origSp);
