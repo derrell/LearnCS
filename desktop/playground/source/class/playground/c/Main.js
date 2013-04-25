@@ -146,8 +146,14 @@ qx.Class.define("playground.c.Main",
       // Function called upon each error encountered during parsing
       parser.yy.parseError = error.parseError;
 
+      // Reset the includes list
+      playground.c.Main.includes = [];
+
       // Give the Node class access to the error object
       playground.c.lib.Node.setError(error);
+
+      // Reset the symbol table to a clean state
+      playground.c.lib.Symtab.reset();
 
       // Create the root-level symbol table
       new playground.c.lib.Symtab(null, null, 0);
@@ -363,6 +369,9 @@ qx.Class.define("playground.c.Main",
           playground.c.Main.output(error.stack + "\n");
         }
         
+        playground.c.Main.output(
+          ">>> Program crashed. It did not run to completion.\n");
+
         // Clean up after program completion
         completion();
 
