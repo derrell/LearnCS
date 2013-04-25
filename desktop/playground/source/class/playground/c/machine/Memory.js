@@ -90,15 +90,27 @@ qx.Class.define("playground.c.machine.Memory",
 
       "reg" :                     // Registers
       {
-        start  : 7 * 1024,
+        start  : 4 * 1024,
         length : null // initialized in defer()
       },
 
       "es" :                      // Expression stack
       {
-        start  : 8 * 1024,
+        start  : 5 * 1024,
         length : 1024
       },
+
+      "defs" :                    // Defined constants
+      {
+        start  : 9 * 1024,
+        length : 1024
+      },
+
+      // Look up...
+      // Look down...
+      //
+      // USE CAUTION: defs are in the gas namespace, with negative indexes!!!
+      // Be sure to keep them together.
 
       "gas" :                     // Globals and Statics
       {

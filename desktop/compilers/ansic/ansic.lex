@@ -143,6 +143,7 @@ NL                      [\n]
 <inc>\<(\\.|[^\\>])*\>  {
                           var             f;
                           var             name;
+                          var             error;
 
                           name = yytext.substr(1, yytext.length - 2);
                           switch(name)
@@ -150,7 +151,18 @@ NL                      [\n]
                           case "stdio.h" :
                             f = function()
                             {
-                              playground.c.stdio.Stdio.include(name, yylineno);
+                              return (
+                                playground.c.stdio.Stdio.include(name,
+                                                                 yylineno));
+                            };
+                            break;
+
+                          case "stdlib.h" :
+                            f = function()
+                            {
+                              return (
+                                playground.c.builtin.Stdlib.include(name,
+                                                                    yylineno));
                             };
                             break;
 
@@ -166,7 +178,14 @@ NL                      [\n]
                           playground.c.Main.includes.push(f);
 
                           // Include it now, for continued parsing
-                          f();
+                          error = f();
+                          if (error)
+                          {
+                            playground.c.lib.Node.getError().parseError(
+                                error.message,
+                                { line : error.node.line });
+                            return;
+                          }
                         }
 
 <inc>[ \t\v\f]  	{ }

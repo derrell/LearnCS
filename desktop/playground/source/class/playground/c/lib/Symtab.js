@@ -98,6 +98,15 @@ qx.Class.define("playground.c.lib.Symtab",
 
     // Next offset for a symbol, manipulated by class SymtabEntry
     this.nextOffset = 0;
+    
+    // If this is the root symbol table...
+    if (! parent)
+    {
+      // ... then we also have an offset for defined constants. We use
+      // negative offsets from the globals-and-statics area, which extends
+      // into the definitions area.
+      this.nextDefine = -4;
+    }
 
     // Allow finding a symbol table by its name
     if (playground.c.lib.Symtab._symtabs[name])
@@ -370,6 +379,9 @@ qx.Class.define("playground.c.lib.Symtab",
      *
      * @param bIsParameter
      *   Whether this is a parameter to a function
+     * 
+     * @param bIsDefine
+     *   Whether this is a #define constant
      *
      * @return {Map|null}
      *   The symbol table entry, if the symbol was successfully added to the
@@ -377,7 +389,7 @@ qx.Class.define("playground.c.lib.Symtab",
      *   null otherwise, i.e., the symbol was already in the symbol table
      *
      */
-    add : function(symName, line, bIsType, bIsParameter)
+    add : function(symName, line, bIsType, bIsParameter, bIsDefine)
     {
       var             value;
       var             entry;
@@ -394,6 +406,7 @@ qx.Class.define("playground.c.lib.Symtab",
       entry = new playground.c.lib.SymtabEntry(symName,
                                                bIsType || false, 
                                                bIsParameter || false,
+                                               bIsDefine || false,
                                                this,
                                                line);
 

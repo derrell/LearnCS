@@ -29,7 +29,7 @@ qx.Class.define("playground.c.lib.SymtabEntry",
 {
   extend : qx.core.Object,
   
-  construct : function(name, bIsType, bIsParameter, symtab, line)
+  construct : function(name, bIsType, bIsParameter, bIsDefine, symtab, line)
   {
     this.base(arguments);
 
@@ -57,9 +57,12 @@ qx.Class.define("playground.c.lib.SymtabEntry",
     // the symbol table of this entry
     this.__symtab = symtab;
 
+    // save whether this is a #define
+    this.__bIsDefine = bIsDefine;
+
     // offset from the base pointer (in activation record, at the beginning
     // of automatic local variable portion)
-    this.__offset = symtab.nextOffset;
+    this.__offset = bIsDefine ? symtab.nextDefine : symtab.nextOffset;
 
     // specifier/declarator list
     this.__specAndDecl = null;
@@ -272,10 +275,20 @@ qx.Class.define("playground.c.lib.SymtabEntry",
       remainder = byteCount % SIB.Word;
 
       // Now we can update the offset of the next symbol in this symbol table
-      this.__symtab.nextOffset += 
-        (remainder === 0
-         ? byteCount
-         : byteCount + SIB.Word - remainder);
+      if (this.__bIsDefine)
+      {
+        this.__symtab.nextDefine -= 
+          (remainder === 0
+           ? byteCount
+           : byteCount + SIB.Word - remainder);
+      }
+      else
+      {
+        this.__symtab.nextOffset += 
+          (remainder === 0
+           ? byteCount
+           : byteCount + SIB.Word - remainder);
+      }
       
       // Save this symbol table entry's size
       this.__size = byteCount;

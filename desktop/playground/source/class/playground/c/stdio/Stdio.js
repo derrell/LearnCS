@@ -37,76 +37,174 @@ qx.Class.define("playground.c.stdio.Stdio",
     include : function(name, line)
     {
       var             rootSymtab;
+      var             mem;
       
-      // Get the root symbol table
-      rootSymtab = playground.c.lib.Symtab.getByName("*");
+      try
+      {
+        // Get the memory singleton instance
+        mem = playground.c.machine.Memory.getInstance();
 
-      //
-      // ... then add built-in functions.
-      //
-      [
-        {
-          name : "fopen",
-          func : function()
-          {
-            var args = Array.prototype.slice.call(arguments);
-            playground.c.stdio.Stdio.fopen.apply(null, args);
-          }
-        },
-        {
-          name : "fclose",
-          func : function()
-          {
-            var args = Array.prototype.slice.call(arguments);
-            playground.c.stdio.Stdio.fclose.apply(null, args);
-          }
-        },
-        {
-          name : "printf",
-          func : function()
-          {
-            var args = Array.prototype.slice.call(arguments);
-            playground.c.stdio.Stdio.printf.apply(null, args);
-          }
-        },
-        {
-          name : "scanf",
-          func : function()
-          {
-            var args = Array.prototype.slice.call(arguments);
-            playground.c.stdio.Stdio.scanf.apply(null, args);
-          }
-        },
-        {
-          name : "fscanf",
-          func : function()
-          {
-            var args = Array.prototype.slice.call(arguments);
-            playground.c.stdio.Stdio.fscanf.apply(null, args);
-          }
-        }
-      ].forEach(
-        function(classInfo)
-        {
-          var             entry;
-          var             declarator;
+        // Get the root symbol table
+        rootSymtab = playground.c.lib.Symtab.getByName("*");
 
-          // Add printf
-          entry = rootSymtab.add(classInfo.name, 0, false);
-          declarator = new playground.c.lib.Declarator(
+        //
+        // ... then add built-in functions.
+        //
+        [
+          {
+            name : "fopen",
+            func : function()
             {
-              line : line,
-              toString : function()
-              {
-                return classInfo.name;
-              }
-            });
-          declarator.setBuiltIn(classInfo.func);
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.stdio.Stdio.fopen.apply(null, args);
+            }
+          },
+          {
+            name : "fclose",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.stdio.Stdio.fclose.apply(null, args);
+            }
+          },
+          {
+            name : "printf",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.stdio.Stdio.printf.apply(null, args);
+            }
+          },
+          {
+            name : "scanf",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.stdio.Stdio.scanf.apply(null, args);
+            }
+          },
+          {
+            name : "fscanf",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.stdio.Stdio.fscanf.apply(null, args);
+            }
+          }
+        ].forEach(
+          function(info)
+          {
+            var             entry;
+            var             declarator;
+            var             node;
 
-          // Add the declarator to the symbol table entry
-          entry.setSpecAndDecl( [ declarator ]);
-        },
-        this);
+            // Simulate a node, for the specifiers and declarators
+            node =
+              {
+                line : line,
+                toString : function()
+                {
+                  return info.name;
+                }
+              };
+
+            // Add printf
+            entry = rootSymtab.add(info.name, 0, false);
+            if (! entry)
+            {
+              throw new playground.c.lib.RuntimeError(
+                node,
+                info.name + " being redefined. " +
+                  "Is stdio.h included multiple times?");
+            }
+
+            declarator = new playground.c.lib.Declarator(
+              {
+                line : line,
+                toString : function()
+                {
+                  return info.name;
+                }
+              });
+            declarator.setBuiltIn(info.func);
+
+            // Add the declarator to the symbol table entry
+            entry.setSpecAndDecl( [ declarator ]);
+          },
+          this);
+
+        // Define constants
+        [
+          {
+            name : "EOF",
+            func : function(entry, node)
+            {
+              var             specifier;
+              specifier = new playground.c.lib.Specifier(node, "int");
+              specifier.setConstant("constant");
+
+              entry.setSpecAndDecl(
+                [
+                  specifier
+                ]);
+              entry.calculateOffset();
+              mem.set(entry.getAddr(), "int", -1);
+            }
+          },
+          {
+            name : "NULL",
+            func : function(entry, node)
+            {
+              var             specifier;
+              specifier = new playground.c.lib.Specifier(node, "void");
+              specifier.setConstant("constant");
+
+              entry.setSpecAndDecl(
+                [
+                  new playground.c.lib.Declarator(node, "pointer"),
+                  specifier
+                ]);
+              entry.calculateOffset();
+              mem.set(entry.getAddr(), "pointer", 0);
+            }
+          }
+        ].forEach(
+          function(info)
+          {
+            var             entry;
+            var             node;
+
+            // Simulate a node, for the specifiers and declarators
+            node =
+              {
+                line : line,
+                toString : function()
+                {
+                  return info.name;
+                }
+              };
+
+            // Create the symbol table entry for this defined constant
+            entry = rootSymtab.add(info.name, 0, false, false, true);
+            if (! entry)
+            {
+              throw new playground.c.lib.RuntimeError(
+                node,
+                info.name + " being redefined. " +
+                  "Is stdio.h included multiple times?");
+            }
+
+            // Call the provided function to initialize the value and create and
+            // set she specifier/declarator list in the symbol table entry
+            info.func(entry, node);
+          });
+      }
+      catch(e)
+      {
+        return e;
+      }
+      
+      return null;
     },
 
     fopen : function(success, failure, path, rw)

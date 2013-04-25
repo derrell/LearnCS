@@ -572,7 +572,15 @@ qx.Class.define("playground.c.Main",
             playground.c.Main.includes.forEach(
               function(fInclude)
               {
-                fInclude();
+                var             error;
+
+                error = fInclude();
+                if (error)
+                {
+                  playground.c.Main.output(
+                    "Error: line " + error.node.line +
+                      ": " + error.message + "\n");
+                }
               });
 
             // Retrieve the symbol table for main()
