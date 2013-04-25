@@ -19,7 +19,7 @@
 int main(int argc, char * argv[])
 {
     // For each argument...
-    while (argc--)
+    while (argc-- > 0)
     {
         // ... display its argument number and value
         printf("Argument %d: %s\n", argc, argv[argc]);
