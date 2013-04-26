@@ -40,6 +40,14 @@ qx.Class.define("playground.c.builtin.Stdlib",
         //
         [
           {
+            name : "abs",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.builtin.Stdlib.abs.apply(null, args);
+            }
+          },
+          {
             name : "atoi",
             func : function()
             {
@@ -97,6 +105,37 @@ qx.Class.define("playground.c.builtin.Stdlib",
     },
 
     /**
+     * Determine the absolute value of a number
+     */
+    abs : function(success, failure, value)
+    {
+      var             converted;
+      var             specOrDecl;
+      
+      converted = Math.abs(value);
+
+      if (isNaN(converted))
+      {
+        failure(new playground.c.lib.RuntimeError(
+                  playground.c.lib.Node._currentNode,
+                  "abs() called with something other than a number"));
+      }
+      else
+      {
+        // Create a specifier for the return value
+        specOrDecl = new playground.c.lib.Specifier(
+          playground.c.lib.Node._currentNode,
+          "int");
+
+        success(
+          {
+            value       : converted,
+            specAndDecl : [ specOrDecl ]
+          });
+      }
+    },
+
+    /**
      * Convert a number in a character string to an integer
      * 
      * @param str {String}
@@ -125,16 +164,26 @@ qx.Class.define("playground.c.builtin.Stdlib",
       // Convert the string into an integer
       converted = parseInt(String.fromCharCode.apply(null, jStr), 10);
 
-      // Create a specifier for the return value
-      specOrDecl = new playground.c.lib.Specifier(
-        playground.c.lib.Node._currentNode,
-        "int");
+      if (isNaN(converted))
+      {
+        failure(new playground.c.lib.RuntimeError(
+                  playground.c.lib.Node._currentNode,
+                  "atoi() called with something other than " +
+                    "a string containing a number"));
+      }
+      else
+      {
+        // Create a specifier for the return value
+        specOrDecl = new playground.c.lib.Specifier(
+          playground.c.lib.Node._currentNode,
+          "int");
 
-      success(
-        {
-          value       : isNaN(converted) ? 0 : converted,
-          specAndDecl : [ specOrDecl ]
-        });
+        success(
+          {
+            value       : converted,
+            specAndDecl : [ specOrDecl ]
+          });
+      }
     }
   }
 });
