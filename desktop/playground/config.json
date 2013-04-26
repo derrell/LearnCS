@@ -72,6 +72,14 @@
       }
     },
 
+    "source-script" :
+    {
+      "environment" :
+      {
+        "qx.debug.dispose" : true
+      }
+    },    
+
     "build-script" :
     {
       "extend" : [ "playground-compile" ],
