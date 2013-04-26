@@ -260,10 +260,10 @@ qx.Class.define("playground.c.stdio.Stdio",
             playground.c.lib.Node._currentNode,
             "void");
 
-          // Convert the failure to success(EOF)
+          // Convert the failure to success(NULL)
           success(
             {
-              value       : playground.c.stdio.AbstractFile.EOF,
+              value       : 0,  // NULL
               specAndDecl : [ declPointer, specVoid ]
             });
         },
