@@ -148,6 +148,15 @@ NL                      [\n]
                           name = yytext.substr(1, yytext.length - 2);
                           switch(name)
                           {
+                          case "math.h" :
+                            f = function()
+                            {
+                              return (
+                                playground.c.builtin.Math.include(name,
+                                                                  yylineno));
+                            };
+                            break;
+
                           case "stdio.h" :
                             f = function()
                             {

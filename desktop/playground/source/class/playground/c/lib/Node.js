@@ -453,6 +453,13 @@ qx.Class.define("playground.c.lib.Node",
       {
         function displayMemoryTemplateView()
         {
+          var             model;
+          var             oldModel;
+          var             memData;
+
+          // Retrieve the old model from the memory template view
+          oldModel = memTemplate.getModel();
+
           // Retrieve the data in memory, ...
           memData = playground.c.machine.Memory.getInstance().getDataModel();
 
@@ -461,6 +468,9 @@ qx.Class.define("playground.c.lib.Node",
 
           // ... and update the memory template view.
           memTemplate.setModel(model);
+
+          // Explicitly dispose the old model
+          oldModel && oldModel.dispose();
 
           // Cancel the timer that will redisplay the memory template view
           window.clearTimeout(playground.c.lib.Node._memoryViewTimer);

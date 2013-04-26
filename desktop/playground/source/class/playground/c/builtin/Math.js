@@ -29,9 +29,13 @@ qx.Class.define("playground.c.builtin.Math",
     include : function(name, line)
     {
       var             rootSymtab;
+      var             mem;
       
       try
       {
+        // Get the memory singleton instance
+        mem = playground.c.machine.Memory.getInstance();
+
         // Get the root symbol table
         rootSymtab = playground.c.lib.Symtab.getByName("*");
 
@@ -44,7 +48,7 @@ qx.Class.define("playground.c.builtin.Math",
             func : function()
             {
               var args = Array.prototype.slice.call(arguments);
-              playground.c.builtin.Stdlib.sin.apply(null, args);
+              playground.c.builtin.Math.sin.apply(null, args);
             }
           },
           {
@@ -52,7 +56,7 @@ qx.Class.define("playground.c.builtin.Math",
             func : function()
             {
               var args = Array.prototype.slice.call(arguments);
-              playground.c.builtin.Stdlib.sqrt.apply(null, args);
+              playground.c.builtin.Math.sqrt.apply(null, args);
             }
           }
         ].forEach(
@@ -137,7 +141,7 @@ qx.Class.define("playground.c.builtin.Math",
               throw new playground.c.lib.RuntimeError(
                 node,
                 info.name + " being redefined. " +
-                  "Is stdio.h included multiple times?");
+                  "Is math.h included multiple times?");
             }
 
             // Call the provided function to initialize the value and create
