@@ -2537,7 +2537,8 @@ qx.Class.define("playground.c.lib.Node",
                 }
               }.bind(this),
               failure);
-          }.bind(this));
+          }.bind(this),
+          failure);
         break;
 
       case "function_decl" :
@@ -2884,9 +2885,12 @@ qx.Class.define("playground.c.lib.Node",
           entry = playground.c.lib.Symtab.getCurrent().get(this.value, false);
           if (! entry)
           {
-            throw new playground.c.lib.RuntimeError(
-              this,
-              "Undeclared variable: " + this.value);
+            this._throwIt(new playground.c.lib.RuntimeError(
+                            this,
+                            "Undeclared variable: " + this.value),
+                          success,
+                          failure);
+            break;
           }
           success(entry);
         }
