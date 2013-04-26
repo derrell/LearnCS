@@ -54,6 +54,14 @@ qx.Class.define("playground.c.builtin.Stdlib",
               var args = Array.prototype.slice.call(arguments);
               playground.c.builtin.Stdlib.atoi.apply(null, args);
             }
+          },
+          {
+            name : "atof",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.builtin.Stdlib.atof.apply(null, args);
+            }
           }
         ].forEach(
           function(info)
@@ -134,6 +142,58 @@ qx.Class.define("playground.c.builtin.Stdlib",
           });
       }
     },
+
+    /**
+     * Convert a number in a character string to a double
+     * 
+     * @param str {String}
+     *   The string to be convered to an integer
+     */
+    atof : function(success, failure, str)
+    {
+      var             i;
+      var             memBytes;
+      var             jStr = [];
+      var             converted;
+      var             specOrDecl;
+
+      // Get memory as an array
+      this._mem = playground.c.machine.Memory.getInstance();
+      memBytes = this._mem.toArray(0);
+
+      // Copy the null-terminated format string (which is represented as the
+      // ASCII character codes of each character) from the given address, one
+      // character at a time, into an array.
+      for (i = str; memBytes[i] != 0 && i < memBytes.length; i++)
+      {
+        jStr.push(memBytes[i]);
+      }
+      
+      // Convert the string into an integer
+      converted = parseFloat(String.fromCharCode.apply(null, jStr));
+
+      if (isNaN(converted))
+      {
+        failure(new playground.c.lib.RuntimeError(
+                  playground.c.lib.Node._currentNode,
+                  "atof() called with something other than " +
+                    "a string containing a number"));
+      }
+      else
+      {
+        // Create a specifier for the return value
+        specOrDecl = new playground.c.lib.Specifier(
+          playground.c.lib.Node._currentNode,
+          "double");
+
+        success(
+          {
+            value       : converted,
+            specAndDecl : [ specOrDecl ]
+          });
+      }
+    },
+
 
     /**
      * Convert a number in a character string to an integer
