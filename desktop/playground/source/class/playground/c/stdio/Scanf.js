@@ -1232,15 +1232,15 @@ qx.Class.define("playground.c.stdio.Scanf",
 
               if (! (flags & this.Flags.NOASSIGN))
               {
-                ld_val = parseFloat(this._InpBuf.join(""));
+                ld_val = parseFloat(this._inpBuf.join(""));
 
                 if (flags & this.Flags.LONG)
                 {
-                  this._mem.set(this._args.shift(), "double", val);
+                  this._mem.set(this._args.shift(), "double", ld_val);
                 }
                 else
                 {
-                  this._mem.set(this._args.shift(), "float", val);
+                  this._mem.set(this._args.shift(), "float", ld_val);
                 }
               }
               
