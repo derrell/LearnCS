@@ -1,7 +1,7 @@
 /*
  * Derrell Lipman
- * Computing 1, Problem 25
- * Sum of a Bunch
+ * Computing 1, Problem 10
+ * Sum of Twenty
  */
 
 #include <stdio.h>
@@ -20,31 +20,28 @@
  */
 int main(int argc, char * argv[])
 {
-    int             sum;        // sum of the values read from the file
+    int             i;          // loop index
     int             conv;       // number of conversions
-    int             value;      // input value read from file
+    int             sum;        // running sum
+    int             value;      // input values read from file
     void *          hFile;      // file handle
 
     // Open the input file
-    hFile = fopen("/canning/p025-input", "r");
+    hFile = fopen("/canning/p010-input", "r");
     if (hFile == NULL)
     {
         printf("Could not open input file\n");
         return 1;
     }
 
-    // For each of the numbers in the file...
-    for (sum = 0; ; sum += value)
+    // Initialize the sum
+    sum = 0;
+
+    // For each of the 15 numbers in the file...
+    for (i = 0; i < 20; i++)
     {
         // ... retrieve a number from the file
         conv = fscanf(hFile, "%d", &value);
-
-        // Did we reach end of file?
-        if (conv == EOF)
-        {
-            // Yup. Exit loop.
-            break;
-        }
 
         // Ensure we successfully read
         if (conv != 1)
@@ -53,6 +50,9 @@ int main(int argc, char * argv[])
             fclose(hFile);
             return 1;
         }
+
+        // Update the sum
+        sum += value;
     }
 
     // Print out the sum of the numbers.

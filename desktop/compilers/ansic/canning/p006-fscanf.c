@@ -26,7 +26,7 @@ int main(int argc, char * argv[])
 
     // Open the input file
     hFile = fopen("/canning/p006-input", "r");
-    if (hFile == (void *) -1)
+    if (hFile == NULL)
     {
         printf("Could not open input file\n");
         return 1;
