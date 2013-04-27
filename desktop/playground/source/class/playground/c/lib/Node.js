@@ -436,6 +436,9 @@ qx.Class.define("playground.c.lib.Node",
       var             bOldIsParameter;
       var             bOldIsInitializer;
       var             oldArgs;
+      var             oldId;
+      var             oldSpecifiers;
+      var             oldSpecAndDecl;
       var             process = playground.c.lib.Node.process;
       var             model;
       var             memData;
@@ -2434,15 +2437,21 @@ qx.Class.define("playground.c.lib.Node",
             // function, or the reference of a built-in function.
             value2 = value1.getAddr();
 
+            // Save any old argument array
+            oldArgs = data.args;
+
             // Prepare to save arguments in a JS array as well as on the
             // stack, in case this is a built-in function being called.
             if (value1.getSpecAndDecl()[0].getType() == "builtIn")
             {
-              oldArgs = data.args;
               data.args = [];
             }
             else
             {
+              // In case this is a non-builtIn embedded in a builtIn, remove
+              // any arguments from the data objects.
+              delete data.args;
+
               // This is a real function (not built-in). Begin the activation
               // record
               mem.beginActivationRecord(origSp);
@@ -2526,8 +2535,8 @@ qx.Class.define("playground.c.lib.Node",
                       // Restore the previous frame pointer
                       value2._symtab.restoreFramePointer();
 
-                      // Remove our argument array
-                      delete data.args;
+                      // Restore the old argument array, if there was one.
+                      data.args = oldArgs;
 
                       // Restore the stack pointer
                       mem.setReg("SP", "unsigned int", origSp);
@@ -3483,14 +3492,15 @@ qx.Class.define("playground.c.lib.Node",
          *   2: abstract_declarator?
          */
 
-        // Create our own data object with a new specifier for this declaration
-        data = 
-          {
-            id           : "parameter_declaration",
-            bIsParameter : data.bIsParameter,
-            specifiers   : new playground.c.lib.Specifier(this),
-            specAndDecl  : []
-          };
+        // Save information that we might overwrite
+        oldId = data.id;
+        oldSpecifiers = data.specifiers;
+        oldSpecAndDecl = data.specAndDecl;
+
+        // Update the data object with a new specifier for this declaration
+        data.id = "parameter_declaration";
+        data.specifiers = new playground.c.lib.Specifier(this);
+        data.specAndDecl = [];
 
         // Process the specifiers
         this.children[0].process(
@@ -3525,6 +3535,12 @@ qx.Class.define("playground.c.lib.Node",
                         data.entry.calculateOffset();
                       }
                     }
+                    
+                    // Restore data object members that we'd saved
+                    data.id = oldId;
+                    data.specifiers = oldSpecifiers;
+                    data.specAndDecl = oldSpecAndDecl;
+
                     success();
                   }.bind(this),
                   failure);
@@ -4007,6 +4023,7 @@ qx.Class.define("playground.c.lib.Node",
                *   1: identifier
                */
 //FIXME (not enough args)
+throw new Error("broken code here!");
               subnode.process(data, bExecuting);
               entry.setType(subnode.children[1].value);
             }
