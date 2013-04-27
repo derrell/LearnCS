@@ -1,5 +1,5 @@
 /**
- * Abstract syntax tree nodes
+ * Standard library functions provided by stdlib.h
  *
  * Copyright (c) 2013 Derrell Lipman
  * 
