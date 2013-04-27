@@ -364,7 +364,7 @@ qx.Class.define("playground.c.stdio.AbstractFile",
         // output buffer.
         this._output(this._outBuf.length);
       }
-      succ();
+      succ(c);
     },
     
     /**

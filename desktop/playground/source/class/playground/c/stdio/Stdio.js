@@ -76,6 +76,14 @@ qx.Class.define("playground.c.stdio.Stdio",
             }
           },
           {
+            name : "putchar",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.stdio.Stdio.putchar.apply(null, args);
+            }
+          },
+          {
             name : "printf",
             func : function()
             {
@@ -316,6 +324,31 @@ qx.Class.define("playground.c.stdio.Stdio",
     getchar : function(success, failure)
     {
       playground.c.stdio.Stdin.getInstance().getc(
+        function(ch)
+        {
+          var             specOrDecl;
+
+          // Create a specifier for the return value
+          specOrDecl = new playground.c.lib.Specifier(
+            playground.c.lib.Node._currentNode,
+            "int");
+
+          success(
+            {
+              value       : ch,
+              specAndDecl : [ specOrDecl ]
+            });
+        },
+        failure);
+    },
+    
+    /**
+     * Write a single character to stdout
+     */
+    putchar : function(success, failure, c)
+    {
+      playground.c.stdio.Stdout.getInstance().putc(
+        String.fromCharCode(c),
         function(ch)
         {
           var             specOrDecl;
