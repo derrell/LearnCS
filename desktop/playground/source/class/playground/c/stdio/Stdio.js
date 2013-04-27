@@ -68,6 +68,14 @@ qx.Class.define("playground.c.stdio.Stdio",
             }
           },
           {
+            name : "getchar",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.stdio.Stdio.getchar.apply(null, args);
+            }
+          },
+          {
             name : "printf",
             func : function()
             {
@@ -302,6 +310,30 @@ qx.Class.define("playground.c.stdio.Stdio",
       }
     },
 
+    /**
+     * Get a single character from stdin
+     */
+    getchar : function(success, failure)
+    {
+      playground.c.stdio.Stdin.getInstance().getc(
+        function(ch)
+        {
+          var             specOrDecl;
+
+          // Create a specifier for the return value
+          specOrDecl = new playground.c.lib.Specifier(
+            playground.c.lib.Node._currentNode,
+            "int");
+
+          success(
+            {
+              value       : ch,
+              specAndDecl : [ specOrDecl ]
+            });
+        },
+        failure);
+    },
+    
     /**
      * Print a formatted string to stdout
      * 

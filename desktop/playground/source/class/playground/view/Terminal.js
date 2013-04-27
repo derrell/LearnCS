@@ -13,16 +13,32 @@ qx.Class.define("playground.view.Terminal",
   
   construct : function()
   {
+    var             hBox;
     var             legend; 
 
     // Call the superclass constructor
     this.base(arguments);
     this._setLayout(new qx.ui.layout.VBox(2));
     
+    // Create a horizontal box for the legend and EOF button
+    hBox = new qx.ui.container.Composite(new qx.ui.layout.HBox());
+
     // Add a legend
     legend = new qx.ui.basic.Label("Terminal");
     legend.setFont("bold");
-    this.add(legend);
+    hBox.add(legend);
+    
+    // Add a spacer to right-justify the EOF button
+    hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
+
+    // Add a button for generating end-of-file
+    this._butEof = new qx.ui.form.ToggleButton("EOF");
+    this._butEof.setHeight(20);
+    this._butEof.addListener("execute", this._onEof, this);
+    hBox.add(this._butEof);
+
+    // Add the horizontal box with the legend and the EOF button
+    this.add(hBox);
 
     // Create the embedded text field, which is the actual point of user
     // interaction
@@ -103,6 +119,47 @@ qx.Class.define("playground.view.Terminal",
       // Add the next text to the terminal
       textArea.setValue(textArea.getValue() + text);
       textArea.getContentElement().scrollToY(100000);
+    },
+
+    /**
+     * Turn on/off the EOF button
+     * 
+     * @param bEof {Boolean}
+     *   Whether the EOF button should be on or off
+     */
+    setEof : function(bEof)
+    {
+      this._butEof.setValue(!! bEof);
+      this._textArea.setEnabled(! bEof); // re-enable text area on ! bEof
+    },
+
+    /**
+     * Retrieve the current value of the EOF flag
+     */
+    getEof : function()
+    {
+      return this._butEof.getValue();
+    },
+
+    /** Event listener for EOF button */
+    _onEof : function(e)
+    {
+      var             data;
+
+      // When the button is pressed, ensure it remains forever on
+      this._butEof.setValue(true);
+
+      // Get the data string
+      data = this._linebuf.join("");
+
+      // Clear the line buffer. There's no more data available for reading.
+      this._linebuf = [];
+
+      // Fire an event with this line data
+      this.fireDataEvent("textline", data);
+
+      // After EOF, no input is allowable
+      this._textArea.setEnabled(false);
     },
 
     /** Event listener for keypress event */

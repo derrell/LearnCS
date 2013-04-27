@@ -90,6 +90,9 @@ qx.Class.define("playground.c.Main",
         // Set focus to the terminal window
         terminal = qx.core.Init.getApplication().getUserData("terminal");
         terminal.focus();
+        
+        // Ensure the terminal is not in end-of-file condition
+        terminal.setEof(false);
       }
 
       var error =

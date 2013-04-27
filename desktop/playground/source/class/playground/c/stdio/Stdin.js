@@ -19,16 +19,14 @@ qx.Class.define("playground.c.stdio.Stdin",
    */
   construct : function()
   {
-    var             terminal;
-
     // Call the superclass constructor, indicating that this is an input file.
     this.base(arguments, "r");
     
     // Arrange to be notified when there's input data available
     try
     {
-      terminal = qx.core.Init.getApplication().getUserData("terminal");
-      terminal.addListener(
+      this._terminal = qx.core.Init.getApplication().getUserData("terminal");
+      this._terminal.addListener(
         "textline",
         function(e)
         {
@@ -85,6 +83,12 @@ qx.Class.define("playground.c.stdio.Stdin",
           base(succ, fail);
         }.bind(this),
         fail);
+    },
+    
+    // overridden
+    _isEof : function()
+    {
+      return this._terminal.getEof();
     }
   }
 });
