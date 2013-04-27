@@ -84,6 +84,14 @@ qx.Class.define("playground.c.stdio.Stdio",
             }
           },
           {
+            name : "fgetc",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.stdio.Stdio.fgetc.apply(null, args);
+            }
+          },
+          {
             name : "printf",
             func : function()
             {
@@ -344,6 +352,9 @@ qx.Class.define("playground.c.stdio.Stdio",
     
     /**
      * Write a single character to stdout
+     * 
+     * @param c {Character}
+     *   The character to write
      */
     putchar : function(success, failure, c)
     {
@@ -367,6 +378,57 @@ qx.Class.define("playground.c.stdio.Stdio",
         failure);
     },
     
+    /**
+     * Get a single character from an open file
+     *
+     * @param handle {playground.c.stdio.AbstractFile}
+     *   The handle to which output should be written
+     */
+    fgetc : function(success, failure, handle)
+    {
+      var             stream;
+      var             specOrDecl;
+
+      // Create a specifier for the return value
+      specOrDecl = new playground.c.lib.Specifier(
+        playground.c.lib.Node._currentNode,
+        "int");
+
+      // If we don't already have an AbstractFile object...
+      if (! (handle instanceof playground.c.stdio.AbstractFile))
+      {
+        // ... retrieve it from the specified handle
+        stream = playground.c.stdio.Stdio._openFileHandles[handle];
+
+        // Did we find one?
+        if (typeof stream == "undefined")
+        {
+          success(
+            {
+              value       : playground.c.stdio.AbstractFile.EOF,
+              specAndDecl : [ specOrDecl ]
+            });
+          return;
+        }
+      }
+      else
+      {
+        stream = handle;
+      }
+      
+      // Read a character from the designated stream
+      stream.getc(
+        function(ch)
+        {
+          success(
+            {
+              value       : typeof ch == "string" ? ch.charCodeAt(0) : ch,
+              specAndDecl : [ specOrDecl ]
+            });
+        },
+        failure);
+    },
+
     /**
      * Print a formatted string to stdout
      * 
