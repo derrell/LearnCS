@@ -1,7 +1,7 @@
 /*
  * Derrell Lipman
  * Computing 1, Problem 19
- * Area of a Circle
+ * Area of a Rectangle
  */
 
 #include <stdio.h>
