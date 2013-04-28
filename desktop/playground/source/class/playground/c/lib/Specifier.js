@@ -84,7 +84,7 @@ qx.Class.define("playground.c.lib.Specifier",
     {
       // Ensure we have a valid value
       if ( [
-             "auto", "register", "static", "extern", "typedef"
+             "auto", "register", "static", "extern", "typedef", null
            ].indexOf(value) === -1)
       {
         throw new Error(
@@ -102,7 +102,7 @@ qx.Class.define("playground.c.lib.Specifier",
       }
       
       // Save the new value
-      this.__type = value;
+      this.__storage = value;
     },
 
     /**

@@ -2581,23 +2581,62 @@ qx.Class.define("playground.c.lib.Node",
               }
             }
 
-            // Add a function declarator for this symbol.
-            declarator = new playground.c.lib.Declarator(this);
-            declarator.setType("function");
-            declarator.setFunctionNode(subnode);
-            data.specAndDecl.push(declarator);
+            // If we found subnode, this is a function definition. Otherwise,
+            // it's a forward declaration.
+            if (subnode)
+            {
+              // We've now found a function definition. Retrieve or create the
+              // symbol table for this function's arguments. If there had been
+              // a forward declaration, we'll find the symbol table already
+              // existing. Otherwise, we'll create it new.
+              symtab = playground.c.lib.Symtab.getByName(data.entry.getName());
+              if (! symtab)
+              {
+                // Add a function declarator for this symbol.
+                declarator = new playground.c.lib.Declarator(this);
+                declarator.setType("function");
+                data.specAndDecl.push(declarator);
 
-            // Create a symbol table for this function's arguments
-            symtab = new playground.c.lib.Symtab(
-              playground.c.lib.Symtab.getCurrent(), 
-              data.entry.getName(),
-              this.line);
+                symtab = new playground.c.lib.Symtab(
+                  playground.c.lib.Symtab.getCurrent(), 
+                  data.entry.getName(),
+                  this.line);
+              }
 
-            // Save the function's symbol table and name in the function
-            // definition node
-            subnode._symtab = symtab;
-            subnode._functionName = data.entry.getName();
+              // Regardless of previous declaration or not, we now know the
+              // subnode of the definition.
+              declarator.setFunctionNode(subnode);
 
+              // Save the function's symbol table and name in the function
+              // definition node
+              subnode._symtab = symtab;
+              subnode._functionName = data.entry.getName();
+              
+              // This symbol is no longer extern
+              specOrDecl = data.specifiers;
+              specOrDecl.setStorage(null);
+            }
+            else
+            {
+              // Mark this symbol as extern so the definition isn't flagged as
+              // a redeclaration.
+              data.specifiers.setStorage("extern");
+
+              // Add a function declarator for this symbol.
+              declarator = new playground.c.lib.Declarator(this);
+              declarator.setType("function");
+              data.specAndDecl.push(declarator);
+
+              // Create a symbol table for this function's arguments
+              symtab = new playground.c.lib.Symtab(
+                playground.c.lib.Symtab.getCurrent(), 
+                data.entry.getName(),
+                this.line);
+
+              // Pop this function's symbol table from the stack
+              playground.c.lib.Symtab.popStack();
+            }
+            
             // Process the remaining children
             if (this.children.length > 0)
             {
@@ -2874,11 +2913,18 @@ qx.Class.define("playground.c.lib.Node",
           {
             entry = 
               playground.c.lib.Symtab.getCurrent().get(this.value, true);
-            this.error("Identifier '" + this.value + "' " +
-                       "was previously declared near line " +
-                       entry.getLine());
-            success();
-            break;
+            
+            // If the entry was extern, allow a new symbol
+            // definition. Otherwise, flag this as a duplicate declaration.
+            specAndDecl = entry.getSpecAndDecl();
+            if (specAndDecl[specAndDecl.length - 1].getStorage() != "extern")
+            {
+              this.error("Identifier '" + this.value + "' " +
+                         "was previously declared near line " +
+                         entry.getLine());
+              success();
+              break;
+            }
           }
           
           // Attach the specifier/declarator list to this symbol
