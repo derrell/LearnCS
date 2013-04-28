@@ -2452,6 +2452,17 @@ qx.Class.define("playground.c.lib.Node",
               // any arguments from the data objects.
               delete data.args;
 
+              // Ensure that this function has been defined, not just declared
+              if (! value2 || value1.getLine() > this.line)
+              {
+                // Nope, it hasn't.
+                failure(
+                  new playground.c.lib.RuntimeError(
+                    this,
+                    "Function " + value1.getName() + " has not been defined."));
+                return;
+              }
+              
               // This is a real function (not built-in). Begin the activation
               // record
               mem.beginActivationRecord(origSp);
@@ -2459,8 +2470,8 @@ qx.Class.define("playground.c.lib.Node",
               // Name this activation record
               declarator = value2.children[1];
               function_decl = declarator.children[0];
-              mem.nameActivationRecord(
-                "Activation Record: " + function_decl.children[0].value);
+              mem.nameActivationRecord("Activation Record: " + 
+                                       function_decl.children[0].value);
             }
             
             // Push the arguments onto the stack

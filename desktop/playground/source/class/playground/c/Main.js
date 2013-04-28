@@ -373,7 +373,7 @@ qx.Class.define("playground.c.Main",
         }
         
         playground.c.Main.output(
-          ">>> Program crashed. It did not run to completion.\n");
+          ">>> Program had errors. It did not run to completion.\n");
 
         // Clean up after program completion
         completion();
