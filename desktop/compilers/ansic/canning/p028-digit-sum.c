@@ -6,6 +6,9 @@
 
 #include <stdio.h>
 
+// Forward declaration
+int digitSum(int input);
+
 /**
  * Main program entry point
  * 

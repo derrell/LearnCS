@@ -2476,6 +2476,8 @@ qx.Class.define("playground.c.lib.Node",
             }
             
             // Push the arguments onto the stack
+            //
+            // FIXME: validate that argument types match definition
             this.children[1].process(
               data,
               bExecuting,
@@ -2613,6 +2615,14 @@ qx.Class.define("playground.c.lib.Node",
                   playground.c.lib.Symtab.getCurrent(), 
                   data.entry.getName(),
                   this.line);
+              }
+              else
+              {
+                // FIXME: 
+                //
+                // Ensure that data.specAndDecl matches
+                // data.entry.getSpecAndDecl() to ensure that the definition
+                // matches the forward declaration.
               }
 
               // Regardless of previous declaration or not, we now know the
