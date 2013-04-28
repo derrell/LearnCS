@@ -1508,13 +1508,20 @@ qx.Class.define("playground.c.lib.Node",
                   }
                 }
 
-                // Write the value to memory using the value's original
-                // specifier/declarator list
-                playground.c.lib.Node.__mem.setReg("R1", oldType, value1.value);
-                
-                // Read it back using the cast's specifier/declarator list
-                value1.value = 
-                  playground.c.lib.Node.__mem.getReg("R1", newType);
+                // If the old type's size is bigger than the new type's size...
+                if (playground.c.machine.Memory.typeSize[oldType] >
+                    playground.c.machine.Memory.typeSize[newType])
+                {
+                  // ... then reduce the size by writing the value to memory
+                  // using the value's original specifier/declarator list and
+                  // reading it back using the cast's specifier/declarator
+                  // list.
+                  playground.c.lib.Node.__mem.setReg("R1",
+                                                     oldType, 
+                                                     value1.value);
+                  value1.value = playground.c.lib.Node.__mem.getReg("R1",
+                                                                    newType);
+                }
                 
                 // Assign the cast's specifier/declarator list to the value
                 value1.specAndDecl = castData.specAndDecl;
