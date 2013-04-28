@@ -2459,7 +2459,8 @@ qx.Class.define("playground.c.lib.Node",
                 failure(
                   new playground.c.lib.RuntimeError(
                     this,
-                    "Function " + value1.getName() + " has not been defined."));
+                    "Function " + value1.getName() + 
+                    " has been declared, but not defined."));
                 return;
               }
               
