@@ -408,6 +408,7 @@ qx.Class.define("playground.c.lib.Node",
     process : function(data, bExecuting, success, failure)
     {
       var             i;
+      var             f;
       var             sp;
       var             origSp;
       var             addr;
@@ -765,9 +766,12 @@ qx.Class.define("playground.c.lib.Node",
                 specAndDecl = this.__coerce(value1.specAndDecl,
                                             value2.specAndDecl,
                                             "add (+)");
+                f = specAndDecl[0].getType() == "int" 
+                      ? Math.floor 
+                      : function (n) { return n; };
                 success(
                   { 
-                    value       : value1.value + value2.value,
+                    value       : f(value1.value + value2.value),
                     specAndDecl : specAndDecl
                   });
               }.bind(this),
@@ -1229,6 +1233,17 @@ qx.Class.define("playground.c.lib.Node",
                 specAndDecl = this.__coerce(value1.specAndDecl,
                                             value2.specAndDecl,
                                             "bit-wise AND (&)");
+                
+                // Ensure we ended up with an int. Can't do this op otherwise.
+                if (specAndDecl[0].getType() != "int")
+                {
+                  failure(
+                    new playground.c.lib.RuntimeError(
+                      this,
+                      "Operation requires two integer values."));
+                  return;
+                }
+                
                 success(
                   { 
                     value       : value1.value & value2.value,
@@ -1324,6 +1339,17 @@ qx.Class.define("playground.c.lib.Node",
                 specAndDecl = this.__coerce(value1.specAndDecl,
                                             value2.specAndDecl,
                                            "bit-wise OR (|)");
+
+                // Ensure we ended up with an int. Can't do this op otherwise.
+                if (specAndDecl[0].getType() != "int")
+                {
+                  failure(
+                    new playground.c.lib.RuntimeError(
+                      this,
+                      "Operation requires two integer values."));
+                  return;
+                }
+
                 success(
                   { 
                     value       : value1.value | value2.value,
@@ -1945,9 +1971,12 @@ qx.Class.define("playground.c.lib.Node",
                 specAndDecl = this.__coerce(value1.specAndDecl,
                                             value2.specAndDecl,
                                             "divide (/)");
+                f = specAndDecl[0].getType() == "int" 
+                      ? Math.floor 
+                      : function (n) { return n; };
                 success(
                   { 
-                    value       : value1.value / value2.value,
+                    value       : f(value1.value / value2.value),
                     specAndDecl : specAndDecl
                   });
               }.bind(this),
@@ -2205,6 +2234,17 @@ qx.Class.define("playground.c.lib.Node",
                 specAndDecl = this.__coerce(value1.specAndDecl,
                                             value2.specAndDecl,
                                             "exclusive-or (^)");
+
+                // Ensure we ended up with an int. Can't do this op otherwise.
+                if (specAndDecl[0].getType() != "int")
+                {
+                  failure(
+                    new playground.c.lib.RuntimeError(
+                      this,
+                      "Operation requires two integer values."));
+                  return;
+                }
+
                 success(
                   { 
                     value       : value1.value ^ value2.value,
@@ -3306,6 +3346,17 @@ qx.Class.define("playground.c.lib.Node",
                   this.__coerce(value1.specAndDecl, 
                                 value2.specAndDecl,
                                 "mod (%)");
+
+                // Ensure we ended up with an int. Can't do this op otherwise.
+                if (specAndDecl[0].getType() != "int")
+                {
+                  failure(
+                    new playground.c.lib.RuntimeError(
+                      this,
+                      "Operation requires two integer values."));
+                  return;
+                }
+
                 success(
                   { 
                     value       : value1.value % value2.value,
@@ -3373,9 +3424,12 @@ qx.Class.define("playground.c.lib.Node",
                   this.__coerce(value1.specAndDecl, 
                                 value2.specAndDecl,
                                 "multiply (*)");
+                f = specAndDecl[0].getType() == "int" 
+                      ? Math.floor 
+                      : function (n) { return n; };
                 success(
                   { 
-                    value       : value1.value * value2.value,
+                    value       : f(value1.value * value2.value),
                     specAndDecl : specAndDecl
                   });
               }.bind(this),
@@ -4210,10 +4264,13 @@ throw new Error("broken code here!");
                   this.__coerce(value1.specAndDecl, 
                                 value2.specAndDecl,
                                 "subtraction (-)");
+                f = specAndDecl[0].getType() == "int" 
+                      ? Math.floor 
+                      : function (n) { return n; };
 
                 success(
                   { 
-                    value       : value1.value - value2.value,
+                    value       : f(value1.value - value2.value),
                     specAndDecl : specAndDecl
                   });
               }.bind(this),

@@ -23,7 +23,6 @@ int digitSum(int input);
  */
 int main(int argc, char * argv[])
 {
-    int             sum;        // sum of the values read from the file
     int             conv;       // number of conversions
     int             value;      // input value read from file
     void *          hFile;      // file handle
