@@ -83,6 +83,9 @@ qx.Class.define("playground.c.lib.Node",
     /** Number of recursive calls remaining before we must unwind via timeout */
     _unwindCount : null,        // initialized in defer
 
+    /** Depth of function call, for activation record name */
+    _depth : 0,
+
     /** Mappings of types of numbers to their types */
     NumberType :
     {
@@ -414,6 +417,7 @@ qx.Class.define("playground.c.lib.Node",
       var             addr;
       var             offset;
       var             intSize;
+      var             depth;
       var             subnode;
       var             entry;
       var             bExists;
@@ -2518,8 +2522,10 @@ qx.Class.define("playground.c.lib.Node",
               // Name this activation record
               declarator = value2.children[1];
               function_decl = declarator.children[0];
+              depth = ++playground.c.lib.Node._depth;
               mem.nameActivationRecord("Activation Record: " + 
-                                       function_decl.children[0].value);
+                                       function_decl.children[0].value +
+                                       (depth === 0 ? "" : " @" + depth));
             }
             
             // Push the arguments onto the stack
@@ -2592,6 +2598,9 @@ qx.Class.define("playground.c.lib.Node",
                       
                       // We're finished with this activation record.
                       mem.endActivationRecord();
+
+                      // We've completed a level of function call. Reduce depth.
+                      playground.c.lib.Node._depth--;
 
                       // Restore the previous frame pointer
                       value2._symtab.restoreFramePointer();
