@@ -1570,9 +1570,11 @@ qx.Class.define("playground.c.lib.Node",
           playground.c.lib.Symtab.pushStack(symtab);
 
           // Save the new frame pointer
+var old = symtab.getFramePointer();
           symtab.setFramePointer(
             playground.c.lib.Node.__mem.getReg("SP", "unsigned int") -
               symtab.getSize());
+console.log("set FP from " + old + " to " + (playground.c.lib.Node.__mem.getReg("SP", "unsigned int") - symtab.getSize()));
         }
         else
         {
@@ -1593,6 +1595,7 @@ qx.Class.define("playground.c.lib.Node",
           {
             // Restore the previous frame pointer
             symtab.restoreFramePointer();
+console.log("restore FP to " + symtab.getFramePointer());
           }
 
           // Revert to the prior scope
@@ -2523,9 +2526,8 @@ qx.Class.define("playground.c.lib.Node",
               declarator = value2.children[1];
               function_decl = declarator.children[0];
               depth = ++playground.c.lib.Node._depth;
-              mem.nameActivationRecord("Activation Record: " + 
-                                       function_decl.children[0].value +
-                                       (depth === 0 ? "" : " @" + depth));
+              mem.nameActivationRecord("Activation Record " + depth + ": " + 
+                                       function_decl.children[0].value);
             }
             
             // Push the arguments onto the stack
@@ -2564,8 +2566,10 @@ qx.Class.define("playground.c.lib.Node",
                 else
                 {
                   // Save the new frame pointer
+var old = value2._symtab.getFramePointer();
                   value2._symtab.setFramePointer(mem.getReg("SP",
                                                             "unsigned int"));
+console.log("set FP from " + old + " to " + mem.getReg("SP", "unsigned int"));
 
                   // Push the return address (our current line number) onto
                   // the stack
@@ -2604,6 +2608,7 @@ qx.Class.define("playground.c.lib.Node",
 
                       // Restore the previous frame pointer
                       value2._symtab.restoreFramePointer();
+console.log("restore FP to " + value2._symtab.getFramePointer());
 
                       // Restore the old argument array, if there was one.
                       data.args = oldArgs;
@@ -4865,6 +4870,7 @@ throw new Error("broken code here!");
 
           // Retrieve the value
           value1 = this.getExpressionValue(v, data, true);
+console.log("At depth %d, %s is at %d=0x" + value1.value.toString(16), playground.c.lib.Node._depth, v.getName(), value1.value);
 
           // Get a shallow copy of the specifier/declarator list
           specAndDecl = value1.specAndDecl.slice(0);

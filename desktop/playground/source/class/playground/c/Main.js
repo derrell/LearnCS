@@ -563,7 +563,7 @@ qx.Class.define("playground.c.Main",
             declarator = entryNode.children[1];
             function_decl = declarator.children[0];
             mem.nameActivationRecord(
-              "Activation Record: " + function_decl.children[0].value);
+              "Activation Record 0: " + function_decl.children[0].value);
 
             // Push the address of the argv array onto the stack
             mem.stackPush("pointer", p);
