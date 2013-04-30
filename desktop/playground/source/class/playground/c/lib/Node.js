@@ -1570,11 +1570,9 @@ qx.Class.define("playground.c.lib.Node",
           playground.c.lib.Symtab.pushStack(symtab);
 
           // Save the new frame pointer
-var old = symtab.getFramePointer();
           symtab.setFramePointer(
             playground.c.lib.Node.__mem.getReg("SP", "unsigned int") -
-              symtab.getSize());
-console.log("set FP from " + old + " to " + (playground.c.lib.Node.__mem.getReg("SP", "unsigned int") - symtab.getSize()));
+            symtab.getSize());
         }
         else
         {
@@ -1590,14 +1588,6 @@ console.log("set FP from " + old + " to " + (playground.c.lib.Node.__mem.getReg(
 
         function compound_statement_finalize()
         {
-          // If we're executing...
-          if (bExecuting)
-          {
-            // Restore the previous frame pointer
-            symtab.restoreFramePointer();
-console.log("restore FP to " + symtab.getFramePointer());
-          }
-
           // Revert to the prior scope
           playground.c.lib.Symtab.popStack();
           
@@ -2565,12 +2555,6 @@ console.log("restore FP to " + symtab.getFramePointer());
                 }
                 else
                 {
-                  // Save the new frame pointer
-var old = value2._symtab.getFramePointer();
-                  value2._symtab.setFramePointer(mem.getReg("SP",
-                                                            "unsigned int"));
-console.log("set FP from " + old + " to " + mem.getReg("SP", "unsigned int"));
-
                   // Push the return address (our current line number) onto
                   // the stack
                   sp = mem.stackPush("unsigned int", this.line);
@@ -2605,10 +2589,6 @@ console.log("set FP from " + old + " to " + mem.getReg("SP", "unsigned int"));
 
                       // We've completed a level of function call. Reduce depth.
                       playground.c.lib.Node._depth--;
-
-                      // Restore the previous frame pointer
-                      value2._symtab.restoreFramePointer();
-console.log("restore FP to " + value2._symtab.getFramePointer());
 
                       // Restore the old argument array, if there was one.
                       data.args = oldArgs;
@@ -2661,7 +2641,7 @@ console.log("restore FP to " + value2._symtab.getFramePointer());
             if (subnode)
             {
               // We've now found a function definition. Retrieve or create the
-              // symbol table for this function's arguments. If there had been
+              // symbol table for this function's parameters. If there had been
               // a forward declaration, we'll find the symbol table already
               // existing. Otherwise, we'll create it new.
               symtab = playground.c.lib.Symtab.getByName(data.entry.getName());
@@ -2794,6 +2774,14 @@ console.log("restore FP to " + value2._symtab.getFramePointer());
 
         // Push it onto the symbol table stack as if we'd just created it
         playground.c.lib.Symtab.pushStack(symtab2);
+
+        // Set the current frame pointer to the location of the stack pointer
+        // plus one word. The arguments and return address have already been
+        // pushed onto the stack. The word we're adding is because we want the
+        // frame pointer to be pointing at the arguments, not pointing at the
+        // return address.
+        symtab2.setFramePointer(
+          playground.c.lib.Node.__mem.getReg("SP", "unsigned int") + WORDSIZE);
 
         this._tryIt(
           // try
@@ -4870,7 +4858,6 @@ throw new Error("broken code here!");
 
           // Retrieve the value
           value1 = this.getExpressionValue(v, data, true);
-console.log("At depth %d, %s is at %d=0x" + value1.value.toString(16), playground.c.lib.Node._depth, v.getName(), value1.value);
 
           // Get a shallow copy of the specifier/declarator list
           specAndDecl = value1.specAndDecl.slice(0);

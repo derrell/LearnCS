@@ -304,6 +304,7 @@ qx.Class.define("playground.view.c.MemoryWord",
       value =
         "<span style='font-weight: bold;'>" +
         ("0000" + value.toString(16)).substr(-4) +
+//        ("00000" + value.toString(10)).substr(-5) +
         "</span>";
 
       this.getChildControl("addr1").setValue(value);

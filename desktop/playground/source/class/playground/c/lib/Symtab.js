@@ -259,6 +259,7 @@ qx.Class.define("playground.c.lib.Symtab",
      */
     pushStack : function(symtab)
     {
+      // Push this symbol table onto the symbol table stack
       playground.c.lib.Symtab._symtabStack.push(symtab);
     },
 
@@ -270,7 +271,14 @@ qx.Class.define("playground.c.lib.Symtab",
      */
     popStack : function()
     {
-      var             symtab = playground.c.lib.Symtab._symtabStack.pop();
+      var             symtab;
+
+      // Remove the top symbol table from the stack and return it
+      symtab = playground.c.lib.Symtab._symtabStack.pop();
+      
+      // Restore this symbol table's frame pointer to its prior location
+      symtab.restoreFramePointer();
+
       return symtab;
     },
 
