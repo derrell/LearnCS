@@ -2760,7 +2760,6 @@ qx.Class.define("playground.c.lib.Node",
 
               // Pop this function's symbol table from the stack
               playground.c.lib.Symtab.popStack();
-              
               success();
             }.bind(this),
             failure);
@@ -2976,31 +2975,50 @@ qx.Class.define("playground.c.lib.Node",
       case "identifier" :
         if (! bExecuting)
         {
-          // This symbol shouldn't exist. Create a symbol table entry for it
-          entry = playground.c.lib.Symtab.getCurrent().add(
-            this.value, this.line, false, data.bIsParameter);
-
-          if (! entry)
+          // If we're declaring something...
+          if (data.specifiers)
           {
-            entry = 
-              playground.c.lib.Symtab.getCurrent().get(this.value, true);
-            
-            // If the entry was extern, allow a new symbol
-            // definition. Otherwise, flag this as a duplicate declaration.
-            specAndDecl = entry.getSpecAndDecl();
-            if (specAndDecl[specAndDecl.length - 1].getStorage() != "extern")
+            // This symbol shouldn't exist. Create a symbol table entry for it
+            entry = playground.c.lib.Symtab.getCurrent().add(
+              this.value, this.line, false, data.bIsParameter);
+
+            if (! entry)
             {
-              this.error("Identifier '" + this.value + "' " +
-                         "was previously declared near line " +
-                         entry.getLine());
-              success();
+              entry = 
+                playground.c.lib.Symtab.getCurrent().get(this.value, true);
+
+              // If the entry was extern, allow a new symbol
+              // definition. Otherwise, flag this as a duplicate declaration.
+              specAndDecl = entry.getSpecAndDecl();
+              if (specAndDecl[specAndDecl.length - 1].getStorage() != "extern")
+              {
+                this.error("Identifier '" + this.value + "' " +
+                           "was previously declared near line " +
+                           entry.getLine(),
+                           true);
+                // not reached
+                break;
+              }
+            }
+
+            // Attach the specifier/declarator list to this symbol
+            entry.setSpecAndDecl(data.specAndDecl);
+            data.entry = entry;
+          }
+          else
+          {
+            // Retrieve the supposedly existing entry
+            entry = playground.c.lib.Symtab.getCurrent().get(this.value, false);
+            
+            // If it doesn't exist...
+            if (! entry)
+            {
+              this.error("Identifier '" + this.value + "' is not declared.",
+                         true);
+              // not reached
               break;
             }
           }
-          
-          // Attach the specifier/declarator list to this symbol
-          entry.setSpecAndDecl(data.specAndDecl);
-          data.entry = entry;
           
           // Process any children
           this.__processSubnodes(data, bExecuting, success, failure);
@@ -4028,6 +4046,12 @@ qx.Class.define("playground.c.lib.Node",
          *   0: statement
          *   ...
          */
+
+        // We're finished with declarations. Ensure there's no data.entry or
+        // data.specifiers so that symbols don't get defined in "identifier"
+        delete data.entry;
+        delete data.specifiers;
+
         this.__processSubnodes(data, bExecuting, success, failure);
         break;
 
