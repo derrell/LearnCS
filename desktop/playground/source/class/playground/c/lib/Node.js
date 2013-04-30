@@ -2339,7 +2339,20 @@ qx.Class.define("playground.c.lib.Node",
               bExecuting,
               function()
               {
-                var             fSelf = arguments.callee;
+                var             fWhile = arguments.callee;
+                var             fPostBody = function()
+                {
+                  // After each iteration. Upon success, return to
+                  // processing the 'while' condition.
+                  this.children[3].process(
+                    data, 
+                    bExecuting,
+                    function()
+                    {
+                      fWhile.bind(this)();
+                    }.bind(this),
+                    fail);
+                }.bind(this);
 
                 // Process the 'while' condition
                 this.children[1].process(
@@ -2375,22 +2388,7 @@ qx.Class.define("playground.c.lib.Node",
 
                           // Process the statement block
                           this.children[2].process(
-                            data,
-                            bExecuting,
-                            function()
-                            {
-                              // After each iteration. Upon success, return to
-                              // processing the 'while' condition.
-                              this.children[3].process(
-                                data, 
-                                bExecuting,
-                                function()
-                                {
-                                  fSelf.bind(this)();
-                                }.bind(this),
-                                fail);
-                            }.bind(this),
-                            fail);
+                            data, bExecuting, fPostBody, fail);
                         }.bind(this),
                         function(error, succ, fail)
                         {
@@ -2405,7 +2403,7 @@ qx.Class.define("playground.c.lib.Node",
                             {
                               playground.c.lib.Symtab.popStack();
                             }
-                            succ();
+                            fPostBody.bind(this)();
                           }
                           else
                           {
