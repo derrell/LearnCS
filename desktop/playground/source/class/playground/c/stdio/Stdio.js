@@ -343,7 +343,7 @@ qx.Class.define("playground.c.stdio.Stdio",
 
           success(
             {
-              value       : ch,
+              value       : ch.charCodeAt(0),
               specAndDecl : [ specOrDecl ]
             });
         },
