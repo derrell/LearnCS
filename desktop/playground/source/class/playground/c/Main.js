@@ -218,6 +218,29 @@ qx.Class.define("playground.c.Main",
 
     process : function(root, argv)
     {
+      try
+      {
+        playground.c.Main._process(root, argv);
+      }
+      catch(error)
+      {
+        if (error instanceof playground.c.lib.RuntimeError)
+        {
+          playground.c.Main.output(error.message + "\n");
+        }
+        else
+        {
+          playground.c.Main.output("Internal error: " + error + "\n");
+          playground.c.Main.output(error.stack + "\n");
+        }
+
+        playground.c.Main.output(
+          ">>> Program had errors. It did not run to completion.\n");
+      }
+    },
+
+    _process : function(root, argv)
+    {
       var             p;
       var             sp;
       var             origSp;
