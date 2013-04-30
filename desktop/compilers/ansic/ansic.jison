@@ -1416,6 +1416,8 @@ compound_statement
   {
     parser.yy.R("compound_statement : lbrace_scope rbrace_scope");
     $$ = new playground.c.lib.Node("compound_statement", yytext, yylineno);
+    $$.children.push(playground.c.lib.Node.getNull());     // no declaration list
+    $$.children.push(playground.c.lib.Node.getNull());     // no statement list
   }
   | lbrace_scope statement_list rbrace_scope
   {
