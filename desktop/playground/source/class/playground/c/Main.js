@@ -395,11 +395,11 @@ qx.Class.define("playground.c.Main",
           playground.c.Main.output(error.stack + "\n");
         }
         
-        playground.c.Main.output(
-          ">>> Program had errors. It did not run to completion.\n");
-
         // Clean up after program completion
         completion();
+
+        playground.c.Main.output(
+          ">>> Program had errors. It did not run to completion.\n");
 
         if (typeof process != "undefined")
         {
@@ -466,9 +466,23 @@ qx.Class.define("playground.c.Main",
             // Retrieve the command line and push the arguments onto the stack. 
             try
             {
+              // Get the raw command line from the text field
               cmdLine =
                 qx.core.Init.getApplication().getUserData("cmdLine").getValue();
+              
+              // Replace each occurrence of backslash followed by a space with
+              // the non-ASCII character code 0xff.
+              cmdLine = cmdLine.replace(/\\ /g, "\377");
+              
+              // Split the command line at remaining (non-escaped) spaces
               argv = cmdLine ? cmdLine.split(/\s+/) : [];
+              
+              // Map the 0xff markers back to spaces within each argument.
+              argv = argv.map(
+                function(arg)
+                {
+                  return arg.replace(/\377/g, " ");
+                });
             }
             catch(e)
             {
@@ -640,13 +654,13 @@ qx.Class.define("playground.c.Main",
                 true,
                 function(value)
                 {
+                  completion();
+                  
                   // Show them their exit value
                   playground.c.Main.output(
                     ">>> " +
                     "Program exited with exit code " + value.value + "\n");
 
-                  completion();
-                  
                   if (typeof process != "undefined")
                   {
                     process.exit(value.value);
