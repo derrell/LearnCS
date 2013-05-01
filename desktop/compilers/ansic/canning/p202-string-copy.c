@@ -32,7 +32,7 @@ int main(int argc, char * argv[])
     if (argc < 2)
     {
         printf("Expected that the string to be copied would be provided ");
-        printf("on the command line.");
+        printf("on the command line.\n");
         return 1;
     }
 
