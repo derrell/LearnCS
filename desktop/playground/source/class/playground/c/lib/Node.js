@@ -1862,7 +1862,10 @@ qx.Class.define("playground.c.lib.Node",
               specAndDecl = value.getSpecAndDecl().slice(0);
 
               // Get the address contained in this pointer
-              addr = playground.c.lib.Node.__mem.get(addr, "pointer");
+              if (specAndDecl[0].getType() != "array")
+              {
+                addr = playground.c.lib.Node.__mem.get(addr, "pointer");
+              }
             }
             else
             {
@@ -1875,17 +1878,17 @@ qx.Class.define("playground.c.lib.Node",
 
             // Pull the first specifier/declarator off of the list
             specOrDecl = specAndDecl.shift();
+            type = specOrDecl.getType();
 
             // Ensure that we can dereference this thing. To be able to, it must
             // be either a pointer whose value must be retrieved, or already
             // an adderess.
-            if (specOrDecl.getType() != "pointer" &&
-                specOrDecl.getType() != "address")
+            if (type != "pointer" && type != "address" && type != "array")
             {
               this._throwIt(new playground.c.lib.RuntimeError(
                               this,
                               "Can not dereference " + value.getName() + 
-                                " because it is not a pointer."),
+                                " because it is not an address type."),
                             success,
                             failure);
               return;
@@ -5018,6 +5021,17 @@ throw new Error("broken code here!");
             {
               // ... then retrieve and return the altered value
               value = playground.c.lib.Node.__mem.get(value1.value, type);
+            }
+
+            // Clone the specifier/declarator list
+            specAndDecl = specAndDecl.slice(0);
+            
+            // If this is a unary operator...
+            if (bUnary)
+            {
+              // ... then prepend an "address" declarator
+              specAndDecl.unshift(
+                new playground.c.lib.Declarator(this, "address"));
             }
 
             // Retrieve the value and return it
