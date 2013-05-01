@@ -425,13 +425,16 @@ qx.Class.define("playground.c.Main",
           symtab = playground.c.lib.Symtab.getByName("*");
           entry = symtab.get("main", true);
 
-          // If this entry's first specifier/declarator indicates it's a
-          // function...
-          declarator = entry.getSpecAndDecl()[0];
-          if (declarator.getType() == "function")
+          if (entry)
           {
-            // ... then that's our entry node
-            entryNode = declarator.getFunctionNode();
+            // If this entry's first specifier/declarator indicates it's a
+            // function...
+            declarator = entry.getSpecAndDecl()[0];
+            if (declarator.getType() == "function")
+            {
+              // ... then that's our entry node
+              entryNode = declarator.getFunctionNode();
+            }
           }
 
           // Process the abstract syntax tree from the entry point, if it
