@@ -2627,12 +2627,14 @@ qx.Class.define("playground.c.lib.Node",
           function()
           {
             var             i;
+            var             bDefinition = false;
 
             // Find our enclosing function definition
             for (subnode = this.parent; subnode; subnode = subnode.parent)
             {
               if (subnode.type == "function_definition")
               {
+                bDefinition = true;
                 break;
               }
             }
@@ -2696,9 +2698,6 @@ qx.Class.define("playground.c.lib.Node",
                 playground.c.lib.Symtab.getCurrent(), 
                 data.entry.getName(),
                 this.line);
-
-              // Pop this function's symbol table from the stack
-              playground.c.lib.Symtab.popStack();
             }
             
             // Process the remaining children
@@ -2720,10 +2719,22 @@ qx.Class.define("playground.c.lib.Node",
                   }
                   else
                   {
+                    // If this is a declaration, not a defintion, ...
+                    if (! bDefinition)
+                    {
+                      // ... pop this function's symbol table from the
+                      // stack. Otherwise, it'll get popped off following the
+                      // complete function definition.
+                      playground.c.lib.Symtab.popStack();
+                    }
                     success();
                   }
                 }.bind(this),
                 failure);
+            }
+            else
+            {
+              throw new Error("Oh no! My children are missing!");
             }
           }.bind(this),
           failure);
