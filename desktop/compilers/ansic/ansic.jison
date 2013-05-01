@@ -1813,6 +1813,7 @@ constant
     if (typeof value == "undefined")
     {
       [
+        [ /^'\\0'$/,   0 ],                    // null
         [ /^'\\a'$/,   7 ],                    // bell (alert)
         [ /^'\\b'$/,   8 ],                    // backspace
         [ /^'\\f'$/,  12 ],                    // formfeed
