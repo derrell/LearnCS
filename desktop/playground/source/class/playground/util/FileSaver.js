@@ -347,7 +347,5 @@ qx.Class.define("playground.util.FileSaver",
             view.addEventListener("unload", process_deletion_queue, false);
             return saveAs;
     }(self));
-    
-    console.log("saveAs = " + playground.util.FileSaver.saveAs);
   }
 });
