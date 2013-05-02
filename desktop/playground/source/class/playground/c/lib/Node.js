@@ -5037,8 +5037,8 @@ throw new Error("broken code here!");
             // Clone the specifier/declarator list
             specAndDecl = specAndDecl.slice(0);
             
-            // If this is a unary operator...
-            if (bUnary)
+            // If this is a unary operator on a pointer...
+            if (bUnary && value1.specAndDecl[0].getType() == "pointer")
             {
               // ... then prepend an "address" declarator
               specAndDecl.unshift(
