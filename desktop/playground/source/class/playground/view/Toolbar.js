@@ -43,6 +43,7 @@ qx.Class.define("playground.view.Toolbar",
       new uploadwidget.UploadButton("loadfile",
                                     "Load File",
                                     "icon/16/actions/document-open.png");
+    loadButton.setToolTipText(this.tr("Load a source file from disk"));
     loadButton.set(
       {
         height      : 28,
@@ -119,6 +120,7 @@ qx.Class.define("playground.view.Toolbar",
     // Save As button
     var saveButton = 
       new qx.ui.form.Button("Save As", "icon/16/actions/document-save.png");
+    saveButton.setToolTipText(this.tr("Save the current source to disk"));
     saveButton.set(
       {
         height      : 28,
@@ -229,6 +231,9 @@ qx.Class.define("playground.view.Toolbar",
       this.tr("Log"), "icon/22/apps/utilities-log-viewer.png"
     );
     this.add(this.__logCheckButton);
+// djl...
+    this.__logCheckButton.exclude();
+// ...djl
     this.__logCheckButton.setToolTipText(this.tr("Show log output"));
     this.__logCheckButton.addListener("changeValue", function(e) {
       this.fireDataEvent("changeLog", e.getData(), e.getOldData());
