@@ -75,11 +75,11 @@ qx.Class.define("playground.Application",
     __mainsplit : null,
     __toolbar : null,
     __log : null,
-    __editor : null,
     __playArea : null,
     __samplesPane : null,
     __editorsplit : null,
     __websiteContent : null,
+    editor : null,
 
     // storages
     __samples : null,
@@ -198,8 +198,8 @@ qx.Class.define("playground.Application",
       // Create the page for the Source editor
       page = new qx.ui.tabview.Page("C Source");
       page.setLayout(new qx.ui.layout.VBox());
-      this.__editor = new playground.view.Editor();
-      this.__editor.addListener("disableHighlighting", function() {
+      this.editor = new playground.view.Editor();
+      this.editor.addListener("disableHighlighting", function() {
         this.__toolbar.enableHighlighting(false);
       }, this);
       playground.view.Editor.loadAce(function() {
@@ -207,10 +207,10 @@ qx.Class.define("playground.Application",
       }, this);
       
       // Make the editor available, for such things as its getBreakpoints()
-      qx.core.Init.getApplication().setUserData("sourceeditor", this.__editor);
+      qx.core.Init.getApplication().setUserData("sourceeditor", this.editor);
       
       // Add the source editor to the page
-      page.add(this.__editor, { flex : 1 });
+      page.add(this.editor, { flex : 1 });
       
       // Add the page to the tabview
       tabview.add(page);
@@ -249,7 +249,7 @@ qx.Class.define("playground.Application",
           {
             this.__cppOutput.setValue(
               playground.c.lib.Preprocessor.preprocess(
-                this.__editor.getCode()).join("\n"));
+                this.editor.getCode()).join("\n"));
           }
         },
         this);
@@ -275,6 +275,9 @@ qx.Class.define("playground.Application",
       qx.core.Init.getApplication().setUserData("terminal", terminal);
 
       this.__editorsplit.add(this.__samplesPane, 1);
+// djl...
+      this.__samplesPane.exclude();
+// ...djl
       this.__terminalsplit.add(tabview, 4);
       this.__terminalsplit.add(terminal, 2);
       this.__editorsplit.add(this.__terminalsplit, 4);
@@ -343,7 +346,7 @@ qx.Class.define("playground.Application",
       }, this);
 
       this.__mainsplit.addListener("losecapture", function() {
-        this.__editor.unblock();
+        this.editor.unblock();
       }, this);
 
       this.__log = new qxc.ui.logpane.LogView();
@@ -368,7 +371,7 @@ qx.Class.define("playground.Application",
 
       // Call the appropriate editor's init function
       if (who == "ace") {
-        this.__editor.init();
+        this.editor.init();
       } else { // "blockly"
         this.__blockEditor.init();
       }
@@ -398,7 +401,7 @@ qx.Class.define("playground.Application",
 
       // check for the highlight and examples cookie
       if (qx.bom.Cookie.get("playgroundHighlight") === "false") {
-        this.__editor.useHighlight(false);
+        this.editor.useHighlight(false);
       }
       if (qx.bom.Cookie.get("playgroundShowExamples") === "false") {
         this.__toolbar.showExamples(false);
@@ -436,14 +439,14 @@ qx.Class.define("playground.Application",
 
       // need to get the code from the editor in case he changes something
       // in the code
-      this.__editor.setCode(newSample.getCode());
-      this.setOriginCode(this.__editor.getCode());
+      this.editor.setCode(newSample.getCode());
+      this.setOriginCode(this.editor.getCode());
 
       // only add static samples to the url as name
       if (newSample.getCategory() == "static") {
         this.__history.addToHistory(newSample.getName() + "-" + newSample.getMode());
       } else {
-        this.__addCodeToHistory(newSample.getCode());
+        this.addCodeToHistory(newSample.getCode());
       }
 
       this.setName(newSample.getName());
@@ -561,7 +564,7 @@ qx.Class.define("playground.Application",
       }
 
       // erase the code
-      this.__editor.setCode("");
+      this.editor.setCode("");
 
       this.__enableWebsiteMode(mode == "website");
 
@@ -585,7 +588,7 @@ qx.Class.define("playground.Application",
       // if its a user sample which is selected, we just store the new code
       } else {
         // store in curent sample
-        current.setCode(this.__editor.getCode());
+        current.setCode(this.editor.getCode());
         this.setOriginCode(current.getCode());
         // set the name to make sure no "changed" state is displayed
         this.setName(current.getName());
@@ -617,7 +620,7 @@ qx.Class.define("playground.Application",
       // create new sample
       var data = {
         name: name,
-        code: this.__editor.getCode(),
+        code: this.editor.getCode(),
         mode: this.__mode,
         category: "user"
       };
@@ -704,7 +707,7 @@ qx.Class.define("playground.Application",
      */
     __onHighlightChange : function(e) {
       qx.bom.Cookie.set("playgroundHighlight", e.getData(), 100);
-      this.__editor.useHighlight(e.getData());
+      this.editor.useHighlight(e.getData());
     },
 
 
@@ -811,8 +814,8 @@ qx.Class.define("playground.Application",
         code = this.__parseURLCode(state);
         // need to get the code from the editor in case he changes something
         // in the code
-        this.__editor.setCode(code);
-        this.setOriginCode(this.__editor.getCode());
+        this.editor.setCode(code);
+        this.setOriginCode(this.editor.getCode());
 
         // try to select a custom sample
         this.__samplesPane.selectByCode(code);
@@ -841,15 +844,15 @@ qx.Class.define("playground.Application",
       if (this.__samples.isAvailable(state))
       {
         var sample = this.__samples.get(state);
-        if (this.__isCodeNotEqual(sample.getCode(), this.__editor.getCode())) {
+        if (this.isCodeNotEqual(sample.getCode(), this.editor.getCode())) {
           this.setCurrentSample(sample);
         }
 
       // is code given
       } else if (state != "") {
         var code = this.__parseURLCode(state);
-        if (code != this.__editor.getCode()) {
-          this.__editor.setCode(code);
+        if (code != this.editor.getCode()) {
+          this.editor.setCode(code);
           this.setName(this.tr("Custom Code"));
           this.run();
         }
@@ -889,7 +892,7 @@ qx.Class.define("playground.Application",
      * @param code {String} the code to add.
      * @lint ignoreDeprecated(confirm)
      */
-    __addCodeToHistory : function(code) {
+    addCodeToHistory : function(code) {
       var codeJson =
         '{"code":' + '"' + encodeURIComponent(code) + '", "mode":"' + this.__mode + '"}';
       if (qx.core.Environment.get("engine.name") == "mshtml" && codeJson.length > 1300) {
@@ -916,8 +919,8 @@ qx.Class.define("playground.Application",
      * @return {Boolean} <code>true</code> if the code has been modified
      */
     __discardChanges : function() {
-      var userCode = this.__editor.getCode();
-      if (userCode && this.__isCodeNotEqual(userCode, this.getOriginCode()))
+      var userCode = this.editor.getCode();
+      if (userCode && this.isCodeNotEqual(userCode, this.getOriginCode()))
       {
         if (!confirm(this.tr("Click OK to discard your changes.")))
         {
@@ -934,7 +937,7 @@ qx.Class.define("playground.Application",
      * @param code2 {String} The second code to compare.
      * @return {Boolean} true, if the code is equal.
      */
-    __isCodeNotEqual : function(code1, code2)
+    isCodeNotEqual : function(code1, code2)
     {
       if (qx.core.Environment.get("engine.name") == "opera") {
         code1 = code1.replace(/\r?\n/g, "\n");
@@ -980,7 +983,7 @@ qx.Class.define("playground.Application",
       delete reg[this.__currentStandalone];
 
       // build the code to run
-      var code = this.__editor.getCode();
+      var code = this.editor.getCode();
       // special replacement for unicode "zero width space" [BUG #3635]
       code = code.replace("\u200b", "");
       code = 'this.info("' + this.tr("Starting application").toString() +
@@ -1042,9 +1045,9 @@ qx.Class.define("playground.Application",
      */
     run : function(e)
     {
-      var code = this.__editor.getCode();
-      if (code && this.__isCodeNotEqual(code, this.getOriginCode())) {
-        this.__addCodeToHistory(code);
+      var code = this.editor.getCode();
+      if (code && this.isCodeNotEqual(code, this.getOriginCode())) {
+        this.addCodeToHistory(code);
         if (!this.__modified) {
           this.setName(this.tr("%1 (modified)", this.getName()));
         }
@@ -1131,7 +1134,7 @@ qx.Class.define("playground.Application",
   {
     this.__history = this.__beforeReg = this.__afterReg = null;
     this._disposeObjects(
-      "__currentStandalone", "__samples", "__toolbar", "__editor",
+      "__currentStandalone", "__samples", "__toolbar", "editor",
       "__playArea", "__log"
     );
   }

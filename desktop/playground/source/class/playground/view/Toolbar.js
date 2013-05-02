@@ -36,6 +36,108 @@ qx.Class.define("playground.view.Toolbar",
 
     this.__menuItemStore = {};
 
+    var application = qx.core.Init.getApplication();
+
+    // Load button
+    var loadButton = 
+      new uploadwidget.UploadButton("loadfile",
+                                    "Load File",
+                                    "icon/16/actions/document-save.png");
+    loadButton.set(
+      {
+        height      : 28,
+        maxHeight   : 28,
+        marginTop   : 8,
+        marginLeft  : 12,
+        marginRight : 8
+      });
+    this.add(loadButton);
+    
+    // When this button gets a changeFileName event, pass it along
+    loadButton.addListener(
+      "changeFileName",
+      function(e)
+      {
+        var             reader;
+
+        try
+        {
+          reader = new qx.bom.FileReader();
+        }
+        catch(err)
+        {
+          this.uploadReader = null;
+
+          var message =
+            "Your browser does not support the required functionality. " +
+            "Please use a recent version of Chrome or Firefox.";
+
+          window.alert(message);
+          return;
+        }
+
+        // Arrange to be told when the file is fully loaded
+        reader.addListener(
+          "load",
+          function(e)
+          {
+            // Retrieve the code from the upload button, and add it to the
+            // editor.
+            var code = e.getData().content;
+
+            if (code && 
+                application.isCodeNotEqual(code, application.getOriginCode())) 
+            {
+              application.addCodeToHistory(code);
+              application.editor.setCode(code);
+              application.setOriginCode(application.editor.getCode());
+            }
+          },
+          this);
+
+        // Listen for errors, too.
+        reader.addListener(
+          "error",
+          function(e)
+          {
+            // FIXME: Find a better mechanism for displaying the error
+            window.alert("ERROR: " + e.progress +
+                         " (" + e.progress.getMessage() + ")");
+          },
+          this);
+
+        // Get the selected File object
+        var loadElement = loadButton.getInputElement().getDomElement();
+        var selection = loadElement.files[0];
+
+        // Begin reading the file.
+        reader.readAsText(selection);
+      },
+      this);
+
+
+    // Save As button
+    var saveButton = 
+      new qx.ui.form.Button("Save As", "icon/16/actions/document-save.png");
+    saveButton.set(
+      {
+        height      : 28,
+        maxHeight   : 28,
+        marginTop   : 8,
+        marginRight : 8
+      });
+    this.add(saveButton);
+
+    // Bring up a Save-as dialog when the Save button is pressed
+    saveButton.addListener(
+      "execute",
+      function(e)
+      {
+        playground.util.FileSaver.saveAs(
+          new Blob([ application.editor.getCode() ]), "code.c");
+      },
+      this);
+
     // sample button
     this.__samplesCheckButton = new qx.ui.form.ToggleButton(
       this.tr("Samples"), "icon/22/actions/edit-copy.png"
@@ -47,6 +149,9 @@ qx.Class.define("playground.view.Toolbar",
     this.__samplesCheckButton.addListener("changeValue", function(e) {
       this.fireDataEvent("changeSample", e.getData(), e.getOldData());
     }, this);
+// djl...
+    this.__samplesCheckButton.exclude();
+// ...djl
 
     // Create an input area for command line arguments
     var label = new qx.ui.basic.Label("Command line: ");
