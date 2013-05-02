@@ -268,7 +268,10 @@ qx.Class.define("playground.Application",
       page.add(this.__blockEditor, { flex : 1 });
 
       // Add the page to the tabview
-      tabview.add(page);
+      if (qx.core.Environment.get("qx.debug"))
+      {
+        tabview.add(page);
+      }
       
       // Create a terminal window
       var terminal = new playground.view.Terminal();
