@@ -42,7 +42,7 @@ qx.Class.define("playground.view.Toolbar",
     var loadButton = 
       new uploadwidget.UploadButton("loadfile",
                                     "Load File",
-                                    "icon/16/actions/document-save.png");
+                                    "icon/16/actions/document-open.png");
     loadButton.set(
       {
         height      : 28,
