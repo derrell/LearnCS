@@ -4059,10 +4059,9 @@ qx.Class.define("playground.c.lib.Node",
          *   ...
          */
 
-        // We're finished with declarations. Ensure there's no data.entry or
-        // data.specifiers so that symbols don't get defined in "identifier"
+        // We're finished with declarations. Ensure there's no data.entry so
+        // that symbols don't get defined in "identifier"
         delete data.entry;
-        delete data.specifiers;
 
         this.__processSubnodes(data, bExecuting, success, failure);
         break;
