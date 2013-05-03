@@ -45,6 +45,12 @@ qx.Class.define("playground.c.stdio.RemoteFile",
     this._bPartialReadOk = true;
   },
   
+  statics :
+  {
+    /** Root directory for NodeJS file reading (used for regression tests) */
+    ROOTDIR : ""
+  },
+
   members :
   {
     // overridden
@@ -53,6 +59,8 @@ qx.Class.define("playground.c.stdio.RemoteFile",
       var             i;
       var             failureCode;
       var             path = [];
+      var             fs;
+      var             data;
 
       // If the file is to be opened for writing, fail the request. We don't
       // yet support writing to files.
@@ -154,14 +162,35 @@ qx.Class.define("playground.c.stdio.RemoteFile",
       }
       catch(e)
       {
-        // We're not in the GUI environment and don't have qx.io.remote.Request
-        // so just fail the request.
-        failureCode = playground.c.stdio.AbstractFile.FailureCode.FileNotFound;
-        fail(
+        fs = require("fs");
+        try
+        {
+          // Read all of the data from the file
+          data = fs.readFileSync(playground.c.stdio.RemoteFile.ROOTDIR + path);
+
+          // Split the file data up into its constituent bytes. That
+          // becomes our new input buffer.
+          this._inBuf = data.toString().split("");
+          succ();
+        }
+        catch(e)
+        {
+          // If this isn't a FileNotFound error...
+          if (e.code !== "ENOENT")
           {
-            type       : "failed",
-            statusCode : failureCode
-          });
+            // ... then rethrow the error
+            throw e;
+          }
+          
+          // The requested file was not found. 
+          failureCode = 
+            playground.c.stdio.AbstractFile.FailureCode.FileNotFound;
+          fail(
+            {
+              type       : "failed",
+              statusCode : failureCode
+            });
+        }
       }
     },
     

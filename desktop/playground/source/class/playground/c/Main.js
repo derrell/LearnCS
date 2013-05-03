@@ -49,6 +49,8 @@ qx.Class.define("playground.c.Main",
       symtab : false
     },
 
+    commandeLine : null,
+
     /** Functions to be called after parsing, to readd includes to symtab */
     includes : [],
 
@@ -65,8 +67,11 @@ qx.Class.define("playground.c.Main",
       {
         // Option processing, when run from the command line
         optimist = require("optimist");
-        optimist.usage("Usage: $0 " +
-                 "[--ast] [--symtab] [--rts] [--heap] [--gas] <file.c>");
+        optimist.usage(
+          "Usage: $0 " +
+            "[--ast] [--symtab] [--rts] [--heap] [--gas] " +
+            "[--cmdline <command_line>] [--rootdir <root_dir>]" +
+          "<file.c>");
         optimist["boolean"]( [ "ast", "symtab", "rts", "heap", "gas" ] );
         argv = optimist.argv;
         
@@ -84,6 +89,18 @@ qx.Class.define("playground.c.Main",
         playground.c.Main.debugFlags.rts    = !!argv["rts"];
         playground.c.Main.debugFlags.heap   = !!argv["heap"];
         playground.c.Main.debugFlags.gas    = !!argv["gas"];
+        
+        // If a root directory is specified...
+        if (argv["rootdir"])
+        {
+          playground.c.stdio.RemoteFile.ROOTDIR = argv["rootdir"];
+        }
+        
+        // If a command line was specified...
+        if (argv["cmdline"])
+        {
+          playground.c.Main.commandLine = argv["cmdline"];
+        }
       }
       else
       {
@@ -469,26 +486,27 @@ qx.Class.define("playground.c.Main",
               // Get the raw command line from the text field
               cmdLine =
                 qx.core.Init.getApplication().getUserData("cmdLine").getValue();
-              
-              // Replace each occurrence of backslash followed by a space with
-              // the non-ASCII character code 0xff.
-              cmdLine = cmdLine.replace(/\\ /g, "\377");
-              
-              // Split the command line at remaining (non-escaped) spaces
-              argv = cmdLine ? cmdLine.split(/\s+/) : [];
-              
-              // Map the 0xff markers back to spaces within each argument.
-              argv = argv.map(
-                function(arg)
-                {
-                  return arg.replace(/\377/g, " ");
-                });
             }
             catch(e)
             {
-              argv = [];
+              // Not a GUI environment
+              cmdLine = playground.c.Main.commandLine || "";
             }
             
+            // Replace each occurrence of backslash followed by a space with
+            // the non-ASCII character code 0xff.
+            cmdLine = cmdLine.replace(/\\ /g, "\377");
+
+            // Split the command line at remaining (non-escaped) spaces
+            argv = cmdLine ? cmdLine.split(/\s+/) : [];
+
+            // Map the 0xff markers back to spaces within each argument.
+            argv = argv.map(
+              function(arg)
+              {
+                return arg.replace(/\377/g, " ");
+              });
+
             // Trim white space from all elements. (Applies to first/last)
             argv.map(
               function(arg)

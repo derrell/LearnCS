@@ -46,7 +46,7 @@ qx.Class.define("playground.c.stdio.Stdin",
         function(chunk)
         {
           // We've received input data. Add it to the input buffer.
-          Array.prototype.push.apply(this._inBuf, chunk);
+          Array.prototype.push.apply(this._inBuf, chunk.toString().split(""));
           
           // Notify our superclass that data is available
           this.fireDataEvent("inputdata");
