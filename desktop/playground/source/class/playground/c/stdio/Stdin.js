@@ -51,6 +51,12 @@ qx.Class.define("playground.c.stdio.Stdin",
           // Notify our superclass that data is available
           this.fireDataEvent("inputdata");
         }.bind(this));
+      process.stdin.on(
+        "close",
+        function()
+        {
+          process.stdin._bEof = true;
+        });
     }
   },
   
@@ -88,7 +94,26 @@ qx.Class.define("playground.c.stdio.Stdin",
     // overridden
     _isEof : function()
     {
-      return this._terminal.getEof();
+      try
+      {
+        return this._terminal.getEof();
+      }
+      catch(e)
+      {
+        // No terminal. See if we've set the 'eof' flag.
+        return process.stdin._bEof;
+      }
+    },
+    
+    /**
+     * Inject input into this stream
+     * 
+     * @param data {String}
+     *   String to inject as input to stdin
+     */
+    inject : function(data)
+    {
+      Array.prototype.push.apply(this._inBuf, data);
     }
   }
 });
