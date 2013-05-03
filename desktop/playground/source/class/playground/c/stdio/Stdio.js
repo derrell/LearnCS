@@ -343,9 +343,7 @@ qx.Class.define("playground.c.stdio.Stdio",
 
           success(
             {
-              value       : (ch == playground.c.stdio.AbstractFile.EOF ?
-                             playground.c.stdio.AbstractFile.EOF :
-                             ch.charCodeAt(0)),
+              value       : typeof ch == "string" ? ch.charCodeAt(0) : ch,
               specAndDecl : [ specOrDecl ]
             });
         },
