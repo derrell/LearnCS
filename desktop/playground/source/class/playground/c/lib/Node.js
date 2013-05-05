@@ -1692,15 +1692,15 @@ qx.Class.define("playground.c.lib.Node",
          *   1: init_declarator_list
          */
 
-        // Save specifiers because we'll overwrite it.
+        // Save data members which we'll overwrite
+        oldId = data.id;
+        oldEntry = data.entry;
         oldSpecifiers = data.specifiers;
+        oldSpecAndDecl = data.specAndDecl;
 
         // Create our own data object with a new specifier for this declaration
-        data = 
-          {
-            id : "declaration",
-            specifiers : new playground.c.lib.Specifier(this)
-          };
+        data.id = "declaration";
+        data.specifiers = new playground.c.lib.Specifier(this);
 
         // Process the specifiers
         this.children[0].process(
@@ -1714,7 +1714,11 @@ qx.Class.define("playground.c.lib.Node",
               bExecuting,
               function()
               {
+                // Restore data members
+                data.id = oldId;
+                data.entry = oldEntry;
                 data.specifiers = oldSpecifiers;
+                data.specAndDecl = oldSpecAndDecl;
                 success();
               }.bind(this),
               failure);
@@ -2765,17 +2769,16 @@ qx.Class.define("playground.c.lib.Node",
         if (! bExecuting)
         {
           // Save old specifiers and specAndDecl before overwriting them
+          oldId = data.id;
+          oldEntry = data.entry;
           oldSpecifiers = data.specifiers;
           oldSpecAndDecl = data.specAndDecl;
 
           // Create our own data object with a new specifier for this
           // declaration
-          data = 
-            {
-              id : "function_definition",
-              specifiers  : new playground.c.lib.Specifier(this),
-              specAndDecl : []
-            };
+          data.id = "function_definition";
+          data.specifiers = new playground.c.lib.Specifier(this);
+          data.specAndDecl = [];
 
           // Process the children
           this.__processSubnodes(
@@ -2786,7 +2789,9 @@ qx.Class.define("playground.c.lib.Node",
               // Add the specifier to the end of the specifier/declarator list
               data.specAndDecl.push(data.specifiers);
 
-              // Restore specifiers and specAndDecl
+              // Restore saved data members
+              data.id = oldId;
+              data.entry = oldEntry;
               data.specifiers = oldSpecifiers;
               data.specAndDecl = oldSpecAndDecl;
 

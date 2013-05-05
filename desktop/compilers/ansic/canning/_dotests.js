@@ -222,6 +222,8 @@ var tests =
  {
    var             cmd;
 
+   console.error("Running test: " + test.name);
+
    var putsAndNextTest = function(error, stdout, stderr)
    {
      if (error)
