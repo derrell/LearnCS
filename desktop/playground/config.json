@@ -67,7 +67,7 @@
 
       "environment" :
       {
-        "qx.debug" : true,
+//        "qx.debug" : true,
         "qx.debug.ui.queue" : true,
         "qx.nativeScrollBars" : true,
         "qx.allowUrlSettings" : true,
