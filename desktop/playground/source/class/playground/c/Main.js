@@ -35,6 +35,9 @@ if (typeof qx === "undefined")
   require("./stdio/RemoteFile.js");
   require("./stdio/StringIn.js");
   require("./stdio/StringOut.js");
+  require("./builtin/Stdlib.js");
+  require("./builtin/Ctype.js");
+  require("./builtin/Math.js");
 }
 
 qx.Class.define("playground.c.Main",
@@ -93,13 +96,13 @@ qx.Class.define("playground.c.Main",
         // If a root directory is specified...
         if (argv["rootdir"])
         {
-          playground.c.stdio.RemoteFile.ROOTDIR = argv["rootdir"];
+          playground.c.stdio.RemoteFile.ROOTDIR = argv["rootdir"].toString();
         }
         
         // If a command line was specified...
         if (argv["cmdline"])
         {
-          playground.c.Main.commandLine = argv["cmdline"];
+          playground.c.Main.commandLine = argv["cmdline"].toString();
         }
       }
       else
@@ -490,12 +493,12 @@ qx.Class.define("playground.c.Main",
             catch(e)
             {
               // Not a GUI environment
-              cmdLine = playground.c.Main.commandLine || "";
+              cmdLine = playground.c.Main.commandLine;
             }
             
             // Replace each occurrence of backslash followed by a space with
             // the non-ASCII character code 0xff.
-            cmdLine = cmdLine.replace(/\\ /g, "\377");
+            cmdLine = (cmdLine || "").replace(/\\ /g, "\377");
 
             // Split the command line at remaining (non-escaped) spaces
             argv = cmdLine ? cmdLine.split(/\s+/) : [];

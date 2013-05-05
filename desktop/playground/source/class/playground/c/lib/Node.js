@@ -442,6 +442,7 @@ qx.Class.define("playground.c.lib.Node",
       var             bOldIsInitializer;
       var             oldArgs;
       var             oldId;
+      var             oldEntry;
       var             oldSpecifiers;
       var             oldSpecAndDecl;
       var             process = playground.c.lib.Node.process;
@@ -1691,6 +1692,9 @@ qx.Class.define("playground.c.lib.Node",
          *   1: init_declarator_list
          */
 
+        // Save specifiers because we'll overwrite it.
+        oldSpecifiers = data.specifiers;
+
         // Create our own data object with a new specifier for this declaration
         data = 
           {
@@ -1705,7 +1709,15 @@ qx.Class.define("playground.c.lib.Node",
           function()
           {
             // Process the declarators
-            this.children[1].process(data, bExecuting, success, failure);
+            this.children[1].process(
+              data, 
+              bExecuting,
+              function()
+              {
+                data.specifiers = oldSpecifiers;
+                success();
+              }.bind(this),
+              failure);
           }.bind(this),
           failure);
         break;
@@ -2752,6 +2764,10 @@ qx.Class.define("playground.c.lib.Node",
         // If we're not executing yet...
         if (! bExecuting)
         {
+          // Save old specifiers and specAndDecl before overwriting them
+          oldSpecifiers = data.specifiers;
+          oldSpecAndDecl = data.specAndDecl;
+
           // Create our own data object with a new specifier for this
           // declaration
           data = 
@@ -2769,6 +2785,10 @@ qx.Class.define("playground.c.lib.Node",
             {
               // Add the specifier to the end of the specifier/declarator list
               data.specAndDecl.push(data.specifiers);
+
+              // Restore specifiers and specAndDecl
+              data.specifiers = oldSpecifiers;
+              data.specAndDecl = oldSpecAndDecl;
 
               // Pop this function's symbol table from the stack
               playground.c.lib.Symtab.popStack();
@@ -3109,6 +3129,9 @@ qx.Class.define("playground.c.lib.Node",
 
         if (! bExecuting)
         {
+          // Save specAndDecl before overwriting it
+          oldSpecAndDecl = data.specAndDecl;
+
           // Create a list to hold specifiers and declarators
           data.specAndDecl = [];
 
@@ -3126,9 +3149,8 @@ qx.Class.define("playground.c.lib.Node",
               // declarators
               data.entry.calculateOffset();
 
-              // We no longer need our reference to the specifier/declarator
-              // list. The symbol table entry still references it
-              delete data.specAndDecl;
+              // Restore specAndDecl
+              data.specAndDecl = specAndDecl;
 
               success();
             }.bind(this),
@@ -4059,11 +4081,30 @@ qx.Class.define("playground.c.lib.Node",
          *   ...
          */
 
-        // We're finished with declarations. Ensure there's no data.entry so
-        // that symbols don't get defined in "identifier"
+        // We're finished with declarations. Ensure that symbols don't get
+        // defined in "identifier". First, save current data members
+        oldEntry = data.entry;
+        oldSpecifiers = data.specifiers;
+        oldSpecAndDecl = data.specAndDecl;
+        
+        // Now overwrite (delete) them
         delete data.entry;
+        delete data.specifiers;
+        delete data.specAndDecl;
 
-        this.__processSubnodes(data, bExecuting, success, failure);
+        this.__processSubnodes(
+          data,
+          bExecuting,
+          function()
+          {
+            // Restore overwritten data members
+            data.entry = oldEntry;
+            data.specifiers = oldSpecifiers;
+            data.specAndDecl = oldSpecAndDecl;
+
+            success();
+          }.bind(this),
+          failure);
         break;
 
       case "static" :
@@ -4663,13 +4704,15 @@ throw new Error("broken code here!");
           break;
         }
 
+        // save data elements before overwriting them
+        oldId = data.id;
+        oldSpecifiers = data.specifiers;
+        oldSpecAndDecl = data.specAndDecl;
+
         // Create our own data object with a new specifier for this declaration
-        data = 
-          {
-            id : "type_name",
-            specifiers : new playground.c.lib.Specifier(this),
-            specAndDecl : []
-          };
+        data.id = "type_name";
+        data.specifiers = new playground.c.lib.Specifier(this);
+        data.specAndDecl = [];
 
         // Process the specifier_qualifier_list
         this.children[0].process(
@@ -4695,6 +4738,11 @@ throw new Error("broken code here!");
                                                                     specAndDecl,
                                                                     0)
                   };
+
+                // Restore data elements
+                data.id = oldId;
+                data.specifiers = oldSpecifiers;
+                data.specAndDecl = oldSpecAndDecl;
 
                 success(this.data);
               }.bind(this),
