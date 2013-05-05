@@ -1,0 +1,333 @@
+% nodejs ../ansic.js p001-helloworld.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+Hello World
+>>> Program exited with exit code 0
+
+% nodejs ../ansic.js p002-value6.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+6
+>>> Program exited with exit code 0
+
+% nodejs ../ansic.js p003-charP.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+P
+>>> Program exited with exit code 0
+
+% echo '42' |  nodejs ../ansic.js p004-scanf.c --rootdir=/home/derrell/ME
+42
+STDOUT: 
+>>> Running program
+Please enter a number: You entered 42
+>>> Program exited with exit code 0
+
+% echo '23 42' |  nodejs ../ansic.js p005-sum-of-two-values.c --rootdir=/home/derrell/ME
+23 42
+STDOUT: 
+>>> Running program
+Please enter two numbers, separated by whitespace: The sum of 23 and 42 is 65
+>>> Program exited with exit code 0
+
+% nodejs ../ansic.js p006-fscanf.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+Found value 23
+>>> Program exited with exit code 0
+
+% echo '99' |  nodejs ../ansic.js p007-bigger-than-100.c --rootdir=/home/derrell/ME
+99
+STDOUT: 
+>>> Running program
+Please enter a number: The number is not bigger than 100
+>>> Program exited with exit code 0
+
+% echo '100' |  nodejs ../ansic.js p007-bigger-than-100.c --rootdir=/home/derrell/ME
+100
+STDOUT: 
+>>> Running program
+Please enter a number: The number is not bigger than 100
+>>> Program exited with exit code 0
+
+% echo '101' |  nodejs ../ansic.js p007-bigger-than-100.c --rootdir=/home/derrell/ME
+101
+STDOUT: 
+>>> Running program
+Please enter a number: The number is bigger than 100
+>>> Program exited with exit code 0
+
+% nodejs ../ansic.js p008-horizontal-line.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+***********************
+>>> Program exited with exit code 0
+
+% nodejs ../ansic.js p009-using-for-loop.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+2 4 6 8 10 
+>>> Program exited with exit code 0
+
+% nodejs ../ansic.js p010-sum-of-twenty.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+The sum is 210
+>>> Program exited with exit code 0
+
+% echo '-1' |  nodejs ../ansic.js p011-equal-to-zero.c --rootdir=/home/derrell/ME
+-1
+STDOUT: 
+>>> Running program
+Please enter a number: The number is not equal to zero.
+>>> Program exited with exit code 0
+
+% echo '0' |  nodejs ../ansic.js p011-equal-to-zero.c --rootdir=/home/derrell/ME
+0
+STDOUT: 
+>>> Running program
+Please enter a number: The number is equal to zero.
+>>> Program exited with exit code 0
+
+% echo '1' |  nodejs ../ansic.js p011-equal-to-zero.c --rootdir=/home/derrell/ME
+1
+STDOUT: 
+>>> Running program
+Please enter a number: The number is not equal to zero.
+>>> Program exited with exit code 0
+
+% echo '-1' |  nodejs ../ansic.js p012-pos-neg-zero.c --rootdir=/home/derrell/ME
+-1
+STDOUT: 
+>>> Running program
+Please enter a number: The number is negative.
+>>> Program exited with exit code 0
+
+% echo '0' |  nodejs ../ansic.js p012-pos-neg-zero.c --rootdir=/home/derrell/ME
+0
+STDOUT: 
+>>> Running program
+Please enter a number: The number is zero.
+>>> Program exited with exit code 0
+
+% echo '1' |  nodejs ../ansic.js p012-pos-neg-zero.c --rootdir=/home/derrell/ME
+1
+STDOUT: 
+>>> Running program
+Please enter a number: The number is positive.
+>>> Program exited with exit code 0
+
+% echo '3' |  nodejs ../ansic.js p013-abs-function.c --rootdir=/home/derrell/ME
+3
+STDOUT: 
+>>> Running program
+Please enter a number: The absolute value of 3 is 3
+>>> Program exited with exit code 0
+
+% echo '-4' |  nodejs ../ansic.js p013-abs-function.c --rootdir=/home/derrell/ME
+-4
+STDOUT: 
+>>> Running program
+Please enter a number: The absolute value of -4 is 4
+>>> Program exited with exit code 0
+
+% echo '2' |  nodejs ../ansic.js p015-sqrt-function.c --rootdir=/home/derrell/ME
+2
+STDOUT: 
+>>> Running program
+Please enter a number: The square root of 2.000000 is 1.414214
+>>> Program exited with exit code 0
+
+% nodejs ../ansic.js p016-sine-atof.c --rootdir=/home/derrell/ME --cmdline='3.1415926'
+STDOUT: 
+>>> Running program
+The sine of 3.141593 is 0.000000
+>>> Program exited with exit code 0
+
+% nodejs ../ansic.js p016-sine-atof.c --rootdir=/home/derrell/ME --cmdline='1.570796'
+STDOUT: 
+>>> Running program
+The sine of 1.570796 is 1.000000
+>>> Program exited with exit code 0
+
+% echo 'hello world.' |  nodejs ../ansic.js p017-count-characters.c --rootdir=/home/derrell/ME
+hello world.
+STDOUT: 
+>>> Running program
+Please enter characters, and then press EOF: 
+Received 13 characters
+>>> Program exited with exit code 0
+
+% echo '8 5' |  nodejs ../ansic.js p018-solidbox.c --rootdir=/home/derrell/ME
+8 5
+STDOUT: 
+>>> Running program
+Please enter the box width: Please enter the box height: ********
+********
+********
+********
+********
+
+And there you have it, folks: a box!
+
+>>> Program exited with exit code 0
+
+% echo '5 8' |  nodejs ../ansic.js p019-area-of-rectangle.c --rootdir=/home/derrell/ME
+5 8
+STDOUT: 
+>>> Running program
+Please enter the width: Please enter the height: The area of a 5.00 x 8.00 rectangle is 40.000000
+>>> Program exited with exit code 0
+
+% echo '2.3 8' |  nodejs ../ansic.js p019-area-of-rectangle.c --rootdir=/home/derrell/ME
+2.3 8
+STDOUT: 
+>>> Running program
+Please enter the width: Please enter the height: The area of a 2.30 x 8.00 rectangle is 18.400000
+>>> Program exited with exit code 0
+
+% echo '1' |  nodejs ../ansic.js p020-area-of-circle.c --rootdir=/home/derrell/ME
+1
+STDOUT: 
+>>> Running program
+Please enter the radius of the circle: The area of a circle of radius 1.00 is 3.14
+>>> Program exited with exit code 0
+
+% echo '2' |  nodejs ../ansic.js p020-area-of-circle.c --rootdir=/home/derrell/ME
+2
+STDOUT: 
+>>> Running program
+Please enter the radius of the circle: The area of a circle of radius 2.00 is 12.57
+>>> Program exited with exit code 0
+
+% nodejs ../ansic.js p021-argv.c --rootdir=/home/derrell/ME --cmdline='hello world'
+STDOUT: 
+>>> Running program
+Argument 0: a.out
+Argument 1: hello
+Argument 2: world
+>>> Program exited with exit code 0
+
+% nodejs ../ansic.js p022-reverse-command-line.c --rootdir=/home/derrell/ME --cmdline='hello world'
+STDOUT: 
+>>> Running program
+Argument 2: world
+Argument 1: hello
+Argument 0: a.out
+>>> Program exited with exit code 0
+
+% nodejs ../ansic.js p023-scanf-returns-what.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+5
+10
+15
+20
+25
+End of input
+>>> Program exited with exit code 0
+
+% nodejs ../ansic.js p024-one-dim-array.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 
+>>> Program exited with exit code 0
+
+% nodejs ../ansic.js p025-sum-of-bunch.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+The sum is 75
+>>> Program exited with exit code 0
+
+% nodejs ../ansic.js p026-fgetc-and-toupper.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+THIS IS A TEST 23 42 !@#$
+
+And that's all, folks.
+>>> Program exited with exit code 0
+
+% echo ' 2 3 4 5 6 7 8 9 10 11 12 13 ' |  nodejs ../ansic.js p027-reverse.c --rootdir=/home/derrell/ME
+ 2 3 4 5 6 7 8 9 10 11 12 13 
+STDOUT: 
+>>> Running program
+Enter 10 numbers separated by spaces or newlines: 11 10 9 8 7 6 5 4 3 2 
+>>> Program exited with exit code 0
+
+% nodejs ../ansic.js p028-digit-sum.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+The digit sum of 1233 is 9
+The digit sum of 36 is 9
+The digit sum of 9 is 9
+The digit sum of 111111111 is 9
+>>> Program exited with exit code 0
+
+% nodejs ../ansic.js p029-average.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+The average is 2.500000
+>>> Program exited with exit code 0
+
+% echo '8 5' |  nodejs ../ansic.js p030-unfilledbox.c --rootdir=/home/derrell/ME
+8 5
+STDOUT: 
+>>> Running program
+Please enter the box width: Please enter the box height: ********
+*      *
+*      *
+*      *
+********
+
+And there you have it, folks: an unfilled box!
+
+>>> Program exited with exit code 0
+
+% nodejs ../ansic.js p038-blank-removal.c --rootdir=/home/derrell/ME --cmdline='/canning/p038-input'
+STDOUT: 
+>>> Running program
+Let's go to the movies.
+>>> Program exited with exit code 0
+
+% echo '5' |  nodejs ../ansic.js p054-fibonacci-iterative.c --rootdir=/home/derrell/ME
+5
+STDOUT: 
+>>> Running program
+Which number in the Fibonacci sequence would you like? The Fibonacci numbered 5 is 5
+Which number in the Fibonacci sequence would you like? >>> Program exited with exit code 0
+
+% echo '8' |  nodejs ../ansic.js p054-fibonacci-iterative.c --rootdir=/home/derrell/ME
+8
+STDOUT: 
+>>> Running program
+Which number in the Fibonacci sequence would you like? The Fibonacci numbered 8 is 21
+Which number in the Fibonacci sequence would you like? >>> Program exited with exit code 0
+
+% echo '12' |  nodejs ../ansic.js p054-fibonacci-iterative.c --rootdir=/home/derrell/ME
+12
+STDOUT: 
+>>> Running program
+Which number in the Fibonacci sequence would you like? The Fibonacci numbered 12 is 144
+Which number in the Fibonacci sequence would you like? >>> Program exited with exit code 0
+
+% echo '5' |  nodejs ../ansic.js p055-fibonacci-recursive.c --rootdir=/home/derrell/ME
+5
+STDOUT: 
+>>> Running program
+Which number in the Fibonacci sequence would you like? The Fibonacci numbered 5 is 5
+Which number in the Fibonacci sequence would you like? >>> Program exited with exit code 0
+
+% echo '8' |  nodejs ../ansic.js p055-fibonacci-recursive.c --rootdir=/home/derrell/ME
+8
+STDOUT: 
+>>> Running program
+Which number in the Fibonacci sequence would you like? The Fibonacci numbered 8 is 21
+Which number in the Fibonacci sequence would you like? >>> Program exited with exit code 0
+
+% echo '12' |  nodejs ../ansic.js p055-fibonacci-recursive.c --rootdir=/home/derrell/ME
+12
+STDOUT: 
+>>> Running program
+Which number in the Fibonacci sequence would you like? The Fibonacci numbered 12 is 144
+Which number in the Fibonacci sequence would you like? >>> Program exited with exit code 0
+
