@@ -236,6 +236,26 @@ qx.Class.define("playground.c.Main",
       }
     },
 
+    /**
+     * (Re-)initialize to run the user's program.
+     */
+    reinit : function()
+    {
+        // Handle stdio clean-up
+        playground.c.stdio.AbstractFile.onProgramEnd();
+
+        // Turn off single-step mode, and reset previous line for
+        // running the program again.
+        playground.c.lib.Node._bStep = false;
+        playground.c.lib.Node._prevLine = 0;                  
+
+        // Restore the previous frame pointer
+        symtab.restoreFramePointer();
+
+        // Restore the original stack pointer
+        mem.setReg("SP", "unsigned int", origSp);
+    },
+
     process : function(root, argv)
     {
       try
@@ -279,6 +299,9 @@ qx.Class.define("playground.c.Main",
       var             str;
       var             Memory = playground.c.machine.Memory;
       var             mem = Memory.getInstance();
+
+      // Re-initialize the environment
+      playground.c.Main.reinit();
 
       // Initialize memory
       mem.initAll();
