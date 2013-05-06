@@ -375,6 +375,23 @@ qx.Class.define("playground.view.Editor",
     },
 
     /**
+     * Scroll to a specified line
+     * 
+     * @param line {Number}
+     *   The line to scroll to
+     */
+    scrollToLine : function(line) {
+      this.__ace.scrollToLine(
+        line,
+        true,
+        true,
+        function()
+        {
+          // animation has completed. do nothing, though.
+        });
+    },
+
+    /**
      * Returns the current set code of the editor.
      * @return {String} The current set text.
      */

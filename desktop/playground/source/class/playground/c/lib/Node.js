@@ -569,6 +569,9 @@ qx.Class.define("playground.c.lib.Node",
 
             // Mark the line we're stopped at
             editor.addGutterDecoration(this.line - 1, "current-line");
+            
+            // Scroll to this line.
+            editor.scrollToLine(this.line - 1);
 
             // Reset unwind count, since we're unwinding by awaiting an event
             playground.c.lib.Node._unwindCount =
