@@ -2115,8 +2115,12 @@ qx.Class.define("playground.c.lib.Node",
               this.children[1].process(
                 data,
                 bExecuting,
-                function(value)
+                function(v)
                 {
+                  var             value;
+                  
+                  value = this.getExpressionValue(v, data);
+
                   if (value.value)
                   {
                     do_while_main(succ, fail);
