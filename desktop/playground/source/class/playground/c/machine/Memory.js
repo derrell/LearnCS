@@ -150,6 +150,19 @@ qx.Class.define("playground.c.machine.Memory",
       "R1"  : null,
       "R2"  : null,
       "R3"  : null
+    },
+    
+    initRegs : function()
+    {
+      var             statics = playground.c.machine.Memory;
+
+      statics.register.PC  = statics.info.reg.start + (0 * statics.WORDSIZE);
+      statics.register.SP  = statics.info.reg.start + (1 * statics.WORDSIZE);
+      statics.register.ESP = statics.info.reg.start + (2 * statics.WORDSIZE);
+      statics.register.FP  = statics.info.reg.start + (3 * statics.WORDSIZE);
+      statics.register.R1  = statics.info.reg.start + (4 * statics.WORDSIZE);
+      statics.register.R2  = statics.info.reg.start + (5 * statics.WORDSIZE);
+      statics.register.R3  = statics.info.reg.start + (6 * statics.WORDSIZE);
     }
   },
   
@@ -199,6 +212,9 @@ qx.Class.define("playground.c.machine.Memory",
             name : "Command line arguments"
           }
         ];
+      
+      // Initialize register values
+      playground.c.machine.Memory.initRegs();
     },
 
     /**
@@ -1055,13 +1071,6 @@ qx.Class.define("playground.c.machine.Memory",
     statics.WORDSIZE = statics.typeSize["int"];
 
     statics.info.reg.length = statics.NUM_REGS * statics.WORDSIZE;
-
-    statics.register.PC  = statics.info.reg.start + (0 * statics.WORDSIZE);
-    statics.register.SP  = statics.info.reg.start + (1 * statics.WORDSIZE);
-    statics.register.ESP = statics.info.reg.start + (2 * statics.WORDSIZE);
-    statics.register.FP  = statics.info.reg.start + (3 * statics.WORDSIZE);
-    statics.register.R1  = statics.info.reg.start + (4 * statics.WORDSIZE);
-    statics.register.R2  = statics.info.reg.start + (5 * statics.WORDSIZE);
-    statics.register.R3  = statics.info.reg.start + (6 * statics.WORDSIZE);
+    statics.initRegs();
   }
 });
