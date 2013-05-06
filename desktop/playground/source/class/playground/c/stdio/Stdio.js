@@ -132,7 +132,7 @@ qx.Class.define("playground.c.stdio.Stdio",
                 }
               };
 
-            // Add printf
+            // Add this symbol to the symbol table
             entry = rootSymtab.add(info.name, 0, false);
             if (! entry)
             {
