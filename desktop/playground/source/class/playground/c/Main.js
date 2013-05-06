@@ -241,19 +241,15 @@ qx.Class.define("playground.c.Main",
      */
     reinit : function()
     {
-        // Handle stdio clean-up
-        playground.c.stdio.AbstractFile.onProgramEnd();
+      var             mem = playground.c.machine.Memory.getInstance();
 
-        // Turn off single-step mode, and reset previous line for
-        // running the program again.
-        playground.c.lib.Node._bStep = false;
-        playground.c.lib.Node._prevLine = 0;                  
+      // Handle stdio clean-up
+      playground.c.stdio.AbstractFile.onProgramEnd();
 
-        // Restore the previous frame pointer
-        symtab.restoreFramePointer();
-
-        // Restore the original stack pointer
-        mem.setReg("SP", "unsigned int", origSp);
+      // Turn off single-step mode, and reset previous line for
+      // running the program again.
+      playground.c.lib.Node._bStep = false;
+      playground.c.lib.Node._prevLine = 0;                  
     },
 
     process : function(root, argv)
