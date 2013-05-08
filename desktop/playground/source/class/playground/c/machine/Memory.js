@@ -115,13 +115,13 @@ qx.Class.define("playground.c.machine.Memory",
       "gas" :                     // Globals and Statics
       {
         start  : 10 * 1024,
-        length : 64
+        length : 256
       },
 
       "heap" :                    // Heap
       {
         start  : 12 * 1024,
-        length : 64
+        length : 256
       },
 
       "rts" :
@@ -334,6 +334,55 @@ qx.Class.define("playground.c.machine.Memory",
      */
     get : function(addr, type)
     {
+      var             size;
+      var             info = playground.c.machine.Memory.info;
+      var             WORDSIZE = playground.c.machine.Memory.WORDSIZE;
+
+      // Determine size to be accessed
+      size = playground.c.machine.Memory.typeSize[type];
+
+      // Ensure we are accessing a valid region of memory
+      if (! ((addr >= info.defs.start && 
+              addr < info.defs.start + info.defs.length) ||
+             (addr >= info.gas.start && 
+              addr < info.gas.start + info.gas.length) ||
+             (addr >= info.heap.start && 
+              addr < info.heap.start + info.heap.length) ||
+             (addr >= info.rts.start &&
+              addr < info.rts.start  + info.rts.length)))
+      {
+        throw new Error("Invalid memory access at " + 
+                        addr.toString(16) + ": " +
+                        "Address to read from is not within the " +
+                        "'globals and statics', 'heap', or " +
+                        "'run time stack' regions of memory.");
+      }
+
+      // Ensure that the access remains in one region of memory
+      if ((addr >= info.defs.start && 
+           addr < info.defs.start + info.defs.length &&
+           addr + size > info.defs.start + info.defs.length) ||
+
+          (addr >= info.gas.start && 
+           addr < info.gas.start + info.gas.length &&
+           addr + size > info.gas.start + info.gas.length) ||
+
+          (addr >= info.heap.start && 
+           addr < info.heap.start + info.heap.length &&
+           addr + size > info.heap.start + info.heap.length) ||
+
+          (addr >= info.rts.start &&
+           addr < info.rts.start  + info.rts.length &&
+           addr + size > info.rts.start + info.rts.length))
+      {
+        throw new Error("Invalid memory access at " + 
+                        addr.toString(16) + ": " +
+                        "Size of object being assigned causes a " +
+                        "read beyond the " +
+                        "bounds of its 'globals and statics', 'heap', or " +
+                        "'run time stack' region of memory.");
+      }
+
       // Get an appropriate view into the memory, based on the type, and return
       // that value.
       return this._getByType(type, addr)[0];
@@ -354,6 +403,55 @@ qx.Class.define("playground.c.machine.Memory",
      */
     set : function(addr, type, value)
     {
+      var             size;
+      var             info = playground.c.machine.Memory.info;
+      var             WORDSIZE = playground.c.machine.Memory.WORDSIZE;
+
+      // Determine size to be accessed
+      size = playground.c.machine.Memory.typeSize[type];
+
+      // Ensure we are accessing a valid region of memory
+      if (! ((addr >= info.defs.start && 
+              addr < info.defs.start + info.defs.length) ||
+             (addr >= info.gas.start && 
+              addr < info.gas.start + info.gas.length) ||
+             (addr >= info.heap.start && 
+              addr < info.heap.start + info.heap.length) ||
+             (addr >= info.rts.start &&
+              addr < info.rts.start  + info.rts.length)))
+      {
+        throw new Error("Invalid memory access at " + 
+                        addr.toString(16) + ": " +
+                        "Address to write to is not within the " +
+                        "'globals and statics', 'heap', or " +
+                        "'run time stack' regions of memory.");
+      }
+
+      // Ensure that the access remains in one region of memory
+      if ((addr >= info.defs.start && 
+           addr < info.defs.start + info.defs.length &&
+           addr + size > info.defs.start + info.defs.length) ||
+
+          (addr >= info.gas.start && 
+           addr < info.gas.start + info.gas.length &&
+           addr + size > info.gas.start + info.gas.length) ||
+
+          (addr >= info.heap.start && 
+           addr < info.heap.start + info.heap.length &&
+           addr + size > info.heap.start + info.heap.length) ||
+
+          (addr >= info.rts.start &&
+           addr < info.rts.start  + info.rts.length &&
+           addr + size > info.rts.start + info.rts.length))
+      {
+        throw new Error("Invalid memory access at " + 
+                        addr.toString(16) + ": " +
+                        "Size of object being assigned causes a " +
+                        "write beyond the " +
+                        "bounds of its 'globals and statics', 'heap', or " +
+                        "'run time stack' region of memory.");
+      }
+
       // Get an appropriate view into the memory, based on the type, and save
       // the value at that address
       this._getByType(type, addr)[0] = value;
