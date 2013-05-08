@@ -209,8 +209,11 @@ qx.Class.define("playground.view.Blockly",
      *   The current set text.
      *
      * @lint ignoreUndefined(Blockly)
-     * @lint ignoreUndefined(Blockly,Blockly.Xml)
+     * @lint ignoreUndefined(Blockly.Xml)
+     * @lint ignoreUndefined(Blockly.Xml.domToText)
+     * @lint ignoreUndefined(Blockly.Xml.workspaceToDom)
      * @lint ignoreUndefined(Blockly.Generator)
+     * @lint ignoreUndefined(Blockly.Generator.workspaceToCode)
      */
     getCode : function(language) 
     {
@@ -241,6 +244,8 @@ qx.Class.define("playground.view.Blockly",
      *
      * @lint ignoreUndefined(Blockly)
      * @lint ignoreUndefined(Blockly.Xml)
+     * @lint ignoreUndefined(Blockly.Xml.domToWorkspace)
+     * @lint ignoreUndefined(Blockly.Xml.textToDom)
      */
     setCode : function(code) 
     {

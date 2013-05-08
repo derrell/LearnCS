@@ -10,6 +10,11 @@
 /*
 #ignore(require)
 #ignore(process)
+
+#require(playground.c.builtin.Ctype)
+#require(playground.c.builtin.Math)
+#require(playground.c.builtin.Stdlib)
+#require(playground.c.stdio.Stdio)
  */
 
 /**

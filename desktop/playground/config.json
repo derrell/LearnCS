@@ -39,11 +39,13 @@
         "exclude" : ["*"],
         "environment" : [ "variants-and-url-settings" ]
       },
+/* djl
       "include" :
       [
         "${APPLICATION}.*",
         "qx.*"
       ],
+*/
       "library" :
       [
         {
@@ -56,6 +58,7 @@
          "manifest" : "../../lib/uploadwidget/Manifest.json"
         }
       ],
+/* djl
       "exclude" :
       [
         "qx.test.*",
@@ -64,6 +67,7 @@
         "qx.core.MEvents",
         "qx.lang.Core"
       ],
+*/
 
       "environment" :
       {
