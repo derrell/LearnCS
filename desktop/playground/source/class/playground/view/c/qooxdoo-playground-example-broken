@@ -1,0 +1,2348 @@
+/**
+ * A view of C memory
+ *
+ * Copyright (c) 2013 Derrell Lipman
+ * 
+ * License:
+ *   GPL Version 2: http://www.gnu.org/licenses/gpl-2.0.html 
+ */
+
+qx.Class.define("playground.view.c.Memory",
+{
+  extend : qx.ui.list.List,
+
+  construct : function(model)
+  {
+    var             delegate;
+
+    // Call the superclass constructor
+    this.base(arguments, model);
+
+    this.setItemHeight(10);
+
+    this.getPane().addLayer(
+      new qx.ui.virtual.layer.Row("white", "rgb(238, 243, 255)"));
+    this.getPane().addLayer(
+      new qx.ui.virtual.layer.GridLines("horizontal"));
+
+    // Each list item will be one of our Word widgets.
+    delegate =
+      {
+        createItem : function()
+        {
+          return new playground.view.c.MemoryWord();
+        },
+        
+        bindItem : function(controller, item, id)
+        {
+          controller.bindProperty("", "model", null, item, id);
+          controller.bindProperty("addr", "addr", null, item, id);
+          controller.bindProperty("name", "name", null, item, id);
+          controller.bindProperty("type", "type", null, item, id);
+          controller.bindProperty("size", "size", null, item, id);
+          controller.bindProperty("pointer", "pointer", null, item, id);
+          controller.bindProperty("array", "array", null, item, id);
+          controller.bindProperty("param", "param", null, item, id);
+          controller.bindProperty("values[0]", "value0", null, item, id);
+          controller.bindProperty("values[1]", "value1", null, item, id);
+          controller.bindProperty("values[2]", "value2", null, item, id);
+          controller.bindProperty("values[3]", "value3", null, item, id);
+          controller.bindProperty("bytes[0]", "byte0", null, item, id);
+          controller.bindProperty("bytes[1]", "byte1", null, item, id);
+          controller.bindProperty("bytes[2]", "byte2", null, item, id);
+          controller.bindProperty("bytes[3]", "byte3", null, item, id);
+          controller.bindProperty("group", "group", null, item, id);
+        },
+        
+        // Use the defined group name from the model.  There should be a group
+        // name for every item in the model, but if one is not defined, use
+        // null.
+        group : function(model) 
+        {
+          return model.getGroup ? model.getGroup() : null;
+        },
+        
+        // Uses a own group item
+        createGroupItem : function() 
+        {
+          return new qx.ui.form.ListItem();
+        },
+
+        // Configures each item
+        configureGroupItem : function(item) 
+        {
+          item.setBackgroundColor("#3e3e5e");
+          item.setTextColor("white");
+        },
+
+        // Binds the group name to the label and assign an icon dependent on
+        // the group name
+        bindGroupItem : function(controller, item, id) 
+        {
+          controller.bindProperty(null, "label", null, item, id);
+          controller.bindProperty(
+            null,
+            "icon", 
+            {
+              converter : function(data) 
+              {
+                return "resource/playground/images/downarrow-white.png";
+              }
+            },
+            item, id);
+        }
+      };
+    
+    // Specify the delegate
+    this.setDelegate(delegate);
+  },
+
+  members :
+  {
+    __deferredCall : null,
+
+    // overridden
+    _initLayer : function()
+    {
+      this.base(arguments);
+
+      this._layer.addListener("updated", this._onUpdate, this);
+    },
+
+    // overridden
+    _onUpdate : function()
+    {
+      if (this.__deferredCall == null)
+      {
+        this.__deferredCall = new qx.util.DeferredCall(function() {
+          qx.ui.core.queue.Widget.add(this);
+        }, this);
+      }
+      this.__deferredCall.schedule();
+    },
+
+    // overridden
+    syncWidget : function()
+    {
+      var firstRow = this._layer.getFirstRow();
+      var rowSize = this._layer.getRowSizes().length;
+
+      var rowConfig = this.getPane().getRowConfig();
+      var defaultHeight = this.getItemHeight();
+
+      for (var row = firstRow; row < firstRow + rowSize; row++)
+      {
+        var widget = this._layer.getRenderedCellWidget(row, 0);
+        if (widget != null) {
+          rowConfig.setItemSize(row, Math.max(defaultHeight, 
+                                              widget.getSizeHint().height));
+        }
+      }
+    }
+  },
+
+  destruct : function()
+  {
+    if (!qx.core.ObjectRegistry.inShutDown && this.__deferredCall != null)
+    {
+      this.__deferredCall.cancel();
+      this.__deferredCall.dispose();
+    }
+
+    this.__deferredCall = null;
+  }
+});
+
+
+/**
+ * A view of C memory -- one word
+ *
+ * Copyright (c) 2013 Derrell Lipman
+ * 
+ * License:
+ *   GPL Version 2: http://www.gnu.org/licenses/gpl-2.0.html 
+ *
+ * (Derived from the qooxdoo showcase virtuallist example)
+ */
+
+qx.Class.define("playground.view.c.MemoryWord",
+{
+  extend    : qx.ui.container.Composite,
+  implement : [ qx.ui.form.IModel ],
+  include   : [ qx.ui.form.MModelProperty ],
+  
+  /**
+   * Constructor
+   */
+  construct : function()
+  {
+    var             row;
+    var             col;
+    var             gridLayout;
+
+    this.base(arguments);
+    
+/*
+    this.addListener(
+      "changeModel",
+      function(e)
+      {
+        var             model = this.getModel();
+      });
+*/
+
+    // Create a grid layout. Leave some horizontal space between elements.
+    this.gridLayout = new qx.ui.layout.Grid(8, 0);
+    this._setLayout(this.gridLayout);
+    
+    // Set column widths
+    this.gridLayout.setColumnWidth(0, 120);
+    this.gridLayout.setColumnAlign(0, "center", "middle");
+    
+    this.gridLayout.setColumnWidth(1, 40);
+    this.gridLayout.setColumnAlign(1, "center", "middle");
+    
+    for (col = 2; col < 6; col++)
+    {
+      this.gridLayout.setColumnWidth(col, 20);
+    }
+    
+    this.gridLayout.setColumnWidth(6, 100);
+
+    // Pre-create each of the child controls
+    this.getChildControl("name1");
+    this.getChildControl("name2");
+    this.getChildControl("name4");
+    this.getChildControl("type");
+    this.getChildControl("addr1");
+    this.getChildControl("addr2");
+    this.getChildControl("addr4");
+    this.getChildControl("value10");
+    this.getChildControl("value11");
+    this.getChildControl("value12");
+    this.getChildControl("value13");
+    this.getChildControl("value20");
+    this.getChildControl("value22");
+    this.getChildControl("value40");
+    this.getChildControl("byte0");
+    this.getChildControl("byte1");
+    this.getChildControl("byte2");
+    this.getChildControl("byte3");
+    this.getChildControl("group");
+    
+    this.initArray([]);
+  },
+  
+  properties :
+  {
+    addr :
+    {
+      apply : "_applyAddr"
+    },
+    
+    name :
+    {
+      apply : "_applyName"
+    },
+    
+    type :
+    {
+      apply : "_applyType"
+    },
+    
+    size :
+    {
+      apply : "_applySize"
+    },
+    
+    pointer :
+    {
+      init  : 0,
+      apply : "_applyPointer"
+    },
+    
+    array :
+    {
+      deferredInit : true,
+      apply        : "_applyArray"
+    },
+
+    param :
+    {
+      init  : false,
+      apply : "_applyParam"
+    },
+    
+    value0 :
+    {
+      nullable : true,
+      apply    : "_applyValue0"
+    },
+    
+    value1 :
+    {
+      nullable : true,
+      apply    : "_applyValue1"
+    },
+    
+    value2 :
+    {
+      nullable : true,
+      apply    : "_applyValue2"
+    },
+    
+    value3 :
+    {
+      nullable : true,
+      apply    : "_applyValue3"
+    },
+    
+    byte0 :
+    {
+      apply : "_applyByte0"
+    },
+    
+    byte1 :
+    {
+      apply : "_applyByte1"
+    },
+    
+    byte2 :
+    {
+      apply : "_applyByte2"
+    },
+    
+    byte3 :
+    {
+      apply : "_applyByte3"
+    },
+    
+    group :
+    {
+      nullable : true,
+      apply    : "_applyGroup"
+    }
+  },
+
+  members :
+  {
+    // overridden
+    _createChildControlImpl : function(id, hash)
+    {
+      var             control;
+      
+      switch(id)
+      {
+      case "name1" :
+        control = new qx.ui.basic.Label();
+        this._add(control, { row : 0, column : 0 } );
+        break;
+        
+      case "name2" :
+        control = new qx.ui.basic.Label();
+        this._add(control, { row : 1, column : 0 } );
+        break;
+        
+      case "name4" :
+        control = new qx.ui.basic.Label();
+        this._add(control, { row : 2, column : 0 } );
+        break;
+        
+      case "type" :
+        control = new qx.ui.basic.Label();
+        this._add(control, { row : 3, column : 0 } );
+        break;
+        
+      case "addr1" :
+        control = new qx.ui.basic.Label();
+        control.setRich(true);
+        this._add(control, { row : 0, column : 1, rowSpan : 4 } );
+        break;
+        
+      case "addr2" :
+        control = new qx.ui.basic.Label();
+        control.setRich(true);
+        this._add(control, { row : 1, column : 1, rowSpan : 4 } );
+        break;
+        
+      case "addr4" :
+        control = new qx.ui.basic.Label();
+        control.setRich(true);
+        this._add(control, { row : 2, column : 1, rowSpan : 4 } );
+        break;
+        
+      case "value10" :
+        control = new qx.ui.basic.Label();
+        control.setRich(true);
+        this._add(control, { row : 0, column : 2 } );
+        break;
+
+      case "value11" :
+        control = new qx.ui.basic.Label();
+        control.setRich(true);
+        this._add(control, { row : 0, column : 3 } );
+        break;
+
+      case "value12" :
+        control = new qx.ui.basic.Label();
+        control.setRich(true);
+        this._add(control, { row : 0, column : 4 } );
+        break;
+
+      case "value13" :
+        control = new qx.ui.basic.Label();
+        control.setRich(true);
+        this._add(control, { row : 0, column : 5 } );
+        break;
+
+      case "value20" :
+        control = new qx.ui.basic.Label();
+        control.setRich(true);
+        this._add(control, { row : 1, column : 2, colSpan : 2 } );
+        break;
+
+      case "value22" :
+        control = new qx.ui.basic.Label();
+        control.setRich(true);
+        this._add(control, { row : 1, column : 4, colSpan : 2 } );
+        break;
+
+      case "value40" :
+        control = new qx.ui.basic.Label();
+        control.setRich(true);
+        this._add(control, { row : 2, column : 2, colSpan : 4 } );
+        break;
+
+      case "byte0" :
+        control = new qx.ui.basic.Label();
+        this._add(control, { row : 3, column : 2 } );
+        break;
+
+      case "byte1" :
+        control = new qx.ui.basic.Label();
+        this._add(control, { row : 3, column : 3 } );
+        break;
+
+      case "byte2" :
+        control = new qx.ui.basic.Label();
+        this._add(control, { row : 3, column : 4 } );
+        break;
+
+      case "byte3" :
+        control = new qx.ui.basic.Label();
+        this._add(control, {row : 3, column : 5 } );
+        break;
+        
+      case "group" :
+        control = new qx.ui.basic.Label();
+        control.setVisibility("excluded");
+        this._add(control, { row : 0, column : 6, rowSpan : 4 } );
+        break;
+      }
+      
+      // Don't let labels consume too much height
+      if (control instanceof qx.ui.basic.Label)
+      {
+        control.set(
+          {
+            height    : 14,
+            maxHeight : 14,
+            margin    : 0
+          });
+      }
+
+      return control || this.base(arguments, id);
+    },
+    
+    // property apply function
+    _applyAddr : function(value, old)
+    {
+      value =
+        "<span style='font-weight: bold;'>" +
+        ("0000" + value.toString(16)).substr(-4) +
+//        ("00000" + value.toString(10)).substr(-5) +
+        "</span>";
+
+      this.getChildControl("addr1").setValue(value);
+      this.getChildControl("addr2").setValue(value);
+      this.getChildControl("addr4").setValue(value);
+    },
+    
+    // property apply function
+    _applyName : function(value, old)
+    {
+      value = value ? value.toString() : "";
+
+      this.getChildControl("name1").setValue(value);
+      this.getChildControl("name2").setValue(value);
+      this.getChildControl("name4").setValue(value);
+    },
+    
+    // property apply function
+    _applyType : function(value, old)
+    {
+      var             i;
+      var             model;
+      var             pointer;
+      var             array;
+      var             bIsPointer;
+
+      // Retrieve the full model for this word
+      model = this.getModel();
+
+      // Determine the actual type. Record whether it's really a pointer.
+      pointer = model.getPointer();
+      array = model.getArray();
+      bIsPointer = (pointer !== 0 || (model.getParam() && array.length !== 0));
+
+      switch(playground.c.machine.Memory.typeSize[bIsPointer
+                                                  ? "pointer" : value])
+      {
+      case 1:
+        this.getChildControl("addr1").setVisibility("visible");
+        this.getChildControl("addr2").setVisibility("excluded");
+        this.getChildControl("addr4").setVisibility("excluded");
+
+        this.getChildControl("name1").setVisibility("visible");
+        this.getChildControl("name2").setVisibility("excluded");
+        this.getChildControl("name4").setVisibility("excluded");
+
+        this.getChildControl("value10").setVisibility("visible");
+        this.getChildControl("value11").setVisibility("visible");
+        this.getChildControl("value12").setVisibility("visible");
+        this.getChildControl("value13").setVisibility("visible");
+        
+        this.getChildControl("value20").setVisibility("excluded");
+        this.getChildControl("value22").setVisibility("excluded");
+
+        this.getChildControl("value40").setVisibility("excluded");
+        break;
+        
+      case 2:
+        this.getChildControl("addr1").setVisibility("excluded");
+        this.getChildControl("addr2").setVisibility("visible");
+        this.getChildControl("addr4").setVisibility("excluded");
+
+        this.getChildControl("name1").setVisibility("excluded");
+        this.getChildControl("name2").setVisibility("visible");
+        this.getChildControl("name4").setVisibility("excluded");
+
+        this.getChildControl("value10").setVisibility("excluded");
+        this.getChildControl("value11").setVisibility("excluded");
+        this.getChildControl("value12").setVisibility("excluded");
+        this.getChildControl("value13").setVisibility("excluded");
+        
+        this.getChildControl("value20").setVisibility("visible");
+        this.getChildControl("value22").setVisibility("visible");
+
+        this.getChildControl("value40").setVisibility("excluded");
+        break;
+        
+      case 4:
+        this.getChildControl("addr1").setVisibility("excluded");
+        this.getChildControl("addr2").setVisibility("excluded");
+        this.getChildControl("addr4").setVisibility("visible");
+
+        this.getChildControl("name1").setVisibility("excluded");
+        this.getChildControl("name2").setVisibility("excluded");
+        this.getChildControl("name4").setVisibility("visible");
+
+        this.getChildControl("value10").setVisibility("excluded");
+        this.getChildControl("value11").setVisibility("excluded");
+        this.getChildControl("value12").setVisibility("excluded");
+        this.getChildControl("value13").setVisibility("excluded");
+        
+        this.getChildControl("value20").setVisibility("excluded");
+        this.getChildControl("value22").setVisibility("excluded");
+
+        this.getChildControl("value40").setVisibility("visible");
+        break;
+        
+      default:
+        throw new Error("Fix me if new sizes are added");
+      }
+
+      // If there's no name...
+      if (! model.getName())
+      {
+        // ... then we won't display the value
+        this.getChildControl("type").setValue("");
+        return;
+      }
+
+      // If this is not a pointer...
+      if (! bIsPointer && array.getLength() === 0)
+      {
+        // ... then simply display the type value as is
+        this.getChildControl("type").setValue(value);
+        return;
+      }
+
+      // Calculate the type. First add asterisks for each level of indirection
+      if (pointer)
+      {
+        value += " ";
+        for (i = 0; i < pointer; i++)
+        {
+          value += "*";
+        }
+      }
+      
+      // Now add array size. 
+      // Special case: a parameter with empty brackets has length 1, value -1
+      if (array.getLength() > 0)
+      {
+        value += " ";
+        if (array.getLength() == 1 && array.getItem(0) == -1)
+        {
+          value += "[]";
+        }
+        else
+        {
+          for (i = 0; i < array.getLength(); i++)
+          {
+            value += "[" + array.getItem(i) + "]";
+          }
+        }
+      }
+
+      // Display tne calculated type value
+      this.getChildControl("type").setValue(value);
+    },
+    
+    // property apply function
+    _applySize : function(value, old)
+    {
+    },
+    
+    // property apply function
+    _applyPointer : function(value, old)
+    {
+      if (value || (this.getParam() && this.getArray().length > 0))
+      {
+      }
+      else
+      {
+      }
+    },
+    
+    // property apply function
+    _applyArray : function(value, old)
+    {
+      if (this.getPointer() || (this.getParam() && value.length > 0))
+      {
+      }
+      else
+      {
+      }
+    },
+    
+    // property apply function
+    _applyParam : function(value, old)
+    {
+      if (this.getPointer() || (value && this.getArray().length > 0))
+      {
+      }
+      else
+      {
+      }
+    },
+    
+    __fixValue : function(value)
+    {
+      var             model;
+      var             type;
+      var             array;
+      var             param;
+      var             pointer;
+      var             bIsPointer;
+      var             newValue;
+      
+      // If the value is not a number...
+      if (typeof value != "number")
+      {
+        // ... then just display a dash
+        return "-";
+      }
+      
+      // Determine if we are displaying a pointer
+      model = this.getModel();
+      type = model.getType();
+      pointer = model.getPointer();
+      array = model.getArray();
+      param = model.getParam();
+      bIsPointer = (pointer !== 0 || (param && array.length !== 0));
+      
+      // How shall we display this value?
+      if (bIsPointer)
+      {
+        // It's a pointer, so highlight it
+        newValue =
+          "<span style='font-weight: bold; color: blue;'>" + 
+          ("0000" + value.toString(16)).substr(-4) +
+          "</span>";
+      }
+      else if (type == "char")
+      {
+        // It's a character type. Display the character itself, if possible
+        // Is it a normal, printable character?
+        if (value >= 0x20 && value <= 0x7e) // between space and ~
+        {
+          newValue = "'" + String.fromCharCode(value) + "'";
+        }
+        else
+        {
+          // It's something else. See how we want to represent it
+          newValue =
+            ({
+               0  : '\\0',       // null
+               7  : '\\a',       // bell
+               8  : '\\b',       // backspace
+               9  : '\\t',       // tab
+               10 : '\\n',       // newline
+               11 : '\\v',       // vertical tab
+               12 : '\\f',       // form feed
+               13 : '\\r'        // carriage return
+             }[value]);
+          if (typeof newValue != "undefined")
+          {
+            newValue = "'" + newValue + "'";
+          }
+          else
+          {
+            newValue = "";
+          }
+        }
+      }
+      else
+      {
+        // Convert the number to a string
+        newValue = value.toString();
+      }
+
+      return newValue;
+    },
+
+    // property apply function
+    _applyValue0 : function(value, old)
+    {
+      value = this.__fixValue(value);
+      this.getChildControl("value10").setValue(value);
+      this.getChildControl("value20").setValue(value);
+      this.getChildControl("value40").setValue(value);
+    },
+    
+    // property apply function
+    _applyValue1 : function(value, old)
+    {
+      this.getChildControl("value11").setValue(this.__fixValue(value));
+    },
+    
+    // property apply function
+    _applyValue2 : function(value, old)
+    {
+      value = this.__fixValue(value);
+      this.getChildControl("value12").setValue(value);
+      this.getChildControl("value22").setValue(value);
+    },
+    
+    // property apply function
+    _applyValue3 : function(value, old)
+    {
+      this.getChildControl("value13").setValue(this.__fixValue(value));
+    },
+    
+    // property apply function
+    _applyByte0 : function(value, old)
+    {
+      this.getChildControl("byte0").setValue(
+        ("00" + value.toString(16)).substr(-2));
+    },
+    
+    // property apply function
+    _applyByte1 : function(value, old)
+    {
+      this.getChildControl("byte1").setValue(
+        ("00" + value.toString(16)).substr(-2));
+    },
+    
+    // property apply function
+    _applyByte2 : function(value, old)
+    {
+      this.getChildControl("byte2").setValue(
+        ("00" + value.toString(16)).substr(-2));
+    },
+    
+    // property apply function
+    _applyByte3 : function(value, old)
+    {
+      this.getChildControl("byte3").setValue(
+        ("00" + value.toString(16)).substr(-2));
+    },
+    
+    // property apply function
+    _applyGroup : function(value, old)
+    {
+      this.getChildControl("group").setValue(value ? value.toString() : "");
+    }
+  }
+});
+
+/**
+ * Memory class
+ *
+ * Copyright (c) 2013 Derrell Lipman
+ * 
+ * License:
+ *   GPL Version 2: http://www.gnu.org/licenses/gpl-2.0.html 
+ */
+
+qx.Class.define("playground.c.machine.Memory",
+{
+  type      : "singleton",
+  extend    : qx.core.Object,
+  
+  statics :
+  {
+    /** Map of sizes of values, according to their C type */
+    typeSize :
+    {
+      "char"               : 1,
+      "unsigned char"      : 1,
+      "short"              : 2,
+      "unsigned short"     : 2,
+      "int"                : 4,
+      "unsigned int"       : 4,
+      "long"               : 4,
+      "unsigned long"      : 4,
+      "long long"          : 4,
+      "unsigned long long" : 4,
+      "float"              : 4,
+      "double"             : 4,
+      "pointer"            : 2
+    }
+  }
+});
+
+memData =
+[
+  {
+    "addr": 40736,
+    "name": "",
+    "type": "char",
+    "unsigned": "signed",
+    "size": 1,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Command line arguments",
+    "bytes": [
+      112,
+      117,
+      116,
+      0
+    ],
+    "values": [
+      112,
+      117,
+      116,
+      0
+    ]
+  },
+  {
+    "addr": 40732,
+    "name": "",
+    "type": "char",
+    "unsigned": "signed",
+    "size": 1,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Command line arguments",
+    "bytes": [
+      56,
+      45,
+      105,
+      110
+    ],
+    "values": [
+      56,
+      45,
+      105,
+      110
+    ]
+  },
+  {
+    "addr": 40728,
+    "name": "",
+    "type": "char",
+    "unsigned": "signed",
+    "size": 1,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Command line arguments",
+    "bytes": [
+      47,
+      112,
+      48,
+      51
+    ],
+    "values": [
+      47,
+      112,
+      48,
+      51
+    ]
+  },
+  {
+    "addr": 40724,
+    "name": "",
+    "type": "char",
+    "unsigned": "signed",
+    "size": 1,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Command line arguments",
+    "bytes": [
+      110,
+      105,
+      110,
+      103
+    ],
+    "values": [
+      110,
+      105,
+      110,
+      103
+    ]
+  },
+  {
+    "addr": 40720,
+    "name": "argument 1",
+    "type": "char",
+    "unsigned": false,
+    "size": 20,
+    "pointer": 0,
+    "array": [
+      20
+    ],
+    "param": false,
+    "group": "Command line arguments",
+    "value": null,
+    "word": null,
+    "bytes": [
+      47,
+      99,
+      97,
+      110
+    ],
+    "values": [
+      47,
+      99,
+      97,
+      110
+    ]
+  },
+  {
+    "addr": 40716,
+    "name": "",
+    "type": "char",
+    "unsigned": "signed",
+    "size": 1,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Command line arguments",
+    "bytes": [
+      116,
+      0,
+      90,
+      90
+    ],
+    "values": [
+      116,
+      0,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 40712,
+    "name": "argument 0",
+    "type": "char",
+    "unsigned": false,
+    "size": 6,
+    "pointer": 0,
+    "array": [
+      6
+    ],
+    "param": false,
+    "group": "Command line arguments",
+    "value": null,
+    "word": null,
+    "bytes": [
+      97,
+      46,
+      111,
+      117
+    ],
+    "values": [
+      97,
+      46,
+      111,
+      117
+    ]
+  },
+  {
+    "addr": 40708,
+    "name": "argument pointers",
+    "type": "char",
+    "unsigned": false,
+    "size": 4,
+    "pointer": 1,
+    "array": [
+      2
+    ],
+    "param": false,
+    "group": "Command line arguments",
+    "value": null,
+    "word": null,
+    "bytes": [
+      8,
+      159,
+      16,
+      159
+    ],
+    "values": [
+      40712,
+      null,
+      40720,
+      null
+    ]
+  },
+  {
+    "addr": 40704,
+    "name": "",
+    "type": "unsigned int",
+    "unsigned": "signed",
+    "size": 0,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Command line arguments",
+    "bytes": [
+      90,
+      90,
+      90,
+      90
+    ],
+    "values": [
+      "",
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 40700,
+    "name": "argv",
+    "type": "char",
+    "unsigned": false,
+    "size": 2,
+    "pointer": 1,
+    "array": [
+      -1
+    ],
+    "param": true,
+    "group": "Activation Record 0: main",
+    "value": null,
+    "word": null,
+    "bytes": [
+      4,
+      159,
+      90,
+      90
+    ],
+    "values": [
+      40708,
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 40696,
+    "name": "argc",
+    "type": "int",
+    "unsigned": false,
+    "size": 4,
+    "pointer": 0,
+    "array": [],
+    "param": true,
+    "group": "Activation Record 0: main",
+    "value": null,
+    "word": null,
+    "bytes": [
+      2,
+      0,
+      0,
+      0
+    ],
+    "values": [
+      2,
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 40692,
+    "name": "called from line #",
+    "type": "int",
+    "unsigned": false,
+    "size": 4,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Activation Record 0: main",
+    "value": null,
+    "word": null,
+    "bytes": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "values": [
+      0,
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 40688,
+    "name": "hFile",
+    "type": "void",
+    "unsigned": false,
+    "size": 2,
+    "pointer": 1,
+    "array": [],
+    "param": false,
+    "group": "Activation Record 0: main",
+    "value": null,
+    "word": null,
+    "bytes": [
+      10,
+      16,
+      90,
+      90
+    ],
+    "values": [
+      4106,
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 40684,
+    "name": "",
+    "type": "int",
+    "unsigned": "signed",
+    "size": 4,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Activation Record 0: main",
+    "bytes": [
+      15,
+      0,
+      0,
+      0
+    ],
+    "values": [
+      15,
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 40680,
+    "name": "",
+    "type": "int",
+    "unsigned": "signed",
+    "size": 4,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Activation Record 0: main",
+    "bytes": [
+      14,
+      0,
+      0,
+      0
+    ],
+    "values": [
+      14,
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 40676,
+    "name": "",
+    "type": "int",
+    "unsigned": "signed",
+    "size": 4,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Activation Record 0: main",
+    "bytes": [
+      13,
+      0,
+      0,
+      0
+    ],
+    "values": [
+      13,
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 40672,
+    "name": "",
+    "type": "int",
+    "unsigned": "signed",
+    "size": 4,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Activation Record 0: main",
+    "bytes": [
+      12,
+      0,
+      0,
+      0
+    ],
+    "values": [
+      12,
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 40668,
+    "name": "",
+    "type": "int",
+    "unsigned": "signed",
+    "size": 4,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Activation Record 0: main",
+    "bytes": [
+      11,
+      0,
+      0,
+      0
+    ],
+    "values": [
+      11,
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 40664,
+    "name": "",
+    "type": "int",
+    "unsigned": "signed",
+    "size": 4,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Activation Record 0: main",
+    "bytes": [
+      10,
+      0,
+      0,
+      0
+    ],
+    "values": [
+      10,
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 40660,
+    "name": "",
+    "type": "int",
+    "unsigned": "signed",
+    "size": 4,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Activation Record 0: main",
+    "bytes": [
+      9,
+      0,
+      0,
+      0
+    ],
+    "values": [
+      9,
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 40656,
+    "name": "",
+    "type": "int",
+    "unsigned": "signed",
+    "size": 4,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Activation Record 0: main",
+    "bytes": [
+      8,
+      0,
+      0,
+      0
+    ],
+    "values": [
+      8,
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 40652,
+    "name": "",
+    "type": "int",
+    "unsigned": "signed",
+    "size": 4,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Activation Record 0: main",
+    "bytes": [
+      7,
+      0,
+      0,
+      0
+    ],
+    "values": [
+      7,
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 40648,
+    "name": "",
+    "type": "int",
+    "unsigned": "signed",
+    "size": 4,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Activation Record 0: main",
+    "bytes": [
+      6,
+      0,
+      0,
+      0
+    ],
+    "values": [
+      6,
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 40644,
+    "name": "",
+    "type": "int",
+    "unsigned": "signed",
+    "size": 4,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Activation Record 0: main",
+    "bytes": [
+      5,
+      0,
+      0,
+      0
+    ],
+    "values": [
+      5,
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 40640,
+    "name": "",
+    "type": "int",
+    "unsigned": "signed",
+    "size": 4,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Activation Record 0: main",
+    "bytes": [
+      4,
+      0,
+      0,
+      0
+    ],
+    "values": [
+      4,
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 40636,
+    "name": "",
+    "type": "int",
+    "unsigned": "signed",
+    "size": 4,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Activation Record 0: main",
+    "bytes": [
+      3,
+      0,
+      0,
+      0
+    ],
+    "values": [
+      3,
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 40632,
+    "name": "",
+    "type": "int",
+    "unsigned": "signed",
+    "size": 4,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Activation Record 0: main",
+    "bytes": [
+      2,
+      0,
+      0,
+      0
+    ],
+    "values": [
+      2,
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 40628,
+    "name": "value",
+    "type": "int",
+    "unsigned": false,
+    "size": 60,
+    "pointer": 0,
+    "array": [
+      15
+    ],
+    "param": false,
+    "group": "Activation Record 0: main",
+    "value": null,
+    "word": null,
+    "bytes": [
+      1,
+      0,
+      0,
+      0
+    ],
+    "values": [
+      1,
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 40624,
+    "name": "conv",
+    "type": "int",
+    "unsigned": false,
+    "size": 4,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Activation Record 0: main",
+    "value": null,
+    "word": null,
+    "bytes": [
+      1,
+      0,
+      0,
+      0
+    ],
+    "values": [
+      1,
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 40620,
+    "name": "i",
+    "type": "int",
+    "unsigned": false,
+    "size": 4,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Activation Record 0: main",
+    "value": null,
+    "word": null,
+    "bytes": [
+      15,
+      0,
+      0,
+      0
+    ],
+    "values": [
+      15,
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 40616,
+    "name": "",
+    "type": "unsigned int",
+    "unsigned": "signed",
+    "size": 0,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Currently unused stack space",
+    "bytes": [
+      236,
+      158,
+      90,
+      90
+    ],
+    "values": [
+      "",
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 40612,
+    "name": "",
+    "type": "unsigned int",
+    "unsigned": "signed",
+    "size": 0,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Currently unused stack space",
+    "bytes": [
+      24,
+      40,
+      90,
+      90
+    ],
+    "values": [
+      "",
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 12348,
+    "name": "",
+    "type": "unsigned int",
+    "unsigned": "signed",
+    "size": 0,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Heap",
+    "bytes": [
+      90,
+      90,
+      90,
+      90
+    ],
+    "values": [
+      "",
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 12344,
+    "name": "",
+    "type": "unsigned int",
+    "unsigned": "signed",
+    "size": 0,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Heap",
+    "bytes": [
+      90,
+      90,
+      90,
+      90
+    ],
+    "values": [
+      "",
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 12340,
+    "name": "",
+    "type": "unsigned int",
+    "unsigned": "signed",
+    "size": 0,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Heap",
+    "bytes": [
+      90,
+      90,
+      90,
+      90
+    ],
+    "values": [
+      "",
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 12336,
+    "name": "",
+    "type": "unsigned int",
+    "unsigned": "signed",
+    "size": 0,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Heap",
+    "bytes": [
+      90,
+      90,
+      90,
+      90
+    ],
+    "values": [
+      "",
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 12332,
+    "name": "",
+    "type": "unsigned int",
+    "unsigned": "signed",
+    "size": 0,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Heap",
+    "bytes": [
+      90,
+      90,
+      90,
+      90
+    ],
+    "values": [
+      "",
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 12328,
+    "name": "",
+    "type": "unsigned int",
+    "unsigned": "signed",
+    "size": 0,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Heap",
+    "bytes": [
+      90,
+      90,
+      90,
+      90
+    ],
+    "values": [
+      "",
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 12324,
+    "name": "",
+    "type": "unsigned int",
+    "unsigned": "signed",
+    "size": 0,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Heap",
+    "bytes": [
+      90,
+      90,
+      90,
+      90
+    ],
+    "values": [
+      "",
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 12320,
+    "name": "",
+    "type": "unsigned int",
+    "unsigned": "signed",
+    "size": 0,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Heap",
+    "bytes": [
+      90,
+      90,
+      90,
+      90
+    ],
+    "values": [
+      "",
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 12316,
+    "name": "",
+    "type": "unsigned int",
+    "unsigned": "signed",
+    "size": 0,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Heap",
+    "bytes": [
+      90,
+      90,
+      90,
+      90
+    ],
+    "values": [
+      "",
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 12312,
+    "name": "",
+    "type": "unsigned int",
+    "unsigned": "signed",
+    "size": 0,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Heap",
+    "bytes": [
+      90,
+      90,
+      90,
+      90
+    ],
+    "values": [
+      "",
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 12308,
+    "name": "",
+    "type": "unsigned int",
+    "unsigned": "signed",
+    "size": 0,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Heap",
+    "bytes": [
+      90,
+      90,
+      90,
+      90
+    ],
+    "values": [
+      "",
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 12304,
+    "name": "",
+    "type": "unsigned int",
+    "unsigned": "signed",
+    "size": 0,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Heap",
+    "bytes": [
+      90,
+      90,
+      90,
+      90
+    ],
+    "values": [
+      "",
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 12300,
+    "name": "",
+    "type": "unsigned int",
+    "unsigned": "signed",
+    "size": 0,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Heap",
+    "bytes": [
+      90,
+      90,
+      90,
+      90
+    ],
+    "values": [
+      "",
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 12296,
+    "name": "",
+    "type": "unsigned int",
+    "unsigned": "signed",
+    "size": 0,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Heap",
+    "bytes": [
+      90,
+      90,
+      90,
+      90
+    ],
+    "values": [
+      "",
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 12292,
+    "name": "",
+    "type": "unsigned int",
+    "unsigned": "signed",
+    "size": 0,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Heap",
+    "bytes": [
+      90,
+      90,
+      90,
+      90
+    ],
+    "values": [
+      "",
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 12288,
+    "name": "",
+    "type": "unsigned int",
+    "unsigned": "signed",
+    "size": 0,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Heap",
+    "bytes": [
+      90,
+      90,
+      90,
+      90
+    ],
+    "values": [
+      "",
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 10300,
+    "name": "",
+    "type": "unsigned int",
+    "unsigned": "signed",
+    "size": 0,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Globals & Statics",
+    "bytes": [
+      90,
+      90,
+      90,
+      90
+    ],
+    "values": [
+      "",
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 10296,
+    "name": "",
+    "type": "unsigned int",
+    "unsigned": "signed",
+    "size": 0,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Globals & Statics",
+    "bytes": [
+      90,
+      90,
+      90,
+      90
+    ],
+    "values": [
+      "",
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 10292,
+    "name": "",
+    "type": "unsigned int",
+    "unsigned": "signed",
+    "size": 0,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Globals & Statics",
+    "bytes": [
+      90,
+      90,
+      90,
+      90
+    ],
+    "values": [
+      "",
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 10288,
+    "name": "",
+    "type": "unsigned int",
+    "unsigned": "signed",
+    "size": 0,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Globals & Statics",
+    "bytes": [
+      90,
+      90,
+      90,
+      90
+    ],
+    "values": [
+      "",
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 10284,
+    "name": "",
+    "type": "unsigned int",
+    "unsigned": "signed",
+    "size": 0,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Globals & Statics",
+    "bytes": [
+      90,
+      90,
+      90,
+      90
+    ],
+    "values": [
+      "",
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 10280,
+    "name": "",
+    "type": "unsigned int",
+    "unsigned": "signed",
+    "size": 0,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Globals & Statics",
+    "bytes": [
+      90,
+      90,
+      90,
+      90
+    ],
+    "values": [
+      "",
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 10276,
+    "name": "",
+    "type": "unsigned int",
+    "unsigned": "signed",
+    "size": 0,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Globals & Statics",
+    "bytes": [
+      90,
+      90,
+      90,
+      90
+    ],
+    "values": [
+      "",
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 10272,
+    "name": "",
+    "type": "unsigned int",
+    "unsigned": "signed",
+    "size": 0,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Globals & Statics",
+    "bytes": [
+      90,
+      90,
+      90,
+      90
+    ],
+    "values": [
+      "",
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 10268,
+    "name": "",
+    "type": "unsigned int",
+    "unsigned": "signed",
+    "size": 0,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Globals & Statics",
+    "bytes": [
+      90,
+      90,
+      90,
+      90
+    ],
+    "values": [
+      "",
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "addr": 10264,
+    "name": "string at line 40",
+    "type": "char",
+    "unsigned": false,
+    "size": 3,
+    "pointer": 0,
+    "array": [
+      3
+    ],
+    "param": false,
+    "group": "Globals & Statics",
+    "value": null,
+    "word": null,
+    "bytes": [
+      37,
+      100,
+      0,
+      90
+    ],
+    "values": [
+      37,
+      100,
+      0,
+      null
+    ]
+  },
+  {
+    "addr": 10260,
+    "name": "",
+    "type": "char",
+    "unsigned": "signed",
+    "size": 1,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Globals & Statics",
+    "bytes": [
+      112,
+      117,
+      116,
+      0
+    ],
+    "values": [
+      112,
+      117,
+      116,
+      0
+    ]
+  },
+  {
+    "addr": 10256,
+    "name": "",
+    "type": "char",
+    "unsigned": "signed",
+    "size": 1,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Globals & Statics",
+    "bytes": [
+      52,
+      45,
+      105,
+      110
+    ],
+    "values": [
+      52,
+      45,
+      105,
+      110
+    ]
+  },
+  {
+    "addr": 10252,
+    "name": "",
+    "type": "char",
+    "unsigned": "signed",
+    "size": 1,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Globals & Statics",
+    "bytes": [
+      47,
+      112,
+      48,
+      50
+    ],
+    "values": [
+      47,
+      112,
+      48,
+      50
+    ]
+  },
+  {
+    "addr": 10248,
+    "name": "",
+    "type": "char",
+    "unsigned": "signed",
+    "size": 1,
+    "pointer": 0,
+    "array": [],
+    "param": false,
+    "group": "Globals & Statics",
+    "bytes": [
+      110,
+      105,
+      110,
+      103
+    ],
+    "values": [
+      110,
+      105,
+      110,
+      103
+    ]
+  },
+  {
+    "addr": 10244,
+    "name": "string at line 29",
+    "type": "char",
+    "unsigned": false,
+    "size": 20,
+    "pointer": 0,
+    "array": [
+      20
+    ],
+    "param": false,
+    "group": "Globals & Statics",
+    "value": null,
+    "word": null,
+    "bytes": [
+      47,
+      99,
+      97,
+      110
+    ],
+    "values": [
+      47,
+      99,
+      97,
+      110
+    ]
+  },
+  {
+    "addr": 10240,
+    "name": "string at line 29",
+    "type": "char",
+    "unsigned": false,
+    "size": 2,
+    "pointer": 0,
+    "array": [
+      2
+    ],
+    "param": false,
+    "group": "Globals & Statics",
+    "value": null,
+    "word": null,
+    "bytes": [
+      114,
+      0,
+      90,
+      90
+    ],
+    "values": [
+      114,
+      0,
+      null,
+      null
+    ]
+  }
+];
+
+model = qx.data.marshal.Json.createModel(memData);
+var memTemplate = new playground.view.c.Memory(model);
+memTemplate.setWidth(300);
+this.getRoot().add(memTemplate, { edge : 10 });
