@@ -3162,7 +3162,7 @@ qx.Class.define("playground.c.lib.Node",
               data.entry.calculateOffset();
 
               // Restore specAndDecl
-              data.specAndDecl = specAndDecl;
+              data.specAndDecl = oldSpecAndDecl;
 
               success();
             }.bind(this),

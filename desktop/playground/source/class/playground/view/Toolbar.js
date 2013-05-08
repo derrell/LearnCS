@@ -24,6 +24,8 @@
 
 /**
  * The playground toolbar containing all buttons and menus.
+ *
+ * @lint ignoreUndefined(Blob)
  */
 qx.Class.define("playground.view.Toolbar",
 {
@@ -238,6 +240,37 @@ qx.Class.define("playground.view.Toolbar",
     this.__logCheckButton.addListener("changeValue", function(e) {
       this.fireDataEvent("changeLog", e.getData(), e.getOldData());
     }, this);
+
+// djl...
+    // Memory View button
+    this.__showMemTemplateButton = new qx.ui.toolbar.CheckBox(
+      this.tr("Memory View"), "icon/22/apps/utilities-log-viewer.png"
+    );
+    this.add(this.__showMemTemplateButton);
+    if (qx.core.Environment.get("qx.debug"))
+    {
+      this.__showMemTemplateButton.setValue(true);
+    }
+    else
+    {
+      this.__showMemTemplateButton.setValue(false);
+    }
+    this.__showMemTemplateButton.setToolTipText(
+      this.tr("Show/hide memory view"));
+    this.__showMemTemplateButton.addListener(
+      "changeValue",
+      function(e) {
+        // Show or hide the Memory Template view
+        if (e.getData())
+        {
+          qx.core.Init.getApplication().memTemplateBox.show();
+        }
+        else
+        {
+          qx.core.Init.getApplication().memTemplateBox.exclude();
+        }
+    }, this);
+// ...djl
 
     // url shortening button
     var urlShortButton = new qx.ui.toolbar.Button(
