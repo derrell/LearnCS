@@ -59,8 +59,11 @@ qx.Class.define("playground.c.Main",
 
     commandeLine : null,
 
-    /** Functions to be called after parsing, to readd includes to symtab */
+    /** Functions to be called after parsing, to reread includes */
     includes : [],
+
+    /** Functions to be called after program execution */
+    finalize : [],
 
     /**
      * @lint ignoreUndefined(process.exit)
@@ -174,8 +177,9 @@ qx.Class.define("playground.c.Main",
       // Function called upon each error encountered during parsing
       parser.yy.parseError = error.parseError;
 
-      // Reset the includes list
+      // Reset the includes and finalize lists
       playground.c.Main.includes = [];
+      playground.c.Main.finalize = [];
 
       // Give the Node class access to the error object
       playground.c.lib.Node.setError(error);
@@ -699,6 +703,13 @@ qx.Class.define("playground.c.Main",
                 true,
                 function(value)
                 {
+                  // Run any finalization functions
+                  playground.c.Main.finalize.forEach(
+                    function(finalize)
+                    {
+                      finalize();
+                    });
+
                   completion();
                   
                   // Show them their exit value

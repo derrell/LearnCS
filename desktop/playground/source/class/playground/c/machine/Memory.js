@@ -774,6 +774,18 @@ qx.Class.define("playground.c.machine.Memory",
     },
 
     /**
+     * Remove symbol information. This is used for heap allocations.
+     * 
+     * @param addr {Number}
+     *   The address for which symbol information is to be removed
+     */
+    removeSymbolInfo : function(addr)
+    {
+      // Remove this symbol info
+      delete this._symInfo[addr];
+    },
+
+    /**
      * Begin an activation record. The address is saved, and the function name
      * for which this is an activation record is later added.
      * 
@@ -793,6 +805,7 @@ qx.Class.define("playground.c.machine.Memory",
     {
       var             ar;
       var             symbol;
+      var             stackStart = playground.c.machine.Memory.info.rts.start;
 
       // Remove, but get a reference to, the ending activation record
       ar = this.__activationRecordsBegin.pop();
@@ -801,7 +814,8 @@ qx.Class.define("playground.c.machine.Memory",
       for (symbol in this._symbolInfo)
       {
         // Is this symbol in the now-obsolete activation record?
-        if (this._symbolInfo[symbol].addr < ar.addr)
+        if (this._symbolInfo[symbol].addr >= stackStart &&
+            this._symbolInfo[symbol].addr < ar.addr)
         {
           // Yup. Delete it.
           delete this._symbolInfo[symbol];

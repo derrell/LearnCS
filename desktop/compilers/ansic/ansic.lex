@@ -141,7 +141,8 @@ NL                      [\n]
 }
 
 <inc>\<(\\.|[^\\>])*\>  {
-                          var             f;
+                          var             include;
+                          var             finalize;
                           var             name;
                           var             error;
 
@@ -149,7 +150,7 @@ NL                      [\n]
                           switch(name)
                           {
                           case "ctype.h" :
-                            f = function()
+                            include = function()
                             {
                               return (
                                 playground.c.builtin.Ctype.include(name,
@@ -158,7 +159,7 @@ NL                      [\n]
                             break;
 
                           case "math.h" :
-                            f = function()
+                            include = function()
                             {
                               return (
                                 playground.c.builtin.Math.include(name,
@@ -167,20 +168,28 @@ NL                      [\n]
                             break;
 
                           case "stdio.h" :
-                            f = function()
+                            include = function()
                             {
                               return (
                                 playground.c.stdio.Stdio.include(name,
                                                                  yylineno));
                             };
+                            finalize = function()
+                            {
+                              playground.c.stdio.Stdio.finalize();
+                            };
                             break;
 
                           case "stdlib.h" :
-                            f = function()
+                            include = function()
                             {
                               return (
                                 playground.c.builtin.Stdlib.include(name,
                                                                     yylineno));
+                            };
+                            finalize = function()
+                            {
+                              playground.c.builtin.Stdlib.finalize();
                             };
                             break;
 
@@ -191,12 +200,18 @@ NL                      [\n]
                             return;
                           }
 
-                          // Add this function to list of include initializers
+                          // Add this include function to list of initializers
                           // so it'll be re-included after parsing
-                          playground.c.Main.includes.push(f);
+                          playground.c.Main.includes.push(include);
+
+                          // If there's a finalization function, save it too
+                          if (finalize)
+                          {
+                            playground.c.Main.finalize.push(finalize);
+                          }
 
                           // Include it now, for continued parsing
-                          error = f();
+                          error = include();
                           if (error)
                           {
                             playground.c.lib.Node.getError().parseError(

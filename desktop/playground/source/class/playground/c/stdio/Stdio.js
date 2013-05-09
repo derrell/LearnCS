@@ -47,8 +47,12 @@ qx.Class.define("playground.c.stdio.Stdio",
         // Get the root symbol table
         rootSymtab = playground.c.lib.Symtab.getByName("*");
 
+        // Initialize the open-file map and next file handle
+        playground.c.stdio.Stdio._openFileHandles = {};
+        playground.c.stdio.Stdio._nextFileHandle = 0x1000;
+
         //
-        // ... then add built-in functions.
+        // Add built-in functions.
         //
         [
           {
@@ -230,6 +234,23 @@ qx.Class.define("playground.c.stdio.Stdio",
       
       return null;
     },
+    
+    finalize : function()
+    {
+      var             handle;
+      var             remoteFile;
+
+      if (Object.keys(playground.c.stdio.Stdio._openFileHandles).length > 0)
+      {
+        for (handle in playground.c.stdio.Stdio._openFileHandles)
+        {
+          remoteFile = playground.c.stdio.Stdio._openFileHandles[handle];
+          playground.c.Main.output(
+            "*** Unclosed file opened at line " +
+              remoteFile.getUserData("line") + "\n");
+        }
+      }
+    },
 
     fopen : function(success, failure, path, rw)
     {
@@ -252,6 +273,11 @@ qx.Class.define("playground.c.stdio.Stdio",
           // Save this remote file instance at that handle
           playground.c.stdio.Stdio._openFileHandles[handle] = remoteFile;
           
+          // Save the path and line number
+          remoteFile.setUserData("path", path);
+          remoteFile.setUserData("line",
+                                 playground.c.lib.Node._currentNode.line);
+
           // Create a pointer declarator for the return value
           declPointer = new playground.c.lib.Declarator(
             playground.c.lib.Node._currentNode,
