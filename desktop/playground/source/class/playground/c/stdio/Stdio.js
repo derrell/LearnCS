@@ -9,6 +9,10 @@
 
 /*
 #ignore(require)
+
+#require(playground.c.stdio.Stdin)
+#require(playground.c.stdio.Stdout)
+#require(playground.c.stdio.Stderr)
  */
 
 /**
@@ -31,13 +35,17 @@ qx.Class.define("playground.c.stdio.Stdio",
     /** Mappings to open files */
     _openFileHandles : {},
 
+    /** File handle for stderr. All other file handles come after this one. */
+    _stderrFileHandle : 0x1000,
+
     /** Next open file index */
-    _nextFileHandle : 0x1000,
+    _nextFileHandle : null,
 
     include : function(name, line)
     {
       var             rootSymtab;
       var             mem;
+      var             stderr;
       
       try
       {
@@ -47,10 +55,19 @@ qx.Class.define("playground.c.stdio.Stdio",
         // Get the root symbol table
         rootSymtab = playground.c.lib.Symtab.getByName("*");
 
+        // Save the stderr handle, if it exists
+        stderr = playground.c.stdio.Stdio._openFileHandles[
+                   playground.c.stdio.Stdio._stderrFileHandle];
+
         // Initialize the open-file map and next file handle
         playground.c.stdio.Stdio._openFileHandles = {};
-        playground.c.stdio.Stdio._nextFileHandle = 0x1000;
+        playground.c.stdio.Stdio._nextFileHandle = 
+          playground.c.stdio.Stdio._stderrFileHandle + 1;
 
+        // Restore the stderr handle, if it existed
+        playground.c.stdio.Stdio._openFileHandles[
+          playground.c.stdio.Stdio._stderrFileHandle] = stderr;
+        
         //
         // Add built-in functions.
         //
@@ -101,6 +118,14 @@ qx.Class.define("playground.c.stdio.Stdio",
             {
               var args = Array.prototype.slice.call(arguments);
               playground.c.stdio.Stdio.printf.apply(null, args);
+            }
+          },
+          {
+            name : "fprintf",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.stdio.Stdio.fprintf.apply(null, args);
             }
           },
           {
@@ -194,6 +219,25 @@ qx.Class.define("playground.c.stdio.Stdio",
                 ]);
               entry.calculateOffset();
               mem.set(entry.getAddr(), "pointer", 0);
+            }
+          },
+          {
+            name : "stderr",
+            func : function(entry, node)
+            {
+              var             specifier;
+              specifier = new playground.c.lib.Specifier(node, "void");
+              specifier.setConstant("constant");
+
+              entry.setSpecAndDecl(
+                [
+                  new playground.c.lib.Declarator(node, "pointer"),
+                  specifier
+                ]);
+              entry.calculateOffset();
+              mem.set(entry.getAddr(), 
+                      "pointer", 
+                      playground.c.stdio.Stdio._stderrFileHandle);
             }
           }
         ].forEach(
@@ -291,10 +335,13 @@ qx.Class.define("playground.c.stdio.Stdio",
       {
         for (handle in playground.c.stdio.Stdio._openFileHandles)
         {
-          remoteFile = playground.c.stdio.Stdio._openFileHandles[handle];
-          playground.c.Main.output(
-            "*** Unclosed file opened at line " +
-              remoteFile.getUserData("line") + "\n");
+          if (handle != playground.c.stdio.Stdio._stderrFileHandle)
+          {
+            remoteFile = playground.c.stdio.Stdio._openFileHandles[handle];
+            playground.c.Main.output(
+              "*** Unclosed file opened at line " +
+                remoteFile.getUserData("line") + "\n");
+          }
         }
       }
     },
@@ -320,11 +367,6 @@ qx.Class.define("playground.c.stdio.Stdio",
           // Save this remote file instance at that handle
           playground.c.stdio.Stdio._openFileHandles[handle] = remoteFile;
           
-          // Save the path and line number
-          remoteFile.setUserData("path", path);
-          remoteFile.setUserData("line",
-                                 playground.c.lib.Node._currentNode.line);
-
           // Create a pointer declarator for the return value
           declPointer = new playground.c.lib.Declarator(
             playground.c.lib.Node._currentNode,
@@ -334,6 +376,11 @@ qx.Class.define("playground.c.stdio.Stdio",
           specVoid = new playground.c.lib.Specifier(
             playground.c.lib.Node._currentNode,
             "void");
+
+          // Save the path and line number
+          remoteFile.setUserData("path", path);
+          remoteFile.setUserData("line",
+                                 playground.c.lib.Node._currentNode.line);
 
           // Create a return value and return it
           success(

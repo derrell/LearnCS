@@ -37,6 +37,7 @@ if (typeof qx === "undefined")
   require("./stdio/Scanf.js");
   require("./stdio/Stdin.js");
   require("./stdio/Stdout.js");
+  require("./stdio/Stderr.js");
   require("./stdio/RemoteFile.js");
   require("./stdio/StringIn.js");
   require("./stdio/StringOut.js");
@@ -197,7 +198,8 @@ qx.Class.define("playground.c.Main",
       // timers, and flush output.
       [ 
         "stdin",
-        "stdout"
+        "stdout",
+        "stderr"
       ].forEach(
         function(stream)
         {

@@ -348,7 +348,7 @@ qx.Class.define("playground.c.lib.Specifier",
      * @param multiplier {Number}
      *   Number of elements of this type to account for in the byte count
      * 
-     * @return
+     * @return {Number}
      *   The calculated byte count of this specifier type
      */
     calculateByteCount : function(multiplier)
