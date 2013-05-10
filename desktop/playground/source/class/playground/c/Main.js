@@ -355,6 +355,21 @@ qx.Class.define("playground.c.Main",
       // Re-create the root-level symbol table
       new playground.c.lib.Symtab(null, null, 0);
 
+      // Re-add any include files that were included
+      playground.c.Main.includes.forEach(
+        function(fInclude)
+        {
+          var             error;
+
+          error = fInclude();
+          if (error)
+          {
+            playground.c.Main.output(
+              "Error: line " + error.node.line +
+                ": " + error.message + "\n");
+          }
+        });
+
       // Initialize the machine singleton, which initializes the registers
       machine = playground.c.machine.Machine.getInstance();
 
@@ -688,21 +703,6 @@ qx.Class.define("playground.c.Main",
 
             // Push the argument count onto the stack
             mem.stackPush("int", argv.length);
-
-            // Re-add any include files that were included
-            playground.c.Main.includes.forEach(
-              function(fInclude)
-              {
-                var             error;
-
-                error = fInclude();
-                if (error)
-                {
-                  playground.c.Main.output(
-                    "Error: line " + error.node.line +
-                      ": " + error.message + "\n");
-                }
-              });
 
             // Retrieve the symbol table for main()
             symtab = entryNode._symtab;

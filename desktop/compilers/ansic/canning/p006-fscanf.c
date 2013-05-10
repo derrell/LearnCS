@@ -22,7 +22,7 @@ int main(int argc, char * argv[])
 {
     int             conv;       // number of conversions
     int             value;      // input value read from file
-    void *          hFile;      // file handle
+    FILE *          hFile;      // file handle
 
     // Open the input file
     hFile = fopen("/canning/p006-input", "r");

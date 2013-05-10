@@ -25,7 +25,18 @@ NL                      [\n]
 {SLASH}{SLASH}.* { }
 {SLASH}{STAR}({SLASH}|(.|{NL})|{STAR}+(.|{NL}))*?{STAR}+{SLASH} { }
 
-"#include"              { this.begin('inc'); }
+"#include"              {
+    if (playground.c.lib.Symtab.getCurrent().getName() != "*")
+    {
+      playground.c.lib.Node.getError().parseError(
+        "#include may only be used at the top level (global scope)",
+        { line : yylineno });
+    }
+    else
+    {
+      this.begin('inc');
+    }
+}
 
 "auto"			{ return(parser.symbols_.AUTO); }
 "break"			{ return(parser.symbols_.BREAK); }

@@ -226,6 +226,53 @@ qx.Class.define("playground.c.stdio.Stdio",
             // set she specifier/declarator list in the symbol table entry
             info.func(entry, node);
           });
+
+        // Define types
+        [
+          {
+            name : "FILE",
+            func : function(entry, node)
+            {
+              var             specifier;
+              specifier = new playground.c.lib.Specifier(node, "int");
+              specifier.setStorage("typedef");
+
+              entry.setSpecAndDecl(
+                [
+                  specifier
+                ]);
+            }
+          }
+        ].forEach(
+          function(info)
+          {
+            var             entry;
+            var             node;
+
+            // Simulate a node, for the specifiers and declarators
+            node =
+              {
+                line : line,
+                toString : function()
+                {
+                  return info.name;
+                }
+              };
+
+            // Create the symbol table entry for this typedef
+            entry = rootSymtab.add(info.name, 0, true, false, false);
+            if (! entry)
+            {
+              throw new playground.c.lib.RuntimeError(
+                node,
+                info.name + " being redefined. " +
+                  "Is stdio.h included multiple times?");
+            }
+
+            // Call the provided function to initialize the value and create and
+            // set she specifier/declarator list in the symbol table entry
+            info.func(entry, node);
+          });
       }
       catch(e)
       {
