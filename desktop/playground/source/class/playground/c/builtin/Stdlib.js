@@ -103,7 +103,6 @@ qx.Class.define("playground.c.builtin.Stdlib",
               
               // Initially, there's nothing on the used block list
               playground.c.builtin.Stdlib.__usedBlocks = [];
-console.log("Setting __usedBlocks to empty array: length=" + playground.c.builtin.Stdlib.__usedBlocks.length);
             }
           }
         ].forEach(
@@ -117,7 +116,6 @@ console.log("Setting __usedBlocks to empty array: length=" + playground.c.builti
             if (info.init)
             {
               // ... then call it
-console.log("Calling init function for " + info.name);
               info.init();
             }
 

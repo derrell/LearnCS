@@ -1672,7 +1672,7 @@ identifier
     if (lexer.conditionStack[lexer.conditionStack.length - 1] == "typedef_mode")
     {
       parser.yy.R("identifier : TYPE_DEFINITION (" + yytext + ")");
-      $$ = new playground.c.lib.Node("type_definition", yytext, yylineno);
+      $$ = new playground.c.lib.Node("identifier", yytext, yylineno);
       $$.value = yytext;
       playground.c.lib.Symtab.getCurrent().add(yytext, yylineno, true);
     }

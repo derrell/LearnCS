@@ -417,6 +417,21 @@ qx.Class.define("playground.c.lib.Specifier",
     },
 
     /**
+     * Clone a typedef as a non-typedef
+     */
+    cloneTypedef : function()
+    {
+      var             specifier;
+      
+      specifier = new playground.c.lib.Specifier(this.__node);
+      specifier.__type = this.__type;
+      specifier.__size = this.__size;
+      specifier.__sign = this.__sign;
+      
+      return specifier;
+    },
+
+    /**
      * Promote this specifier, with a possibly altered type.
      * 
      * @return {playground.c.lib.Specifier}

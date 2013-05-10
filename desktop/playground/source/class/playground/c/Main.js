@@ -190,6 +190,9 @@ qx.Class.define("playground.c.Main",
       // Create the root-level symbol table
       new playground.c.lib.Symtab(null, null, 0);
 
+      // Re-initialize the environment
+      playground.c.Main.reinit();
+
       // If there was a prior stdin and/or stdout, cancel any of its pending
       // timers, and flush output.
       [ 
@@ -251,6 +254,30 @@ qx.Class.define("playground.c.Main",
     reinit : function()
     {
       var             mem = playground.c.machine.Memory.getInstance();
+      var             application;
+      var             editor;
+
+      // 'try' will fail when not in GUI environment
+      try
+      {
+        // We have stored some "global" variables in user data of
+        // the app
+        application = qx.core.Init.getApplication();
+
+        // Retrieve the editor object
+        editor = application.getUserData("sourceeditor");
+
+        // Remove any decoration on the previous line
+        if (playground.c.lib.Node._prevLine >= 0)
+        {
+          editor.removeGutterDecoration(
+            playground.c.lib.Node._prevLine - 1, "current-line");
+        }
+      }
+      catch (e)
+      {
+        // Ignore failure. It will fail when not in GUI environment
+      }
 
       // Handle stdio clean-up
       playground.c.stdio.AbstractFile.onProgramEnd();
@@ -281,6 +308,11 @@ qx.Class.define("playground.c.Main",
 
         playground.c.Main.output(
           ">>> Program had errors. It did not run to completion.\n");
+
+        if (typeof process != "undefined")
+        {
+          process.exit(1);
+        }
       }
     },
 
@@ -304,9 +336,6 @@ qx.Class.define("playground.c.Main",
       var             str;
       var             Memory = playground.c.machine.Memory;
       var             mem = Memory.getInstance();
-
-      // Re-initialize the environment
-      playground.c.Main.reinit();
 
       // Initialize memory
       mem.initAll();
@@ -733,6 +762,11 @@ qx.Class.define("playground.c.Main",
           {
             playground.c.Main.output(
               "Missing main() function\n");
+
+            if (typeof process != "undefined")
+            {
+              process.exit(1);
+            }
           } 
         }.bind(root),
         catchError);

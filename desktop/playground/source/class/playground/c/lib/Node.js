@@ -445,6 +445,9 @@ qx.Class.define("playground.c.lib.Node",
       var             oldEntry;
       var             oldSpecifiers;
       var             oldSpecAndDecl;
+      var             oldSpecOrDecl;
+      var             oldTypeSpecifiers;
+      var             oldTypeDeclarators;
       var             process = playground.c.lib.Node.process;
       var             model;
       var             memData;
@@ -851,9 +854,13 @@ qx.Class.define("playground.c.lib.Node",
             }
 
             // Prepend two "address" declarator" to preclude immediate
-            // dereferencing
-            specAndDecl.unshift(new playground.c.lib.Declarator(this,
-                                                                "address"));
+            // dereferencing. (If the first declarator is already "address",
+            // then only prepend one instead of two.)
+            if (specAndDecl[0].getType() != "address")
+            {
+              specAndDecl.unshift(new playground.c.lib.Declarator(this,
+                                                                  "address"));
+            }
             specAndDecl.unshift(new playground.c.lib.Declarator(this,
                                                                 "address"));
 
@@ -1700,6 +1707,8 @@ qx.Class.define("playground.c.lib.Node",
         oldEntry = data.entry;
         oldSpecifiers = data.specifiers;
         oldSpecAndDecl = data.specAndDecl;
+        oldTypeSpecifiers = data.typeSpecifiers;
+        oldTypeDeclarators = data.typeDeclarators;
 
         // Create our own data object with a new specifier for this declaration
         data.id = "declaration";
@@ -1722,6 +1731,8 @@ qx.Class.define("playground.c.lib.Node",
                 data.entry = oldEntry;
                 data.specifiers = oldSpecifiers;
                 data.specAndDecl = oldSpecAndDecl;
+                data.typeSpecifiers = oldTypeSpecifiers;
+                data.typeDeclarators = oldTypeDeclarators;
                 success();
               }.bind(this),
               failure);
@@ -3143,9 +3154,16 @@ qx.Class.define("playground.c.lib.Node",
         {
           // Save specAndDecl before overwriting it
           oldSpecAndDecl = data.specAndDecl;
+          oldTypeDeclarators = data.typeDeclarators;
 
-          // Create a list to hold specifiers and declarators
+          // Create a list to hold specifiers and declarators.
           data.specAndDecl = [];
+          
+          // Clone the type declarators, if it exists
+          data.typeDeclarators =
+            data.typeDeclarators
+            ? data.typeDeclarators.slice(0)
+            : null;
 
           // Process the declarator, which also creates the symbol table entry
           this.children[0].process(
@@ -3153,16 +3171,25 @@ qx.Class.define("playground.c.lib.Node",
             bExecuting,
             function()
             {
+              // If there are declarators from a type...
+              if (data.typeDeclarators && data.typeDeclarators.length > 0)
+              {
+                // ... then append them to the specifier/declarator list
+                Array.prototype.push.apply(data.specAndDecl, 
+                                           data.typeDeclarators);
+              }
+
               // Add the specifier to the end of the specifier/declarator list
-              data.specAndDecl.push(data.specifiers);
+              data.specAndDecl.push(data.typeSpecifiers || data.specifiers);
 
               // Calculate the offset in the symbol table for this symbol
               // table entry, based on the now-complete specifiers and
               // declarators
               data.entry.calculateOffset();
 
-              // Restore specAndDecl
+              // Restore data members
               data.specAndDecl = oldSpecAndDecl;
+              data.typeDeclarators = oldTypeDeclarators;
 
               success();
             }.bind(this),
@@ -4690,10 +4717,6 @@ throw new Error("broken code here!");
         success();
         break;
 
-      case "type_definition" :
-        throw new Error("Not yet implemented: type_definition");
-        break;
-
       case "type_name" :
         /*
          * type_name
@@ -4762,6 +4785,26 @@ throw new Error("broken code here!");
           }.bind(this),
           failure);
         
+        break;
+
+      case "type_name_token" :
+        // Retrieve the entry for this type name
+        entry = playground.c.lib.Symtab.getCurrent().get(this.value, false);
+
+        // Get a clone of the specifier/declarator list
+        specAndDecl = entry.getSpecAndDecl().slice(0);
+        
+        // Get a reference to the trailing specifier
+        specOrDecl = specAndDecl.pop();
+        
+        // Clone its type, size, and signedness
+        data.typeSpecifiers = specOrDecl.cloneTypedef();
+        
+        // Save the remainder of the type's specifier/declarator list
+        data.typeDeclarators = specAndDecl;
+
+        success();
+
         break;
 
       case "type_qualifier_list" :
