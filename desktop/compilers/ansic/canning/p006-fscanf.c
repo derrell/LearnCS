@@ -28,7 +28,7 @@ int main(int argc, char * argv[])
     hFile = fopen("/canning/p006-input", "r");
     if (hFile == NULL)
     {
-        printf("Could not open input file\n");
+        fprintf(stderr, "Could not open input file\n");
         return 1;
     }
 
@@ -38,7 +38,7 @@ int main(int argc, char * argv[])
     // Ensure we successfully read
     if (conv != 1)
     {
-        printf("Read from file failed.");
+        fprintf(stderr, "Read from file failed.");
         fclose(hFile);
         return 1;
     }
