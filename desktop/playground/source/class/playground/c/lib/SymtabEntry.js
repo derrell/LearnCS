@@ -244,10 +244,20 @@ qx.Class.define("playground.c.lib.SymtabEntry",
   
   members :
   {
-    __size         : null,
-    __type         : null,
-    __pointerCount : null,
-    __arraySizes   : null,
+    __node          : null,
+    __size          : null,
+    __type          : null,
+    __pointerCount  : null,
+    __arraySizes    : null,
+    __structSymtab  : null,
+    __typeFlags     : null,
+    __typeName      : null,
+    __line          : null,
+    __name          : null,
+    __offset        : 0,
+    __bIsType       : false,
+    __bIsDefine     : false,
+    __bIsParameter  : false,
 
     calculateOffset : function()
     {
