@@ -18,7 +18,7 @@
  */
 if (typeof qx === "undefined" || qx.bConsole)
 {
-  var printf = require("printf");
+  require("printf");
   qx = require("qooxdoo");
   qx.bConsole = true;
   require("./Symtab");
@@ -279,7 +279,6 @@ qx.Class.define("playground.c.lib.Node",
      */
     display : function(indent)
     {
-      var             i;
       var             parts = [];
 
       // Default value for indent
@@ -420,14 +419,12 @@ qx.Class.define("playground.c.lib.Node",
       var             depth;
       var             subnode;
       var             entry;
-      var             bExists;
       var             identifier;
       var             symtab;
       var             symtab2;
       var             symtabStruct;
       var             declarator;
       var             function_decl;
-      var             pointer;
       var             cases;
       var             caseAndBreak;
       var             type;
@@ -437,7 +434,6 @@ qx.Class.define("playground.c.lib.Node",
       var             value1; // typically the lhs of a binary expression
       var             value2; // typically the rhs of a binary expression
       var             value3; // typically the return result
-      var             assignData;
       var             bOldIsParameter;
       var             bOldIsInitializer;
       var             oldArgs;
@@ -445,12 +441,8 @@ qx.Class.define("playground.c.lib.Node",
       var             oldEntry;
       var             oldSpecifiers;
       var             oldSpecAndDecl;
-      var             oldSpecOrDecl;
       var             oldTypeSpecifiers;
       var             oldTypeDeclarators;
-      var             process = playground.c.lib.Node.process;
-      var             model;
-      var             memData;
       var             mem;
       var             memTemplate;
       var             args;
@@ -1466,7 +1458,6 @@ qx.Class.define("playground.c.lib.Node",
               {
                 var             oldType;
                 var             newType;
-                var             specAndDecl;
                 var             typeSize;
 
                 value1 = this.getExpressionValue(v, data);
@@ -4162,8 +4153,6 @@ qx.Class.define("playground.c.lib.Node",
         // Have we already allocated space for this string?
         if (! this._mem)
         {
-          var             chars = [];
-
           // Nope. Allocate the space now
           this._mem =
             playground.c.lib.Symtab.allocGlobalSpace(this.value.length + 1,
@@ -5079,9 +5068,7 @@ throw new Error("broken code here!");
               true,
               function(v)
               {
-                var             type;
                 var             specAndDecl;
-                var             specOrDecl;
 
                 if (typeof v != "undefined")
                 {
