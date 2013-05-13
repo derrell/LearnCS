@@ -39,6 +39,7 @@ qx.Class.define("playground.view.c.MemoryWord",
     
     // Set column widths
     this.gridLayout.setColumnWidth(0, 120);
+    this.gridLayout.setColumnFlex(0, 1);
     this.gridLayout.setColumnAlign(0, "center", "middle");
     
     this.gridLayout.setColumnWidth(1, 40);
@@ -49,7 +50,7 @@ qx.Class.define("playground.view.c.MemoryWord",
       this.gridLayout.setColumnWidth(col, 20);
     }
     
-    this.gridLayout.setColumnWidth(6, 100);
+//    this.gridLayout.setColumnWidth(6, 100);
 
     // Pre-create each of the child controls
     this.getChildControl("name1");

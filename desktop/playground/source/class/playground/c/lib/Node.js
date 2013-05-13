@@ -123,9 +123,9 @@ qx.Class.define("playground.c.lib.Node",
       return playground.c.lib.Node.__error;
     },
     
-    getNull : function()
+    getNull : function(line)
     {
-      return new playground.c.lib.Node("_null_");
+      return new playground.c.lib.Node("_null_", null, line);
     }
   },
   
@@ -3066,6 +3066,9 @@ qx.Class.define("playground.c.lib.Node",
             }
           }
           
+          // Save the entry. sizeof needs it.
+          data.entry = entry;
+
           // Process any children
           this.__processSubnodes(data, bExecuting, success, failure);
         }
@@ -4097,7 +4100,54 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "sizeof" :
-        throw new Error("Not yet implemented: sizeof");
+        // Save data members that get overwritten
+        oldEntry = data.entry;
+        
+        // Initialize data.entry to null. If it's non-null upon return,
+        // they're taking the size of a variable; otherwise, they want the
+        // size of a type.
+        data.entry = null;
+
+        // Process the subnodes to discover what to take the size of
+        this.__processSubnodes(
+          data,
+          bExecuting,
+          function(v)
+          {
+            var             byteCount;
+
+            // Did we get a symbol table entry? When executing, the symbol
+            // table entry will be in v. When not executing, it will be in
+            // data.entry.
+            if (data.entry || v instanceof playground.c.lib.SymtabEntry)
+            {
+              // Yup. Get the specifier/declarator list from that entry
+              specAndDecl = (v || data.entry).getSpecAndDecl().slice(0);
+              
+              // Determine and return the size of an object with this
+              // specifier/declarator list.
+              byteCount = specAndDecl[0].calculateByteCount(1, specAndDecl, 0);
+              
+              // We'll be returning value3, so save the byte count there.
+              value3 = { value : byteCount };
+            }
+            else
+            {
+              // Otherwise, this was a 'type_name'. We have a map containing
+              // specAndDecl and a pre-calculated size. All we care about is
+              // the size.
+              value3 = { value : v.size };
+            }
+
+            // The return value is an int
+            value3.specAndDecl = [ new playground.c.lib.Specifier("int") ];
+            
+            // Restore prior data member values
+            data.entry = oldEntry;
+            
+            success(value3);
+          },
+          failure);
         break;
 
       case "specifier_qualifier_list" :

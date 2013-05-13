@@ -309,17 +309,21 @@ qx.Class.define("playground.Application",
 
       // Set column widths exactly as they are in each MemoryWord list item
       gridLayout.setColumnWidth(0, 120);
+      gridLayout.setColumnFlex(0, 1);
       gridLayout.setColumnAlign(0, "center", "middle");
 
       gridLayout.setColumnWidth(1, 40);
       gridLayout.setColumnAlign(1, "center", "middle");
 
-      for (var col = 2; col < 7; col++)
+      for (var col = 2; col < 6; col++)
       {
         gridLayout.setColumnWidth(col, 20);
         gridLayout.setColumnAlign(col, "center", "middle");
       }
       
+      // empirically-determined width to get headers to align.
+      gridLayout.setColumnWidth(6, 12);
+
       var label = new qx.ui.basic.Label(
         "<span style='font-weight: bold;'>Name</span>");
       label.setRich(true);
@@ -334,6 +338,10 @@ qx.Class.define("playground.Application",
         "<span style='font-weight: bold;'>Content</span>");
       label.setRich(true);
       header.add(label, { row : 0, column : 2, colSpan : 4 } );
+
+      // spacer where scrollbar goes
+      label = new qx.ui.basic.Label("");
+      header.add(label, { row : 0, column : 6 } );
 
       vbox.add(header);
 

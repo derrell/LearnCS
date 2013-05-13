@@ -396,7 +396,7 @@ qx.Class.define("playground.c.lib.Specifier",
     getCType : function()
     {
       // Determine the byte count for this type
-      switch(this.__type)
+      switch(this.__type || "int")
       {
       case "int" :
         return (this.__sign ? this.__sign + " " : "") + (this.__size || "int");
@@ -448,29 +448,23 @@ qx.Class.define("playground.c.lib.Specifier",
       specifier = new playground.c.lib.Specifier(this.__node);
       
       // Copy the type
-      specifier.setType(this.__type);
+      specifier.__type = this.__type;
       
       // Copy the sign, if it's been set
       if (this.__sign)
       {
-        specifier.setSigned(this.__sign);
+        specifier.__sign = this.__sign;
       }
       
       // If our current specifier's type is "long" or "long long" then add
       // those to the new specifier. (Nothing is done if the current
       // specifier's size is "char" or "short", which keeps the new
       // specifier's type at an assumed "int".)
-      if (this.__type == "int")
+      if (! this.__type || this.__type == "int")
       {
-        if (this.__size == "long")
+        if (this.__size == "long" || this.__size == "long long")
         {
-          specifier.setSize("long");
-        }
-
-        if (this.__size == "long long")
-        {
-          specifier.setSize("long");
-          specifier.setSize("long"); // second call changes it to "long long"
+          specifier.__size = this.__size;
         }
       }
       
