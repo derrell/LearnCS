@@ -247,74 +247,96 @@ qx.Class.define("playground.c.machine.Memory",
       // If the number of elements was not specified, retrieve one element.
       numElem = numElem || 1;
 
-      switch(type)
+      try
       {
-      case 0x00 :
-      case "char" :
-      case "signed char" :
-        return new Int8Array(this._memory, addr, numElem);
+        switch(type)
+        {
+        case 0x00 :
+        case "char" :
+        case "signed char" :
+          return new Int8Array(this._memory, addr, numElem);
 
-      case 0x01 :
-      case "unsigned char" :
-      case "uchar" :
-        return new Uint8Array(this._memory, addr, numElem);
+        case 0x01 :
+        case "unsigned char" :
+        case "uchar" :
+          return new Uint8Array(this._memory, addr, numElem);
 
-      case 0x02 :
-      case "short" :
-      case "signed short" :
-        return new Int16Array(this._memory, addr, numElem);
+        case 0x02 :
+        case "short" :
+        case "signed short" :
+          return new Int16Array(this._memory, addr, numElem);
 
-      case 0x03 :
-      case "unsigned short" :
-      case "ushort" :
-        return new Uint16Array(this._memory, addr, numElem);
+        case 0x03 :
+        case "unsigned short" :
+        case "ushort" :
+          return new Uint16Array(this._memory, addr, numElem);
 
-      case 0x04 :
-      case "int" :
-      case "signed int" :
-        return new Int32Array(this._memory, addr, numElem);
+        case 0x04 :
+        case "int" :
+        case "signed int" :
+          return new Int32Array(this._memory, addr, numElem);
 
-      case 0x05 :
-      case "unsigned int" :
-      case "uint" :
-        return new Uint32Array(this._memory, addr, numElem);
+        case 0x05 :
+        case "unsigned int" :
+        case "uint" :
+          return new Uint32Array(this._memory, addr, numElem);
 
-      case 0x06 :
-      case "long" :
-      case "signed long" :
-        return new Int32Array(this._memory, addr, numElem);
+        case 0x06 :
+        case "long" :
+        case "signed long" :
+          return new Int32Array(this._memory, addr, numElem);
 
-      case 0x07 :
-      case "unsigned long" :
-      case "ulong" :
-      case "null" :
-        return new Uint32Array(this._memory, addr, numElem);
+        case 0x07 :
+        case "unsigned long" :
+        case "ulong" :
+        case "null" :
+          return new Uint32Array(this._memory, addr, numElem);
 
-      case 0x08 :
-      case "long long" :
-      case "llong" :
-      case "signed long long" :
-        return new Int32Array(this._memory, addr, numElem);
+        case 0x08 :
+        case "long long" :
+        case "llong" :
+        case "signed long long" :
+          return new Int32Array(this._memory, addr, numElem);
 
-      case 0x09 :
-      case "unsigned long long" :
-      case "ullong" :
-        return new Uint32Array(this._memory, addr, numElem);
+        case 0x09 :
+        case "unsigned long long" :
+        case "ullong" :
+          return new Uint32Array(this._memory, addr, numElem);
 
-      case 0x0A :
-      case "float" :
-        return new Float32Array(this._memory, addr, numElem);
+        case 0x0A :
+        case "float" :
+          return new Float32Array(this._memory, addr, numElem);
 
-      case 0x0B :
-      case "double" :
-        return new Float32Array(this._memory, addr, numElem);
+        case 0x0B :
+        case "double" :
+          return new Float32Array(this._memory, addr, numElem);
 
-      case 0x0C :
-      case "pointer" :
-        return new Uint16Array(this._memory, addr, numElem);
+        case 0x0C :
+        case "pointer" :
+          return new Uint16Array(this._memory, addr, numElem);
 
-      default:
-        throw new Error("Unrecognized destination type: " + type);
+        default:
+          throw new Error("Unrecognized destination type: " + type);
+        }
+      }
+      catch(e)
+      {
+        // Was a RangeError thrown?
+        if (e instanceof RangeError)
+        {
+          // Yup. That was almost certainly a request for 2 or more bytes on
+          // an odd byte boundary.
+          throw new playground.c.lib.RuntimeError(
+            playground.c.lib.Node._currentNode,
+            "Invalid memory access at 0x" + addr.toString(16) + ": " +
+              "Can not access type '" + type + "' at this address. " +
+              "(This is sometimes called a 'Bus Error'.)");
+        }
+        else
+        {
+          // rethrow the error
+          throw e;
+        }
       }
     },
 
