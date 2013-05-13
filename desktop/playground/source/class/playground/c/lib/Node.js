@@ -453,6 +453,9 @@ qx.Class.define("playground.c.lib.Node",
       var             continueButton;
       var             WORDSIZE = playground.c.machine.Memory.WORDSIZE;
 
+      // Make the current node available globally
+      playground.c.lib.Node._currentNode = this;
+
       if (bExecuting)
       {
         function displayMemoryTemplateView()
@@ -2557,9 +2560,6 @@ qx.Class.define("playground.c.lib.Node",
                 // Is this a built-in function, or a user-generated one?
                 if (value1.getSpecAndDecl()[0].getType() == "builtIn")
                 {
-                  // Make the current node available to the built-in function
-                  playground.c.lib.Node._currentNode = this;
-
                   // Prepend failure and then the success functions
                   data.args.unshift(failure);
                   data.args.unshift(

@@ -52,7 +52,7 @@ qx.Class.define("playground.view.Terminal",
         decorator  : null,
         liveUpdate : true,
         value      : "",
-        wrap       : false
+        wrap       : true
       });
     this.add(this._textArea, { flex : 1 });
     

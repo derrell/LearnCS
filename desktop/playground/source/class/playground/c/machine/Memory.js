@@ -350,11 +350,14 @@ qx.Class.define("playground.c.machine.Memory",
              (addr >= info.rts.start &&
               addr < info.rts.start  + info.rts.length)))
       {
-        throw new Error("Invalid memory access at " + 
-                        addr.toString(16) + ": " +
-                        "Address to read from is not within the " +
-                        "'globals and statics', 'heap', or " +
-                        "'run time stack' regions of memory.");
+        throw new playground.c.lib.RuntimeError(
+          playground.c.lib.Node._currentNode,
+          "Invalid memory access at 0x" + 
+            addr.toString(16) + ": " +
+            "Address to read from is not within the " +
+            "'globals and statics', 'heap', or " +
+            "'run time stack' regions of memory. " +
+            "(This is sometimes called a 'Segmentation Fault'.)");
       }
 
       // Ensure that the access remains in one region of memory
@@ -374,12 +377,15 @@ qx.Class.define("playground.c.machine.Memory",
            addr < info.rts.start  + info.rts.length &&
            addr + size > info.rts.start + info.rts.length))
       {
-        throw new Error("Invalid memory access at " + 
-                        addr.toString(16) + ": " +
-                        "Size of object being assigned causes a " +
-                        "read beyond the " +
-                        "bounds of its 'globals and statics', 'heap', or " +
-                        "'run time stack' region of memory.");
+        throw new playground.c.lib.RuntimeError(
+          playground.c.lib.Node._currentNode,
+          "Invalid memory access at 0x" + 
+            addr.toString(16) + ": " +
+            "Size of object being assigned causes a " +
+            "read beyond the " +
+            "bounds of its 'globals and statics', 'heap', or " +
+            "'run time stack' region of memory. " +
+            "(This is sometimes called a 'Segmentation Fault'.)");
       }
 
       // Get an appropriate view into the memory, based on the type, and return
@@ -418,11 +424,14 @@ qx.Class.define("playground.c.machine.Memory",
              (addr >= info.rts.start &&
               addr < info.rts.start  + info.rts.length)))
       {
-        throw new Error("Invalid memory access at " + 
-                        addr.toString(16) + ": " +
-                        "Address to write to is not within the " +
-                        "'globals and statics', 'heap', or " +
-                        "'run time stack' regions of memory.");
+        throw new playground.c.lib.RuntimeError(
+          playground.c.lib.Node._currentNode,
+          "Invalid memory access at 0x" + 
+            addr.toString(16) + ": " +
+            "Address to write to is not within the " +
+            "'globals and statics', 'heap', or " +
+            "'run time stack' regions of memory. " +
+            "(This is sometimes called a 'Segmentation Fault'.)");
       }
 
       // Ensure that the access remains in one region of memory
@@ -442,12 +451,15 @@ qx.Class.define("playground.c.machine.Memory",
            addr < info.rts.start  + info.rts.length &&
            addr + size > info.rts.start + info.rts.length))
       {
-        throw new Error("Invalid memory access at " + 
-                        addr.toString(16) + ": " +
-                        "Size of object being assigned causes a " +
-                        "write beyond the " +
-                        "bounds of its 'globals and statics', 'heap', or " +
-                        "'run time stack' region of memory.");
+        throw new playground.c.lib.RuntimeError(
+          playground.c.lib.Node._currentNode,
+          "Invalid memory access at 0x" + 
+            addr.toString(16) + ": " +
+            "Size of object being assigned causes a " +
+            "write beyond the " +
+            "bounds of its 'globals and statics', 'heap', or " +
+            "'run time stack' region of memory. " +
+            "(This is sometimes called a 'Segmentation Fault'.)");
       }
 
       // Get an appropriate view into the memory, based on the type, and save
