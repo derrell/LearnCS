@@ -53,10 +53,6 @@ qx.Class.define("playground.c.lib.Symtab",
    */
   construct : function(parent, name, line)
   {
-    var             symtab;
-    var             entry;
-    var             declarator;
-
     this.base(arguments);
 
     // Was a name provided?
@@ -340,14 +336,10 @@ qx.Class.define("playground.c.lib.Symtab",
 
     display : function(message)
     {
-      var             i;
       var             entry;
       var             symtab;
       var             symtabName;
       var             symbolName;
-      var             sym;
-      var             parts = [];
-      var             TF = playground.c.lib.SymtabEntry.TypeFlags;
 
       console.log("");
       if (message)
@@ -373,6 +365,14 @@ qx.Class.define("playground.c.lib.Symtab",
   
   members :
   {
+    __symbols      : null,
+    __symbolOrder  : null,
+    __parent       : null,
+    __framePointer : null,
+    __name         : null,
+    __line         : null,
+    __nextChild    : null,
+
     /**
      * Add an entry to a symbol table.
      *
@@ -486,8 +486,6 @@ qx.Class.define("playground.c.lib.Symtab",
     setFramePointer : function(fp)
     {
       var             memory;
-      var             symtab;
-      var             Symtab = playground.c.lib.Symtab;
       
       // Push the new frame pointer onto the stack
       this.__framePointer.unshift(fp);

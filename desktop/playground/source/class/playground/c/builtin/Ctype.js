@@ -101,7 +101,6 @@ qx.Class.define("playground.c.builtin.Ctype",
      */
     toupper : function(success, failure, c)
     {
-      var             converted;
       var             specOrDecl;
       
       if (typeof c != "number")

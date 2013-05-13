@@ -163,9 +163,6 @@ qx.Class.define("playground.c.builtin.Stdlib",
 
     finalize : function()
     {
-      var             handle;
-      var             remoteFile;
-
       if (playground.c.builtin.Stdlib.__usedBlocks.length > 0)
       {
         playground.c.builtin.Stdlib.__usedBlocks.forEach(
@@ -433,9 +430,7 @@ qx.Class.define("playground.c.builtin.Stdlib",
     
     free : function(success, failure, addr)
     {
-      var             i;
       var             j;
-      var             freelist = playground.c.builtin.Stdlib.__freeBlocks;
       var             usedlist = playground.c.builtin.Stdlib.__usedBlocks;
 
       // Find the address to be freed in the used block list
@@ -492,7 +487,6 @@ qx.Class.define("playground.c.builtin.Stdlib",
     calloc : function(success, failure, numElem, elemSize)
     {
       var             numBytes = numElem * elemSize;
-      var             memBytes;
 
       // First, allocate the requested number of bytes
       playground.c.builtin.Stdlib.malloc(

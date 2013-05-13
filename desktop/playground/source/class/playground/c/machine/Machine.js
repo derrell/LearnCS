@@ -77,7 +77,6 @@ qx.Class.define("playground.c.machine.Machine",
       var             numDataWords;
       var             debugInfo;
       var             Memory = playground.c.machine.Memory;
-      var             Instruction = playground.c.machine.Instruction;
       var             mem = playground.c.machine.Machine.mem;
 
       // Initialize the program counter

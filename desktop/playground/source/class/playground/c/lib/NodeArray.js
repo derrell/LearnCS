@@ -35,9 +35,11 @@ qx.Class.define("playground.c.lib.NodeArray",
 
   members :
   {
+    __node : null,
+
     // Overridden:
     // Save the parent of the pushed child, in the child
-    push :function(child)
+    push : function(child)
     {
       // If this child is a node, save the parent of this child node
       if (child !== null)

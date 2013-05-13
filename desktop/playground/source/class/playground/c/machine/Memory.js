@@ -336,7 +336,6 @@ qx.Class.define("playground.c.machine.Memory",
     {
       var             size;
       var             info = playground.c.machine.Memory.info;
-      var             WORDSIZE = playground.c.machine.Memory.WORDSIZE;
 
       // Determine size to be accessed
       size = playground.c.machine.Memory.typeSize[type];
@@ -405,7 +404,6 @@ qx.Class.define("playground.c.machine.Memory",
     {
       var             size;
       var             info = playground.c.machine.Memory.info;
-      var             WORDSIZE = playground.c.machine.Memory.WORDSIZE;
 
       // Determine size to be accessed
       size = playground.c.machine.Memory.typeSize[type];
@@ -541,7 +539,6 @@ qx.Class.define("playground.c.machine.Memory",
      */
     move : function(addrSrc, typeSrc, addrDest, typeDest, bForce)
     {
-      var             line;
       var             memSrc;
       var             memDest;
       var             sizeSrc;
@@ -744,11 +741,6 @@ qx.Class.define("playground.c.machine.Memory",
     setSymbolInfo : function(addr, symbol)
     {
       var             name;
-      var             type;
-      var             parts;
-      var             index;
-      var             results;
-      var             symInfo;
       
       // Determine the group name for the memory template view. If there's a
       // symbol table, use its name; otherwise it's created before there's a
@@ -869,7 +861,6 @@ qx.Class.define("playground.c.machine.Memory",
       var             size;
       var             addr;
       var             datum;
-      var             group;
       var             words;
       var             values;
       var             elements;
@@ -1152,7 +1143,6 @@ qx.Class.define("playground.c.machine.Memory",
         function(datum, i)
         {
           var             parts;
-          var             nameLen = datum.name.length;
           var             numSpaces = 24 - datum.name.length;
           
           parts = 

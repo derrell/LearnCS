@@ -783,7 +783,6 @@ qx.Class.define("playground.c.machine.Instruction",
     functionOp : function(instruction, instrAddr)
     {
       var             op;
-      var             value;
       var             addr;
       var             sp;
       var             mem = playground.c.machine.Instruction.mem;
@@ -984,8 +983,6 @@ qx.Class.define("playground.c.machine.Instruction",
       var             addr;
       var             data;
       var             args;
-      var             pseudoop;
-      var             op;
       var             Memory = playground.c.machine.Memory;
       var             mem = playground.c.machine.Instruction.mem;
 

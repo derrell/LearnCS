@@ -255,7 +255,6 @@ qx.Class.define("playground.c.Main",
      */
     reinit : function()
     {
-      var             mem = playground.c.machine.Memory.getInstance();
       var             application;
       var             editor;
 
@@ -329,13 +328,11 @@ qx.Class.define("playground.c.Main",
       var             ptrSize;
       var             entry;
       var             symtab;
-      var             message;
       var             machine;
       var             entryNode;
       var             declarator;
       var             function_decl;
       var             cmdLine;
-      var             str;
       var             Memory = playground.c.machine.Memory;
       var             mem = Memory.getInstance();
 

@@ -71,14 +71,18 @@ qx.Class.define("playground.Application",
   members :
   {
     // UI Components
-    __header : null,
-    __mainsplit : null,
-    __toolbar : null,
-    __log : null,
-    __playArea : null,
-    __samplesPane : null,
-    __editorsplit : null,
+    __header         : null,
+    __mainsplit      : null,
+    __toolbar        : null,
+    __log            : null,
+    __playArea       : null,
+    __samplesPane    : null,
+    __editorsplit    : null,
     __websiteContent : null,
+    __blockEditor    : null,
+    __terminalsplit  : null,
+    __initCalled     : false,
+
     editor : null,
 
     // storages
@@ -192,7 +196,6 @@ qx.Class.define("playground.Application",
       
       // Create a tabview to hold the Source and Block Editors
       var tabview = new qx.ui.tabview.TabView();
-      var container;
       var page;
         
       // Create the page for the Source editor

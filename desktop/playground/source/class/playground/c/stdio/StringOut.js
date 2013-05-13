@@ -84,8 +84,6 @@ qx.Class.define("playground.c.stdio.StringOut",
     _output : function(len)
     {
       var             mem;
-      var             memBytes;
-      var             inputStr;
       var             i;
 
       // If there's something in the output buffer...

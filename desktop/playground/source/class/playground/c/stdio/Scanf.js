@@ -582,8 +582,6 @@ qx.Class.define("playground.c.stdio.Scanf",
       var             conv = 0;       // # of conversions 
       var             base;           // conversion base 
       var             val;            // an integer value 
-      var             str;           // temporary pointer 
-      var             tmp_string;    // ditto 
       var             width = 0;      // width of field 
       var             flags;          // some flags 
       var             reverse;        // reverse the checking in [...] 

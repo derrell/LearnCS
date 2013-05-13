@@ -108,7 +108,6 @@ qx.Class.define("playground.c.lib.SymtabEntry",
       var             pointerCount = 0;
       var             bDone = false;
       var             sd;
-      var             SIB = playground.c.lib.SymtabEntry.SizeInBytes;
 
       // Traverse this provided specifier/declarator list, calculating its
       // textual type representation and its size.
@@ -254,10 +253,14 @@ qx.Class.define("playground.c.lib.SymtabEntry",
     __typeName      : null,
     __line          : null,
     __name          : null,
+    __symtab        : null,
+    __specAndDecl   : null,
     __offset        : 0,
+    __arrayCount    : 0,
     __bIsType       : false,
     __bIsDefine     : false,
     __bIsParameter  : false,
+    __bUnsigned     : false,
 
     calculateOffset : function()
     {
@@ -306,16 +309,9 @@ qx.Class.define("playground.c.lib.SymtabEntry",
 
     getAddr : function()
     {
-      var             i;
-      var             fp;
       var             ret;
-      var             offset;
-      var             bGlobal;
-      var             symtab;
       var             message;
       var             firstSpecOrDecl;
-      var             TF  = playground.c.lib.SymtabEntry.TypeFlags;
-      var             SIB = playground.c.lib.SymtabEntry.SizeInBytes;
 
       // If there is no specifier/declarator list yet...
       if (! this.__specAndDecl || this.__specAndDecl.length == 0)

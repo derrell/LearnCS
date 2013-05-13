@@ -69,7 +69,6 @@ qx.Class.define("playground.c.stdio.AbstractFile",
      */
     onProgramEnd : function()
     {
-      var             i;
       var             stdin;
       var             stdout;
       var             openFiles;
@@ -391,8 +390,6 @@ qx.Class.define("playground.c.stdio.AbstractFile",
      */
     write : function(bytes, succ, fail)
     {
-      var             byteArr;
-
       // Ensure the file is opened for writing
       if (! (this.mode & 0x02))
       {

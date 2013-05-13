@@ -14,7 +14,6 @@ qx.Class.define("playground.c.stdio.Stderr",
   
   construct : function()
   {
-    var             declPointer;
     var             handle;
 
     // Call the superclass constructor, indicating that this is an output file.

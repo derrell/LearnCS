@@ -26,6 +26,7 @@
  * The playground toolbar containing all buttons and menus.
  *
  * @lint ignoreUndefined(Blob)
+ * @lint ignoreUndefined(uploadwidget.UploadButton)
  */
 qx.Class.define("playground.view.Toolbar",
 {
@@ -412,11 +413,13 @@ qx.Class.define("playground.view.Toolbar",
 
   members :
   {
-    __menuItemStore : null,
-    __overflowMenu : null,
-    __highlightButton : null,
-    __logCheckButton : null,
-    __samplesCheckButton : null,
+    __menuItemStore         : null,
+    __overflowMenu          : null,
+    __highlightButton       : null,
+    __logCheckButton        : null,
+    __samplesCheckButton    : null,
+    __showMemTemplateButton : null,
+
 
     /**
      * Controlls the presed state of the log button.

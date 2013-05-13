@@ -228,13 +228,14 @@ qx.Class.define("playground.view.Editor",
           //    blob/master/chrome/content/ace++/startup.js#L66-104
           var updateDataOnDocChange = function(e) 
           {
-            var delta = e.data;
-            var range = delta.range;
-            var len, firstRow, f1;
-            var args;
-            var rem;
-            var oldBP;
-            var i;
+            var             delta = e.data;
+            var             range = delta.range;
+            var             len;
+            var             firstRow;
+            var             args;
+            var             rem;
+            var             oldBP;
+            var             i;
             
             if (range.end.row == range.start.row) {
               return;

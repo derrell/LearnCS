@@ -175,7 +175,7 @@ qx.Class.define("playground.view.Blockly",
           var container = this.__editor.getContentElement().getDomElement();
 
           // create the editor
-          var blockly = this.__blockly = 
+          this.__blockly = 
             Blockly.inject(container, 
                            { path : "resource/playground/blockly/" });
 

@@ -36,8 +36,6 @@ qx.Class.define("playground.c.stdio.RemoteFile",
   
   construct : function()
   {
-    var             terminal;
-
     // Call the superclass constructor, indicating that this is an input file.
     this.base(arguments, "r");
     
@@ -173,13 +171,13 @@ qx.Class.define("playground.c.stdio.RemoteFile",
           this._inBuf = data.toString().split("");
           succ();
         }
-        catch(e)
+        catch(ex)
         {
           // If this isn't a FileNotFound error...
-          if (e.code !== "ENOENT")
+          if (ex.code !== "ENOENT")
           {
             // ... then rethrow the error
-            throw e;
+            throw ex;
           }
           
           // The requested file was not found. 

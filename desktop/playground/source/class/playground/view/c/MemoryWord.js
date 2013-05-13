@@ -20,9 +20,7 @@ qx.Class.define("playground.view.c.MemoryWord",
    */
   construct : function()
   {
-    var             row;
     var             col;
-    var             gridLayout;
 
     this.base(arguments);
     
