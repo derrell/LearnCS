@@ -170,8 +170,8 @@ qx.Class.define("playground.c.builtin.Stdlib",
           {
             playground.c.Main.output(
               "*** Unfreed memory allocated at line " + block.line + ": " + 
-                block.size + " bytes, at address " + block.start.toString(16) +
-                "\n");
+                block.size + " bytes, at address 0x" +
+                block.start.toString(16) + "\n");
           });
       }
     },
