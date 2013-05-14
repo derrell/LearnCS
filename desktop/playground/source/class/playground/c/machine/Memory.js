@@ -112,23 +112,25 @@ qx.Class.define("playground.c.machine.Memory",
       // USE CAUTION: defs are in the gas namespace, with negative indexes!!!
       // Be sure to keep them together.
 
-      "gas" :                     // Globals and Statics
+      "gas" :                   // Globals and Statics
       {
         start  : 10 * 1024,
-        length : 256
+        length : 256,
+        virgin : null           // initialized in defer()
       },
 
-      "heap" :                    // Heap
+      "heap" :                  // Heap
       {
         start  : 12 * 1024,
-        length : 256
+        length : 256,
+        virgin : null           // initialized in defer()
       },
 
-      "rts" :
+      "rts" :                   // Run-time Stack
       {
         start  : 0x8000,
         length : 0x7000,
-        virgin : null           // initialize in defer()
+        virgin : null           // initialized in defer()
       }
 
     },
@@ -777,6 +779,9 @@ qx.Class.define("playground.c.machine.Memory",
     setSymbolInfo : function(addr, symbol)
     {
       var             name;
+      var             size;
+      var             region;
+      var             info = playground.c.machine.Memory.info;
       
       // Determine the group name for the memory template view. If there's a
       // symbol table, use its name; otherwise it's created before there's a
@@ -799,6 +804,41 @@ qx.Class.define("playground.c.machine.Memory",
           value      : null,   // will become an array of values in this word
           word       : null    // will become the native memory word
         };
+      
+      // Point to the end of the symbol's memory space.
+      size = symbol.getSize();
+      symbol.getArraySizes().forEach(
+        function(multiplier)
+        {
+          size *= multiplier;
+        });
+      addr += size;
+      
+
+      // Determine which region of memory this symbol is in. 
+      if ((addr >= info.gas.start && 
+           addr < info.gas.start + info.gas.length))
+      {
+        region = "gas";
+      }
+      else if ((addr >= info.heap.start && 
+                addr < info.heap.start + info.heap.length))
+      {
+        region = "heap";
+      }
+      
+      // If it's in gas or heap, adjust the untouched, virgin region
+      if (typeof region != "undefined" && addr > info[region].virgin)
+      {
+        // Try to leave some (empty) margin
+        info[region].virgin = addr + 16;
+        
+        // If virgin space exceeds the alotment...
+        if (info[region].virgin > info[region].start + info[region].length)
+        {
+          info[region].virgin = info[region].start + info[region].length;
+        }
+      }
     },
 
     /**
@@ -942,13 +982,11 @@ qx.Class.define("playground.c.machine.Memory",
           
           // Figure out which region of memory we're in. If we're in the stack
           // region, then further determine which activation record we're in.
-          if (addr >= info.gas.start &&
-              addr < info.gas.start + info.gas.length)
+          if (addr >= info.gas.start && addr < info.gas.virgin)
           {
             group = "Globals & Statics";
           }
-          else if (addr >= info.heap.start &&
-                   addr < info.heap.start + info.heap.length)
+          else if (addr >= info.heap.start && addr < info.heap.virgin)
           {
             group = "Heap";
           }
@@ -1209,6 +1247,8 @@ qx.Class.define("playground.c.machine.Memory",
     statics.WORDSIZE = statics.typeSize["int"];
 
     statics.info.reg.length = statics.NUM_REGS * statics.WORDSIZE;
+    statics.info.gas.virgin = statics.info.gas.start + 16;
+    statics.info.heap.virgin = statics.info.heap.start + 16;
     statics.info.rts.virgin = statics.info.rts.start + statics.info.rts.length;
     statics.initRegs();
   }
