@@ -126,17 +126,11 @@ qx.Class.define("playground.c.machine.Memory",
 
       "rts" :
       {
-        start : 0x9EA4,
-        length : 128
+        start  : 0x8000,
+        length : 0x7000,
+        virgin : null           // initialize in defer()
       }
 
-/*
-      "rts" :                     // Run-time Stack
-      {
-        start  : 16 * 1024,
-        length : 1024
-      }
-*/
     },
 
     /** The register names, and their locations in memory */
@@ -501,6 +495,7 @@ qx.Class.define("playground.c.machine.Memory",
     stackPush : function(type, value)
     {
       var             sp;
+      var             rts = playground.c.machine.Memory.info.rts;
       
       // Get the stack pointer address
       sp = this.getReg("SP", "unsigned int");
@@ -508,6 +503,13 @@ qx.Class.define("playground.c.machine.Memory",
       // Decrement the stack pointer so it's pointing to the first unused
       // location on the stack
       sp -= playground.c.machine.Memory.WORDSIZE;
+
+      // Is this new stack pointer inside the untouched, virgin area?
+      if (sp < rts.virgin)
+      {
+        // Yup. All above is no longer virgin
+        rts.virgin = sp;
+      }
 
       // Store the new stack pointer value back into the stack pointer register
       this.setReg("SP", "unsigned int", sp);
@@ -950,7 +952,7 @@ qx.Class.define("playground.c.machine.Memory",
           {
             group = "Heap";
           }
-          else if (addr >= info.rts.start &&
+          else if (addr >= info.rts.virgin &&
                    addr < info.rts.start + info.rts.length)
           {
             // First see if the current address is below the stack pointer
@@ -1207,6 +1209,7 @@ qx.Class.define("playground.c.machine.Memory",
     statics.WORDSIZE = statics.typeSize["int"];
 
     statics.info.reg.length = statics.NUM_REGS * statics.WORDSIZE;
+    statics.info.rts.virgin = statics.info.rts.start + statics.info.rts.length;
     statics.initRegs();
   }
 });
