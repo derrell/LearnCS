@@ -90,6 +90,15 @@ qx.Class.define("playground.view.c.Memory",
               }
             },
             item, id);
+        },
+        
+        // Reset properties upon returning item to the pool
+        onPool : function(item)
+        {
+          if (item instanceof playground.view.c.MemoryWord)
+          {
+            item.resetType();
+          }
         }
       };
     

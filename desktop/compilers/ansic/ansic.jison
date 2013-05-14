@@ -786,7 +786,7 @@ struct_or_union_specifier
       "struct_or_union lbrace struct_declaration_list rbrace");
     $$ = $1;
     $$.children.push($3);
-    $$.children.push(playground.c.lib.Node.getNull(yylineno));     // no identifier
+    $$.children.push(playground.c.lib.Node.getNull(yylineno)); // no identifier
 
     // Add a symbol table entry for this struct (a type)
     playground.c.lib.Symtab.getCurrent().add(
@@ -796,7 +796,7 @@ struct_or_union_specifier
   {
     parser.yy.R("struct_or_union_specifier : struct_or_union identifier");
     $$ = $1;
-    $$.children.push(playground.c.lib.Node.getNull(yylineno));     // no declaration list
+    $$.children.push(playground.c.lib.Node.getNull(yylineno)); // no declaration list
 
     // Munge the name of the struct
     $2.value = "struct#" + $2.value;
@@ -897,12 +897,13 @@ struct_declarator
     parser.yy.R("struct_declarator : declarator");
     $$ = new playground.c.lib.Node("struct_declarator", yytext, yylineno);
     $$.children.push($1);
+    $$.children.push(playground.c.lib.Node.getNull(yylineno)); // no bitfield
   }
   | ':' constant_expression
   {
     parser.yy.R("struct_declarator : ':' constant_expression");
     $$ = new playground.c.lib.Node("struct_declarator", yytext, yylineno);
-    $$.children.push(playground.c.lib.Node.getNull(yylineno));     // no declarator
+    $$.children.push(playground.c.lib.Node.getNull(yylineno)); // no declarator
     $$.children.push($2);
   }
   | declarator ':' constant_expression

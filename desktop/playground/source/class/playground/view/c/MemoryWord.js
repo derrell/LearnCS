@@ -330,6 +330,11 @@ qx.Class.define("playground.view.c.MemoryWord",
       var             array;
       var             bIsPointer;
 
+      if (value === null)
+      {
+        return;
+      }
+
       // Retrieve the full model for this word
       model = this.getModel();
 

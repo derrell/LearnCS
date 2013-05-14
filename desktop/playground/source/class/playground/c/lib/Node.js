@@ -4336,11 +4336,21 @@ throw new Error("broken code here!");
         break;
 
       case "struct_declarator" :
-        throw new Error("Not yet implemented: struct_declarator");
+        /*
+         * struct_declarator
+         *   0: declarator?
+         *   1: constant_expression (bitfield)
+         */
+        this.__processSubnodes(data, bExecuting, success, failure);
         break;
 
       case "struct_declarator_list" :
-        throw new Error("Not yet implemented: struct_declarator_list");
+        /*
+         * struct_declarator_list
+         *   0: struct_declarator
+         *   ...
+         */
+        this.__processSubnodes(data, bExecuting, success, failure);
         break;
 
       case "structure_reference" :
