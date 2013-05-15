@@ -61,6 +61,14 @@ qx.Class.define("playground.c.machine.Memory",
     /** The size of one word (initialized in defer()) */
     WORDSIZE : null,
 
+    /** Virgin space to leave available in memory template */
+    virgin :
+    {
+      gas  : 16,
+      heap : 16,
+      rts  : 12
+    },
+
     /** Map of sizes of values, according to their C type */
     typeSize :
     {
@@ -510,11 +518,12 @@ qx.Class.define("playground.c.machine.Memory",
       if (sp < rts.virgin)
       {
         // Yup. All above is no longer virgin. Leave a bit of unused margin.
-        rts.virgin = sp - 12;
+        rts.virgin = sp - playground.c.machine.Memory.virgin.rts;
 
         // If virgin space exceeds the allotment...
         if (rts.virgin < rts.start)
         {
+          // ... then limit it to the allotment
           rts.virgin = rts.start;
         }
       }
@@ -841,22 +850,24 @@ qx.Class.define("playground.c.machine.Memory",
       // Adjust the untouched, virgin region
       if (region == "rts" && addr < info[region].virgin)
       {
-        info[region].virgin = addr - 12;
+        info[region].virgin = addr - playground.c.machine.Memory.virgin[region];
 
         // If virgin space exceeds the allotment...
         if (info[region].virgin < info[region].start)
         {
+          // ... then limit it to the allotment
           info[region].virgin = info[region].start;
         }
       }
       else if ((region == "gas" || region == "heap") && 
                addr > info[region].virgin)
       {
-        info[region].virgin = addr + 16;
+        info[region].virgin = addr + playground.c.machine.Memory.virgin[region];
 
         // If virgin space exceeds the allotment...
         if (info[region].virgin > info[region].start + info[region].length)
         {
+          // ... then limit it to the allotment
           info[region].virgin = info[region].start + info[region].length;
         }
       }
