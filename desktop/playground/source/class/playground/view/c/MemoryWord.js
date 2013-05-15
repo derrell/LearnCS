@@ -300,6 +300,11 @@ qx.Class.define("playground.view.c.MemoryWord",
     // property apply function
     _applyAddr : function(value, old)
     {
+      if (value === null)
+      {
+        return;
+      }
+
       value =
         "<span style='font-weight: bold;'>" +
         ("0000" + value.toString(16)).substr(-4) +
@@ -466,6 +471,11 @@ qx.Class.define("playground.view.c.MemoryWord",
     // property apply function
     _applyPointer : function(value, old)
     {
+      if (value === null)
+      {
+        return;
+      }
+
       if (value || (this.getParam() && this.getArray().length > 0))
       {
       }
@@ -477,6 +487,11 @@ qx.Class.define("playground.view.c.MemoryWord",
     // property apply function
     _applyArray : function(value, old)
     {
+      if (value === null)
+      {
+        return;
+      }
+
       if (this.getPointer() || (this.getParam() && value.length > 0))
       {
       }
@@ -488,6 +503,11 @@ qx.Class.define("playground.view.c.MemoryWord",
     // property apply function
     _applyParam : function(value, old)
     {
+      if (value === null)
+      {
+        return;
+      }
+
       if (this.getPointer() || (value && this.getArray().length > 0))
       {
       }
@@ -574,6 +594,11 @@ qx.Class.define("playground.view.c.MemoryWord",
     // property apply function
     _applyValue0 : function(value, old)
     {
+      if (value === null)
+      {
+        return;
+      }
+
       value = this.__fixValue(value);
       this.getChildControl("value10").setValue(value);
       this.getChildControl("value20").setValue(value);
@@ -583,12 +608,22 @@ qx.Class.define("playground.view.c.MemoryWord",
     // property apply function
     _applyValue1 : function(value, old)
     {
+      if (value === null)
+      {
+        return;
+      }
+
       this.getChildControl("value11").setValue(this.__fixValue(value));
     },
     
     // property apply function
     _applyValue2 : function(value, old)
     {
+      if (value === null)
+      {
+        return;
+      }
+
       value = this.__fixValue(value);
       this.getChildControl("value12").setValue(value);
       this.getChildControl("value22").setValue(value);
@@ -597,12 +632,22 @@ qx.Class.define("playground.view.c.MemoryWord",
     // property apply function
     _applyValue3 : function(value, old)
     {
+      if (value === null)
+      {
+        return;
+      }
+
       this.getChildControl("value13").setValue(this.__fixValue(value));
     },
     
     // property apply function
     _applyByte0 : function(value, old)
     {
+      if (value === null)
+      {
+        return;
+      }
+
       this.getChildControl("byte0").setValue(
         ("00" + value.toString(16)).substr(-2));
     },
@@ -610,6 +655,11 @@ qx.Class.define("playground.view.c.MemoryWord",
     // property apply function
     _applyByte1 : function(value, old)
     {
+      if (value === null)
+      {
+        return;
+      }
+
       this.getChildControl("byte1").setValue(
         ("00" + value.toString(16)).substr(-2));
     },
@@ -617,6 +667,11 @@ qx.Class.define("playground.view.c.MemoryWord",
     // property apply function
     _applyByte2 : function(value, old)
     {
+      if (value === null)
+      {
+        return;
+      }
+
       this.getChildControl("byte2").setValue(
         ("00" + value.toString(16)).substr(-2));
     },
@@ -624,6 +679,11 @@ qx.Class.define("playground.view.c.MemoryWord",
     // property apply function
     _applyByte3 : function(value, old)
     {
+      if (value === null)
+      {
+        return;
+      }
+
       this.getChildControl("byte3").setValue(
         ("00" + value.toString(16)).substr(-2));
     },
@@ -631,6 +691,11 @@ qx.Class.define("playground.view.c.MemoryWord",
     // property apply function
     _applyGroup : function(value, old)
     {
+      if (value === null)
+      {
+        return;
+      }
+
       this.getChildControl("group").setValue(value ? value.toString() : "");
     }
   }

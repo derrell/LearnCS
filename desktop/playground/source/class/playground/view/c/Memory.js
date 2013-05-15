@@ -97,7 +97,22 @@ qx.Class.define("playground.view.c.Memory",
         {
           if (item instanceof playground.view.c.MemoryWord)
           {
+            item.resetAddr();
+            item.resetName();
             item.resetType();
+            item.resetSize();
+            item.resetPointer();
+            item.resetArray();
+            item.resetParam();
+            item.resetValue0();
+            item.resetValue1();
+            item.resetValue2();
+            item.resetValue3();
+            item.resetByte0();
+            item.resetByte1();
+            item.resetByte2();
+            item.resetByte3();
+            item.resetGroup();
           }
         }
       };
