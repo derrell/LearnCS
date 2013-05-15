@@ -18,7 +18,7 @@ qx.Class.define("playground.view.c.Memory",
     // Call the superclass constructor
     this.base(arguments, model);
 
-    this.setItemHeight(10);
+    this.setItemHeight(20);
 
     this.getPane().addLayer(
       new qx.ui.virtual.layer.Row("white", "rgb(238, 243, 255)"));
@@ -79,7 +79,40 @@ qx.Class.define("playground.view.c.Memory",
         // the group name
         bindGroupItem : function(controller, item, id) 
         {
-          controller.bindProperty(null, "label", null, item, id);
+          controller.bindProperty(
+            null,
+            "label",
+            {
+              converter : function(data)
+              {
+                var             label;
+
+                // All existing group labels get a bold font
+                item.getChildControl("label").setFont("bold");
+
+                switch(data)
+                {
+                case "Heap" :
+                  item.setBackgroundColor("#3e3e5e");
+                  item.setTextColor("white");
+                  break;
+                  
+                case "Globals & Statics" :
+                  item.setBackgroundColor("#3e4444");
+                  item.setTextColor("white");
+                  break;
+
+                default :
+                  item.setBackgroundColor("#5e8888");
+                  item.setTextColor("white");
+                  break;
+                }
+                
+                return data;
+              }
+            },
+            item,
+            id);
           controller.bindProperty(
             null,
             "icon", 
