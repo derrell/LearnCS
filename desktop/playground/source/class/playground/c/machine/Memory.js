@@ -1070,9 +1070,6 @@ qx.Class.define("playground.c.machine.Memory",
         // Is it typed?
         if (datum.type)
         {
-          // Save the type and its size
-          type = datum.type;
-          
           // Is it an unsigned type?
           if (datum.unsigned)
           {
@@ -1080,6 +1077,9 @@ qx.Class.define("playground.c.machine.Memory",
             datum.type = "unsigned " + type;
           }
 
+          // Save the type and its size
+          type = datum.type;
+          
           // Arrays are actually pointers if they are parameters, but an array
           // of pointers that are not parameters are not considered to be a
           // pointer.

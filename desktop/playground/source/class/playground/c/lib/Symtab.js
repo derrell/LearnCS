@@ -175,7 +175,7 @@ qx.Class.define("playground.c.lib.Symtab",
           getName         : function() { return type + " at line " + line; },
           getType         : function() { return "char"; },
           getUnsigned     : function() { return false; },
-          getSize         : function() { return numBytes; },
+          getSize         : function() { return 1; },
           getPointerCount : function() { return 0; },
           getArraySizes   : function() { return [ numBytes ]; },
           getIsParameter  : function() { return false; }
