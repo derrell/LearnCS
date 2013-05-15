@@ -509,8 +509,14 @@ qx.Class.define("playground.c.machine.Memory",
       // Is this new stack pointer inside the untouched, virgin area?
       if (sp < rts.virgin)
       {
-        // Yup. All above is no longer virgin
-        rts.virgin = sp;
+        // Yup. All above is no longer virgin. Leave a bit of unused margin.
+        rts.virgin = sp - 12;
+
+        // If virgin space exceeds the allotment...
+        if (rts.virgin < rts.start)
+        {
+          rts.virgin = rts.start;
+        }
       }
 
       // Store the new stack pointer value back into the stack pointer register
@@ -826,14 +832,29 @@ qx.Class.define("playground.c.machine.Memory",
       {
         region = "heap";
       }
-      
-      // If it's in gas or heap, adjust the untouched, virgin region
-      if (typeof region != "undefined" && addr > info[region].virgin)
+      else if ((addr >= info.rts.start &&
+                addr < info.rts.start + info.rts.length))
       {
-        // Try to leave some (empty) margin
+        region = "rts";
+      }
+      
+      // Adjust the untouched, virgin region
+      if (region == "rts" && addr < info[region].virgin)
+      {
+        info[region].virgin = addr - 12;
+
+        // If virgin space exceeds the allotment...
+        if (info[region].virgin < info[region].start)
+        {
+          info[region].virgin = info[region].start;
+        }
+      }
+      else if ((region == "gas" || region == "heap") && 
+               addr > info[region].virgin)
+      {
         info[region].virgin = addr + 16;
-        
-        // If virgin space exceeds the alotment...
+
+        // If virgin space exceeds the allotment...
         if (info[region].virgin > info[region].start + info[region].length)
         {
           info[region].virgin = info[region].start + info[region].length;
