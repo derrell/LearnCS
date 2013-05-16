@@ -2545,7 +2545,8 @@ qx.Class.define("playground.c.lib.Node",
               declarator = value2.children[1];
               function_decl = declarator.children[0];
               depth = ++playground.c.lib.Node._depth;
-              mem.nameActivationRecord("Activation Record " + depth + ": " + 
+              mem.nameActivationRecord("Stack: Activation Record " + 
+                                       depth + ": " + 
                                        function_decl.children[0].value);
             }
             

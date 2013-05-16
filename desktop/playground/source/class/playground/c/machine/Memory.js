@@ -213,7 +213,7 @@ qx.Class.define("playground.c.machine.Memory",
         [
           {
             addr : info.rts.start  + info.rts.length,
-            name : "Command line arguments"
+            name : "Stack: Command line arguments"
           }
         ];
       
@@ -1029,7 +1029,7 @@ qx.Class.define("playground.c.machine.Memory",
             mem = playground.c.machine.Memory.getInstance();
             if (addr < mem.getReg("SP", "unsigned int"))
             {
-              group = "Currently unused stack space";
+              group = "Stack: Currently unused";
             }
             else
             {
