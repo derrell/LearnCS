@@ -23,13 +23,8 @@
  */
 'use strict';
 
-goog.provide('Blockly.Language.control');
-
-goog.require('Blockly.Language');
-
 Blockly.Language.controls_if = {
   // If/elseif/else condition.
-  category: Blockly.LANG_CATEGORY_CONTROLS,
   helpUrl: Blockly.LANG_CONTROLS_IF_HELPURL,
   init: function() {
     this.setColour(120);
@@ -219,7 +214,6 @@ Blockly.Language.controls_if_else = {
 
 Blockly.Language.controls_repeat = {
   // Repeat n times.
-  category: Blockly.LANG_CATEGORY_CONTROLS,
   helpUrl: Blockly.LANG_CONTROLS_REPEAT_HELPURL,
   init: function() {
     this.setColour(120);
@@ -238,13 +232,11 @@ Blockly.Language.controls_repeat = {
 
 Blockly.Language.controls_whileUntil = {
   // Do while/until loop.
-  category: Blockly.LANG_CATEGORY_CONTROLS,
   helpUrl: Blockly.LANG_CONTROLS_WHILEUNTIL_HELPURL,
   init: function() {
     this.setColour(120);
     this.appendValueInput('BOOL')
         .setCheck(Boolean)
-        .appendTitle(Blockly.LANG_CONTROLS_WHILEUNTIL_TITLE_REPEAT)
         .appendTitle(new Blockly.FieldDropdown(this.OPERATORS), 'MODE');
     this.appendStatementInput('DO')
         .appendTitle(Blockly.LANG_CONTROLS_WHILEUNTIL_INPUT_DO);
@@ -254,7 +246,7 @@ Blockly.Language.controls_whileUntil = {
     var thisBlock = this;
     this.setTooltip(function() {
       var op = thisBlock.getTitleValue('MODE');
-      return Blockly.Language.controls_whileUntil.TOOLTIPS[op];
+      return thisBlock.TOOLTIPS[op];
     });
   }
 };
@@ -270,7 +262,6 @@ Blockly.Language.controls_whileUntil.TOOLTIPS = {
 
 Blockly.Language.controls_for = {
   // For loop.
-  category: Blockly.LANG_CATEGORY_CONTROLS,
   helpUrl: Blockly.LANG_CONTROLS_FOR_HELPURL,
   init: function() {
     this.setColour(120);
@@ -285,6 +276,10 @@ Blockly.Language.controls_for = {
         .setCheck(Number)
         .setAlign(Blockly.ALIGN_RIGHT)
         .appendTitle(Blockly.LANG_CONTROLS_FOR_INPUT_TO);
+    if (Blockly.LANG_CONTROLS_FOR_TAIL) {
+      this.appendDummyInput()
+          .appendTitle(Blockly.LANG_CONTROLS_FOR_TAIL);
+    }
     this.appendStatementInput('DO')
         .appendTitle(Blockly.LANG_CONTROLS_FOR_INPUT_DO);
     this.setPreviousStatement(true);
@@ -304,12 +299,22 @@ Blockly.Language.controls_for = {
     if (Blockly.Names.equals(oldName, this.getTitleValue('VAR'))) {
       this.setTitleValue(newName, 'VAR');
     }
+  },
+  customContextMenu: function(options) {
+    var option = {enabled: true};
+    var name = this.getTitleValue('VAR');
+    option.text = Blockly.LANG_VARIABLES_SET_CREATE_GET.replace('%1', name);
+    var xmlTitle = goog.dom.createDom('title', null, name);
+    xmlTitle.setAttribute('name', 'VAR');
+    var xmlBlock = goog.dom.createDom('block', null, xmlTitle);
+    xmlBlock.setAttribute('type', 'variables_get');
+    option.callback = Blockly.ContextMenu.callbackFactory(this, xmlBlock);
+    options.push(option);
   }
 };
 
 Blockly.Language.controls_forEach = {
   // For each loop.
-  category: Blockly.LANG_CATEGORY_CONTROLS,
   helpUrl: Blockly.LANG_CONTROLS_FOREACH_HELPURL,
   init: function() {
     this.setColour(120);
@@ -318,6 +323,11 @@ Blockly.Language.controls_forEach = {
         .appendTitle(Blockly.LANG_CONTROLS_FOREACH_INPUT_ITEM)
         .appendTitle(new Blockly.FieldVariable(null), 'VAR')
         .appendTitle(Blockly.LANG_CONTROLS_FOREACH_INPUT_INLIST);
+    if (Blockly.LANG_CONTROLS_FOREACH_INPUT_INLIST_TAIL) {
+      this.appendDummyInput()
+          .appendTitle(Blockly.LANG_CONTROLS_FOREACH_INPUT_INLIST_TAIL);
+      this.setInputsInline(true);
+    }
     this.appendStatementInput('DO')
         .appendTitle(Blockly.LANG_CONTROLS_FOREACH_INPUT_DO);
     this.setPreviousStatement(true);
@@ -336,25 +346,23 @@ Blockly.Language.controls_forEach = {
     if (Blockly.Names.equals(oldName, this.getTitleValue('VAR'))) {
       this.setTitleValue(newName, 'VAR');
     }
-  }
+  },
+  customContextMenu: Blockly.Language.controls_for.customContextMenu
 };
 
 Blockly.Language.controls_flow_statements = {
   // Flow statements: continue, break.
-  category: Blockly.LANG_CATEGORY_CONTROLS,
   helpUrl: Blockly.LANG_CONTROLS_FLOW_STATEMENTS_HELPURL,
   init: function() {
     this.setColour(120);
-    var dropdown = new Blockly.FieldDropdown(this.OPERATORS);
     this.appendDummyInput()
-        .appendTitle(dropdown, 'FLOW')
-        .appendTitle(Blockly.LANG_CONTROLS_FLOW_STATEMENTS_INPUT_OFLOOP);
+        .appendTitle(new Blockly.FieldDropdown(this.OPERATORS), 'FLOW');
     this.setPreviousStatement(true);
     // Assign 'this' to a variable for use in the tooltip closure below.
     var thisBlock = this;
     this.setTooltip(function() {
       var op = thisBlock.getTitleValue('FLOW');
-      return Blockly.Language.controls_flow_statements.TOOLTIPS[op];
+      return thisBlock.TOOLTIPS[op];
     });
   },
   onchange: function() {

@@ -23,13 +23,8 @@
  */
 'use strict';
 
-goog.provide('Blockly.Language.text');
-
-goog.require('Blockly.Language');
-
 Blockly.Language.text = {
   // Text value.
-  category: Blockly.LANG_CATEGORY_TEXT,
   helpUrl: Blockly.LANG_TEXT_TEXT_HELPURL,
   init: function() {
     this.setColour(160);
@@ -46,7 +41,6 @@ Blockly.Language.text = {
 
 Blockly.Language.text_join = {
   // Create a string made up of any number of elements of any type.
-  category: Blockly.LANG_CATEGORY_TEXT,
   helpUrl: Blockly.LANG_TEXT_JOIN_HELPURL,
   init: function() {
     this.setColour(160);
@@ -169,7 +163,6 @@ Blockly.Language.text_create_join_item = {
 
 Blockly.Language.text_append = {
   // Append to a variable in place.
-  category: Blockly.LANG_CATEGORY_TEXT,
   helpUrl: Blockly.LANG_TEXT_APPEND_HELPURL,
   init: function() {
     this.setColour(160);
@@ -199,7 +192,6 @@ Blockly.Language.text_append = {
 
 Blockly.Language.text_length = {
   // String length.
-  category: Blockly.LANG_CATEGORY_TEXT,
   helpUrl: Blockly.LANG_TEXT_LENGTH_HELPURL,
   init: function() {
     this.setColour(160);
@@ -213,56 +205,31 @@ Blockly.Language.text_length = {
 
 Blockly.Language.text_isEmpty = {
   // Is the string null?
-  category: Blockly.LANG_CATEGORY_TEXT,
   helpUrl: Blockly.LANG_TEXT_ISEMPTY_HELPURL,
   init: function() {
     this.setColour(160);
     this.appendValueInput('VALUE')
-        .setCheck([String, Array])
+        .setCheck([String, Array]);
+    this.appendDummyInput()
         .appendTitle(Blockly.LANG_TEXT_ISEMPTY_INPUT_ISEMPTY);
+    this.setInputsInline(true);
     this.setOutput(true, Boolean);
     this.setTooltip(Blockly.LANG_TEXT_ISEMPTY_TOOLTIP);
   }
 };
 
-Blockly.Language.text_endString = {
-  // Return a leading or trailing substring.
-  category: Blockly.LANG_CATEGORY_TEXT,
-  helpUrl: Blockly.LANG_TEXT_ENDSTRING_HELPURL,
-  init: function() {
-    this.setColour(160);
-    this.setOutput(true, String);
-    var menu = new Blockly.FieldDropdown(this.OPERATORS);
-    this.appendValueInput('NUM')
-        .setCheck(Number)
-        .appendTitle(menu, 'END');
-    this.appendValueInput('TEXT')
-        .setCheck(String)
-        .appendTitle(Blockly.LANG_TEXT_ENDSTRING_INPUT);
-    this.setInputsInline(true);
-    this.setTooltip(Blockly.LANG_TEXT_ENDSTRING_TOOLTIP);
-  }
-};
-
-Blockly.Language.text_endString.OPERATORS =
-    [[Blockly.LANG_TEXT_ENDSTRING_OPERATOR_FIRST, 'FIRST'],
-     [Blockly.LANG_TEXT_ENDSTRING_OPERATOR_LAST, 'LAST']];
-
 Blockly.Language.text_indexOf = {
   // Find a substring in the text.
-  category: Blockly.LANG_CATEGORY_TEXT,
   helpUrl: Blockly.LANG_TEXT_INDEXOF_HELPURL,
   init: function() {
     this.setColour(160);
     this.setOutput(true, Number);
-    this.appendValueInput('FIND')
-        .setCheck(String)
-        .appendTitle(Blockly.LANG_TEXT_INDEXOF_TITLE_FIND)
-        .appendTitle(new Blockly.FieldDropdown(this.OPERATORS), 'END')
-        .appendTitle(Blockly.LANG_TEXT_INDEXOF_INPUT_OCCURRENCE);
     this.appendValueInput('VALUE')
         .setCheck(String)
         .appendTitle(Blockly.LANG_TEXT_INDEXOF_INPUT_INTEXT);
+    this.appendValueInput('FIND')
+        .setCheck(String)
+        .appendTitle(new Blockly.FieldDropdown(this.OPERATORS), 'END');
     this.setInputsInline(true);
     this.setTooltip(Blockly.LANG_TEXT_INDEXOF_TOOLTIP);
   }
@@ -274,15 +241,14 @@ Blockly.Language.text_indexOf.OPERATORS =
 
 Blockly.Language.text_charAt = {
   // Get a character from the string.
-  category: Blockly.LANG_CATEGORY_TEXT,
   helpUrl: Blockly.LANG_TEXT_CHARAT_HELPURL,
   init: function() {
     this.setColour(160);
     this.setOutput(true, String);
-    this.appendDummyInput('AT');
     this.appendValueInput('VALUE')
         .setCheck(String)
         .appendTitle(Blockly.LANG_TEXT_CHARAT_INPUT_INTEXT);
+    this.appendDummyInput('AT');
     this.setInputsInline(true);
     this.updateAt(true);
     this.setTooltip(Blockly.LANG_TEXT_CHARAT_TOOLTIP);
@@ -311,7 +277,6 @@ Blockly.Language.text_charAt = {
     } else {
       this.appendDummyInput('AT');
     }
-    this.moveInputBefore('AT', 'VALUE');
     var menu = new Blockly.FieldDropdown(this.WHERE, function(value) {
       var newAt = (value == 'FROM_START') || (value == 'FROM_END');
       // The 'isAt' variable is available due to this function being a closure.
@@ -324,8 +289,7 @@ Blockly.Language.text_charAt = {
       }
       return undefined;
     });
-    this.getInput('AT').appendTitle(Blockly.LANG_TEXT_CHARAT_GET)
-        .appendTitle(menu, 'WHERE');
+    this.getInput('AT').appendTitle(menu, 'WHERE');
   }
 };
 
@@ -336,15 +300,86 @@ Blockly.Language.text_charAt.WHERE =
      [Blockly.LANG_TEXT_CHARAT_LAST, 'LAST'],
      [Blockly.LANG_TEXT_CHARAT_RANDOM, 'RANDOM']];
 
+Blockly.Language.text_getSubstring = {
+  // Get substring.
+  helpUrl: Blockly.LANG_TEXT_SUBSTRING_HELPURL,
+  init: function() {
+    this.setColour(160);
+    this.appendValueInput('STRING')
+        .setCheck(String)
+        .appendTitle(Blockly.LANG_TEXT_SUBSTRING_INPUT_IN_TEXT);
+    this.appendDummyInput('AT1');
+    this.appendDummyInput('AT2');
+    this.setInputsInline(true);
+    this.setOutput(true, String);
+    this.updateAt(1, true);
+    this.updateAt(2, true);
+    this.setTooltip(Blockly.LANG_TEXT_SUBSTRING_TOOLTIP);
+  },
+  mutationToDom: function() {
+    // Save whether there are 'AT' inputs.
+    var container = document.createElement('mutation');
+    var isAt1 = this.getInput('AT1').type == Blockly.INPUT_VALUE;
+    container.setAttribute('at1', isAt1);
+    var isAt2 = this.getInput('AT2').type == Blockly.INPUT_VALUE;
+    container.setAttribute('at2', isAt2);
+    return container;
+  },
+  domToMutation: function(xmlElement) {
+    // Restore the block shape.
+    var isAt1 = (xmlElement.getAttribute('at1') == 'true');
+    var isAt2 = (xmlElement.getAttribute('at1') == 'true');
+    this.updateAt(1, isAt1);
+    this.updateAt(2, isAt2);
+  },
+  updateAt: function(n, isAt) {
+    // Create or delete an input for the numeric index.
+    // Destroy old 'AT' input.
+    this.removeInput('AT' + n);
+    // Create either a value 'AT' input or a dummy input.
+    if (isAt) {
+      this.appendValueInput('AT' + n).setCheck(Number);
+    } else {
+      this.appendDummyInput('AT' + n);
+    }
+    var menu = new Blockly.FieldDropdown(this['WHERE' + n], function(value) {
+      var newAt = (value == 'FROM_START') || (value == 'FROM_END');
+      // The 'isAt' variable is available due to this function being a closure.
+      if (newAt != isAt) {
+        var block = this.sourceBlock_;
+        block.updateAt(n, newAt);
+        // This menu has been destroyed and replaced.  Update the replacement.
+        block.setTitleValue(value, 'WHERE' + n);
+        return null;
+      }
+      return undefined;
+    });
+    this.getInput('AT' + n)
+        .appendTitle(Blockly['LANG_TEXT_SUBSTRING_INPUT_AT' + n])
+        .appendTitle(menu, 'WHERE' + n);
+    if (n == 1) {
+      this.moveInputBefore('AT1', 'AT2');
+    }
+  }
+};
+
+Blockly.Language.text_getSubstring.WHERE1 =
+    [[Blockly.LANG_TEXT_SUBSTRING_FROM_START, 'FROM_START'],
+     [Blockly.LANG_TEXT_SUBSTRING_FROM_END, 'FROM_END'],
+     [Blockly.LANG_TEXT_SUBSTRING_FIRST, 'FIRST']];
+
+Blockly.Language.text_getSubstring.WHERE2 =
+    [[Blockly.LANG_TEXT_SUBSTRING_FROM_START, 'FROM_START'],
+     [Blockly.LANG_TEXT_SUBSTRING_FROM_END, 'FROM_END'],
+     [Blockly.LANG_TEXT_SUBSTRING_LAST, 'LAST']];
+
 Blockly.Language.text_changeCase = {
   // Change capitalization.
-  category: Blockly.LANG_CATEGORY_TEXT,
   helpUrl: Blockly.LANG_TEXT_CHANGECASE_HELPURL,
   init: function() {
     this.setColour(160);
     this.appendValueInput('TEXT')
         .setCheck(String)
-        .appendTitle(Blockly.LANG_TEXT_CHANGECASE_TITLE_TO)
         .appendTitle(new Blockly.FieldDropdown(this.OPERATORS), 'CASE');
     this.setOutput(true, String);
     this.setTooltip(Blockly.LANG_TEXT_CHANGECASE_TOOLTIP);
@@ -358,38 +393,14 @@ Blockly.Language.text_changeCase.OPERATORS =
 
 Blockly.Language.text_trim = {
   // Trim spaces.
-  category: Blockly.LANG_CATEGORY_TEXT,
   helpUrl: Blockly.LANG_TEXT_TRIM_HELPURL,
   init: function() {
     this.setColour(160);
-    var menu = new Blockly.FieldDropdown(this.OPERATORS, function(value) {
-      var plural = (value == 'BOTH');
-      this.sourceBlock_.updatePlural(plural);
-    });
     this.appendValueInput('TEXT')
         .setCheck(String)
-        .appendTitle(Blockly.LANG_TEXT_TRIM_TITLE_SPACE)
-        .appendTitle(menu, 'MODE')
-        .appendTitle(Blockly.LANG_TEXT_TRIM_TITLE_SIDES, 'SIDES');
+        .appendTitle(new Blockly.FieldDropdown(this.OPERATORS), 'MODE');
     this.setOutput(true, String);
     this.setTooltip(Blockly.LANG_TEXT_TRIM_TOOLTIP);
-  },
-  mutationToDom: function() {
-    // Save whether the 'sides' title should be plural or singular.
-    var container = document.createElement('mutation');
-    var plural = (this.getTitleValue('MODE') == 'BOTH');
-    container.setAttribute('plural', plural);
-    return container;
-  },
-  domToMutation: function(xmlElement) {
-    // Restore the 'sides' title as plural or singular.
-    var plural = (xmlElement.getAttribute('plural') == 'true');
-    this.updatePlural(plural);
-  },
-  updatePlural: function(plural) {
-    // Set the 'sides' title as plural or singular.
-    this.setTitleValue(plural ? Blockly.LANG_TEXT_TRIM_TITLE_SIDES :
-        Blockly.LANG_TEXT_TRIM_TITLE_SIDE, 'SIDES');
   }
 };
 
@@ -400,7 +411,6 @@ Blockly.Language.text_trim.OPERATORS =
 
 Blockly.Language.text_print = {
   // Print statement.
-  category: Blockly.LANG_CATEGORY_TEXT,
   helpUrl: Blockly.LANG_TEXT_PRINT_HELPURL,
   init: function() {
     this.setColour(160);
@@ -414,21 +424,24 @@ Blockly.Language.text_print = {
 
 Blockly.Language.text_prompt = {
   // Prompt function.
-  category: Blockly.LANG_CATEGORY_TEXT,
   helpUrl: Blockly.LANG_TEXT_PROMPT_HELPURL,
   init: function() {
     this.setColour(160);
     this.appendDummyInput()
-        .appendTitle(Blockly.LANG_TEXT_PROMPT_TITLE_PROMPT_FOR)
         .appendTitle(new Blockly.FieldDropdown(this.TYPES), 'TYPE')
-        .appendTitle(Blockly.LANG_TEXT_PROMPT_TITILE_WITH_MESSAGE)
         .appendTitle(new Blockly.FieldImage(Blockly.pathToBlockly +
         'media/quote0.png', 12, 12))
         .appendTitle(new Blockly.FieldTextInput(''), 'TEXT')
         .appendTitle(new Blockly.FieldImage(Blockly.pathToBlockly +
         'media/quote1.png', 12, 12));
     this.setOutput(true, [Number, String]);
-    this.setTooltip(Blockly.LANG_TEXT_PROMPT_TOOLTIP);
+    // Assign 'this' to a variable for use in the tooltip closure below.
+    var thisBlock = this;
+    this.setTooltip(function() {
+      return (thisBlock.getTitleValue('TYPE') == 'TEXT') ?
+          Blockly.LANG_TEXT_PROMPT_TOOLTIP_TEXT :
+          Blockly.LANG_TEXT_PROMPT_TOOLTIP_NUMBER;
+    });
   }
 };
 

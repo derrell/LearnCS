@@ -40,10 +40,14 @@ qx.Class.define("playground.view.Blockly",
         [
           "playground/blockly/blockly_compressed.js",
           "playground/blockly/language/en/_messages.js",
+          "playground/blockly/language/common/colour.js",
           "playground/blockly/language/common/control.js",
+          "playground/blockly/language/common/lists.js",
           "playground/blockly/language/common/logic.js",
           "playground/blockly/language/common/math.js",
-          "playground/blockly/language/common/text.js"
+          "playground/blockly/language/common/procedures.js",
+          "playground/blockly/language/common/text.js",
+          "playground/blockly/language/common/variables.js"
         ];
 
       load = function(list) 
@@ -176,8 +180,48 @@ qx.Class.define("playground.view.Blockly",
 
           // create the editor
           this.__blockly = 
-            Blockly.inject(container, 
-                           { path : "resource/playground/blockly/" });
+            Blockly.inject(
+              container, 
+              {
+                path    : "resource/playground/blockly/",
+                toolbox : (
+                  "<xml>" +
+                  "  <category name='Controls'>" +
+                  "    <block type='controls_if'></block>" +
+                  "    <block type='controls_repeat'></block>" +
+                  "  </category>" +
+                  "  <category name='Others'>" +
+                  "    <block type='logic_compare'></block>" +
+                  "    <block type='math_number'></block>" +
+                  "    <block type='math_arithmetic'></block>" +
+                  "    <block type='text'></block>" +
+                  "    <block type='text_print'></block>" +
+                  "    <block type='procedures_defreturn' inline='false'>" +
+                  "      <mutation>" +
+                  "        <arg name='x'></arg>" +
+                  "        <arg name='y'></arg>" +
+                  "      </mutation>" +
+                  "      <title name='NAME'>add</title>" +
+                  "      <value name='RETURN'>" +
+                  "        <block type='math_arithmetic' inline='true'>" +
+                  "          <title name='OP'>ADD</title>" +
+                  "          <value name='A'>" +
+                  "            <block type='variables_get'>" +
+                  "              <title name='VAR'>x</title>" +
+                  "            </block>" +
+                  "          </value>" +
+                  "          <value name='B'>" +
+                  "            <block type='variables_get'>" +
+                  "              <title name='VAR'>y</title>" +
+                  "            </block>" +
+                  "          </value>" +
+                  "        </block>" +
+                  "      </value>" +
+                  "    </block>" +
+                  "  </category>"
+                ),
+                trashcan : true
+              });
 
           // append resize listener
           this.__editor.addListener(
