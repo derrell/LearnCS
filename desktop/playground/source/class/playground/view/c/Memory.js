@@ -90,21 +90,22 @@ qx.Class.define("playground.view.c.Memory",
                 // All existing group labels get a bold font
                 item.getChildControl("label").setFont("bold");
 
+                // scheme: http://colorschemedesigner.com/#3G11T----vyvy
                 switch(data)
                 {
                 case "Heap" :
-                  item.setBackgroundColor("#3e3e5e");
-                  item.setTextColor("white");
+                  item.setBackgroundColor("#3f67c0");
+                  item.setTextColor("#eeeeee");
                   break;
                   
                 case "Globals & Statics" :
-                  item.setBackgroundColor("#3e4444");
-                  item.setTextColor("white");
+                  item.setBackgroundColor("#0041a7");
+                  item.setTextColor("#eeeeee");
                   break;
 
                 default :
-                  item.setBackgroundColor("#5e8888");
-                  item.setTextColor("white");
+                  item.setBackgroundColor("#0063ff");
+                  item.setTextColor("#eeeeee");
                   break;
                 }
                 
