@@ -322,7 +322,7 @@ qx.Class.define("playground.Application",
       }
       
       // empirically-determined width to get headers to align.
-      gridLayout.setColumnWidth(6, 12);
+      gridLayout.setColumnWidth(2, 12);
 
       var label = new qx.ui.basic.Label(
         "<span style='font-weight: bold;'>Name</span>");

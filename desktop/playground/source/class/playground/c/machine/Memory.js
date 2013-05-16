@@ -156,6 +156,16 @@ qx.Class.define("playground.c.machine.Memory",
       "R3"  : null
     },
     
+    virginize : function()
+    {
+      var             statics = playground.c.machine.Memory;
+
+      statics.info.gas.virgin = statics.info.gas.start + 16;
+      statics.info.heap.virgin = statics.info.heap.start + 16;
+      statics.info.rts.virgin = 
+        statics.info.rts.start + statics.info.rts.length;
+    },
+
     initRegs : function()
     {
       var             statics = playground.c.machine.Memory;
@@ -217,6 +227,9 @@ qx.Class.define("playground.c.machine.Memory",
           }
         ];
       
+      // (Re)set the virgin memory pointers
+      playground.c.machine.Memory.virginize();
+
       // Initialize register values
       playground.c.machine.Memory.initRegs();
     },
@@ -1278,10 +1291,9 @@ qx.Class.define("playground.c.machine.Memory",
     // A "word" is the native integer size
     statics.WORDSIZE = statics.typeSize["int"];
 
+    statics.virginize();
+
     statics.info.reg.length = statics.NUM_REGS * statics.WORDSIZE;
-    statics.info.gas.virgin = statics.info.gas.start + 16;
-    statics.info.heap.virgin = statics.info.heap.start + 16;
-    statics.info.rts.virgin = statics.info.rts.start + statics.info.rts.length;
     statics.initRegs();
   }
 });
