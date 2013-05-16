@@ -147,6 +147,8 @@ qx.Class.define("playground.view.c.Memory",
             item.resetByte2();
             item.resetByte3();
             item.resetGroup();
+            
+            item.clear();
           }
         }
       };

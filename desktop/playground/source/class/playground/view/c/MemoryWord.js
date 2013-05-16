@@ -1,3 +1,5 @@
+zzz = 0;
+
 /**
  * A view of C memory -- one word
  *
@@ -169,6 +171,40 @@ qx.Class.define("playground.view.c.MemoryWord",
 
   members :
   {
+    clear : function()
+    {
+      [
+        "name1",
+        "name2",
+        "name4",
+        "type",
+        "addr1",
+        "addr2",
+        "addr4",
+        "value10",
+        "value11",
+        "value12",
+        "value13",
+        "value20",
+        "value22",
+        "value40",
+        "byte0",
+        "byte1",
+        "byte2",
+        "byte3",
+        "group"
+      ].forEach(
+        function(field)
+        {
+          // Set the value to something other than an empty string...
+          this.getChildControl(field).setValue("#");
+          
+          // ... so that setting it to an empty string has a change of value.
+          this.getChildControl(field).setValue("");
+        },
+        this);
+    },
+
     // overridden
     _createChildControlImpl : function(id, hash)
     {
