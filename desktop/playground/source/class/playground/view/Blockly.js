@@ -178,6 +178,83 @@ qx.Class.define("playground.view.Blockly",
         {
           var container = this.__editor.getContentElement().getDomElement();
 
+          // Reduce sizes of blocks
+/*
+          Blockly.BlockSvg.MIN_BLOCK_Y = 15;
+          Blockly.BlockSvg.SEP_SPACE_X = 4;
+          Blockly.BlockSvg.SEP_SPACE_Y = 4;
+          Blockly.BlockSvg.TAB_HEIGHT = 10;
+          Blockly.BlockSvg.TAB_WIDTH = 6;
+          Blockly.BlockSvg.NOTCH_WIDTH = 20;
+          Blockly.BlockSvg.CORNER_READIUS = 6;
+          Blockly.BlockSvg.TITLE_HEIGHT = 12;
+ */
+ 
+Blockly.Language.function = {
+  helpUrl: 'http://www.example.com/',
+  init: function() {
+    this.setColour(230);
+    this.appendDummyInput()
+        .appendTitle(new Blockly.FieldTextInput("Function"), "function_name");
+    this.appendStatementInput("local variables")
+        .setAlign(Blockly.ALIGN_RIGHT)
+        .appendTitle("local variables");
+    this.appendStatementInput("statements")
+        .setAlign(Blockly.ALIGN_RIGHT)
+        .appendTitle("statements");
+//    this.setOutput(true, "Number");
+    this.setTooltip('');
+  }
+};
+
+/*
+Blockly.JavaScript.function = function() {
+  var statements_local_variables = 
+    Blockly.JavaScript.statementToCode(this, 'local variables');
+  var statements_statements = 
+    Blockly.JavaScript.statementToCode(this, 'statements');
+  var function_name = this.getTitleValue('function_name');
+  // TODO: Assemble JavaScript into code variable.
+  var code = '...';
+  // TODO: Change ORDER_NONE to the correct strength.
+  return [code, Blockly.JavaScript.ORDER_NONE];
+};
+*/
+
+
+          // Reduce default font sizes
+          Blockly.Css.CONTENT =
+            Blockly.Css.CONTENT.map(
+              function(o)
+              {
+                if (o.indexOf("font-size") != -1)
+                {
+                  // All font sizes measured in points change to a fixed size
+                  o = o.replace(/font-size *:.*pt/g, "font-size: 10pt");
+                  
+                  // All font sizes measured in pixels, except those of less
+                  // than a desired pixel size, are reduced to that size
+                  o = o.replace(
+                    /font-size *:(.*)px/g, 
+                    function(str, px)
+                    {
+                      var             desiredSize = 13;
+
+                      // If already no larger than the desired size...
+                      if (px <= desiredSize)
+                      {
+                        // ... then leave it as it is.
+                        return str;
+                      }
+                      
+                      // Reduce it to the desired size
+                      return "font-size: " + desiredSize + "px";
+                    });
+                }
+                
+                return o;
+              });
+
           // create the editor
           this.__blockly = 
             Blockly.inject(
@@ -189,6 +266,7 @@ qx.Class.define("playground.view.Blockly",
                   "  <category name='Controls'>" +
                   "    <block type='controls_if'></block>" +
                   "    <block type='controls_repeat'></block>" +
+                  "    <block type='function'></block>" +
                   "  </category>" +
                   "  <category name='Others'>" +
                   "    <block type='logic_compare'></block>" +
