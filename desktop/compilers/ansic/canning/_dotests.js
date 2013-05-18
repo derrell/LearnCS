@@ -215,6 +215,9 @@ var tests =
     {
       name  : "p055-fibonacci-recursive.c",
       stdin : "12"
+    },
+    {
+      name  : "t001-global-pointer-initialized.c"
     }
   ];
 

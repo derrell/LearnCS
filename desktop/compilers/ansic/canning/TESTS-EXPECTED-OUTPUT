@@ -331,3 +331,10 @@ STDOUT:
 Which number in the Fibonacci sequence would you like? The Fibonacci numbered 12 is 144
 Which number in the Fibonacci sequence would you like? >>> Program exited with exit code 0
 
+% nodejs ../ansic.js t001-global-pointer-initialized.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+chicken wing!
+ huzzah
+>>> Program exited with exit code 0
+

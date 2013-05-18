@@ -376,6 +376,28 @@ qx.Class.define("playground.view.Editor",
     },
 
     /**
+     * Set a breakpoint
+     * 
+     * @param line {Number}
+     *   Line number of breakpoint to set
+     */
+    setBreakpoint : function(line)
+    {
+      this.__ace.getSession().setBreakpoint(line);
+    },
+
+    /**
+     * Clear a breakpoint
+     * 
+     * @param line {Number}
+     *   Line number of breakpoint to clear
+     */
+    clearBreakpoint : function(line)
+    {
+      this.__ace.getSession().clearBreakpoint(line);
+    },
+
+    /**
      * Scroll to a specified line
      * 
      * @param line {Number}

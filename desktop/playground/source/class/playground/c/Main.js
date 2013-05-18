@@ -340,7 +340,7 @@ qx.Class.define("playground.c.Main",
       mem.initAll();
 
       // Correct line numbers
-      root.fixLineNumbers();
+      root.fixLineNumbers(true);
 
       // Display the abstract syntax tree
       if (playground.c.Main.debugFlags.ast)
@@ -722,6 +722,9 @@ qx.Class.define("playground.c.Main",
                 getArraySizes   : function() { return []; },
                 getIsParameter  : function() { return false; }
               });
+
+            // Set symbol info for the root symbol table's symbols
+            playground.c.lib.Symtab.getByName("*").addSymbols();
 
             // Process main()
             try
