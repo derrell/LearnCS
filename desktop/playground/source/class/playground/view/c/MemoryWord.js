@@ -1,5 +1,3 @@
-zzz = 0;
-
 /**
  * A view of C memory -- one word
  *
