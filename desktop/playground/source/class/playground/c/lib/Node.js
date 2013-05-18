@@ -340,11 +340,32 @@ qx.Class.define("playground.c.lib.Node",
      * node's code began. Search each node for its children's minimum line
      * number, and recursively set each node to have that minimum as its own
      * line number.
+     * 
+     * @param bRoot {Boolean}
+     *   Whether we are called with the root node
+     * 
+     * @return {Number}
+     *   The minimum line number found in this node and its children
      */
-    fixLineNumbers : function()
+    fixLineNumbers : function(bRoot)
     {
+      var             i;
+      var             j;
       var             minLine = Number.MAX_VALUE;
       var             line;
+      var             editor;
+      var             linesInUse;
+      var             breakpoints;
+
+      // Is this the root?
+      if (bRoot)
+      {
+        // Yup. Initialize the array of lines in use
+        playground.c.lib.Node._linesInUse = [];
+      }
+
+      // Get quick reference to the lines-in-use array
+      linesInUse = playground.c.lib.Node._linesInUse;
 
       // If there are children of this node...
       if (this.children)
@@ -357,7 +378,7 @@ qx.Class.define("playground.c.lib.Node",
             if (subnode)
             {
               // Get the minimum line number for this child node
-              line = subnode.fixLineNumbers() || this.line;
+              line = subnode.fixLineNumbers(false) || this.line;
             }
             else
             {
@@ -385,6 +406,56 @@ qx.Class.define("playground.c.lib.Node",
       // This node's line number becomes the minimum of all of its children's
       // line numbers and its own line number.
       this.line = minLine;
+
+      // Note that this is a used line number
+      if (this.type != "_null_")
+      {
+        linesInUse[this.line] = true;
+      }
+
+      // Is this the root?
+      if (bRoot)
+      {
+        // This block of code will fail if not in the GUI environment
+        try
+        {
+          // Yup. Retrieve the editor
+          editor = qx.core.Init.getApplication().getUserData("sourceeditor");
+
+          // Get the list of breakpoints. We'll update any breakpoint that
+          // isn't at an in-use line number, to the next in-use one.
+          breakpoints = editor.getBreakpoints();
+
+          // Go backwards through the breakpoint list, to avoid excessively
+          // revisiting moved breakpoints.
+          for (i = breakpoints.length - 1; i >= 0; i--)
+          {
+            // Is there a breakpoint here, and it it at a line with executable
+            // code? (Caution: the editor, including the breakpoint list,
+            // contains 0-relative line numbers, but linesInUse is 1-relative.)
+            if (breakpoints[i] && ! linesInUse[i + 1])
+            {
+              // Nope. Remove the breakpoint.
+              editor.clearBreakpoint(i);
+
+              // Find the next available line with code at which to add a
+              // breakpoint
+              for (j = i + 1; j < linesInUse.length; j++)
+              {
+                if (linesInUse[j])
+                {
+                  editor.setBreakpoint(j - 1);
+                  break;
+                }
+              }
+            }
+          }
+        }
+        catch(e)
+        {
+          // nothing to do if not in the GUI environment
+        }
+      }
 
       // Return the (possibly new) line number of this node
       return this.line;
@@ -3145,6 +3216,25 @@ qx.Class.define("playground.c.lib.Node",
          *   1 : initializer?
          */
 
+        var init_declarator_initialize = function(success, failure)
+        {
+          bOldIsInitializer = data.bIsInitializer;
+          data.bIsInitializer = true;
+
+          // We're executing. Assign the initial value
+          this.__assignHelper(data, 
+                              function(oldVal, newVal)
+                              {
+                                return newVal;
+                              },
+                              function()
+                              {
+                                data.bIsInitializer = bOldIsInitializer;
+                                success();
+                              },
+                              failure);
+        }.bind(this);
+
         if (! bExecuting)
         {
           // Save specAndDecl before overwriting it
@@ -3186,28 +3276,22 @@ qx.Class.define("playground.c.lib.Node",
               data.specAndDecl = oldSpecAndDecl;
               data.typeDeclarators = oldTypeDeclarators;
 
-              success();
+              // If this is a root entry (global variable)...
+              if (data.entry.getSymtab().getParent() === null)
+              {
+                // ... then initialize it.
+                init_declarator_initialize(success, failure);
+              }
+              else
+              {
+                success();
+              }
             }.bind(this),
             failure);
         }
         else
         {
-          bOldIsInitializer = data.bIsInitializer;
-          data.bIsInitializer = true;
-
-          // We're executing. Assign the initial value
-          this.__assignHelper(data, 
-                              function(oldVal, newVal)
-                              {
-                                return newVal;
-                              },
-                              function()
-                              {
-                                data.bIsInitializer = bOldIsInitializer;
-                                success();
-                              },
-                              failure);
-
+          init_declarator_initialize(success, failure);
         }
         break;
 

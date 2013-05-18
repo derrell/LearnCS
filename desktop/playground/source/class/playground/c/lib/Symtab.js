@@ -83,7 +83,7 @@ qx.Class.define("playground.c.lib.Symtab",
 
     // Create this new symbol table
     this.__name = name;
-    this.__parent = parent;
+    this.__parent = parent || null;
     this.__symbols = {};
     this.__symbolOrder = [];
     this.__nextChild = 1;
@@ -234,7 +234,7 @@ qx.Class.define("playground.c.lib.Symtab",
       symtab = Symtab.getCurrent();
       
       // Add each symbol in this symbol table to memory, for later display
-      symtab.__symbolOrder.forEach(this._addSymbolInfo);
+      symtab.addSymbols();
     },
     
     /**
@@ -561,6 +561,15 @@ qx.Class.define("playground.c.lib.Symtab",
     getSize : function()
     {
       return this.nextOffset;
+    },
+    
+    /**
+     * Add each of the symbols in this symbol table to the memory template view
+     */
+    addSymbols : function()
+    {
+      // Add each symbol in this symbol table to memory, for later display
+      this.__symbolOrder.forEach(playground.c.lib.Symtab._addSymbolInfo);
     }
   }
 });
