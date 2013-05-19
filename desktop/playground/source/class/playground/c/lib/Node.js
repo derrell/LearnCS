@@ -220,7 +220,7 @@ qx.Class.define("playground.c.lib.Node",
           if (! bNoDerefAddress && specOrDecl.getType() != "array")
           {
             value.value = 
-              playground.c.lib.Node.__mem.get(value.value, type); 
+              playground.c.lib.Node.__mem.get(value.value, type, true); 
           }
         }
       }
@@ -254,7 +254,8 @@ qx.Class.define("playground.c.lib.Node",
         // Retrieve the value from the address
         if (type != "address")
         {
-          value.value = playground.c.lib.Node.__mem.get(value.value, type);
+          value.value =
+            playground.c.lib.Node.__mem.get(value.value, type, true);
         }
       }
 
@@ -654,17 +655,24 @@ qx.Class.define("playground.c.lib.Node",
                   {
                     var             terminal;
 
-                    // Note that they pressed the Step button, to break at
-                    // next line.
-                    playground.c.lib.Node._bStep = true;
-                    
-                    // Set the focus on the terminal window
-                    terminal = 
-                      qx.core.Init.getApplication().getUserData("terminal");
-                    terminal.focus();
+                    try
+                    {
+                      // Note that they pressed the Step button, to break at
+                      // next line.
+                      playground.c.lib.Node._bStep = true;
 
-                    // Process the next node
-                    this.process.apply(this, args);
+                      // Set the focus on the terminal window
+                      terminal = 
+                        qx.core.Init.getApplication().getUserData("terminal");
+                      terminal.focus();
+
+                      // Process the next node
+                      this.process.apply(this, args);
+                    }
+                    catch(e)
+                    {
+                      failure(e);
+                    }
                   },
                   this);
 
@@ -675,17 +683,24 @@ qx.Class.define("playground.c.lib.Node",
                   {
                     var             terminal;
 
-                    // Do not break at the next line (unless there's a
-                    // breakpoint at that line)
-                    playground.c.lib.Node._bStep = false;
-                    
-                    // Set the focus on the terminal window
-                    terminal = 
-                      qx.core.Init.getApplication().getUserData("terminal");
-                    terminal.focus();
-                    
-                    // Process the next nodes (until a breakpoint)
-                    this.process.apply(this, args);
+                    try
+                    {
+                      // Do not break at the next line (unless there's a
+                      // breakpoint at that line)
+                      playground.c.lib.Node._bStep = false;
+
+                      // Set the focus on the terminal window
+                      terminal = 
+                        qx.core.Init.getApplication().getUserData("terminal");
+                      terminal.focus();
+
+                      // Process the next nodes (until a breakpoint)
+                      this.process.apply(this, args);
+                    }
+                    catch(e)
+                    {
+                      failure(e);
+                    }
                   },
                 this);
             return;
@@ -877,6 +892,7 @@ qx.Class.define("playground.c.lib.Node",
                             {
                               return oldVal + newVal;
                             },
+                            true,
                             success,
                             failure);
         break;
@@ -1177,7 +1193,7 @@ qx.Class.define("playground.c.lib.Node",
               {
                 // ... then we need to get the address that the pointer points
                 // to.
-                addr = playground.c.lib.Node.__mem.get(addr, "pointer"); 
+                addr = playground.c.lib.Node.__mem.get(addr, "pointer", true); 
               }
             }
             else
@@ -1267,6 +1283,7 @@ qx.Class.define("playground.c.lib.Node",
                             {
                               return newVal;
                             },
+                            false,
                             success,
                             failure);
         break;
@@ -1356,6 +1373,7 @@ qx.Class.define("playground.c.lib.Node",
                             {
                               return oldVal & newVal;
                             },
+                            true,
                             success,
                             failure);
         break;
@@ -1462,6 +1480,7 @@ qx.Class.define("playground.c.lib.Node",
                             {
                               return oldVal | newVal;
                             },
+                            true,
                             success,
                             failure);
         break;
@@ -1959,7 +1978,7 @@ qx.Class.define("playground.c.lib.Node",
               // Get the address contained in this pointer
               if (specAndDecl[0].getType() != "array")
               {
-                addr = playground.c.lib.Node.__mem.get(addr, "pointer");
+                addr = playground.c.lib.Node.__mem.get(addr, "pointer", true);
               }
             }
             else
@@ -2107,6 +2126,7 @@ qx.Class.define("playground.c.lib.Node",
                             {
                               return oldVal / newVal;
                             },
+                            true,
                             success,
                             failure);
         break;
@@ -3227,6 +3247,7 @@ qx.Class.define("playground.c.lib.Node",
                               {
                                 return newVal;
                               },
+                              false,
                               function()
                               {
                                 data.bIsInitializer = bOldIsInitializer;
@@ -3395,6 +3416,7 @@ qx.Class.define("playground.c.lib.Node",
                             {
                               return oldVal << newVal;
                             },
+                            true,
                             success,
                             failure);
         break;
@@ -3567,6 +3589,7 @@ qx.Class.define("playground.c.lib.Node",
                             {
                               return oldVal % newVal;
                             },
+                            true,
                             success,
                             failure);
         break;
@@ -3637,6 +3660,7 @@ qx.Class.define("playground.c.lib.Node",
                             {
                               return oldVal * newVal;
                             },
+                            true,
                             success,
                             failure);
         break;
@@ -3938,6 +3962,7 @@ qx.Class.define("playground.c.lib.Node",
                             {
                               return oldVal - newVal;
                             },
+                            true,
                             success,
                             failure,
                             true,
@@ -3975,6 +4000,7 @@ qx.Class.define("playground.c.lib.Node",
                             {
                               return oldVal + newVal;
                             },
+                            true,
                             success,
                             failure,
                             true,
@@ -4000,6 +4026,7 @@ qx.Class.define("playground.c.lib.Node",
                             {
                               return oldVal - newVal;
                             },
+                            true,
                             success,
                             failure,
                             true,
@@ -4025,6 +4052,7 @@ qx.Class.define("playground.c.lib.Node",
                             {
                               return oldVal + newVal;
                             },
+                            true,
                             success,
                             failure,
                             true,
@@ -4156,6 +4184,7 @@ qx.Class.define("playground.c.lib.Node",
                             {
                               return oldVal >> newVal;
                             },
+                            true,
                             success,
                             failure);
         break;
@@ -4557,6 +4586,7 @@ throw new Error("broken code here!");
                             {
                               return oldVal - newVal;
                             },
+                            true,
                             success,
                             failure);
         break;
@@ -5013,6 +5043,7 @@ throw new Error("broken code here!");
                             {
                               return oldVal ^ newVal;
                             },
+                            true,
                             success,
                             failure);
         break;
@@ -5082,6 +5113,10 @@ throw new Error("broken code here!");
      *   Function to produce the result for assignment. It takes two
      *   arguments: the old (original) value of the lhs, and the new value.
      * 
+     * @param bUseOld {Boolean}
+     *   true if the old value of the right-hand side is used;
+     *   false if it is not used
+     * 
      * @param success {Function}
      *   Function to call upon successful completion of this call
      * 
@@ -5100,7 +5135,8 @@ throw new Error("broken code here!");
      *   Upon success, a map containing the resulting value and its type is
      *   returned. Upon failure (lhs is not an lvalue), null is returned.
      */
-    __assignHelper : function(data, fOp, success, failure, bUnary, bPostOp)
+    __assignHelper : function(data, fOp, bUseOld, 
+                              success, failure, bUnary, bPostOp)
     {
       var             type;
       var             value;
@@ -5182,7 +5218,7 @@ throw new Error("broken code here!");
           } while (true);
 
           // Retrieve the current value
-          value = playground.c.lib.Node.__mem.get(value1.value, type);
+          value = playground.c.lib.Node.__mem.get(value1.value, type, bUseOld);
 
           // Determine the value to assign there. If it's a unary operator
           // (pre/post increment/decrement), then use the retrieved
@@ -5265,7 +5301,8 @@ throw new Error("broken code here!");
             if (! bPostOp)
             {
               // ... then retrieve and return the altered value
-              value = playground.c.lib.Node.__mem.get(value1.value, type);
+              value =
+                playground.c.lib.Node.__mem.get(value1.value, type, bUseOld);
             }
 
             // Clone the specifier/declarator list

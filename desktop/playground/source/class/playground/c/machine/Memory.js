@@ -164,6 +164,9 @@ qx.Class.define("playground.c.machine.Memory",
       statics.info.heap.virgin = statics.info.heap.start + 16;
       statics.info.rts.virgin = 
         statics.info.rts.start + statics.info.rts.length;
+      
+      // all memory is uninitialized
+      statics._memInitialized = [];
     },
 
     initRegs : function()
@@ -184,6 +187,10 @@ qx.Class.define("playground.c.machine.Memory",
   {
     __memSize : 0,
     __activationRecordsBegin : null,
+
+    /** Array indicating bytes of memory that have been initialized */
+    _memInitialized : null,
+
 
     /**
      * Initialize the memory module.
@@ -367,12 +374,16 @@ qx.Class.define("playground.c.machine.Memory",
      * @param type {String}
      *   The C type with which the data at the source address should be
      *   interpreted.
+     * 
+     * @param bRequireInitialized {Boolean}
+     *   If true, throw an error if accessed memory has not been initialized
      *
      * @return {Number}
      *   The value retrieved from memory, converted to the specified type.
      */
-    get : function(addr, type)
+    get : function(addr, type, bRequireInitialized)
     {
+      var             i;
       var             size;
       var             info = playground.c.machine.Memory.info;
 
@@ -427,6 +438,21 @@ qx.Class.define("playground.c.machine.Memory",
             "(This is sometimes called a 'Segmentation Fault'.)");
       }
 
+      // If so requested, test that memory to be accessed has been initialized.
+      if (bRequireInitialized)
+      {
+        for (i = 0; i < size; i++)
+        {
+          if (! playground.c.machine.Memory._memInitialized[addr + i])
+          {
+            throw new playground.c.lib.RuntimeError(
+              playground.c.lib.Node._currentNode,
+              "Reading an uninitialized value from address 0x" +
+              (addr + i).toString(16));
+          }
+        }
+      }
+
       // Get an appropriate view into the memory, based on the type, and return
       // that value.
       return this._getByType(type, addr)[0];
@@ -447,6 +473,7 @@ qx.Class.define("playground.c.machine.Memory",
      */
     set : function(addr, type, value)
     {
+      var             i;
       var             size;
       var             info = playground.c.machine.Memory.info;
 
@@ -499,6 +526,12 @@ qx.Class.define("playground.c.machine.Memory",
             "bounds of its 'globals and statics', 'heap', or " +
             "'run time stack' region of memory. " +
             "(This is sometimes called a 'Segmentation Fault'.)");
+      }
+
+      // Mark initialized memory
+      for (i = 0; i < size; i++)
+      {
+        playground.c.machine.Memory._memInitialized[addr + i] = true;
       }
 
       // Get an appropriate view into the memory, based on the type, and save
