@@ -1633,7 +1633,7 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "char" :
-        // Only applicable before executing
+        // Only applicable when executing and in a declaration
         if (bExecuting && ! data.specifiers)
         {
           success();
@@ -2132,7 +2132,7 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "double" :
-        // Only applicable before executing
+        // Only applicable before executing and when in a declaration
         if (bExecuting && ! data.specifiers)
         {
           success();
@@ -2399,7 +2399,7 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "float" :
-        // Only applicable before executing
+        // Only applicable before executing and when in a declaration
         if (bExecuting && ! data.specifiers)
         {
           success();
@@ -3330,7 +3330,7 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "int" :
-        // Only applicable before executing
+        // Only applicable before executing and when in a declaration
         if (bExecuting && ! data.specifiers)
         {
           success();
@@ -3504,7 +3504,7 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "long" :
-        // Only applicable before executing
+        // Only applicable before executing and when in a declaration
         if (bExecuting && ! data.specifiers)
         {
           success();
@@ -3900,7 +3900,7 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "pointer" :
-        // Only applicable before executing
+        // Only applicable before executing and when in a declaration
         if (bExecuting && ! data.specAndDecl)
         {
           success();
@@ -4190,7 +4190,7 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "short" :
-        // Only applicable before executing
+        // Only applicable before executing and when in a declaration
         if (bExecuting && ! data.specifiers)
         {
           success();
@@ -4202,7 +4202,7 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "signed" :
-        // Only applicable before executing
+        // Only applicable before executing and when in a declaration
         if (bExecuting && ! data.specifiers)
         {
           success();
@@ -4364,7 +4364,7 @@ qx.Class.define("playground.c.lib.Node",
          *   1 : identifier
          */
         
-        // Only applicable before executing
+        // Only applicable before executing and when in a declaration
         if (bExecuting && ! data.specifiers)
         {
           success();
@@ -4976,7 +4976,7 @@ throw new Error("broken code here!");
         break;
 
       case "union" :
-        // Only applicable before executing
+        // Only applicable before executing and when in a declaration
         if (bExecuting && ! data.specifiers)
         {
           success();
@@ -4988,7 +4988,7 @@ throw new Error("broken code here!");
         break;
 
       case "unsigned" :
-        // Only applicable before executing
+        // Only applicable before executing and when in a declaration
         if (bExecuting && ! data.specifiers)
         {
           success();
@@ -5000,7 +5000,7 @@ throw new Error("broken code here!");
         break;
 
       case "void" :
-        // Only applicable before executing
+        // Only applicable before executing and when in a declaration
         if (bExecuting && ! data.specifiers)
         {
           success();
