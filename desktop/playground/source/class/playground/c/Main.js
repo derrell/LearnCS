@@ -135,18 +135,26 @@ qx.Class.define("playground.c.Main",
          * 
          * @param hash {Map}
          *   A map containing details of the error and its location.
+         * 
+         * @param prevPosition {String}
+         *   A previous position to show instead of the current position
          */
-        parseError : function(str, hash)
+        parseError : function(str, hash, prevPosition)
         {
+          var             errStr;
+          var             showPosition;
+
           if (true)
           {
-            var errStr =
+            // If we have a previous position to display, then show it;
+            // otherwise show the current position, along with the error
+            // description.
+            errStr =
               "Parse error on line " +
               hash.line +
               ":\n" +
-              parser.lexer.showPosition() +
-              "\n"
-              ;
+              (prevPosition || parser.lexer.showPosition()) +
+              "\n";
 
             if (str)
             {
