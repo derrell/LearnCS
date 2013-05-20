@@ -2625,7 +2625,7 @@ qx.Class.define("playground.c.lib.Node",
                   new playground.c.lib.RuntimeError(
                     this,
                     "Function " + value1.getName() + 
-                    " has been declared, but not defined."));
+                    " has not been defined."));
                 return;
               }
               
@@ -3294,18 +3294,27 @@ qx.Class.define("playground.c.lib.Node",
               // declarators
               data.entry.calculateOffset();
 
-              // Restore data members
-              data.specAndDecl = oldSpecAndDecl;
-              data.typeDeclarators = oldTypeDeclarators;
-
               // If this is a root entry (global variable)...
-              if (data.entry.getSymtab().getParent() === null)
+              if (data.entry.getSymtab().getParent() === null &&
+                  data.entry.getSpecAndDecl()[0].getType() != "function")
               {
                 // ... then initialize it.
-                init_declarator_initialize(success, failure);
+                init_declarator_initialize(
+                  function()
+                  {
+                    // Restore data members
+                    data.specAndDecl = oldSpecAndDecl;
+                    data.typeDeclarators = oldTypeDeclarators;
+                    success();
+                  },
+                  failure);
               }
               else
               {
+                // Restore data members
+                data.specAndDecl = oldSpecAndDecl;
+                data.typeDeclarators = oldTypeDeclarators;
+
                 success();
               }
             }.bind(this),
