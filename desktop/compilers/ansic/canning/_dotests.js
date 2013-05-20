@@ -221,6 +221,15 @@ var tests =
     },
     {
       name  : "t002-decl-after-stmt.c"
+    },
+    {
+      name  : "t003-forward-decl.c"
+    },
+    {
+      name  : "t004-forward-decl-missing.c"
+    },
+    {
+      name  : "t005-forward-decl-only.c"
     }
   ];
 
