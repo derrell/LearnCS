@@ -348,3 +348,22 @@ STDOUT: Parse error near line 9:
 Errors encountered: 1
 
 
+% nodejs ../ansic.js t003-forward-decl.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+>>> Program exited with exit code 0
+
+% nodejs ../ansic.js t004-forward-decl-missing.c --rootdir=/home/derrell/ME
+ERROR: Error: Command failed: 
+STDOUT: 
+>>> Running program
+Error: line 5: Function 'doit' has not been defined.
+>>> Program had errors. It did not run to completion.
+
+% nodejs ../ansic.js t005-forward-decl-only.c --rootdir=/home/derrell/ME
+ERROR: Error: Command failed: 
+STDOUT: 
+>>> Running program
+Error: line 7: Function 'doit' has not been defined.
+>>> Program had errors. It did not run to completion.
+
