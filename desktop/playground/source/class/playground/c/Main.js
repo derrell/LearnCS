@@ -309,6 +309,11 @@ qx.Class.define("playground.c.Main",
         {
           playground.c.Main.output(error.message + "\n");
         }
+        else if (error instanceof playground.c.lib.NotYetImplemented)
+        {
+          playground.c.Main.output("Not yet implemented: " +
+                                   error.nodeType + "\n");
+        }
         else
         {
           playground.c.Main.output("Internal error: " + error + "\n");
@@ -468,6 +473,32 @@ qx.Class.define("playground.c.Main",
 
       function catchError(error)
       {
+        // Was this actually an Exit request?
+        if (error instanceof playground.c.lib.Exit)
+        {
+          // Run any finalization functions
+          playground.c.Main.finalize.forEach(
+            function(finalize)
+            {
+              finalize();
+            });
+
+          completion();
+
+          // Show them their exit value
+          playground.c.Main.output(
+            ">>> " +
+            "Program exited with exit code " + error.exitCode + "\n");
+
+          if (typeof process != "undefined")
+          {
+            process.exit(error.exitCode);
+          }
+
+          return;
+        }
+
+
         // Determine what type of error we encountered
         if (error instanceof playground.c.lib.Break)
         {
@@ -486,6 +517,11 @@ qx.Class.define("playground.c.Main",
         {
           playground.c.Main.output(
             "Error: line " + error.node.line + ": " + error.message + "\n");
+        }
+        else if (error instanceof playground.c.lib.NotYetImplemented)
+        {
+          playground.c.Main.output("Not yet implemented: " +
+                                   error.nodeType + "\n");
         }
         else
         {

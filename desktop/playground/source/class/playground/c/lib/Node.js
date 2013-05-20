@@ -28,6 +28,7 @@ if (typeof qx === "undefined" || qx.bConsole)
   require("./Return");
   require("./Break");
   require("./Continue");
+  require("./NotYetImplemented");
 }
 
 qx.Class.define("playground.c.lib.Node",
@@ -2269,11 +2270,11 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "ellipsis" :
-        throw new Error("Not yet implemented: ellipsis");
+        throw new playground.c.lib.NotYetImplemented("ellipsis");
         break;
 
       case "enumerator_list" :
-        throw new Error("Not yet implemented: enumerator_list");
+        throw new playground.c.lib.NotYetImplemented("enumerator_list");
         break;
 
       case "enum_specifier" :
@@ -2285,7 +2286,7 @@ qx.Class.define("playground.c.lib.Node",
         }
         
         data.specifiers.setType("enum");
-        throw new Error("Not yet implemented: enum_specifier");
+        throw new playground.c.lib.NotYetImplemented("enum_specifier");
         break;
 
       case "equal" :
@@ -3025,7 +3026,7 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "goto" :
-        throw new Error("Not yet implemented: goto");
+        throw new playground.c.lib.NotYetImplemented("goto");
         break;
 
       case "greater-equal" :
@@ -3350,7 +3351,7 @@ qx.Class.define("playground.c.lib.Node",
         }
         
         data.specifiers.setType("label");
-        throw new Error("Not yet implemented: label");
+        throw new playground.c.lib.NotYetImplemented("label");
         success();
         break;
 
@@ -3917,7 +3918,7 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "pointer_access" :
-        throw new Error("Not yet implemented: pointer_access");
+        throw new playground.c.lib.NotYetImplemented("pointer_access");
         break;
 
       case "positive" :
@@ -4372,7 +4373,7 @@ qx.Class.define("playground.c.lib.Node",
         }
         
         data.specifiers.setType("struct");
-        throw new Error("Not yet implemented: struct");
+        throw new playground.c.lib.NotYetImplemented("struct");
         success();
         break;
 
@@ -4388,7 +4389,7 @@ qx.Class.define("playground.c.lib.Node",
          *               0: ...
          */
         
-        throw new Error("struct_declaration not yet implemented");
+        throw new playground.c.lib.NotYetImplemented("struct_declaration");
 
 
 
@@ -4428,7 +4429,7 @@ throw new Error("broken code here!");
             }
             else if (subnode.type == "enum_specifier")
             {
-              throw new Error("enum_specifier not yet implemented");
+              throw new playground.c.lib.NotYetImplemented("enum_specifier");
             }
             else
             {
@@ -4468,7 +4469,7 @@ throw new Error("broken code here!");
         break;
 
       case "structure_reference" :
-        throw new Error("Not yet implemented: structure_reference");
+        throw new playground.c.lib.NotYetImplemented("structure_reference");
         break;
 
       case "subtract" :
@@ -4984,7 +4985,7 @@ throw new Error("broken code here!");
         }
         
         data.specifiers.setType("union");
-        throw new Error("Not yet implemented: union");
+        throw new playground.c.lib.NotYetImplemented("union");
         break;
 
       case "unsigned" :

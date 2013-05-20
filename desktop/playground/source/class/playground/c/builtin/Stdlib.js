@@ -75,6 +75,14 @@ qx.Class.define("playground.c.builtin.Stdlib",
             }
           },
           {
+            name : "exit",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.builtin.Stdlib.exit.apply(null, args);
+            }
+          },
+          {
             name : "free",
             func : function()
             {
@@ -428,6 +436,11 @@ qx.Class.define("playground.c.builtin.Stdlib",
         });
     },
     
+    exit : function(success, failure, exitCode)
+    {
+      failure(new playground.c.lib.Exit(exitCode));
+    },
+
     free : function(success, failure, addr)
     {
       var             j;

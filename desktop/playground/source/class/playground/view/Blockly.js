@@ -190,36 +190,37 @@ qx.Class.define("playground.view.Blockly",
           Blockly.BlockSvg.TITLE_HEIGHT = 12;
  */
  
-Blockly.Language.function = {
-  helpUrl: 'http://www.example.com/',
-  init: function() {
-    this.setColour(230);
-    this.appendDummyInput()
-        .appendTitle(new Blockly.FieldTextInput("Function"), "function_name");
-    this.appendStatementInput("local variables")
-        .setAlign(Blockly.ALIGN_RIGHT)
-        .appendTitle("local variables");
-    this.appendStatementInput("statements")
-        .setAlign(Blockly.ALIGN_RIGHT)
-        .appendTitle("statements");
-//    this.setOutput(true, "Number");
-    this.setTooltip('');
-  }
-};
+          Blockly.Language["function"] = {
+            helpUrl: 'http://www.example.com/',
+            init: function() {
+              this.setColour(230);
+              this.appendDummyInput()
+                .appendTitle(new Blockly.FieldTextInput("Function"), 
+                             "function_name");
+              this.appendStatementInput("local variables")
+                .setAlign(Blockly.ALIGN_RIGHT)
+                .appendTitle("local variables");
+              this.appendStatementInput("statements")
+                .setAlign(Blockly.ALIGN_RIGHT)
+                .appendTitle("statements");
+          //    this.setOutput(true, "Number");
+              this.setTooltip('');
+            }
+          };
 
-/*
-Blockly.JavaScript.function = function() {
-  var statements_local_variables = 
-    Blockly.JavaScript.statementToCode(this, 'local variables');
-  var statements_statements = 
-    Blockly.JavaScript.statementToCode(this, 'statements');
-  var function_name = this.getTitleValue('function_name');
-  // TODO: Assemble JavaScript into code variable.
-  var code = '...';
-  // TODO: Change ORDER_NONE to the correct strength.
-  return [code, Blockly.JavaScript.ORDER_NONE];
-};
-*/
+          /*
+          Blockly.JavaScript.function = function() {
+            var statements_local_variables = 
+              Blockly.JavaScript.statementToCode(this, 'local variables');
+            var statements_statements = 
+              Blockly.JavaScript.statementToCode(this, 'statements');
+            var function_name = this.getTitleValue('function_name');
+            // TODO: Assemble JavaScript into code variable.
+            var code = '...';
+            // TODO: Change ORDER_NONE to the correct strength.
+            return [code, Blockly.JavaScript.ORDER_NONE];
+          };
+          */
 
 
           // Reduce default font sizes
