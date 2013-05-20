@@ -218,6 +218,9 @@ var tests =
     },
     {
       name  : "t001-global-pointer-initialized.c"
+    },
+    {
+      name  : "t002-decl-after-stmt.c"
     }
   ];
 

@@ -338,3 +338,13 @@ chicken wing!
  huzzah
 >>> Program exited with exit code 0
 
+% nodejs ../ansic.js t002-decl-after-stmt.c --rootdir=/home/derrell/ME
+ERROR: Error: Command failed: 
+STDOUT: Parse error on line 9:
+...table statement    char            c;  
+----------------------^
+	Declarations must precede executable statements.
+
+Errors encountered: 1
+
+
