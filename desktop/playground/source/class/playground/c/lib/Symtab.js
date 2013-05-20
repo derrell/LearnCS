@@ -194,14 +194,26 @@ qx.Class.define("playground.c.lib.Symtab",
     {
       var             addr;
       var             memory;
+      var             specAndDecl;
+      var             specOrDecl;
 
       // Get this symbol's address
       addr = symbol.getAddr();
 
       // Ensure that it's a real address and not a built-in function node
-      if (addr instanceof playground.c.lib.Node)
+      if (addr instanceof playground.c.lib.Node || addr instanceof Function)
       {
-        // It's a node. Ignore it
+        // It's a built-in. Ignore it
+        return;
+      }
+
+      // Ensure that it's not a typedef
+      specAndDecl = symbol.getSpecAndDecl();
+      specOrDecl = specAndDecl[specAndDecl.length - 1]; 
+      if (specOrDecl instanceof playground.c.lib.Specifier &&
+          specOrDecl.getStorage() == "typedef")
+      {
+        // It is a typedef. It takes no space, so nothing for us to do.
         return;
       }
 

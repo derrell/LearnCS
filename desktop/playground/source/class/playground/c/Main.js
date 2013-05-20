@@ -29,6 +29,9 @@ if (typeof qx === "undefined")
 
   require("./lib/Symtab.js");
   require("./lib/Node.js");
+  require("./lib/Exit.js");
+  require("./lib/RuntimeError.js");
+  require("./lib/NotYetImplemented.js");
   require("./machine/Memory.js");
   require("./machine/Machine.js");
   require("./stdio/AbstractFile.js");
