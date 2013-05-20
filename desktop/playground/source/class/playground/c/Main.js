@@ -150,7 +150,7 @@ qx.Class.define("playground.c.Main",
             // otherwise show the current position, along with the error
             // description.
             errStr =
-              "Parse error on line " +
+              "Parse error near line " +
               hash.line +
               ":\n" +
               (prevPosition || parser.lexer.showPosition()) +
