@@ -25,6 +25,7 @@
 %nonassoc IF_WITHOUT_ELSE
 %nonassoc ELSE
 
+
 %start start_sym
 
 %%
@@ -1470,6 +1471,20 @@ statement_list
     parser.yy.R("statement_list : statement_list statement");
     $$ = $1;
     $$.children.push($2);
+  }
+  | statement_list save_position declaration
+  {
+    playground.c.lib.Node.getError().parseError(
+      "Declarations must precede executable statements.",
+      { line : yylineno },
+      $2);
+  }
+  ;
+
+save_position
+  :
+  {
+    $$ = parser.lexer.showPosition();
   }
   ;
 
