@@ -340,7 +340,7 @@ chicken wing!
 
 % nodejs ../ansic.js t002-decl-after-stmt.c --rootdir=/home/derrell/ME
 ERROR: Error: Command failed: 
-STDOUT: Parse error on line 9:
+STDOUT: Parse error near line 9:
 ...table statement    char            c;  
 ----------------------^
 	Declarations must precede executable statements.
