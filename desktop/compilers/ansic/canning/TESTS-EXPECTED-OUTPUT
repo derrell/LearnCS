@@ -357,13 +357,13 @@ STDOUT:
 ERROR: Error: Command failed: 
 STDOUT: 
 >>> Running program
-Error: line 5: Function 'doit' has not been defined.
+Error near line 5: Function 'doit' has not been defined.
 >>> Program had errors. It did not run to completion.
 
 % nodejs ../ansic.js t005-forward-decl-only.c --rootdir=/home/derrell/ME
 ERROR: Error: Command failed: 
 STDOUT: 
 >>> Running program
-Error: line 7: Function 'doit' has not been defined.
+Error near line 7: Function 'doit' has not been defined.
 >>> Program had errors. It did not run to completion.
 

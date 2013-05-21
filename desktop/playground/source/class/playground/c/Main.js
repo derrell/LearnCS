@@ -380,7 +380,7 @@ qx.Class.define("playground.c.Main",
           if (error)
           {
             playground.c.Main.output(
-              "Error: line " + error.node.line +
+              "Error near line " + error.node.line +
                 ": " + error.message + "\n");
           }
         });
@@ -506,20 +506,20 @@ qx.Class.define("playground.c.Main",
         if (error instanceof playground.c.lib.Break)
         {
           playground.c.Main.output(
-            "Error: line " + error.node.line + ": " + 
+            "Error near line " + error.node.line + ": " + 
             "Found 'break' not in a loop, " +
             "nor immediately within a 'switch'\n");
         }
         else if (error instanceof playground.c.lib.Continue)
         {
           playground.c.Main.output(
-            "Error: line " + error.node.line + ": " + 
+            "Error near line " + error.node.line + ": " + 
             "Found 'continue' not immediately within a loop\n");
         }
         else if (error instanceof playground.c.lib.RuntimeError)
         {
           playground.c.Main.output(
-            "Error: line " + error.node.line + ": " + error.message + "\n");
+            "Error near line " + error.node.line + ": " + error.message + "\n");
         }
         else if (error instanceof playground.c.lib.NotYetImplemented)
         {
