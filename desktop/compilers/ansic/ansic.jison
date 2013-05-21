@@ -586,6 +586,7 @@ declaration
 
     $$ = new playground.c.lib.Node("declaration", yytext, yylineno);
     $$.children.push($1);
+    $$.children.push(playground.c.lib.Node.getNull(yylineno));     // no init_declarator_list
   }
   | declaration_specifiers init_declarator_list ';'
   {
