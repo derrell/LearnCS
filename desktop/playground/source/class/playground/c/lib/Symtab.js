@@ -112,11 +112,13 @@ qx.Class.define("playground.c.lib.Symtab",
     playground.c.lib.Symtab._symtabs[name] = this;
 
     // Push it onto the appropriate stack
+/*
     if (name.match(/^struct#/))
     {
       playground.c.lib.Symtab._symtabStackStruct.push(this);
     }
     else
+*/
     {
       playground.c.lib.Symtab._symtabStack.push(this);
     }

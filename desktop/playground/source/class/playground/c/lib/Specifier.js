@@ -380,10 +380,14 @@ qx.Class.define("playground.c.lib.Specifier",
         break;
         
       case "struct" :
+        // We will add to the byte count as each struct member is added
+        byteCount = 0;
+        break;
+
       case "union" :
       case "enum" :
       case "label" :
-        throw new Error("Not yet implemented: " + this.__type);
+        throw new playground.c.lib.NotYetImplemented(this.__type);
         break;
       }
 
@@ -403,13 +407,13 @@ qx.Class.define("playground.c.lib.Specifier",
         
       case "float" :
       case "double" :
+      case "struct" :
         return this.__type;
         
-      case "struct" :
       case "union" :
       case "enum" :
       case "label" :
-        throw new Error("Not yet implemented: " + this.__type);
+        throw new playground.c.lib.NotYetImplemented(this.__type);
 
       default :
         throw new Error("Unexpected type: " + this.__type);

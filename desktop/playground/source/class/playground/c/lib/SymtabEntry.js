@@ -153,7 +153,8 @@ qx.Class.define("playground.c.lib.SymtabEntry",
           break;
 
         case "struct" :
-          throw new Error("Don't yet know type/size of struct");
+//          throw new Error("Don't yet know type/size of struct");
+parts.push(type + " (*** FIXME! ***)");
           break;
 
         case "union" :
@@ -525,7 +526,7 @@ qx.Class.define("playground.c.lib.SymtabEntry",
                 }
               });
             console.log(
-              "\t    " + 
+              "\tDescription: " + 
                 playground.c.lib.SymtabEntry.getInfo(
                   this.__specAndDecl).description);
           }

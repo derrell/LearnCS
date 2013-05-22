@@ -3142,7 +3142,6 @@ qx.Class.define("playground.c.lib.Node",
 
             // Attach the specifier/declarator list to this symbol
             entry.setSpecAndDecl(data.specAndDecl);
-            data.entry = entry;
           }
           else
           {
@@ -3159,7 +3158,7 @@ qx.Class.define("playground.c.lib.Node",
             }
           }
           
-          // Save the entry. sizeof needs it.
+          // Save the entry.
           data.entry = entry;
 
           // Process any children
@@ -4374,16 +4373,65 @@ qx.Class.define("playground.c.lib.Node",
          *   1 : identifier
          */
         
-        // Only applicable before executing and when in a declaration
-        if (bExecuting && ! data.specifiers)
+        // Only applicable before executing
+        if (bExecuting)
         {
           success();
           break;
         }
         
         data.specifiers.setType("struct");
-        throw new playground.c.lib.NotYetImplemented("struct");
-        success();
+        data.specifiers.setStorage("extern");
+        
+        // Save information that we might overwrite
+        oldEntry = data.entry;
+        oldSpecAndDecl = data.specAndDecl;
+        
+        data.specAndDecl = [];
+        
+        // Process the identifier
+        this.children[1].process(
+          data,
+          bExecuting,
+          function()
+          {
+            // If there is a struct_declaration_list...
+            if (this.children[0].type != "_null_")
+            {
+              // ... then create a symbol table to hold this struct's members
+              symtab = new playground.c.lib.Symtab(
+                playground.c.lib.Symtab.getCurrent(),
+                data.entry.getName(),
+                this.line);
+              
+              // Save the new symbol table with the struct declaration
+              data.entry.setStructSymtab(symtab);
+            }
+
+            // Process the struct_declaration_list
+            this.children[0].process(
+              data,
+              bExecuting,
+              function()
+              {
+                // Add the specifiers to the specifier/declarator list
+                data.specAndDecl.push(data.specifiers);
+
+                // Restore overwritten data members
+                data.entry = oldEntry;
+                data.specAndDecl = oldSpecAndDecl;
+
+                // Revert to the prior scope, if we'd created a new symbol table
+                if (this.children[0].type != "_null_")
+                {
+                  playground.c.lib.Symtab.popStack();
+                }
+
+                success();
+              }.bind(this),
+              failure);
+          }.bind(this),
+          failure);
         break;
 
       case "struct_declaration" :
@@ -4391,63 +4439,49 @@ qx.Class.define("playground.c.lib.Node",
          * struct_declaration
          *   0: specifier_qualifier_list
          *   1: struct_declarator_list
-         *      0: struct_declarator
-         *         0: declarator
-         *            0: identifier
-         *            1: pointer
-         *               0: ...
          */
-        
-        throw new playground.c.lib.NotYetImplemented("struct_declaration");
 
+        // Save data members which we'll overwrite
+        oldId = data.id;
+        oldEntry = data.entry;
+        oldSpecifiers = data.specifiers;
+        oldSpecAndDecl = data.specAndDecl;
+        oldTypeSpecifiers = data.typeSpecifiers;
+        oldTypeDeclarators = data.typeDeclarators;
 
+        // Create our own data object with a new specifier for this declaration
+        data.id = "struct_declaration";
+        data.specifiers = new playground.c.lib.Specifier(this);
 
-        // Obtain a symbol table entry for the identifier. Put it in the
-        // sybol table associated with the entry in our data.
-        identifier =
-          this.children[1].children[0].children[0].children[0].value;
-        symtabStruct = data.entry.getStructSymtab();
-        entry = symtabStruct.add(identifier, this.line, false);
-
-        if (! entry)
-        {
-          entry = symtabStruct.get(identifier, false);
-          this.error("Structure member '" + identifier + "' " +
-                     "was previously declared near line " + entry.getLine());
-          return null;
-        }
-
-        // Process the specifier qualifier list to add this declaration's
-        // types to the symtab entry. For each declared type...
-        this.children[0].children.forEach(
-          function(subnode)
+        // Process the specifiers
+        this.children[0].process(
+          data,
+          bExecuting,
+          function()
           {
-            // ... add this declared type to the entry. First check for ones
-            // we must handle specially.
-            if (subnode.type == "struct")
-            {
-              /*
-               * struct
-               *   0: struct_declaration_list
-               *   1: identifier
-               */
-//FIXME (not enough args)
-throw new Error("broken code here!");
-              subnode.process(data, bExecuting);
-              entry.setType(subnode.children[1].value);
-            }
-            else if (subnode.type == "enum_specifier")
-            {
-              throw new playground.c.lib.NotYetImplemented("enum_specifier");
-            }
-            else
-            {
-              entry.setType(subnode.type == "type_name_token"
-                            ? subnode.value
-                            : subnode.type);
-            }
-          },
-          this);
+            // Process the declarators
+            this.children[1].process(
+              data, 
+              bExecuting,
+              function()
+              {
+                // Add the specifiers to the specifier/declarator list
+                specAndDecl = data.entry.getSpecAndDecl();
+                specAndDecl.push(data.specifiers);
+                data.entry.setSpecAndDecl(specAndDecl);
+
+                // Restore data members
+                data.id = oldId;
+                data.entry = oldEntry;
+                data.specifiers = oldSpecifiers;
+                data.specAndDecl = oldSpecAndDecl;
+                data.typeSpecifiers = oldTypeSpecifiers;
+                data.typeDeclarators = oldTypeDeclarators;
+                success();
+              }.bind(this),
+              failure);
+          }.bind(this),
+          failure);
         break;
 
       case "struct_declaration_list" :
@@ -4456,6 +4490,14 @@ throw new Error("broken code here!");
          *   0: struct_declaration
          *   ...
          */
+        
+        // Only applicable before executing
+        if (bExecuting)
+        {
+          success();
+          break;
+        }
+        
         this.__processSubnodes(data, bExecuting, success, failure);
         break;
 
@@ -5228,7 +5270,11 @@ throw new Error("broken code here!");
           } while (true);
 
           // Retrieve the current value
-          value = playground.c.lib.Node.__mem.get(value1.value, type, bUseOld);
+          if (type != "struct")
+          {
+            value =
+              playground.c.lib.Node.__mem.get(value1.value, type, bUseOld);
+          }
 
           // Determine the value to assign there. If it's a unary operator
           // (pre/post increment/decrement), then use the retrieved
