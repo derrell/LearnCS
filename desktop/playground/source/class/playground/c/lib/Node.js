@@ -512,6 +512,7 @@ qx.Class.define("playground.c.lib.Node",
       var             oldArgs;
       var             oldId;
       var             oldEntry;
+      var             oldStructSymtab;
       var             oldSpecifiers;
       var             oldSpecAndDecl;
       var             oldTypeSpecifiers;
@@ -1794,6 +1795,7 @@ qx.Class.define("playground.c.lib.Node",
         oldSpecAndDecl = data.specAndDecl;
         oldTypeSpecifiers = data.typeSpecifiers;
         oldTypeDeclarators = data.typeDeclarators;
+        oldStructSymtab = data.structSymtab;
 
         // Create our own data object with a new specifier for this declaration
         data.id = "declaration";
@@ -1818,6 +1820,7 @@ qx.Class.define("playground.c.lib.Node",
                 data.specAndDecl = oldSpecAndDecl;
                 data.typeSpecifiers = oldTypeSpecifiers;
                 data.typeDeclarators = oldTypeDeclarators;
+                data.structSymtab = oldStructSymtab;
                 success();
               }.bind(this),
               failure);
@@ -3142,6 +3145,13 @@ qx.Class.define("playground.c.lib.Node",
 
             // Attach the specifier/declarator list to this symbol
             entry.setSpecAndDecl(data.specAndDecl);
+            
+            // If we're in the middle of declaring a structure variable...
+            if (data.structSymtab)
+            {
+              // ... then save the structure symbol table with this symbol
+              entry.setStructSymtab(data.structSymtab);
+            }
           }
           else
           {
@@ -4404,9 +4414,23 @@ qx.Class.define("playground.c.lib.Node",
                 data.entry.getName(),
                 this.line);
               
-              // Save the new symbol table with the struct declaration
+              // Save the symbol table with the entry for this structure name
               data.entry.setStructSymtab(symtab);
             }
+            else
+            {
+              // The symbol table may already exist
+              entry = 
+                playground.c.lib.Symtab.getCurrent().get(data.entry.getName());
+
+              if (entry)
+              {
+                symtab = entry.getStructSymtab();
+              }
+            }
+
+            // Save this symbol table to store it with variables of this type
+            data.structSymtab = symtab;
 
             // Process the struct_declaration_list
             this.children[0].process(
@@ -4469,7 +4493,7 @@ qx.Class.define("playground.c.lib.Node",
                 specAndDecl = data.entry.getSpecAndDecl();
                 specAndDecl.push(data.specifiers);
                 data.entry.setSpecAndDecl(specAndDecl);
-
+                
                 // Restore data members
                 data.id = oldId;
                 data.entry = oldEntry;
@@ -4507,7 +4531,20 @@ qx.Class.define("playground.c.lib.Node",
          *   0: declarator?
          *   1: constant_expression (bitfield)
          */
-        this.__processSubnodes(data, bExecuting, success, failure);
+
+        // Do not associate the structure symbol table with a struct member
+        oldStructSymtab = data.structSymtab;
+        data.structSymtab = null;
+
+        this.__processSubnodes(
+          data,
+          bExecuting,
+          function()
+          {
+            data.structSymtab = oldStructSymtab;
+            success();
+          },
+          failure);
         break;
 
       case "struct_declarator_list" :
