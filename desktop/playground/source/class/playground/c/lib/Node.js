@@ -4571,7 +4571,91 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "structure_reference" :
-        throw new playground.c.lib.NotYetImplemented("structure_reference");
+        /*
+         * structure_reference
+         *   0: postfix_expression | dereference
+         *   1: identifier
+         */
+        if (! bExecuting)
+        {
+          success();
+          break;
+        }
+
+        // Get the address of the structure or union variable or expression
+        this.children[0].process(
+          data, 
+          bExecuting,
+          function(v)
+          {
+            var             symtab;
+
+            value1 = v;
+            
+            // If we got a symbol, retrieve its address. Otherwise, we already
+            // have an address.
+            if (value1 instanceof playground.c.lib.SymtabEntry)
+            {
+              value1 =
+                {
+                  specAndDecl : v.getSpecAndDecl(),
+                  value       : v.getAddr()
+                };
+            }
+
+            // Get the symbol table of the struct/union members. It's in the
+            // specifier.
+            specAndDecl = value1.specAndDecl[value1.specAndDecl.length - 1];
+            symtab = specAndDecl.getStructSymtab();
+            
+            // Push the struct symbol table onto the symtab stack
+            playground.c.lib.Symtab.pushStack(symtab);
+
+            // Process the struct/union member
+            this.children[1].process(
+              data,
+              bExecuting,
+              function(v)
+              {
+                // We're finished with use of the structure symbol table. Pop
+                // it off of the symtab stack.
+                playground.c.lib.Symtab.popStack();
+
+                // We must have received a symtab entry.
+                if (! (v instanceof playground.c.lib.SymtabEntry))
+                {
+                  failure(new playground.c.lib.RuntimeError(
+                            this,
+                            "A structure or union reference must have a " +
+                            "member name to the right of the dot."));
+                  return;
+                }
+
+                // The entry must be in the struct/union symtab
+                if (v.getSymtab() != symtab)
+                {
+                  failure(new playground.c.lib.RuntimeError(
+                            this,
+                            "Unrecognized struct or union member: " +
+                            v.getName()));
+                  return;
+                }
+
+                // Get this member's offset from the beginning of the struct,
+                // and add it to the previously-determined address.
+                value1.value += v.getOffset();
+                value1.specAndDecl = v.getSpecAndDecl();
+                
+                // We're providing the address of this member. Indicate such.
+                // Prepend an "address" declarator"
+                value1.specAndDecl.unshift(
+                  new playground.c.lib.Declarator(this, "address"));
+
+                success(value1);
+              }.bind(this),
+              failure);
+          }.bind(this),
+          failure);
         break;
 
       case "subtract" :

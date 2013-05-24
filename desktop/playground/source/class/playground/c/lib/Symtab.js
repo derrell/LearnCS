@@ -620,6 +620,7 @@ qx.Class.define("playground.c.lib.Symtab",
           symtab = symbol.getStructSymtab();
           if (symtab)
           {
+            // Ignore the internal-use symbol tables for struct/union
             if (symtab.getName().match("struct#"))
             {
               return;

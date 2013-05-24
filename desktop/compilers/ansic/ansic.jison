@@ -109,25 +109,23 @@ postfix_expression
     {
       parser.yy.R("postfix_expression : postfix_expression '.' identifier");
 
-      var             structure_reference;
-
-      $$ = $1;
-      structure_reference =
-        new playground.c.lib.Node("structure_reference", yytext, yylineno);
-      structure_reference.children.push($3);
-      $$.children.push(structure_reference);
+      $$ = new playground.c.lib.Node("structure_reference", yytext, yylineno);
+      $$.children.push($1);
+      $$.children.push($3);
     }
   | postfix_expression PTR_OP identifier
     {
       parser.yy.R("postfix_expression : postfix_expression PTR_OP identifier");
 
-      var             pointer_access;
+      var             deref;
 
-      $$ = $1;
-      pointer_access =
-        new playground.c.lib.Node("pointer_access", yytext, yylineno);
-      pointer_access.children.push($3);
-      $$.children.push(pointer_access);
+      $$ = new playground.c.lib.Node("structure_reference", yytext, yylineno);
+
+      deref = new playground.c.lib.Node("dereference", yytext, yylineno);
+      deref.children.push($1);
+
+      $$.children.push(deref);
+      $$.children.push($3);
     }
   | postfix_expression INC_OP
     {
