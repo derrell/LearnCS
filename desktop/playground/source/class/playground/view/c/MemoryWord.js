@@ -618,8 +618,17 @@ qx.Class.define("playground.view.c.MemoryWord",
       }
       else
       {
-        // Convert the number to a string
-        newValue = value.toString();
+        // Convert the number to a string. If it's an integer...
+        if (type == "int")
+        {
+          // ... then just do a straight conversion.
+          newValue = value.toString();
+        }
+        else
+        {
+          // Otherwise allow no more digits than fit on the memory template view
+          newValue = value.toPrecision(12).toString();
+        }
       }
 
       return newValue;
