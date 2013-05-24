@@ -784,13 +784,21 @@ struct_or_union_specifier
   {
     parser.yy.R("struct_or_union_specifier : " +
       "struct_or_union lbrace struct_declaration_list rbrace");
+
+    var             identifier;
+
     $$ = $1;
     $$.children.push($3);
-    $$.children.push(playground.c.lib.Node.getNull(yylineno)); // no identifier
+
+    // Create an identifier node
+    identifier = new playground.c.lib.Node("identifier", yytext, yylineno);
+    identifier.value = "struct#" + playground.c.lib.Symtab.getUniqueId();
 
     // Add a symbol table entry for this struct (a type)
-    playground.c.lib.Symtab.getCurrent().add(
-      "struct#" + playground.c.lib.Symtab.getUniqueId(), yylineno, true);
+    playground.c.lib.Symtab.getCurrent().add(identifier.value, yylineno, true);
+
+    // Add the identifier
+    $$.children.push(identifier);
   }
   | struct_or_union identifier
   {

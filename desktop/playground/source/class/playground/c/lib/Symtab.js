@@ -112,13 +112,6 @@ qx.Class.define("playground.c.lib.Symtab",
     playground.c.lib.Symtab._symtabs[name] = this;
 
     // Push it onto the appropriate stack
-/*
-    if (name.match(/^struct#/))
-    {
-      playground.c.lib.Symtab._symtabStackStruct.push(this);
-    }
-    else
-*/
     {
       playground.c.lib.Symtab._symtabStack.push(this);
     }
@@ -138,9 +131,6 @@ qx.Class.define("playground.c.lib.Symtab",
     
     /** Stack of symbol tables, during parsing */
     _symtabStack : [],
-    
-    /** Stack of local symbol tabales for a structure definition */
-    _symtabStackStruct : [],
     
     /** Next id to assign when getUniqueId() is called */
     __nextUniqueId : 0,
@@ -344,7 +334,6 @@ qx.Class.define("playground.c.lib.Symtab",
     {
       playground.c.lib.Symtab._symtabs = {};
       playground.c.lib.Symtab._symtabStack = [];
-      playground.c.lib.Symtab._symtabStackStruct = [];
       playground.c.lib.Symtab.__nextUniqueId = 0;
     },
 

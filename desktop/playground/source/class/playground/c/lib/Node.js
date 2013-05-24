@@ -4473,6 +4473,7 @@ qx.Class.define("playground.c.lib.Node",
         oldSpecAndDecl = data.specAndDecl;
         oldTypeSpecifiers = data.typeSpecifiers;
         oldTypeDeclarators = data.typeDeclarators;
+        oldStructSymtab = data.structSymtab;
 
         // Create our own data object with a new specifier for this declaration.
         // These specifiers are added in case struct_declarator
@@ -4498,6 +4499,7 @@ qx.Class.define("playground.c.lib.Node",
                 data.specAndDecl = oldSpecAndDecl;
                 data.typeSpecifiers = oldTypeSpecifiers;
                 data.typeDeclarators = oldTypeDeclarators;
+                data.structSymtab = oldStructSymtab;
                 success();
               }.bind(this),
               failure);
@@ -4529,10 +4531,6 @@ qx.Class.define("playground.c.lib.Node",
          *   1: constant_expression (bitfield)
          */
 
-        // Do not associate the structure symbol table with a struct member
-        oldStructSymtab = data.structSymtab;
-        data.structSymtab = null;
-
         this.__processSubnodes(
           data,
           bExecuting,
@@ -4551,7 +4549,6 @@ qx.Class.define("playground.c.lib.Node",
               data.entry.calculateOffset();
             }
 
-            data.structSymtab = oldStructSymtab;
             success();
           },
           failure);
