@@ -4431,6 +4431,7 @@ qx.Class.define("playground.c.lib.Node",
 
             // Save this symbol table to store it with variables of this type
             data.structSymtab = symtab;
+            data.specifiers.setStructSymtab(symtab);
 
             // Process the struct_declaration_list
             this.children[0].process(
@@ -4541,6 +4542,19 @@ qx.Class.define("playground.c.lib.Node",
           bExecuting,
           function()
           {
+            if (data.entry)
+            {
+              // Append the specifiers to the specifier/declarator list
+              specAndDecl = data.entry.getSpecAndDecl();
+              specAndDecl.push(data.specifiers);
+              data.entry.setSpecAndDecl(specAndDecl);
+
+              // Calculate the offset in the symbol table for this symbol
+              // table entry, based on the now-complete specifiers and
+              // declarators
+              data.entry.calculateOffset();
+            }
+
             data.structSymtab = oldStructSymtab;
             success();
           },
@@ -5381,6 +5395,27 @@ qx.Class.define("playground.c.lib.Node",
               failure(new playground.c.lib.RuntimeError(
                         this,
                         "Can not alter a const variable."));
+              return;
+            }
+
+            // If this is a write to a structure or union...
+            if (type == "struct" || type == "union")
+            {
+              // then we want to just return its address. First, clone the
+              // specifier/declarator list.
+              specAndDecl = specAndDecl.slice(0);
+              
+              // Prepend an "address" declarator"
+              specAndDecl.unshift(
+                new playground.c.lib.Declarator(this, "address"));
+
+              // Return the address of the struct
+              success(
+                {
+                  value       : value1.value,
+                  specAndDecl : specAndDecl
+                });
+              
               return;
             }
 

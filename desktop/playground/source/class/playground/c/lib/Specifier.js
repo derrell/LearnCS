@@ -65,13 +65,14 @@ qx.Class.define("playground.c.lib.Specifier",
 
   members :
   {
-    __node      : null,
-    __storage   : null,
-    __type      : null,
-    __sign      : null,
-    __size      : null,
-    __constant  : null,
-    __volatile  : null,
+    __node         : null,
+    __storage      : null,
+    __type         : null,
+    __sign         : null,
+    __size         : null,
+    __constant     : null,
+    __volatile     : null,
+    __structSymtab : null,
     
     /**
      * Set the storage
@@ -343,6 +344,25 @@ qx.Class.define("playground.c.lib.Specifier",
     },
     
     /**
+     * Save the symbol table of a struct or union
+     * 
+     * @param symtab {playground.c.lib.Symtab}
+     *   The symbol table which holds the struct or union members
+     */
+    setStructSymtab : function(symtab)
+    {
+      this.__structSymtab = symtab;
+    },
+    
+    /**
+     * Retrieve the symbol table of a struct or union
+     */
+    getStructSymtab : function()
+    {
+      return this.__structSymtab;
+    },
+
+    /**
      * Get the byte account of this specifier.
      * 
      * @param multiplier {Number}
@@ -380,8 +400,7 @@ qx.Class.define("playground.c.lib.Specifier",
         break;
         
       case "struct" :
-        // We will add to the byte count as each struct member is added
-        byteCount = 0;
+        byteCount = this.getStructSymtab().getSize();
         break;
 
       case "union" :

@@ -837,7 +837,7 @@ qx.Class.define("playground.c.machine.Memory",
      *   A reference which may be used to retrieve information about this
      *   symbol
      */
-    setSymbolInfo : function(addr, symbol)
+    setSymbolInfo : function(addr, symbol, prefix)
     {
       var             name;
       var             size;
@@ -849,10 +849,16 @@ qx.Class.define("playground.c.machine.Memory",
       // symbol table.
       name = symbol.getSymtab ? symbol.getSymtab().getName() : "(system)";
 
+      if (symbol.getName().match("struct#") || 
+          (prefix && prefix.match("struct#")))
+      {
+        return;
+      }
+      
       this._symbolInfo[addr] = 
         {
           addr       : addr,
-          name       : symbol.getName(),
+          name       : (prefix || "") + symbol.getName(),
           type       : symbol.getType(),
           unsigned   : symbol.getUnsigned(),
           size       : symbol.getSize(),
@@ -865,7 +871,7 @@ qx.Class.define("playground.c.machine.Memory",
           value      : null,   // will become an array of values in this word
           word       : null    // will become the native memory word
         };
-      
+
       // Point to the end of the symbol's memory space.
       size = symbol.getSize();
       symbol.getArraySizes().forEach(

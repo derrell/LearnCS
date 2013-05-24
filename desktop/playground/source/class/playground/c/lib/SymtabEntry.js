@@ -149,12 +149,8 @@ qx.Class.define("playground.c.lib.SymtabEntry",
           break;
 
         case "void" :
-          parts.push(type);
-          break;
-
         case "struct" :
-//          throw new Error("Don't yet know type/size of struct");
-parts.push(type + " (*** FIXME! ***)");
+          parts.push(type);
           break;
 
         case "union" :
@@ -344,6 +340,11 @@ parts.push(type + " (*** FIXME! ***)");
         ret = this.__symtab.getFramePointer() + this.__offset;
         return ret;
       }
+    },
+
+    getOffset : function()
+    {
+      return this.__offset;
     },
 
     getName : function()

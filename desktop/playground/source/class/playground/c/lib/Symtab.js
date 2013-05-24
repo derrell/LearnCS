@@ -509,12 +509,23 @@ qx.Class.define("playground.c.lib.Symtab",
 
       // For each symbol in the symbol table...
       this.__symbolOrder.forEach(
-        function(symbol)
+        function addSym(symbol, index, arr, prefix, startAddr)
         {
           var             addr;
+          var             symtab;
           
-          // Get this symbol's address
-          addr = symbol.getAddr();
+
+          // If startAddr is 0 (or undefined) then we want the symbol's
+          // address. Otherwise, it's a struct or union member, so we want to
+          // add the symbol's offset to the start address.
+          if (startAddr)
+          {
+            addr = startAddr + symbol.getOffset();
+          }
+          else
+          {
+            addr = symbol.getAddr();
+          }
           
           // Ensure that it's a real address and not a built-in function node
           if (addr instanceof playground.c.lib.Node)
@@ -523,8 +534,28 @@ qx.Class.define("playground.c.lib.Symtab",
             return;
           }
           
+          // If no prefix is given, use an empty string
+          prefix = prefix || "";
+
           // Specify the name and type for this address
-          memory.setSymbolInfo(addr, symbol);
+          if (symbol.getType() == "struct" || symbol.getType() == "union")
+          {
+            // Add this struct or union variable name, to which we'll prepend
+            // to each of its members.
+            prefix += symbol.getName() + ".";
+            
+            // Recursively add each of the members
+            symtab = symbol.getStructSymtab();
+            symtab.__symbolOrder.forEach(
+              function(symbol, index, arr)
+              {
+                addSym(symbol, index, arr, prefix, addr);
+              });
+          }
+          else
+          {
+            memory.setSymbolInfo(addr, symbol, prefix);
+          }
         });
     },
     
@@ -574,7 +605,32 @@ qx.Class.define("playground.c.lib.Symtab",
      */
     getSize : function()
     {
-      return this.nextOffset;
+      var             size;
+      
+      // First, get the size of symbols that aren't struct or union
+      size = this.nextOffset;
+      
+      // Now add in the size of each of those
+      this.__symbolOrder.forEach(
+        function(symbol)
+        {
+          var             symtab;
+
+          // Does this symbol have a struct symbol table?
+          symtab = symbol.getStructSymtab();
+          if (symtab)
+          {
+            if (symtab.getName().match("struct#"))
+            {
+              return;
+            }
+
+            // Yup. Add its size.
+            size += symtab.getSize();
+          }
+        });
+      
+      return size;
     },
     
     /**
