@@ -237,7 +237,7 @@ qx.Class.define("playground.c.lib.Node",
         {
           type = "pointer";
         }
-        else if (specOrDecl.getType() == "address")
+        else if ([ "address", "array" ].indexOf(specOrDecl.getType()) != -1)
         {
           type = "address";
         }
@@ -4353,7 +4353,8 @@ qx.Class.define("playground.c.lib.Node",
          */
         
         // Only applicable before executing
-        if (bExecuting)
+        // Only applicable before executing and when in a declaration
+        if (bExecuting && ! data.specifiers)
         {
           success();
           break;
@@ -4372,8 +4373,11 @@ qx.Class.define("playground.c.lib.Node",
         this.children[1].process(
           data,
           bExecuting,
-          function()
+          function(v)
           {
+            // When executing, we are given the entry.
+            data.entry = data.entry || v;
+
             // If there is a struct_declaration_list...
             if (this.children[0].type != "_null_")
             {
@@ -4448,6 +4452,7 @@ qx.Class.define("playground.c.lib.Node",
         // These specifiers are added in case struct_declarator
         data.id = "struct_declaration";
         data.specifiers = new playground.c.lib.Specifier(this);
+        data.specAndDecl = [];
 
         // Process the specifiers
         this.children[0].process(
