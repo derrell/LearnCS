@@ -1999,9 +1999,9 @@ qx.Class.define("playground.c.lib.Node",
             specOrDecl = specAndDecl.shift();
             type = specOrDecl.getType();
 
-            // Ensure that we can dereference this thing. To be able to, it must
-            // be either a pointer whose value must be retrieved, or already
-            // an adderess.
+            // Ensure that we can dereference this thing. To be able to, it
+            // must be either a pointer whose value must be retrieved, or
+            // already an adderess.
             if (type != "pointer" && type != "address" && type != "array")
             {
               this._throwIt(new playground.c.lib.RuntimeError(
@@ -2013,38 +2013,6 @@ qx.Class.define("playground.c.lib.Node",
               return;
             }
             
-            // Get the first remaining specifier/declarator
-            specOrDecl = specAndDecl[0];
-
-            // Determine the type to dereference, from the remaining
-            // specifier/declarator
-            switch(specOrDecl.getType())
-            {
-            case "pointer" :
-              type = "pointer";
-              break;
-
-            case "int" :
-            case "float" :
-            case "double" :
-              type = specOrDecl.getCType();
-              break;
-              
-            case "enum" :
-              type = "int";
-              break;
-              
-            default:
-              this._throwIt(new playground.c.lib.RuntimeError(
-                              this,
-                              "Can not dereference " + value.getName() + 
-                                " because what it points to is a " +
-                                specOrDecl.getType() + "."),
-                            success,
-                            failure);
-              return;
-            }
-
             // Prepend an "address" declarator
             specAndDecl.unshift(
               new playground.c.lib.Declarator(this, "address"));

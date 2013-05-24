@@ -233,6 +233,9 @@ var tests =
     },
     {
       name  : "t006-struct-decl-and-access.c"
+    },
+    {
+      name  : "t007-struct-pointer-deref.c"
     }
   ];
 

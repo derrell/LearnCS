@@ -375,3 +375,18 @@ i=23 d=2.000000 e=4.200000 j=42
 &x.k=0xefd8
 >>> Program exited with exit code 0
 
+% nodejs ../ansic.js t007-struct-pointer-deref.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+Via structure access:
+i=23 d=2.000000 e=4.200000 j=42
+&i=0xefd0 &d=0xefd4 &e=0xefd8 &j=0xefdc
+&x.k=0xefd4
+
+Via pointer dereference:
+pX=0xefd0
+i=23 d=2.000000 e=4.200000 j=42
+&i=0xefd0 &d=0xefd4 &e=0xefd8 &j=0xefdc
+&pX->k=0xefd4
+>>> Program exited with exit code 0
+
