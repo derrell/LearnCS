@@ -230,6 +230,9 @@ var tests =
     },
     {
       name  : "t005-forward-decl-only.c"
+    },
+    {
+      name  : "t006-struct-decl-and-access.c"
     }
   ];
 

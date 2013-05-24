@@ -367,3 +367,11 @@ STDOUT:
 Error near line 7: Function 'doit' has not been defined.
 >>> Program had errors. It did not run to completion.
 
+% nodejs ../ansic.js t006-struct-decl-and-access.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+i=23 d=2.000000 e=4.200000 j=42
+&i=0xefd4 &d=0xefd8 &e=0xefdc &j=0xefe0
+&x.k=0xefd8
+>>> Program exited with exit code 0
+
