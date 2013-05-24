@@ -527,7 +527,8 @@ qx.Class.define("playground.c.lib.Symtab",
           prefix = prefix || "";
 
           // Specify the name and type for this address
-          if (symbol.getType() == "struct" || symbol.getType() == "union")
+          if (symbol.getType(true) == "struct" ||
+              symbol.getType(true) == "union")
           {
             // Add this struct or union variable name, to which we'll prepend
             // to each of its members.
