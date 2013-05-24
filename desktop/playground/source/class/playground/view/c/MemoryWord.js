@@ -24,15 +24,6 @@ qx.Class.define("playground.view.c.MemoryWord",
 
     this.base(arguments);
     
-/*
-    this.addListener(
-      "changeModel",
-      function(e)
-      {
-        var             model = this.getModel();
-      });
-*/
-
     // Create a grid layout. Leave some horizontal space between elements.
     this.gridLayout = new qx.ui.layout.Grid(8, 0);
     this._setLayout(this.gridLayout);
@@ -47,11 +38,9 @@ qx.Class.define("playground.view.c.MemoryWord",
     
     for (col = 2; col < 6; col++)
     {
-      this.gridLayout.setColumnWidth(col, 20);
+      this.gridLayout.setColumnWidth(col, 26);
     }
     
-//    this.gridLayout.setColumnWidth(6, 100);
-
     // Pre-create each of the child controls
     this.getChildControl("name1");
     this.getChildControl("name2");
@@ -452,7 +441,7 @@ qx.Class.define("playground.view.c.MemoryWord",
       // If there's no name...
       if (! model.getName())
       {
-        // ... then we won't display the value
+        // ... then we won't display the type
         this.getChildControl("type").setValue("");
         return;
       }
@@ -618,16 +607,16 @@ qx.Class.define("playground.view.c.MemoryWord",
       }
       else
       {
-        // Convert the number to a string. If it's an integer...
-        if (type == "int")
+        // Convert the number to a string. If it's floating point...
+        if (type == "float" || type == "double")
         {
-          // ... then just do a straight conversion.
-          newValue = value.toString();
+          // ... then allow no more digits than fit on the memory template view
+          newValue = value.toPrecision(12).toString();
         }
         else
         {
-          // Otherwise allow no more digits than fit on the memory template view
-          newValue = value.toPrecision(12).toString();
+          // Otherwise, just do a straight conversion.
+          newValue = value.toString();
         }
       }
 
