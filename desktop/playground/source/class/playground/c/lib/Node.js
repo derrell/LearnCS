@@ -1050,15 +1050,16 @@ qx.Class.define("playground.c.lib.Node",
               // list of specifiers/declarators
               value1.specAndDecl.unshift(specOrDecl);
 
-              // Push the argument onto the stack
-              playground.c.lib.Node.__mem.stackPush(type, value1.value);
-
-              // If we were given a JavaScript array in which to place args
-              // too...
+              // If we were given a JavaScript array in which to place args...
               if (data.args)
               {
                 // ... then add this one.
                 data.args.unshift(value1.value);
+              }
+              else
+              {
+                // otherwise, push the arguments onto the stack
+                playground.c.lib.Node.__mem.stackPush(type, value1.value);
               }
               
               if (--i >= 0)
