@@ -4474,7 +4474,8 @@ qx.Class.define("playground.c.lib.Node",
         oldTypeSpecifiers = data.typeSpecifiers;
         oldTypeDeclarators = data.typeDeclarators;
 
-        // Create our own data object with a new specifier for this declaration
+        // Create our own data object with a new specifier for this declaration.
+        // These specifiers are added in case struct_declarator
         data.id = "struct_declaration";
         data.specifiers = new playground.c.lib.Specifier(this);
 
@@ -4490,11 +4491,6 @@ qx.Class.define("playground.c.lib.Node",
               bExecuting,
               function()
               {
-                // Add the specifiers to the specifier/declarator list
-                specAndDecl = data.entry.getSpecAndDecl();
-                specAndDecl.push(data.specifiers);
-                data.entry.setSpecAndDecl(specAndDecl);
-                
                 // Restore data members
                 data.id = oldId;
                 data.entry = oldEntry;
@@ -4647,9 +4643,15 @@ qx.Class.define("playground.c.lib.Node",
                 value1.specAndDecl = v.getSpecAndDecl();
                 
                 // We're providing the address of this member. Indicate such.
-                // Prepend an "address" declarator"
-                value1.specAndDecl.unshift(
-                  new playground.c.lib.Declarator(this, "address"));
+                // Prepend an "address" declarator if there isn't already one
+                // at the beginning of the specifier/declarator list
+                specOrDecl = value1.specAndDecl[0];
+                if (! (specOrDecl instanceof playground.c.lib.Declarator) ||
+                    specAndDecl.getType() != "address")
+                {
+                  value1.specAndDecl.unshift(
+                    new playground.c.lib.Declarator(this, "address"));
+                }
 
                 success(value1);
               }.bind(this),
