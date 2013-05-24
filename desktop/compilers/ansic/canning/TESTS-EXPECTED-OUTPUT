@@ -331,6 +331,24 @@ STDOUT:
 Which number in the Fibonacci sequence would you like? The Fibonacci numbered 12 is 144
 Which number in the Fibonacci sequence would you like? >>> Program exited with exit code 0
 
+% nodejs ../ansic.js p202-string-copy.c --rootdir=/home/derrell/ME --cmdline='hello'
+STDOUT: 
+>>> Running program
+stringCopyByIndex copied: 'hello'
+stringCopyByDereference copied: 'hello'
+>>> Program exited with exit code 0
+
+% nodejs ../ansic.js p203-malloc-array-of-structs.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+Marlo 17
+Chris 23
+Julie 19
+Kirtano 38
+Mark 29
+Sharon 18
+>>> Program exited with exit code 0
+
 % nodejs ../ansic.js t001-global-pointer-initialized.c --rootdir=/home/derrell/ME
 STDOUT: 
 >>> Running program

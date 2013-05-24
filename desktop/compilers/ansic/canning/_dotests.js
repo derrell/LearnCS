@@ -216,6 +216,16 @@ var tests =
       name  : "p055-fibonacci-recursive.c",
       stdin : "12"
     },
+    
+    {
+      name  : "p202-string-copy.c",
+      args  : "hello"
+    },
+    
+    {
+      name  : "p203-malloc-array-of-structs.c"
+    },
+
     {
       name  : "t001-global-pointer-initialized.c"
     },
