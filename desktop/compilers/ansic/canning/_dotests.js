@@ -227,6 +227,10 @@ var tests =
     },
 
     {
+      name  : "p205-malloc-struct-array-print-reverse.c"
+    },
+
+    {
       name  : "t001-global-pointer-initialized.c"
     },
     {

@@ -349,6 +349,17 @@ Mark 29
 Sharon 18
 >>> Program exited with exit code 0
 
+% nodejs ../ansic.js p205-malloc-struct-array-print-reverse.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+Sharon 18
+Mark 29
+Kirtano 38
+Julie 19
+Chris 23
+Marlo 17
+>>> Program exited with exit code 0
+
 % nodejs ../ansic.js t001-global-pointer-initialized.c --rootdir=/home/derrell/ME
 STDOUT: 
 >>> Running program
