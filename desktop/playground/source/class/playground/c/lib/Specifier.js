@@ -93,12 +93,18 @@ qx.Class.define("playground.c.lib.Specifier",
           "Internal error: Unexpected storage type: " + value);
       }
 
-      // Ensure that two mutually-exclusive types haven't been specified
-      if (this.__storage !== null)
+      // Ensure that two mutually-exclusive types haven't been specified.
+      // Allow typedef to override extern, however.
+      if ((this.__storage == "extern" && value == "typedef") ||
+          (this.__storage == "typedef" && value == "extern"))
+      {
+        // do nothing
+      }
+      else if (this.__storage !== null)
       {
         throw new playground.c.lib.RuntimeError(
           this.__node,
-          "Can not specifiy " + value + 
+          "Can not specify " + value + 
             " in addition to previously specified " + this.__storage);
       }
       
@@ -142,7 +148,7 @@ qx.Class.define("playground.c.lib.Specifier",
       {
         throw new playground.c.lib.RuntimeError(
           this.__node,
-          "Can not specifiy " + value + 
+          "Can not specify " + value + 
             " in addition to previously specified " + this.__type);
       }
       
@@ -188,7 +194,7 @@ qx.Class.define("playground.c.lib.Specifier",
       {
         throw new playground.c.lib.RuntimeError(
           this.__node,
-          "Can not specifiy " + value + 
+          "Can not specify " + value + 
             " in addition to previously specified " + this.__sign);
       }
       
@@ -290,7 +296,7 @@ qx.Class.define("playground.c.lib.Specifier",
       {
         throw new playground.c.lib.RuntimeError(
           this.__node,
-          "Can not specifiy " + value + 
+          "Can not specify " + value + 
             " in addition to previously specified " + this.__constant);
       }
       
@@ -327,7 +333,7 @@ qx.Class.define("playground.c.lib.Specifier",
       {
         throw new playground.c.lib.RuntimeError(
           this.__node,
-          "Can not specifiy " + value + 
+          "Can not specify " + value + 
             " in addition to previously specified " + this.__volatile);
       }
       
