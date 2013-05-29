@@ -631,6 +631,14 @@ qx.Class.define("playground.c.lib.Symtab",
     {
       // Add each symbol in this symbol table to memory, for later display
       this.__symbolOrder.forEach(playground.c.lib.Symtab._addSymbolInfo);
+    },
+    
+    /**
+     * Retrieve the number of symbols in this symbol table
+     */
+    getNumSymbols : function()
+    {
+      return this.__symbolOrder.length;
     }
   }
 });

@@ -62,10 +62,16 @@ NL                      [\n]
 "signed"		{ return(parser.symbols_.SIGNED); }
 "sizeof"		{ return(parser.symbols_.SIZEOF); }
 "static"		{ return(parser.symbols_.STATIC); }
-"struct"		{ return(parser.symbols_.STRUCT); }
+"struct"		{
+                          playground.c.lib.Node.bSawStruct = true;
+                          return(parser.symbols_.STRUCT);
+                        }
 "switch"		{ return(parser.symbols_.SWITCH); }
 "typedef"		{ return(parser.symbols_.TYPEDEF); }
-"union"			{ return(parser.symbols_.UNION); }
+"union" 		{
+                          playground.c.lib.Node.bSawStruct = true;
+                          return(parser.symbols_.UNION);
+                        }
 "unsigned"		{ return(parser.symbols_.UNSIGNED); }
 "void"			{ return(parser.symbols_.VOID); }
 "volatile"		{ return(parser.symbols_.VOLATILE); }
@@ -76,7 +82,9 @@ NL                      [\n]
 
                           sym = playground.c.lib.Symtab.getCurrent().get(
                               yytext, false);
-                          return (sym && sym.getIsType()
+                          return (sym &&
+                                  sym.getIsType() &&
+                                  ! playground.c.lib.Node.bSawStruct
                                   ? parser.symbols_.TYPE_NAME
                                   : parser.symbols_.IDENTIFIER);
                         }

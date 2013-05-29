@@ -829,6 +829,9 @@ ns_normal
   :
   {
     playground.c.lib.Node.namespace = "";
+
+    // set to true by lexer
+    playground.c.lib.Node.bSawStruct = false;
   }
   ;
 

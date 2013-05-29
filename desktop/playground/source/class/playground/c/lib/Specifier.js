@@ -105,7 +105,8 @@ qx.Class.define("playground.c.lib.Specifier",
         throw new playground.c.lib.RuntimeError(
           this.__node,
           "Can not specify " + value + 
-            " in addition to previously specified " + this.__storage);
+            " in addition to previously specified " + this.__storage +
+            ". Is there possibly a missing semicolon?");
       }
       
       // Save the new value
@@ -149,7 +150,8 @@ qx.Class.define("playground.c.lib.Specifier",
         throw new playground.c.lib.RuntimeError(
           this.__node,
           "Can not specify " + value + 
-            " in addition to previously specified " + this.__type);
+            " in addition to previously specified " + this.__type +
+            ". Is there possibly a missing semicolon?");
       }
       
       // Ensure the type doesn't conflict with the signedness
@@ -195,7 +197,8 @@ qx.Class.define("playground.c.lib.Specifier",
         throw new playground.c.lib.RuntimeError(
           this.__node,
           "Can not specify " + value + 
-            " in addition to previously specified " + this.__sign);
+            " in addition to previously specified " + this.__sign +
+            ". Is there possibly a missing semicolon?");
       }
       
       // Save the new value
@@ -249,7 +252,8 @@ qx.Class.define("playground.c.lib.Specifier",
         throw new playground.c.lib.RuntimeError(
           this.__node,
           "Can not specify " + value + 
-            " in addition to previously specified " + this.__type);
+            " in addition to previously specified " + this.__type +
+            ". Is there possibly a missing semicolon?");
       }
       
       // Save the type.
@@ -297,7 +301,8 @@ qx.Class.define("playground.c.lib.Specifier",
         throw new playground.c.lib.RuntimeError(
           this.__node,
           "Can not specify " + value + 
-            " in addition to previously specified " + this.__constant);
+            " in addition to previously specified " + this.__constant +
+            ". Is there possibly a missing semicolon?");
       }
       
       // Save the new value
@@ -334,7 +339,8 @@ qx.Class.define("playground.c.lib.Specifier",
         throw new playground.c.lib.RuntimeError(
           this.__node,
           "Can not specify " + value + 
-            " in addition to previously specified " + this.__volatile);
+            " in addition to previously specified " + this.__volatile +
+            ". Is there possibly a missing semicolon?");
       }
       
       // Save the new value
@@ -458,6 +464,7 @@ qx.Class.define("playground.c.lib.Specifier",
       specifier.__type = this.__type;
       specifier.__size = this.__size;
       specifier.__sign = this.__sign;
+      specifier.__structSymtab = this.__structSymtab;
       
       return specifier;
     },

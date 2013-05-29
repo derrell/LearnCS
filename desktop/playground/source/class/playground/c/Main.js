@@ -310,7 +310,8 @@ qx.Class.define("playground.c.Main",
       {
         if (error instanceof playground.c.lib.RuntimeError)
         {
-          playground.c.Main.output(error.message + "\n");
+          playground.c.Main.output(
+            "Error near line " + error.node.line + ": " + error.message + "\n");
         }
         else if (error instanceof playground.c.lib.NotYetImplemented)
         {

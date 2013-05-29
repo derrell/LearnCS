@@ -90,6 +90,9 @@ qx.Class.define("playground.c.lib.Node",
     /** Namespace (either "struct#" or ""), set by parser */
     namespace : "",
 
+    /** Whether we just saw the keyword 'struct' or 'union' */
+    bSawStruct : false,
+
     /** 0=no typedef in progress; 1=saw 'typedef'; 2=in init_declarator_list */
     typedefMode : 0,
 
@@ -524,6 +527,7 @@ qx.Class.define("playground.c.lib.Node",
       var             oldSpecAndDecl;
       var             oldTypeSpecifiers;
       var             oldTypeDeclarators;
+      var             oldTypeStructSymtab;
       var             mem;
       var             memTemplate;
       var             args;
@@ -1896,8 +1900,12 @@ qx.Class.define("playground.c.lib.Node",
             bExecuting,
             function()
             {
-              // Reset to typedef storage, in case it was changed
+              // Clone the specifiers of the source type
+              data.specifiers = data.specifiers.cloneTypedef();
+              
+              // This cloned one is storage type 'typedef'
               data.specifiers.setStorage("typedef");
+
               success();
             }.bind(this),
             failure);
@@ -3146,13 +3154,6 @@ qx.Class.define("playground.c.lib.Node",
               bNewEntry = true;
             }
 
-{
-  console.log("identifier: " + this.value);
-  console.log("  storage=" + data.specifiers.getStorage());
-  console.log("  structSymtab=" + data.structSymtab);
-}
-
-
             // Attach the specifier/declarator list to this symbol, if it's
             // not a typedef, or is a brand new entry.
             if (data.specifiers.getStorage() !== "typedef" || bNewEntry)
@@ -3290,6 +3291,7 @@ qx.Class.define("playground.c.lib.Node",
           // Save specAndDecl before overwriting it
           oldSpecAndDecl = data.specAndDecl;
           oldTypeDeclarators = data.typeDeclarators;
+          oldTypeStructSymtab = data.typeStructSymtab;
 
           // Create a list to hold specifiers and declarators.
           data.specAndDecl = [];
@@ -3317,6 +3319,10 @@ qx.Class.define("playground.c.lib.Node",
               // Add the specifier to the end of the specifier/declarator list
               data.specAndDecl.push(data.typeSpecifiers || data.specifiers);
 
+              // Add the structure symbol table, if there is one
+              data.entry.setStructSymtab(
+                data.typeStructSymtab || data.structSymtab);
+
               // Calculate the offset in the symbol table for this symbol
               // table entry, based on the now-complete specifiers and
               // declarators
@@ -3333,6 +3339,7 @@ qx.Class.define("playground.c.lib.Node",
                     // Restore data members
                     data.specAndDecl = oldSpecAndDecl;
                     data.typeDeclarators = oldTypeDeclarators;
+                    data.typeStructSymtab = oldTypeStructSymtab;
                     success();
                   },
                   failure);
@@ -4411,7 +4418,10 @@ qx.Class.define("playground.c.lib.Node",
         }
         
         data.specifiers.setType("struct");
-        data.specifiers.setStorage("extern");
+        if (data.specifiers.getStorage() != "typedef")
+        {
+          data.specifiers.setStorage("extern");
+        }
         
         // Save information that we might overwrite
         oldEntry = data.entry;
@@ -4425,13 +4435,56 @@ qx.Class.define("playground.c.lib.Node",
           bExecuting,
           function(v)
           {
+            var             bNeedPopStack = false;
+
             // When executing, we are given the entry.
             data.entry = data.entry || v;
 
-            // If there is a struct_declaration_list...
-            if (this.children[0].type != "_null_")
+            // Retrieve or create the symbol table for this struct's members
+            entry = 
+              playground.c.lib.Symtab.getCurrent().get(data.entry.getName());
+
+            // Did it exist?
+            if (entry)
             {
-              // ... then create a symbol table to hold this struct's members
+              // Yup. Retrieve the structure symbol table from it
+              symtab = entry.getStructSymtab();
+
+              // If we still didn't find a struct symbol table...
+              if (! symtab)
+              {
+                // ... then create it.
+                symtab = new playground.c.lib.Symtab(
+                  playground.c.lib.Symtab.getCurrent(),
+                  data.entry.getName(),
+                  this.line);
+
+                // Save the symbol table with the entry for this structure name
+                data.entry.setStructSymtab(symtab);
+                
+              }
+              else
+              {
+                // Push the existing symbol table onto the symbol table stack
+                playground.c.lib.Symtab.pushStack(symtab);
+              }
+
+              // If there is a struct_declaration_list here, then the symbol
+              // table had better be empty.
+              if (this.children[0].type != "_null_" && 
+                  symtab.getNumSymbols() != 0)
+              {
+                failure(new playground.c.lib.RuntimeError(
+                          this,
+                          "Redeclaration of structure members of " +
+                            data.entry.getName()));
+                return;
+              }
+
+            }
+            else
+            {
+              // It didn't exist. Create it.
               symtab = new playground.c.lib.Symtab(
                 playground.c.lib.Symtab.getCurrent(),
                 data.entry.getName(),
@@ -4440,16 +4493,11 @@ qx.Class.define("playground.c.lib.Node",
               // Save the symbol table with the entry for this structure name
               data.entry.setStructSymtab(symtab);
             }
-            else
-            {
-              // The symbol table may already exist
-              entry = 
-                playground.c.lib.Symtab.getCurrent().get(data.entry.getName());
 
-              if (entry)
-              {
-                symtab = entry.getStructSymtab();
-              }
+            // If we have a symbol table, we'll need to pop it later
+            if (symtab)
+            {
+              bNeedPopStack = true;
             }
 
             // Save this symbol table to store it with variables of this type
@@ -4469,8 +4517,9 @@ qx.Class.define("playground.c.lib.Node",
                 data.entry = oldEntry;
                 data.specAndDecl = oldSpecAndDecl;
 
-                // Revert to the prior scope, if we'd created a new symbol table
-                if (this.children[0].type != "_null_")
+                // Revert to the prior scope, if we'd somehow pushed a symbol
+                // table (either creating a new one, or manually pushing it).
+                if (bNeedPopStack)
                 {
                   playground.c.lib.Symtab.popStack();
                 }
@@ -5176,6 +5225,9 @@ qx.Class.define("playground.c.lib.Node",
         
         // Save the remainder of the type's specifier/declarator list
         data.typeDeclarators = specAndDecl;
+
+        // If there's a structure symbol table, we need it too.
+        data.typeStructSymtab = entry.getStructSymtab();
 
         success();
 
