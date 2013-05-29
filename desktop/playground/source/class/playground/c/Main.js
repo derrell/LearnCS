@@ -449,7 +449,10 @@ qx.Class.define("playground.c.Main",
         playground.c.lib.Node._prevLine = 0;                  
 
         // Restore the previous frame pointer
-        symtab.restoreFramePointer();
+        if (symtab)
+        {
+          symtab.restoreFramePointer();
+        }
 
         // Restore the original stack pointer
         mem.setReg("SP", "unsigned int", origSp);

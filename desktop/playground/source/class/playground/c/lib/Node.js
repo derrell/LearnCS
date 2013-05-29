@@ -4439,6 +4439,7 @@ qx.Class.define("playground.c.lib.Node",
           function(v)
           {
             var             bNeedPopStack = false;
+            var             name;
 
             // When executing, we are given the entry.
             data.entry = data.entry || v;
@@ -4472,19 +4473,19 @@ qx.Class.define("playground.c.lib.Node",
                 playground.c.lib.Symtab.pushStack(symtab);
               }
 
-/*
               // If there is a struct_declaration_list here, then the symbol
               // table had better be empty.
               if (this.children[0].type != "_null_" && 
                   symtab.getNumSymbols() != 0)
               {
+                // Get the structure name without the prefixed "struct#"
+                name = data.entry.getName().replace(/^struct#/, "");
+
                 failure(new playground.c.lib.RuntimeError(
                           this,
-                          "Redeclaration of structure members of " +
-                            data.entry.getName()));
+                          "Redeclaration of struct " + name));
                 return;
               }
-*/
             }
             else
             {

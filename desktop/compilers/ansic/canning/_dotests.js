@@ -250,6 +250,9 @@ var tests =
     },
     {
       name  : "t007-struct-pointer-deref.c"
+    },
+    {
+      name  : "t008-struct-redeclaration.c"
     }
   ];
 

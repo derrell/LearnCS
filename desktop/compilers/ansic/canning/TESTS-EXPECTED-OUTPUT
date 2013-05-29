@@ -419,3 +419,8 @@ i=23 d=2.000000 e=4.200000 j=42
 &pX->k=0xefd4
 >>> Program exited with exit code 0
 
+% nodejs ../ansic.js t008-struct-redeclaration.c --rootdir=/home/derrell/ME
+ERROR: Error: Command failed: 
+STDOUT: Error near line 9: Redeclaration of struct X
+>>> Program had errors. It did not run to completion.
+
