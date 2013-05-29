@@ -571,32 +571,42 @@ constant_expression
   ;
 
 declaration
-  : declaration_specifiers ';'
+  : declaration_specifiers maybe_typedef_mode ';'
   {
     parser.yy.R("declaration : declaration_specifiers ';'");
 
     var             type;
     var             initDeclaratorList;
 
-    // If we were in the typedef start condition, revert to the initial
-    // condition.
-    lexer.begin("INITIAL");
+    // If we were in the typedef mode, revert to the initial mode.
+    playground.c.lib.Node.typedefMode = 0;    
 
     $$ = new playground.c.lib.Node("declaration", yytext, yylineno);
     $$.children.push($1);
     $$.children.push(playground.c.lib.Node.getNull(yylineno));     // no init_declarator_list
   }
-  | declaration_specifiers init_declarator_list ';'
+  | declaration_specifiers maybe_typedef_mode init_declarator_list ';'
   {
     parser.yy.R("declaration : declaration_specifiers init_declarator_list ';'");
 
-    // If we were in the typedef start condition, revert to the initial
-    // condition.
-    lexer.begin("INITIAL");
+    // If we were in the typedef mode, revert to the initial mode.
+    playground.c.lib.Node.typedefMode = 0;    
 
     $$ = new playground.c.lib.Node("declaration", yytext, yylineno);
     $$.children.push($1);
-    $$.children.push($2);
+    $$.children.push($3);
+  }
+  ;
+
+maybe_typedef_mode
+  :
+  {
+    // If we'd seen 'typedef'...
+    if (playground.c.lib.Node.typedefMode === 1)
+    {
+      // ... then identifiers seen now are types
+      ++playground.c.lib.Node.typedefMode
+    }
   }
   ;
 
@@ -676,7 +686,7 @@ storage_class_specifier
   : TYPEDEF
   {
     parser.yy.R("storage_class_specifier : TYPEDEF");
-    lexer.begin("typedef_mode");
+    playground.c.lib.Node.typedefMode = 1;
     $$ = new playground.c.lib.Node("typedef", yytext, yylineno);
   }
   | EXTERN
@@ -765,22 +775,18 @@ type_specifier
   ;
 
 struct_or_union_specifier
-  : struct_or_union identifier lbrace struct_declaration_list rbrace
+  : struct_or_union ns_struct identifier ns_normal lbrace struct_declaration_list rbrace
   {
     parser.yy.R("struct_or_union_specifier : " +
       "struct_or_union identifier lbrace struct_declaration_list rbrace");
     $$ = $1;
-    $$.children.push($4);
-
-    // Munge the name of the struct
-    $2.value = "struct#" + $2.value;
-
-    $$.children.push($2);
+    $$.children.push($6);
+    $$.children.push($3);
 
     // Add a symbol table entry for this struct (a type)
-    playground.c.lib.Symtab.getCurrent().add($2.value, yylineno, true);
+    playground.c.lib.Symtab.getCurrent().add($3.value, yylineno, true);
   }
-  | struct_or_union lbrace struct_declaration_list rbrace
+  | struct_or_union ns_struct ns_normal lbrace struct_declaration_list rbrace
   {
     parser.yy.R("struct_or_union_specifier : " +
       "struct_or_union lbrace struct_declaration_list rbrace");
@@ -788,7 +794,7 @@ struct_or_union_specifier
     var             identifier;
 
     $$ = $1;
-    $$.children.push($3);
+    $$.children.push($5);
 
     // Create an identifier node
     identifier = new playground.c.lib.Node("identifier", yytext, yylineno);
@@ -800,19 +806,29 @@ struct_or_union_specifier
     // Add the identifier
     $$.children.push(identifier);
   }
-  | struct_or_union identifier
+  | struct_or_union ns_struct identifier ns_normal
   {
     parser.yy.R("struct_or_union_specifier : struct_or_union identifier");
     $$ = $1;
     $$.children.push(playground.c.lib.Node.getNull(yylineno)); // no declaration list
+    $$.children.push($3);
 
-    // Munge the name of the struct
-    $2.value = "struct#" + $2.value;
+    // Add a symbol table entry for this struct
+    playground.c.lib.Symtab.getCurrent().add($3.value, yylineno, true);
+  }
+  ;
 
-    $$.children.push($2);
+ns_struct
+  :
+  {
+    playground.c.lib.Node.namespace = "struct#";
+  }
+  ;
 
-    // Add a symbol table entry for this struct (a type)
-    playground.c.lib.Symtab.getCurrent().add($2.value, yylineno, true);
+ns_normal
+  :
+  {
+    playground.c.lib.Node.namespace = "";
   }
   ;
 
@@ -1637,26 +1653,26 @@ external_declaration
 
 function_definition
 /* Don't support K&R-style declarations...
-  : declaration_specifiers declarator declaration_list compound_statement
+  : declaration_specifiers maybe_typedef_mode declarator declaration_list compound_statement
   {
     parser.yy.R("function_definition : " +
       "declaration_specifiers declarator declaration_list compound_statement");
     $$ = new playground.c.lib.Node("function_definition", yytext, yylineno);
     $$.children.push($1);       // declaration_specifiers
-    $$.children.push($2);       // declarator
-    $$.children.push($3);       // declaration_list
-    $$.children.push($4);       // compound_statement
+    $$.children.push($3);       // declarator
+    $$.children.push($4);       // declaration_list
+    $$.children.push($5);       // compound_statement
   }
 */
-  : declaration_specifiers declarator compound_statement
+  : declaration_specifiers maybe_typedef_mode declarator compound_statement
   {
     parser.yy.R("function_definition : " +
       "declaration_specifiers declarator compound_statement");
     $$ = new playground.c.lib.Node("function_definition", yytext, yylineno);
     $$.children.push($1);       // declaration_specifiers
-    $$.children.push($2);       // declarator
+    $$.children.push($3);       // declarator
     $$.children.push(playground.c.lib.Node.getNull(yylineno));     // declaration_list
-    $$.children.push($3);       // compound_statement
+    $$.children.push($4);       // compound_statement
   }
 /* Don't support K&R-style declarations...
   | declarator declaration_list compound_statement
@@ -1692,18 +1708,18 @@ function_scope
 identifier
   : IDENTIFIER
   {
-    if (lexer.conditionStack[lexer.conditionStack.length - 1] == "typedef_mode")
+    if (playground.c.lib.Node.typedefMode === 2)
     {
       parser.yy.R("identifier : TYPE_DEFINITION (" + yytext + ")");
       $$ = new playground.c.lib.Node("identifier", yytext, yylineno);
-      $$.value = yytext;
+      $$.value = playground.c.lib.Node.namespace + yytext;
       playground.c.lib.Symtab.getCurrent().add(yytext, yylineno, true);
     }
     else
     {
       parser.yy.R("identifier : IDENTIFIER (" + yytext + ")");
       $$ = new playground.c.lib.Node("identifier", yytext, yylineno);
-      $$.value = yytext;
+      $$.value = playground.c.lib.Node.namespace + yytext;
     }
   }
   ;

@@ -380,6 +380,7 @@ qx.Class.define("playground.c.lib.Specifier",
     calculateByteCount : function(multiplier)
     {
       var             byteCount;
+      var             structSymtab;
 
       // Determine the byte count for this type
       switch(this.__type)
@@ -406,7 +407,8 @@ qx.Class.define("playground.c.lib.Specifier",
         break;
         
       case "struct" :
-        byteCount = this.getStructSymtab().getSize();
+        structSymtab = this.getStructSymtab();
+        byteCount = structSymtab ? structSymtab.getSize() : 0;
         break;
 
       case "union" :

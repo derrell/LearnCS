@@ -87,6 +87,12 @@ qx.Class.define("playground.c.lib.Node",
     /** Depth of function call, for activation record name */
     _depth : 0,
 
+    /** Namespace (either "struct#" or ""), set by parser */
+    namespace : "",
+
+    /** 0=no typedef in progress; 1=saw 'typedef'; 2=in init_declarator_list */
+    typedefMode : 0,
+
     /** Mappings of types of numbers to their types */
     NumberType :
     {
@@ -509,6 +515,7 @@ qx.Class.define("playground.c.lib.Node",
       var             value3; // typically the return result
       var             bOldIsParameter;
       var             bOldIsInitializer;
+      var             bNewEntry;
       var             oldArgs;
       var             oldId;
       var             oldEntry;
@@ -3095,8 +3102,10 @@ qx.Class.define("playground.c.lib.Node",
 
             if (! entry)
             {
+              // This entry already exists. Retrieve it.
               entry = 
                 playground.c.lib.Symtab.getCurrent().get(this.value, true);
+              bNewEntry = false;
 
               // If the entry was extern, allow a new symbol
               // definition. Otherwise, flag this as a duplicate declaration.
@@ -3111,9 +3120,18 @@ qx.Class.define("playground.c.lib.Node",
                 break;
               }
             }
+            else
+            {
+              // The entry is brand new
+              bNewEntry = true;
+            }
 
-            // Attach the specifier/declarator list to this symbol
-            entry.setSpecAndDecl(data.specAndDecl);
+            // Attach the specifier/declarator list to this symbol, if it's
+            // not a typedef, or is a brand new entry.
+            if (data.specifiers.getStorage() !== "typedef" || bNewEntry)
+            {
+              entry.setSpecAndDecl(data.specAndDecl);
+            }
             
             // If we're in the middle of declaring a structure variable...
             if (data.structSymtab)
