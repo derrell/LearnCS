@@ -4426,8 +4426,11 @@ qx.Class.define("playground.c.lib.Node",
         // Save information that we might overwrite
         oldEntry = data.entry;
         oldSpecAndDecl = data.specAndDecl;
+        oldStructSymtab = data.structSymtab;
         
+        data.entry = null;
         data.specAndDecl = [];
+        data.structSymtab = null;
         
         // Process the identifier
         this.children[1].process(
@@ -4469,6 +4472,7 @@ qx.Class.define("playground.c.lib.Node",
                 playground.c.lib.Symtab.pushStack(symtab);
               }
 
+/*
               // If there is a struct_declaration_list here, then the symbol
               // table had better be empty.
               if (this.children[0].type != "_null_" && 
@@ -4480,7 +4484,7 @@ qx.Class.define("playground.c.lib.Node",
                             data.entry.getName()));
                 return;
               }
-
+*/
             }
             else
             {
