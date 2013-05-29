@@ -3866,6 +3866,9 @@ qx.Class.define("playground.c.lib.Node",
         oldId = data.id;
         oldSpecifiers = data.specifiers;
         oldSpecAndDecl = data.specAndDecl;
+        oldTypeSpecifiers = data.typeSpecifiers;
+        oldTypeDeclarators = data.typeDeclarators;
+        oldTypeStructSymtab = data.typeStructSymtab;
 
         // Update the data object with a new specifier for this declaration
         data.id = "parameter_declaration";
@@ -3910,6 +3913,9 @@ qx.Class.define("playground.c.lib.Node",
                     data.id = oldId;
                     data.specifiers = oldSpecifiers;
                     data.specAndDecl = oldSpecAndDecl;
+                    data.typeSpecifiers = oldTypeSpecifiers;
+                    data.typeDeclarators = oldTypeDeclarators;
+                    data.typeStructSymtab = oldTypeStructSymtab;
 
                     success();
                   }.bind(this),
