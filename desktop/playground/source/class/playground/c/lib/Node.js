@@ -1886,7 +1886,27 @@ qx.Class.define("playground.c.lib.Node",
           break;
         }
 
-        this.__processSubnodes(data, bExecuting, success, failure);
+        // Is the first child a typedef?
+        if (this.children[0].type == "typedef")
+        {
+          // Yup. We need to get back here after processing the remaining
+          // children, to save its definition. 
+          this.__processSubnodes(
+            data,
+            bExecuting,
+            function()
+            {
+              // Reset to typedef storage, in case it was changed
+              data.specifiers.setStorage("typedef");
+              success();
+            }.bind(this),
+            failure);
+        }
+        else
+        {
+          // It's not a typedef. Process it normally.
+          this.__processSubnodes(data, bExecuting, success, failure);
+        }
         break;
 
       case "declarator" :
@@ -3126,6 +3146,13 @@ qx.Class.define("playground.c.lib.Node",
               bNewEntry = true;
             }
 
+{
+  console.log("identifier: " + this.value);
+  console.log("  storage=" + data.specifiers.getStorage());
+  console.log("  structSymtab=" + data.structSymtab);
+}
+
+
             // Attach the specifier/declarator list to this symbol, if it's
             // not a typedef, or is a brand new entry.
             if (data.specifiers.getStorage() !== "typedef" || bNewEntry)
@@ -3138,6 +3165,11 @@ qx.Class.define("playground.c.lib.Node",
             {
               // ... then save the structure symbol table with this symbol
               entry.setStructSymtab(data.structSymtab);
+            }
+            else
+            {
+              // Otherwise, save the entry's structSymtab. (It may be null.)
+              data.structSymtab = entry.getStructSymtab();
             }
           }
           else
@@ -5236,14 +5268,8 @@ qx.Class.define("playground.c.lib.Node",
 
     /**
      * Process all sub-nodes of a node (which are non-null)
-     * 
-     * @param node {playground.c.lib.Node}
-     *   The node whose sub-nodes (children) are to be processed
-     * 
-     * @return {Map}
-     *   A value expression. The value of the last subnode is returned.
      */
-    __processSubnodes : function(data, bExecuting, success, failure)
+    __processSubnodes : function(data, bExecuting, success, failure, startWith)
     {
       var             i;
 
@@ -5254,7 +5280,7 @@ qx.Class.define("playground.c.lib.Node",
 
       if (this.children.length > 0)
       {
-        i = 0;
+        i = startWith || 0;
         this.children[i].process(
           data,
           bExecuting,

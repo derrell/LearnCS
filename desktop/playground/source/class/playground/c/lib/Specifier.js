@@ -100,7 +100,7 @@ qx.Class.define("playground.c.lib.Specifier",
       {
         // do nothing
       }
-      else if (this.__storage !== null)
+      else if (this.__storage !== null && this.__storage != value)
       {
         throw new playground.c.lib.RuntimeError(
           this.__node,
