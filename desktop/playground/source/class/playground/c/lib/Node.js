@@ -5219,8 +5219,8 @@ qx.Class.define("playground.c.lib.Node",
               {
                 // Add the specifier to the end of the specifier/declarator
                 // list
-                specAndDecl = data.specAndDecl;
-                specAndDecl.push(data.specifiers);
+                specAndDecl = data.typeDeclarators || data.specAndDecl;
+                specAndDecl.push(data.typeSpecifiers || data.specifiers);
 
                 this.data =
                   {

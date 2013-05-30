@@ -231,6 +231,10 @@ var tests =
     },
 
     {
+      name  : "p206-push-pop.c"
+    },
+
+    {
       name  : "t001-global-pointer-initialized.c"
     },
     {
