@@ -342,6 +342,22 @@ qx.Class.define("playground.c.lib.Symtab",
       playground.c.lib.Symtab.__nextUniqueId = 0;
     },
 
+    /**
+     * Remove a symbol table.
+     * 
+     * CAUTION: It is the caller's responsibility to ensure that the symbol
+     * table is not in use, i.e., it is not currently on the symbol table
+     * stack.
+     * 
+     * @param symtab {playground.c.lib.Symtab}
+     *   The symbol table to be removed.
+     */
+    remove : function(symtab)
+    {
+      // Remove this symbol table from the symbol table map
+      delete playground.c.lib.Symtab._symtabs[symtab.__name];
+    },
+
     display : function(message)
     {
       var             entry;

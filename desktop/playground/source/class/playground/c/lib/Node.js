@@ -2753,6 +2753,7 @@ qx.Class.define("playground.c.lib.Node",
           {
             var             i;
             var             bDefinition = false;
+            var             forwardDeclSymtab = null;
 
             // Find our enclosing function definition
             for (subnode = this.parent; subnode; subnode = subnode.parent)
@@ -2775,8 +2776,10 @@ qx.Class.define("playground.c.lib.Node",
               symtab = playground.c.lib.Symtab.getByName(
                 data.entry.getName(),
                 playground.c.lib.Symtab.getCurrent());
+
               if (! symtab)
               {
+                // There was no forward declaration. Create a new symbol table.
                 symtab = new playground.c.lib.Symtab(
                   playground.c.lib.Symtab.getCurrent(), 
                   data.entry.getName(),
@@ -2784,11 +2787,20 @@ qx.Class.define("playground.c.lib.Node",
               }
               else
               {
-                // FIXME: 
-                //
-                // Ensure that data.specAndDecl matches
-                // data.entry.getSpecAndDecl() to ensure that the definition
-                // matches the forward declaration.
+                // There was a forward declaration. Save its symbol table, so
+                // we can later compare its symbols to what we find in the
+                // defintion, but create a new symbol table for the
+                // definition.
+                forwardDeclSymtab = symtab;
+                
+                // Remove the old symbol table
+                playground.c.lib.Symtab.remove(symtab);
+                
+                // Create a new symbol table for the defintion of the function
+                symtab = new playground.c.lib.Symtab(
+                  playground.c.lib.Symtab.getCurrent(), 
+                  data.entry.getName(),
+                  this.line);
               }
 
               // Add a function declarator for this symbol.
@@ -2852,6 +2864,15 @@ qx.Class.define("playground.c.lib.Node",
                       // stack. Otherwise, it'll get popped off following the
                       // complete function definition.
                       playground.c.lib.Symtab.popStack();
+                    }
+                    else
+                    {
+                      // FIXME: 
+                      //
+                      // Ensure that the definition matches the forward
+                      // declaration. We have forwardDeclSymtab available, to
+                      // compare parameters. At present, there is nothing that
+                      // saves the forward declaration's specAndDecl.
                     }
                     success();
                   }
