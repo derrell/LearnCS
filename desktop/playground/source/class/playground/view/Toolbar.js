@@ -89,13 +89,9 @@ qx.Class.define("playground.view.Toolbar",
             // editor.
             var code = e.getData().content;
 
-            if (code && 
-                application.isCodeNotEqual(code, application.getOriginCode())) 
-            {
-              application.addCodeToHistory(code);
-              application.editor.setCode(code);
-              application.setOriginCode(application.editor.getCode());
-            }
+            application.addCodeToHistory(code);
+            application.editor.setCode(code);
+            application.setOriginCode(application.editor.getCode());
           },
           this);
 
