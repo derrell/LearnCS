@@ -67,7 +67,7 @@ qx.Class.define("playground.c.lib.Symtab",
       else
       {
         // Derive name from parent and child identifier
-        name = parent.__name + "/" + parent.__nextChild + "@L" + line;
+        name = parent.__name + "/" + "@L" + line;
         ++parent.__nextChild;
       }
     }
@@ -76,7 +76,7 @@ qx.Class.define("playground.c.lib.Symtab",
       // A local name was provided. Prepend the parent's name.
       if (parent && parent.__name)
       {
-        name = parent.__name + "/" + parent.__nextChild + "-" + name;
+        name = parent.__name + "/" + name;
         ++parent.__nextChild;
       }
     }
@@ -314,8 +314,13 @@ qx.Class.define("playground.c.lib.Symtab",
      *   The symbol table with the given name, if it is found;
      *   null otherwise.
      */
-    getByName : function(name)
+    getByName : function(name, parent)
     {
+      if (parent)
+      {
+        name = parent.__name + "/" + name;
+      }
+      
       return playground.c.lib.Symtab._symtabs[name] || null;
     },
 
@@ -562,7 +567,9 @@ qx.Class.define("playground.c.lib.Symtab",
      */
     restoreFramePointer : function()
     {
-      this.__framePointer.shift();
+      var             fp;
+
+      fp = this.__framePointer.shift();
     },
 
     /**

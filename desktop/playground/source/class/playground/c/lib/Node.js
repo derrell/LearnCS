@@ -2772,14 +2772,11 @@ qx.Class.define("playground.c.lib.Node",
               // symbol table for this function's parameters. If there had been
               // a forward declaration, we'll find the symbol table already
               // existing. Otherwise, we'll create it new.
-              symtab = playground.c.lib.Symtab.getByName(data.entry.getName());
+              symtab = playground.c.lib.Symtab.getByName(
+                data.entry.getName(),
+                playground.c.lib.Symtab.getCurrent());
               if (! symtab)
               {
-                // Add a function declarator for this symbol.
-                declarator = new playground.c.lib.Declarator(this);
-                declarator.setType("function");
-                data.specAndDecl.push(declarator);
-
                 symtab = new playground.c.lib.Symtab(
                   playground.c.lib.Symtab.getCurrent(), 
                   data.entry.getName(),
@@ -2794,8 +2791,12 @@ qx.Class.define("playground.c.lib.Node",
                 // matches the forward declaration.
               }
 
-              // Regardless of previous declaration or not, we now know the
-              // subnode of the definition.
+              // Add a function declarator for this symbol.
+              declarator = new playground.c.lib.Declarator(this);
+              declarator.setType("function");
+              data.specAndDecl.push(declarator);
+
+              // We now know the subnode of the definition.
               declarator.setFunctionNode(subnode);
 
               // Save the function's symbol table and name in the function
