@@ -849,7 +849,9 @@ qx.Class.define("playground.c.machine.Memory",
       // symbol table.
       name = symbol.getSymtab ? symbol.getSymtab().getName() : "(system)";
 
-      if (name.match("struct#") || (prefix && prefix.match("struct#")))
+      // Exclude the structure declaration symbol names
+      if (symbol.getName().match("struct#") || 
+          (prefix && prefix.match("struct#")))
       {
         return;
       }

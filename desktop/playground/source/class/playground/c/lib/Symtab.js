@@ -521,6 +521,7 @@ qx.Class.define("playground.c.lib.Symtab",
       this.__symbolOrder.forEach(
         function addSym(symbol, index, arr, prefix, startAddr)
         {
+          var             i;
           var             addr;
           var             symtab;
           
@@ -555,13 +556,14 @@ qx.Class.define("playground.c.lib.Symtab",
             // to each of its members.
             prefix += symbol.getName() + ".";
             
-            // Recursively add each of the members
+            // Recursively add each of the members. Add them in reverse order
+            // so that unions show the first union member in the memory
+            // template view rather than the last one.
             symtab = symbol.getStructSymtab();
-            symtab.__symbolOrder.forEach(
-              function(symbol, index, arr)
-              {
-                addSym(symbol, index, arr, prefix, addr);
-              });
+            for (i = symtab.__symbolOrder.length - 1; i >= 0; i--)
+            {
+              addSym(symtab.__symbolOrder[i], i, [], prefix, addr);
+            }
           }
           else
           {
