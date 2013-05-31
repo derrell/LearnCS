@@ -525,9 +525,6 @@ qx.Class.define("playground.c.lib.Node",
       var             oldStructSymtab;
       var             oldSpecifiers;
       var             oldSpecAndDecl;
-      var             oldTypeSpecifiers;
-      var             oldTypeDeclarators;
-      var             oldTypeStructSymtab;
       var             mem;
       var             memTemplate;
       var             args;
@@ -1805,8 +1802,6 @@ qx.Class.define("playground.c.lib.Node",
         oldEntry = data.entry;
         oldSpecifiers = data.specifiers;
         oldSpecAndDecl = data.specAndDecl;
-        oldTypeSpecifiers = data.typeSpecifiers;
-        oldTypeDeclarators = data.typeDeclarators;
         oldStructSymtab = data.structSymtab;
 
         // Create our own data object with a new specifier for this declaration
@@ -1830,8 +1825,6 @@ qx.Class.define("playground.c.lib.Node",
                 data.entry = oldEntry;
                 data.specifiers = oldSpecifiers;
                 data.specAndDecl = oldSpecAndDecl;
-                data.typeSpecifiers = oldTypeSpecifiers;
-                data.typeDeclarators = oldTypeDeclarators;
                 data.structSymtab = oldStructSymtab;
                 success();
               }.bind(this),
@@ -3312,38 +3305,21 @@ qx.Class.define("playground.c.lib.Node",
         {
           // Save specAndDecl before overwriting it
           oldSpecAndDecl = data.specAndDecl;
-          oldTypeDeclarators = data.typeDeclarators;
-          oldTypeStructSymtab = data.typeStructSymtab;
 
           // Create a list to hold specifiers and declarators.
           data.specAndDecl = [];
           
-          // Clone the type declarators, if it exists
-          data.typeDeclarators =
-            data.typeDeclarators
-            ? data.typeDeclarators.slice(0)
-            : null;
-
           // Process the declarator, which also creates the symbol table entry
           this.children[0].process(
             data,
             bExecuting,
             function()
             {
-              // If there are declarators from a type...
-              if (data.typeDeclarators && data.typeDeclarators.length > 0)
-              {
-                // ... then append them to the specifier/declarator list
-                Array.prototype.push.apply(data.specAndDecl, 
-                                           data.typeDeclarators);
-              }
-
               // Add the specifier to the end of the specifier/declarator list
-              data.specAndDecl.push(data.typeSpecifiers || data.specifiers);
+              data.specAndDecl.push(data.specifiers);
 
               // Add the structure symbol table, if there is one
-              data.entry.setStructSymtab(
-                data.typeStructSymtab || data.structSymtab);
+              data.entry.setStructSymtab(data.structSymtab);
 
               // Calculate the offset in the symbol table for this symbol
               // table entry, based on the now-complete specifiers and
@@ -3360,8 +3336,6 @@ qx.Class.define("playground.c.lib.Node",
                   {
                     // Restore data members
                     data.specAndDecl = oldSpecAndDecl;
-                    data.typeDeclarators = oldTypeDeclarators;
-                    data.typeStructSymtab = oldTypeStructSymtab;
                     success();
                   },
                   failure);
@@ -3370,7 +3344,6 @@ qx.Class.define("playground.c.lib.Node",
               {
                 // Restore data members
                 data.specAndDecl = oldSpecAndDecl;
-                data.typeDeclarators = oldTypeDeclarators;
 
                 success();
               }
@@ -3888,9 +3861,6 @@ qx.Class.define("playground.c.lib.Node",
         oldId = data.id;
         oldSpecifiers = data.specifiers;
         oldSpecAndDecl = data.specAndDecl;
-        oldTypeSpecifiers = data.typeSpecifiers;
-        oldTypeDeclarators = data.typeDeclarators;
-        oldTypeStructSymtab = data.typeStructSymtab;
 
         // Update the data object with a new specifier for this declaration
         data.id = "parameter_declaration";
@@ -3935,9 +3905,6 @@ qx.Class.define("playground.c.lib.Node",
                     data.id = oldId;
                     data.specifiers = oldSpecifiers;
                     data.specAndDecl = oldSpecAndDecl;
-                    data.typeSpecifiers = oldTypeSpecifiers;
-                    data.typeDeclarators = oldTypeDeclarators;
-                    data.typeStructSymtab = oldTypeStructSymtab;
 
                     success();
                   }.bind(this),
@@ -4576,8 +4543,6 @@ qx.Class.define("playground.c.lib.Node",
         oldEntry = data.entry;
         oldSpecifiers = data.specifiers;
         oldSpecAndDecl = data.specAndDecl;
-        oldTypeSpecifiers = data.typeSpecifiers;
-        oldTypeDeclarators = data.typeDeclarators;
         oldStructSymtab = data.structSymtab;
 
         // Create our own data object with a new specifier for this declaration.
@@ -4603,8 +4568,6 @@ qx.Class.define("playground.c.lib.Node",
                 data.entry = oldEntry;
                 data.specifiers = oldSpecifiers;
                 data.specAndDecl = oldSpecAndDecl;
-                data.typeSpecifiers = oldTypeSpecifiers;
-                data.typeDeclarators = oldTypeDeclarators;
                 data.structSymtab = oldStructSymtab;
                 success();
               }.bind(this),
@@ -5219,8 +5182,8 @@ qx.Class.define("playground.c.lib.Node",
               {
                 // Add the specifier to the end of the specifier/declarator
                 // list
-                specAndDecl = data.typeDeclarators || data.specAndDecl;
-                specAndDecl.push(data.typeSpecifiers || data.specifiers);
+                specAndDecl = data.specAndDecl;
+                specAndDecl.push(data.specifiers);
 
                 this.data =
                   {
@@ -5254,13 +5217,13 @@ qx.Class.define("playground.c.lib.Node",
         specOrDecl = specAndDecl.pop();
         
         // Clone its type, size, and signedness
-        data.typeSpecifiers = specOrDecl.cloneTypedef();
+        data.specifiers = specOrDecl.cloneTypedef();
         
         // Save the remainder of the type's specifier/declarator list
-        data.typeDeclarators = specAndDecl;
+        data.specAndDecl = specAndDecl;
 
         // If there's a structure symbol table, we need it too.
-        data.typeStructSymtab = entry.getStructSymtab();
+        data.structSymtab = entry.getStructSymtab();
 
         success();
 
