@@ -1158,7 +1158,7 @@ qx.Class.define("playground.c.machine.Memory",
           if (datum.unsigned)
           {
             // Yup. Indicate such.
-            datum.type = "unsigned " + type;
+            datum.type = "unsigned " + datum.type;
           }
 
           // Save the type and its size
