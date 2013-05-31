@@ -321,7 +321,9 @@ qx.Class.define("playground.c.Main",
         }
         else
         {
-          playground.c.Main.output("Internal error: " + error + "\n");
+          playground.c.Main.output("Internal error near line " +
+                                   playground.c.lib.Node._currentNode.line +
+                                   ": " + error + "\n");
           playground.c.Main.output(error.stack + "\n");
         }
 
@@ -533,8 +535,9 @@ qx.Class.define("playground.c.Main",
         }
         else
         {
-          playground.c.Main.output("Internal error: " + 
-                                                 error + "\n");
+          playground.c.Main.output("Internal error near line " +
+                                   playground.c.lib.Node._currentNode.line +
+                                   ": " + error + "\n");
           playground.c.Main.output(error.stack + "\n");
         }
         
