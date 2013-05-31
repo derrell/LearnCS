@@ -453,3 +453,9 @@ ERROR: Error: Command failed:
 STDOUT: Error near line 9: Redeclaration of struct/union X
 >>> Program had errors. It did not run to completion.
 
+% nodejs ../ansic.js t009-union-simple.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+bytes: 44 33 22 11
+>>> Program exited with exit code 0
+

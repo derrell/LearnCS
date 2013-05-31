@@ -257,6 +257,9 @@ var tests =
     },
     {
       name  : "t008-struct-redeclaration.c"
+    },
+    {
+      name  : "t009-union-simple.c"
     }
   ];
 
