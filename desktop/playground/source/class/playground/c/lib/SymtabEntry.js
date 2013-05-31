@@ -150,15 +150,12 @@ qx.Class.define("playground.c.lib.SymtabEntry",
 
         case "void" :
         case "struct" :
+        case "union" :
           parts.push(type);
           break;
 
-        case "union" :
-          throw new Error("Don't yet know type/size of label");
-          break;
-
         case "enum" :
-          throw new Error("Don't yet know type/size of label");
+          throw new Error("Don't yet know type/size of enum");
           break;
 
         case "label" :
@@ -172,7 +169,7 @@ qx.Class.define("playground.c.lib.SymtabEntry",
 
         case "array" :
           count = sd.getArrayCount() || -1;
-          parts.push("array[" + count + "] of ");
+          parts.push("array[" + count + "] of");
 
           arraySizes.push(count);
           break;
@@ -216,7 +213,7 @@ qx.Class.define("playground.c.lib.SymtabEntry",
       }
       
       // Calculate the complete type
-      description = parts.join("");
+      description = parts.join(" ");
 
       // If so requested, cache the type so it needn't be re-calculated
       if (obj)
@@ -259,7 +256,7 @@ qx.Class.define("playground.c.lib.SymtabEntry",
     __bIsParameter  : false,
     __bUnsigned     : false,
 
-    calculateOffset : function()
+    calculateOffset : function(bIsUnion)
     {
       var             byteCount = 0;
       var             remainder;
@@ -292,7 +289,7 @@ qx.Class.define("playground.c.lib.SymtabEntry",
            ? byteCount
            : byteCount + SIB.Word - remainder);
       }
-      else
+      else if (! bIsUnion)
       {
         this.__symtab.nextOffset += 
           (remainder === 0

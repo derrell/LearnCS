@@ -648,6 +648,25 @@ qx.Class.define("playground.c.lib.Symtab",
     },
     
     /**
+     * Calculate the size of the union, based on the maximum size of its members
+     */
+    calculateUnionSize : function()
+    {
+      // Set nextOffset to the maximum of the members' sizes
+      this.__symbolOrder.forEach(
+        function(symbol)
+        {
+          var             size = symbol.getSize();
+
+          if (size > this.nextOffset)
+          {
+            this.nextOffset = size;
+          }
+        },
+        this);
+    },
+
+    /**
      * Add each of the symbols in this symbol table to the memory template view
      */
     addSymbols : function()

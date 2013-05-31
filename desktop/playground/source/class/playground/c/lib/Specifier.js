@@ -413,14 +413,15 @@ qx.Class.define("playground.c.lib.Specifier",
         break;
         
       case "struct" :
+      case "union" :
         structSymtab = this.getStructSymtab();
         byteCount = structSymtab ? structSymtab.getSize() : 0;
         break;
 
-      case "union" :
       case "enum" :
       case "label" :
-        throw new playground.c.lib.NotYetImplemented(this.__type);
+        throw new playground.c.lib.NotYetImplemented(this.__type +
+                                                     " ( in Specifier)");
         break;
       }
 
@@ -441,12 +442,13 @@ qx.Class.define("playground.c.lib.Specifier",
       case "float" :
       case "double" :
       case "struct" :
+      case "union" :
         return this.__type;
         
-      case "union" :
       case "enum" :
       case "label" :
-        throw new playground.c.lib.NotYetImplemented(this.__type);
+        throw new playground.c.lib.NotYetImplemented(this.__type +
+                                                     " ( in Specifier)");
 
       default :
         throw new Error("Unexpected type: " + this.__type);

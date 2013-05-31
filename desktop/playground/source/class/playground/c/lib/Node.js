@@ -1170,6 +1170,15 @@ qx.Class.define("playground.c.lib.Node",
             else
             {
               specAndDecl = value1.specAndDecl;
+              
+              // If we got the address of an array, reduce it to just array
+              if (specAndDecl.length >= 2 &&
+                  specAndDecl[0].getType() == "address" &&
+                  specAndDecl[1].getType() == "array")
+              {
+                // Remove the 'address' declarator
+                specAndDecl.shift();
+              }
             }
 
             // Look at the first specifier/declarator to ensure this can be
@@ -4404,9 +4413,9 @@ qx.Class.define("playground.c.lib.Node",
          *   0 : struct_declaration_list
          *   1 : identifier
          */
-        
-        // structures and unions are handled nearly identically, here.
-        var case_struct_and_union = function(bIsUnion)
+
+        // structures and unions are handled nearly identically, here
+        function case_struct_and_union(bIsUnion)
         {
           // Only applicable before executing
           // Only applicable before executing and when in a declaration
@@ -4519,6 +4528,13 @@ qx.Class.define("playground.c.lib.Node",
                   // Add the specifiers to the specifier/declarator list
                   data.specAndDecl.push(data.specifiers);
 
+                  // If this is a union...
+                  if (bIsUnion)
+                  {
+                    // ... then calculate the size of the union
+                    symtab.calculateUnionSize();
+                  }
+
                   // Restore overwritten data members
                   data.entry = oldEntry;
                   data.specAndDecl = oldSpecAndDecl;
@@ -4536,9 +4552,9 @@ qx.Class.define("playground.c.lib.Node",
                 failure);
             }.bind(this),
             failure);
-        }.bind(this);
-        
-        case_struct_and_union(false);
+        }
+
+        case_struct_and_union.bind(this)(false);
         break;
 
       case "struct_declaration" :
@@ -4622,15 +4638,10 @@ qx.Class.define("playground.c.lib.Node",
               specAndDecl.push(data.specifiers);
               data.entry.setSpecAndDecl(specAndDecl);
 
-              // If this is a union, then all offsets are 0, so we don't need
-              // to do anything. If it's not a union (i.e., it's a struct)...
-              if (! data.bIsUnion)
-              {
-                // ... then calculate the offset in the symbol table for this
-                // symbol table entry, based on the now-complete specifiers
-                // and declarators.
-                data.entry.calculateOffset();
-              }
+              // Calculate the offset in the symbol table for this symbol
+              // table entry, based on the now-complete specifiers and
+              // declarators.
+              data.entry.calculateOffset(data.bIsUnion);
             }
 
             success();
@@ -5251,7 +5262,7 @@ qx.Class.define("playground.c.lib.Node",
       case "union" :
         // Treat union almost identically to struct. The differences are
         // handled in the function that deals with structures.
-        case_struct_and_union(true);
+        case_struct_and_union.bind(this)(true);
         break;
 
       case "unsigned" :
@@ -5479,7 +5490,7 @@ qx.Class.define("playground.c.lib.Node",
           } while (true);
 
           // Retrieve the current value
-          if (type != "struct")
+          if (type != "struct" && type != "union")
           {
             value =
               playground.c.lib.Node.__mem.get(value1.value, type, bUseOld);
