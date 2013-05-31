@@ -525,6 +525,7 @@ qx.Class.define("playground.c.lib.Node",
       var             oldStructSymtab;
       var             oldSpecifiers;
       var             oldSpecAndDecl;
+      var             oldIsUnion;
       var             mem;
       var             memTemplate;
       var             args;
@@ -4404,55 +4405,92 @@ qx.Class.define("playground.c.lib.Node",
          *   1 : identifier
          */
         
-        // Only applicable before executing
-        // Only applicable before executing and when in a declaration
-        if (bExecuting && ! data.specifiers)
+        // structures and unions are handled nearly identically, here.
+        var case_struct_and_union = function(bIsUnion)
         {
-          success();
-          break;
-        }
-        
-        data.specifiers.setType("struct");
-        if (data.specifiers.getStorage() != "typedef")
-        {
-          data.specifiers.setStorage("extern");
-        }
-        
-        // Save information that we might overwrite
-        oldEntry = data.entry;
-        oldSpecAndDecl = data.specAndDecl;
-        oldStructSymtab = data.structSymtab;
-        
-        data.entry = null;
-        data.specAndDecl = [];
-        data.structSymtab = null;
-        
-        // Process the identifier
-        this.children[1].process(
-          data,
-          bExecuting,
-          function(v)
+          // Only applicable before executing
+          // Only applicable before executing and when in a declaration
+          if (bExecuting && ! data.specifiers)
           {
-            var             bNeedPopStack = false;
-            var             name;
+            success();
+            return;
+          }
 
-            // When executing, we are given the entry.
-            data.entry = data.entry || v;
+          data.specifiers.setType(bIsUnion ? "union" : "struct");
+          if (data.specifiers.getStorage() != "typedef")
+          {
+            data.specifiers.setStorage("extern");
+          }
 
-            // Retrieve or create the symbol table for this struct's members
-            entry = 
-              playground.c.lib.Symtab.getCurrent().get(data.entry.getName());
+          // Save information that we might overwrite
+          oldEntry = data.entry;
+          oldSpecAndDecl = data.specAndDecl;
+          oldIsUnion = data.bIsUnion;
 
-            // Did it exist?
-            if (entry)
+          data.entry = null;
+          data.specAndDecl = [];
+          data.structSymtab = null;
+          data.bIsUnion = bIsUnion;
+
+          // Process the identifier
+          this.children[1].process(
+            data,
+            bExecuting,
+            function(v)
             {
-              // Yup. Retrieve the structure symbol table from it
-              symtab = entry.getStructSymtab();
+              var             bNeedPopStack = false;
+              var             name;
 
-              // If we still didn't find a struct symbol table...
-              if (! symtab)
+              // When executing, we are given the entry.
+              data.entry = data.entry || v;
+
+              // Retrieve or create the symbol table for this struct's members
+              entry = 
+                playground.c.lib.Symtab.getCurrent().get(data.entry.getName());
+
+              // Did it exist?
+              if (entry)
               {
-                // ... then create it.
+                // Yup. Retrieve the structure symbol table from it
+                symtab = entry.getStructSymtab();
+
+                // If we still didn't find a struct symbol table...
+                if (! symtab)
+                {
+                  // ... then create it.
+                  symtab = new playground.c.lib.Symtab(
+                    playground.c.lib.Symtab.getCurrent(),
+                    data.entry.getName(),
+                    this.line);
+
+                  // Save the symbol table with the entry for this structure
+                  // name
+                  data.entry.setStructSymtab(symtab);
+
+                }
+                else
+                {
+                  // Push the existing symbol table onto the symbol table stack
+                  playground.c.lib.Symtab.pushStack(symtab);
+                }
+
+                // If there is a struct_declaration_list here, then the symbol
+                // table had better be empty.
+                if (this.children[0].type != "_null_" && 
+                    symtab.getNumSymbols() != 0)
+                {
+                  // Get the structure name without the prefixed "struct#"
+                  name = data.entry.getName().replace(/^struct#/, "");
+
+                  failure(new playground.c.lib.RuntimeError(
+                            this,
+                            "Redeclaration of struct/union " + name));
+                  return;
+                }
+              }
+              else
+              {
+                // It didn't exist. Create it.
                 symtab = new playground.c.lib.Symtab(
                   playground.c.lib.Symtab.getCurrent(),
                   data.entry.getName(),
@@ -4460,75 +4498,47 @@ qx.Class.define("playground.c.lib.Node",
 
                 // Save the symbol table with the entry for this structure name
                 data.entry.setStructSymtab(symtab);
-                
-              }
-              else
-              {
-                // Push the existing symbol table onto the symbol table stack
-                playground.c.lib.Symtab.pushStack(symtab);
               }
 
-              // If there is a struct_declaration_list here, then the symbol
-              // table had better be empty.
-              if (this.children[0].type != "_null_" && 
-                  symtab.getNumSymbols() != 0)
+              // If we have a symbol table, we'll need to pop it later
+              if (symtab)
               {
-                // Get the structure name without the prefixed "struct#"
-                name = data.entry.getName().replace(/^struct#/, "");
-
-                failure(new playground.c.lib.RuntimeError(
-                          this,
-                          "Redeclaration of struct " + name));
-                return;
+                bNeedPopStack = true;
               }
-            }
-            else
-            {
-              // It didn't exist. Create it.
-              symtab = new playground.c.lib.Symtab(
-                playground.c.lib.Symtab.getCurrent(),
-                data.entry.getName(),
-                this.line);
-              
-              // Save the symbol table with the entry for this structure name
-              data.entry.setStructSymtab(symtab);
-            }
 
-            // If we have a symbol table, we'll need to pop it later
-            if (symtab)
-            {
-              bNeedPopStack = true;
-            }
+              // Save this symbol table to store it with variables of this type
+              data.structSymtab = symtab;
+              data.specifiers.setStructSymtab(symtab);
 
-            // Save this symbol table to store it with variables of this type
-            data.structSymtab = symtab;
-            data.specifiers.setStructSymtab(symtab);
-
-            // Process the struct_declaration_list
-            this.children[0].process(
-              data,
-              bExecuting,
-              function()
-              {
-                // Add the specifiers to the specifier/declarator list
-                data.specAndDecl.push(data.specifiers);
-
-                // Restore overwritten data members
-                data.entry = oldEntry;
-                data.specAndDecl = oldSpecAndDecl;
-
-                // Revert to the prior scope, if we'd somehow pushed a symbol
-                // table (either creating a new one, or manually pushing it).
-                if (bNeedPopStack)
+              // Process the struct_declaration_list
+              this.children[0].process(
+                data,
+                bExecuting,
+                function()
                 {
-                  playground.c.lib.Symtab.popStack();
-                }
+                  // Add the specifiers to the specifier/declarator list
+                  data.specAndDecl.push(data.specifiers);
 
-                success();
-              }.bind(this),
-              failure);
-          }.bind(this),
-          failure);
+                  // Restore overwritten data members
+                  data.entry = oldEntry;
+                  data.specAndDecl = oldSpecAndDecl;
+                  data.bIsUnion = oldIsUnion;
+
+                  // Revert to the prior scope, if we'd somehow pushed a symbol
+                  // table (either creating a new one, or manually pushing it).
+                  if (bNeedPopStack)
+                  {
+                    playground.c.lib.Symtab.popStack();
+                  }
+
+                  success();
+                }.bind(this),
+                failure);
+            }.bind(this),
+            failure);
+        }.bind(this);
+        
+        case_struct_and_union(false);
         break;
 
       case "struct_declaration" :
@@ -4612,10 +4622,15 @@ qx.Class.define("playground.c.lib.Node",
               specAndDecl.push(data.specifiers);
               data.entry.setSpecAndDecl(specAndDecl);
 
-              // Calculate the offset in the symbol table for this symbol
-              // table entry, based on the now-complete specifiers and
-              // declarators
-              data.entry.calculateOffset();
+              // If this is a union, then all offsets are 0, so we don't need
+              // to do anything. If it's not a union (i.e., it's a struct)...
+              if (! data.bIsUnion)
+              {
+                // ... then calculate the offset in the symbol table for this
+                // symbol table entry, based on the now-complete specifiers
+                // and declarators.
+                data.entry.calculateOffset();
+              }
             }
 
             success();
@@ -5234,15 +5249,9 @@ qx.Class.define("playground.c.lib.Node",
         break;
 
       case "union" :
-        // Only applicable before executing and when in a declaration
-        if (bExecuting && ! data.specifiers)
-        {
-          success();
-          break;
-        }
-        
-        data.specifiers.setType("union");
-        throw new playground.c.lib.NotYetImplemented("union");
+        // Treat union almost identically to struct. The differences are
+        // handled in the function that deals with structures.
+        case_struct_and_union(true);
         break;
 
       case "unsigned" :

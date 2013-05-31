@@ -849,12 +849,11 @@ qx.Class.define("playground.c.machine.Memory",
       // symbol table.
       name = symbol.getSymtab ? symbol.getSymtab().getName() : "(system)";
 
-      if (symbol.getName().match("struct#") || 
-          (prefix && prefix.match("struct#")))
+      if (name.match("struct#") || (prefix && prefix.match("struct#")))
       {
         return;
       }
-      
+
       this._symbolInfo[addr] = 
         {
           addr       : addr,
