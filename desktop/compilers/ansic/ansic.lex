@@ -25,7 +25,9 @@ NL                      [\n]
 {SLASH}{SLASH}.* { }
 {SLASH}{STAR}({SLASH}|(.|{NL})|{STAR}+(.|{NL}))*?{STAR}+{SLASH} { }
 
-"#include"              {
+"@include"              {
+    // The preprocessor converts #include to @include for us.
+    
     if (playground.c.lib.Symtab.getCurrent().getName() != "*")
     {
       playground.c.lib.Node.getError().parseError(

@@ -218,7 +218,6 @@ qx.Class.define("playground.Application",
       // Add the page to the tabview
       tabview.add(page);
 
-/*
       // Create the page for the Preprocessor output
       page = new qx.ui.tabview.Page("Preprocessor Output");
       page.setLayout(new qx.ui.layout.VBox());
@@ -240,7 +239,10 @@ qx.Class.define("playground.Application",
       qx.core.Init.getApplication().setUserData("cppoutput", this.__cppOutput);
 
       // Add the page to the tabview
-      tabview.add(page);
+      if (qx.core.Environment.get("qx.debug"))
+      {
+        tabview.add(page);
+      }
 
       // When the preprocessor page is selected, generate preprocessed output
       var             cppPage = page;
@@ -250,13 +252,15 @@ qx.Class.define("playground.Application",
         {
           if (e.getData()[0] == cppPage)
           {
-            this.__cppOutput.setValue(
-              playground.c.lib.Preprocessor.preprocess(
-                this.editor.getCode()).join("\n"));
+            playground.c.lib.Preprocessor.preprocess(
+              this.editor.getCode(),
+              function(preprocessedText)
+              {
+                this.__cppOutput.setValue(preprocessedText);
+              }.bind(this));
           }
         },
         this);
-*/
 
       // Create the page for the Block editor
       page = new qx.ui.tabview.Page("Blocks");
@@ -1079,13 +1083,17 @@ qx.Class.define("playground.Application",
         this.__modified = true;
       }
 
-      require(["resource/playground/script/ansic.js"],
-              function(ansic)
-              {
-                playground.c.Main.main(ansic);
-                ansic.parse(code);
-              });
-//      this.__updatePlayground();
+      playground.c.lib.Preprocessor.preprocess(
+        code,
+        function(preprocessedCode)
+        {
+          require(["resource/playground/script/ansic.js"],
+                  function(ansic)
+                  {
+                    playground.c.Main.main(ansic);
+                    ansic.parse(preprocessedCode);
+                  });
+        }.bind(this));
     },
 
 
