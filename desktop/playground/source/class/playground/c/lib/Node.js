@@ -3966,10 +3966,6 @@ qx.Class.define("playground.c.lib.Node",
         this.__processSubnodes(data, bExecuting, success, failure);
         break;
 
-      case "pointer_access" :
-        throw new playground.c.lib.NotYetImplemented("pointer_access");
-        break;
-
       case "positive" :
         /*
          * positive :
