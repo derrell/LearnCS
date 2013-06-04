@@ -218,7 +218,7 @@ qx.Class.define("playground.c.lib.Specifier",
       }
       
       // Otherwise, determine if there's a default signedness
-      if (this.__type == "int")
+      if ((this.__type || "int") == "int")
       {
         return "signed";
       }
@@ -389,7 +389,7 @@ qx.Class.define("playground.c.lib.Specifier",
       var             structSymtab;
 
       // Determine the byte count for this type
-      switch(this.__type)
+      switch(this.__type || "int")
       {
       case "int" :
         switch(this.__size)

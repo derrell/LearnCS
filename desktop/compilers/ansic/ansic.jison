@@ -943,26 +943,43 @@ struct_declarator
   ;
 
 enum_specifier
-  : ENUM lbrace enumerator_list rbrace
+  : ENUM ns_struct identifier ns_normal lbrace enumerator_list rbrace
   {
-    parser.yy.R("enum_specifier : ENUM lbrace enumerator_list rbrace");
-    $$ = new playground.c.lib.Node("enum_specifier", yytext, yylineno);
+    parser.yy.R("enum : ENUM identifier lbrace enumerator_list rbrace");
+    $$ = new playground.c.lib.Node("enum", yytext, yylineno);
+    $$.children.push($6);
     $$.children.push($3);
-    $$.children.push(playground.c.lib.Node.getNull(yylineno));     // no identifier
+
+    // Add a symbol table entry for this enum (a type)
+    playground.c.lib.Symtab.getCurrent().add($3.value, yylineno, true);
   }
-  | ENUM identifier lbrace enumerator_list rbrace
+  | ENUM ns_struct ns_normal lbrace enumerator_list rbrace
   {
-    parser.yy.R("enum_specifier : ENUM identifier lbrace enumerator_list rbrace");
-    $$ = new playground.c.lib.Node("enum_specifier", yytext, yylineno);
-    $$.children.push($4);
-    $$.children.push($2);
+    var             identifier;
+
+    parser.yy.R("enum : ENUM lbrace enumerator_list rbrace");
+    $$ = new playground.c.lib.Node("enum", yytext, yylineno);
+    $$.children.push($5);
+
+    // Create an identifier node
+    identifier = new playground.c.lib.Node("identifier", yytext, yylineno);
+    identifier.value = "struct#" + playground.c.lib.Symtab.getUniqueId();
+
+    // Add a symbol table entry for this struct (a type)
+    playground.c.lib.Symtab.getCurrent().add(identifier.value, yylineno, true);
+
+    // Add the identifier
+    $$.children.push(identifier);
   }
-  | ENUM identifier
+  | ENUM ns_struct identifier ns_normal
   {
-    parser.yy.R("enum_specifier : ENUM identifier");
-    $$ = new playground.c.lib.Node("enum_specifier", yytext, yylineno);
-    $$.children.push(playground.c.lib.Node.getNull(yylineno));     // no enumerator list
-    $$.children.push($2);
+    parser.yy.R("enum : ENUM identifier");
+    $$ = new playground.c.lib.Node("enum", yytext, yylineno);
+    $$.children.push(playground.c.lib.Node.getNull(yylineno)); // no enumerator_list
+    $$.children.push($3);
+
+    // Add a symbol table entry for this struct
+    playground.c.lib.Symtab.getCurrent().add($3.value, yylineno, true);
   }
   ;
 
@@ -985,12 +1002,15 @@ enumerator
   : identifier
   {
     parser.yy.R("enumerator : identifier");
-    $$ = $1;
+    $$ = new playground.c.lib.Node("enumerator", yytext, yylineno);
+    $$.children.push($1);
+    $$.children.push(playground.c.lib.Node.getNull(yylineno)); // no initializer
   }
   | identifier '=' constant_expression
   {
     parser.yy.R("enumerator : identifier '=' constant_expression");
-    $$ = $1;
+    $$ = new playground.c.lib.Node("enumerator", yytext, yylineno);
+    $$.children.push($1);
     $$.children.push($3);
   }
   ;

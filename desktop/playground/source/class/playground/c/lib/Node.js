@@ -553,6 +553,7 @@ qx.Class.define("playground.c.lib.Node",
       var             oldSpecifiers;
       var             oldSpecAndDecl;
       var             oldIsUnion;
+      var             oldIsDefine;
       var             mem;
       var             memTemplate;
       var             args;
@@ -562,6 +563,15 @@ qx.Class.define("playground.c.lib.Node",
       var             stepButton;
       var             continueButton;
       var             WORDSIZE = playground.c.machine.Memory.WORDSIZE;
+
+      // Argument to case_struct_union_enum() to differentiate between cases
+      var StructUnionEnum =
+        {
+          Struct : 0,
+          Union  : 1,
+          Enum   : 2
+        };
+
 
       // Make the current node available globally
       playground.c.lib.Node._currentNode = this;
@@ -2310,20 +2320,128 @@ qx.Class.define("playground.c.lib.Node",
         throw new playground.c.lib.NotYetImplemented("ellipsis");
         break;
 
-      case "enumerator_list" :
-        throw new playground.c.lib.NotYetImplemented("enumerator_list");
+      case "enum" :
+        /*
+         * enum
+         *   0: enumerator_list?
+         *   1: identifier
+         */
+
+        // Treat enum almost identically to struct. The differences are
+        // handled in the function that deals with structures.
+        case_struct_union_enum.bind(this)(StructUnionEnum.Enum);
         break;
 
-      case "enum_specifier" :
-        // Only applicable before executing
+      case "enumerator" :
+        /*
+         * enumerator
+         *   0: identifier
+         *   1: constant_expression?
+         */
+
+        // Save data members we may overwrite
+        oldSpecifiers = data.specifiers;
+        oldSpecAndDecl = data.specAndDecl;
+
+        // Create our own data object with a new specifier for this enum
+        data.id = "enum"; 
+        data.specifiers = new playground.c.lib.Specifier(this);
+        data.specifiers.setConstant("constant");
+        data.specAndDecl = [];
+
+        // Process the identifier
+        this.children[0].process(
+          data,
+          bExecuting,
+          function()
+          {
+            // Append the specifiers to the specifier/declarator list
+            data.specAndDecl.push(data.specifiers);
+
+            // Calculate the offset in the symbol table for this symbol
+            // table entry, based on the now-complete specifiers and
+            // declarators
+            data.entry.calculateOffset();
+
+            // Process the enumerator's value
+            this.children[1].process(
+              data,
+              bExecuting,
+              function(v)
+              {
+                // Did we get a value?
+                if (v)
+                {
+                  // Yup. Ensure it's valid for an enumerator initializer
+                  specOrDecl = v.specAndDecl[v.specAndDecl.length - 1];
+                  if (specOrDecl.getType() != "int")
+                  {
+                    failure(
+                      new playground.c.lib.RuntimeError(
+                        this,
+                        "Enumerator initializer must evaluate to an int."));
+                    return;
+                  }
+                  
+                  // Prepare for the next enumerator with no provided value
+                  data.enumValue = v.value + 1;
+
+                  // This is the value we'll set the enumerator to
+                  value = v;
+                }
+                else
+                {
+                  // There is no initializer provided. Use the next
+                  // automatically-generated one.
+                  specOrDecl = new playground.c.lib.Specifier(this, "int");
+                  value =
+                    {
+                      value       : data.enumValue++,
+                      specAndDecl : [ specOrDecl ]
+                    };
+                }
+                
+                // Set this constant's value
+                playground.c.lib.Node.__mem.set(data.entry.getAddr(),
+                                                "int",
+                                                value.value);
+
+                // Restore saved data members
+                data.specifiers = oldSpecifiers;
+                data.specAndDecl = oldSpecAndDecl;
+
+                success();
+              },
+              failure);
+          }.bind(this),
+          failure);
+
+        break;
+
+      case "enumerator_list" :
+        /*
+         * enumerator_list
+         *   0: enumerator
+         *   ...
+         */
         if (bExecuting)
         {
           success();
           break;
         }
         
-        data.specifiers.setType("enum");
-        throw new playground.c.lib.NotYetImplemented("enum_specifier");
+        // Assume an initial enumerator value of 0
+        data.enumValue = 0;
+        
+        this.__processSubnodes(
+          data,
+          bExecuting,
+          function()
+          {
+            delete data.enumValue;
+            success();
+          }.bind(this),
+          failure);
         break;
 
       case "equal" :
@@ -3178,7 +3296,7 @@ qx.Class.define("playground.c.lib.Node",
           {
             // This symbol shouldn't exist. Create a symbol table entry for it
             entry = playground.c.lib.Symtab.getCurrent().add(
-              this.value, this.line, false, data.bIsParameter);
+              this.value, this.line, false, data.bIsParameter, data.bIsDefine);
 
             if (! entry)
             {
@@ -4437,8 +4555,8 @@ qx.Class.define("playground.c.lib.Node",
          *   1 : identifier
          */
 
-        // structures and unions are handled nearly identically, here
-        function case_struct_and_union(bIsUnion)
+        // structures, unions, and enums are handled nearly identically, here.
+        function case_struct_union_enum(sueType)
         {
           // Only applicable before executing
           // Only applicable before executing and when in a declaration
@@ -4448,7 +4566,21 @@ qx.Class.define("playground.c.lib.Node",
             return;
           }
 
-          data.specifiers.setType(bIsUnion ? "union" : "struct");
+          switch(sueType)
+          {
+          case StructUnionEnum.Struct :
+            data.specifiers.setType("struct");
+            break;
+            
+          case StructUnionEnum.Union :
+            data.specifiers.setType("union");
+            break;
+            
+          case StructUnionEnum.Enum :
+            data.specifiers.setType("enum");
+            break;
+          }
+
           if (data.specifiers.getStorage() != "typedef")
           {
             data.specifiers.setStorage("extern");
@@ -4462,7 +4594,7 @@ qx.Class.define("playground.c.lib.Node",
           data.entry = null;
           data.specAndDecl = [];
           data.structSymtab = null;
-          data.bIsUnion = bIsUnion;
+          data.bIsUnion = (sueType === StructUnionEnum.Union);
 
           // Process the identifier
           this.children[1].process(
@@ -4476,17 +4608,18 @@ qx.Class.define("playground.c.lib.Node",
               // When executing, we are given the entry.
               data.entry = data.entry || v;
 
-              // Retrieve or create the symbol table for this struct's members
+              // Retrieve or create the symbol table for this struct's,
+              // union's, or enum's members
               entry = 
                 playground.c.lib.Symtab.getCurrent().get(data.entry.getName());
 
               // Did it exist?
               if (entry)
               {
-                // Yup. Retrieve the structure symbol table from it
+                // Yup. Retrieve the struct/union/enum symbol table from it
                 symtab = entry.getStructSymtab();
 
-                // If we still didn't find a struct symbol table...
+                // If we still didn't find a struct/union/enum symbol table...
                 if (! symtab)
                 {
                   // ... then create it.
@@ -4495,8 +4628,8 @@ qx.Class.define("playground.c.lib.Node",
                     data.entry.getName(),
                     this.line);
 
-                  // Save the symbol table with the entry for this structure
-                  // name
+                  // Save the symbol table with the entry for this
+                  // struct/union/enum name
                   data.entry.setStructSymtab(symtab);
 
                 }
@@ -4506,8 +4639,8 @@ qx.Class.define("playground.c.lib.Node",
                   playground.c.lib.Symtab.pushStack(symtab);
                 }
 
-                // If there is a struct_declaration_list here, then the symbol
-                // table had better be empty.
+                // If there is a struct_declaration_list or enumerator list
+                // here, then the symbol table had better be empty.
                 if (this.children[0].type != "_null_" && 
                     symtab.getNumSymbols() != 0)
                 {
@@ -4516,7 +4649,7 @@ qx.Class.define("playground.c.lib.Node",
 
                   failure(new playground.c.lib.RuntimeError(
                             this,
-                            "Redeclaration of struct/union " + name));
+                            "Redeclaration of struct/union/enum " + name));
                   return;
                 }
               }
@@ -4528,7 +4661,8 @@ qx.Class.define("playground.c.lib.Node",
                   data.entry.getName(),
                   this.line);
 
-                // Save the symbol table with the entry for this structure name
+                // Save the symbol table with the entry for this
+                // struct/union/enum name
                 data.entry.setStructSymtab(symtab);
               }
 
@@ -4542,7 +4676,7 @@ qx.Class.define("playground.c.lib.Node",
               data.structSymtab = symtab;
               data.specifiers.setStructSymtab(symtab);
 
-              // Process the struct_declaration_list
+              // Process the struct_declaration_list or enumerator_list
               this.children[0].process(
                 data,
                 bExecuting,
@@ -4552,7 +4686,7 @@ qx.Class.define("playground.c.lib.Node",
                   data.specAndDecl.push(data.specifiers);
 
                   // If this is a union...
-                  if (bIsUnion)
+                  if (sueType === StructUnionEnum.Union)
                   {
                     // ... then calculate the size of the union
                     symtab.calculateUnionSize();
@@ -4577,7 +4711,7 @@ qx.Class.define("playground.c.lib.Node",
             failure);
         }
 
-        case_struct_and_union.bind(this)(false);
+        case_struct_union_enum.bind(this)(StructUnionEnum.Struct);
         break;
 
       case "struct_declaration" :
@@ -5293,7 +5427,7 @@ qx.Class.define("playground.c.lib.Node",
       case "union" :
         // Treat union almost identically to struct. The differences are
         // handled in the function that deals with structures.
-        case_struct_and_union.bind(this)(true);
+        case_struct_union_enum.bind(this)(StructUnionEnum.Union);
         break;
 
       case "unsigned" :
@@ -5521,7 +5655,7 @@ qx.Class.define("playground.c.lib.Node",
           } while (true);
 
           // Retrieve the current value
-          if (type != "struct" && type != "union")
+          if (type != "struct" && type != "union" && type != "enum")
           {
             value =
               playground.c.lib.Node.__mem.get(value1.value, type, bUseOld);
