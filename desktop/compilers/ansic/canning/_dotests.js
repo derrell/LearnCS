@@ -1,5 +1,3 @@
-#!/usr/bin/nodejs
-
 var sys = require('sys');
 var exec = require('child_process').exec;
 
@@ -295,7 +293,7 @@ var tests =
    // Create the generic portion of the command
    cmd =
      [
-       "nodejs ../ansic.js",
+       "../dcc",
        test.name,
        "--rootdir=/home/derrell/ME"
      ];

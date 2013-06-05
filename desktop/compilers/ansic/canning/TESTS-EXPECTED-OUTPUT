@@ -1,156 +1,156 @@
-% nodejs ../ansic.js p001-helloworld.c --rootdir=/home/derrell/ME
+% ../dcc p001-helloworld.c --rootdir=/home/derrell/ME
 STDOUT: 
 >>> Running program
 Hello World
 >>> Program exited with exit code 0
 
-% nodejs ../ansic.js p002-value6.c --rootdir=/home/derrell/ME
+% ../dcc p002-value6.c --rootdir=/home/derrell/ME
 STDOUT: 
 >>> Running program
 6
 >>> Program exited with exit code 0
 
-% nodejs ../ansic.js p003-charP.c --rootdir=/home/derrell/ME
+% ../dcc p003-charP.c --rootdir=/home/derrell/ME
 STDOUT: 
 >>> Running program
 P
 >>> Program exited with exit code 0
 
-% echo '42' |  nodejs ../ansic.js p004-scanf.c --rootdir=/home/derrell/ME
+% echo '42' |  ../dcc p004-scanf.c --rootdir=/home/derrell/ME
 42
 STDOUT: 
 >>> Running program
 Please enter a number: You entered 42
 >>> Program exited with exit code 0
 
-% echo '23 42' |  nodejs ../ansic.js p005-sum-of-two-values.c --rootdir=/home/derrell/ME
+% echo '23 42' |  ../dcc p005-sum-of-two-values.c --rootdir=/home/derrell/ME
 23 42
 STDOUT: 
 >>> Running program
 Please enter two numbers, separated by whitespace: The sum of 23 and 42 is 65
 >>> Program exited with exit code 0
 
-% nodejs ../ansic.js p006-fscanf.c --rootdir=/home/derrell/ME
+% ../dcc p006-fscanf.c --rootdir=/home/derrell/ME
 STDOUT: 
 >>> Running program
 Found value 23
 >>> Program exited with exit code 0
 
-% echo '99' |  nodejs ../ansic.js p007-bigger-than-100.c --rootdir=/home/derrell/ME
+% echo '99' |  ../dcc p007-bigger-than-100.c --rootdir=/home/derrell/ME
 99
 STDOUT: 
 >>> Running program
 Please enter a number: The number is not bigger than 100
 >>> Program exited with exit code 0
 
-% echo '100' |  nodejs ../ansic.js p007-bigger-than-100.c --rootdir=/home/derrell/ME
+% echo '100' |  ../dcc p007-bigger-than-100.c --rootdir=/home/derrell/ME
 100
 STDOUT: 
 >>> Running program
 Please enter a number: The number is not bigger than 100
 >>> Program exited with exit code 0
 
-% echo '101' |  nodejs ../ansic.js p007-bigger-than-100.c --rootdir=/home/derrell/ME
+% echo '101' |  ../dcc p007-bigger-than-100.c --rootdir=/home/derrell/ME
 101
 STDOUT: 
 >>> Running program
 Please enter a number: The number is bigger than 100
 >>> Program exited with exit code 0
 
-% nodejs ../ansic.js p008-horizontal-line.c --rootdir=/home/derrell/ME
+% ../dcc p008-horizontal-line.c --rootdir=/home/derrell/ME
 STDOUT: 
 >>> Running program
 ***********************
 >>> Program exited with exit code 0
 
-% nodejs ../ansic.js p009-using-for-loop.c --rootdir=/home/derrell/ME
+% ../dcc p009-using-for-loop.c --rootdir=/home/derrell/ME
 STDOUT: 
 >>> Running program
 2 4 6 8 10 
 >>> Program exited with exit code 0
 
-% nodejs ../ansic.js p010-sum-of-twenty.c --rootdir=/home/derrell/ME
+% ../dcc p010-sum-of-twenty.c --rootdir=/home/derrell/ME
 STDOUT: 
 >>> Running program
 The sum is 210
 >>> Program exited with exit code 0
 
-% echo '-1' |  nodejs ../ansic.js p011-equal-to-zero.c --rootdir=/home/derrell/ME
+% echo '-1' |  ../dcc p011-equal-to-zero.c --rootdir=/home/derrell/ME
 -1
 STDOUT: 
 >>> Running program
 Please enter a number: The number is not equal to zero.
 >>> Program exited with exit code 0
 
-% echo '0' |  nodejs ../ansic.js p011-equal-to-zero.c --rootdir=/home/derrell/ME
+% echo '0' |  ../dcc p011-equal-to-zero.c --rootdir=/home/derrell/ME
 0
 STDOUT: 
 >>> Running program
 Please enter a number: The number is equal to zero.
 >>> Program exited with exit code 0
 
-% echo '1' |  nodejs ../ansic.js p011-equal-to-zero.c --rootdir=/home/derrell/ME
+% echo '1' |  ../dcc p011-equal-to-zero.c --rootdir=/home/derrell/ME
 1
 STDOUT: 
 >>> Running program
 Please enter a number: The number is not equal to zero.
 >>> Program exited with exit code 0
 
-% echo '-1' |  nodejs ../ansic.js p012-pos-neg-zero.c --rootdir=/home/derrell/ME
+% echo '-1' |  ../dcc p012-pos-neg-zero.c --rootdir=/home/derrell/ME
 -1
 STDOUT: 
 >>> Running program
 Please enter a number: The number is negative.
 >>> Program exited with exit code 0
 
-% echo '0' |  nodejs ../ansic.js p012-pos-neg-zero.c --rootdir=/home/derrell/ME
+% echo '0' |  ../dcc p012-pos-neg-zero.c --rootdir=/home/derrell/ME
 0
 STDOUT: 
 >>> Running program
 Please enter a number: The number is zero.
 >>> Program exited with exit code 0
 
-% echo '1' |  nodejs ../ansic.js p012-pos-neg-zero.c --rootdir=/home/derrell/ME
+% echo '1' |  ../dcc p012-pos-neg-zero.c --rootdir=/home/derrell/ME
 1
 STDOUT: 
 >>> Running program
 Please enter a number: The number is positive.
 >>> Program exited with exit code 0
 
-% echo '3' |  nodejs ../ansic.js p013-abs-function.c --rootdir=/home/derrell/ME
+% echo '3' |  ../dcc p013-abs-function.c --rootdir=/home/derrell/ME
 3
 STDOUT: 
 >>> Running program
 Please enter a number: The absolute value of 3 is 3
 >>> Program exited with exit code 0
 
-% echo '-4' |  nodejs ../ansic.js p013-abs-function.c --rootdir=/home/derrell/ME
+% echo '-4' |  ../dcc p013-abs-function.c --rootdir=/home/derrell/ME
 -4
 STDOUT: 
 >>> Running program
 Please enter a number: The absolute value of -4 is 4
 >>> Program exited with exit code 0
 
-% echo '2' |  nodejs ../ansic.js p015-sqrt-function.c --rootdir=/home/derrell/ME
+% echo '2' |  ../dcc p015-sqrt-function.c --rootdir=/home/derrell/ME
 2
 STDOUT: 
 >>> Running program
 Please enter a number: The square root of 2.000000 is 1.414214
 >>> Program exited with exit code 0
 
-% nodejs ../ansic.js p016-sine-atof.c --rootdir=/home/derrell/ME --cmdline='3.1415926'
+% ../dcc p016-sine-atof.c --rootdir=/home/derrell/ME --cmdline='3.1415926'
 STDOUT: 
 >>> Running program
 The sine of 3.141593 is 0.000000
 >>> Program exited with exit code 0
 
-% nodejs ../ansic.js p016-sine-atof.c --rootdir=/home/derrell/ME --cmdline='1.570796'
+% ../dcc p016-sine-atof.c --rootdir=/home/derrell/ME --cmdline='1.570796'
 STDOUT: 
 >>> Running program
 The sine of 1.570796 is 1.000000
 >>> Program exited with exit code 0
 
-% echo 'hello world.' |  nodejs ../ansic.js p017-count-characters.c --rootdir=/home/derrell/ME
+% echo 'hello world.' |  ../dcc p017-count-characters.c --rootdir=/home/derrell/ME
 hello world.
 STDOUT: 
 >>> Running program
@@ -158,7 +158,7 @@ Please enter characters, and then press EOF:
 Received 13 characters
 >>> Program exited with exit code 0
 
-% echo '8 5' |  nodejs ../ansic.js p018-solidbox.c --rootdir=/home/derrell/ME
+% echo '8 5' |  ../dcc p018-solidbox.c --rootdir=/home/derrell/ME
 8 5
 STDOUT: 
 >>> Running program
@@ -172,35 +172,35 @@ And there you have it, folks: a box!
 
 >>> Program exited with exit code 0
 
-% echo '5 8' |  nodejs ../ansic.js p019-area-of-rectangle.c --rootdir=/home/derrell/ME
+% echo '5 8' |  ../dcc p019-area-of-rectangle.c --rootdir=/home/derrell/ME
 5 8
 STDOUT: 
 >>> Running program
 Please enter the width: Please enter the height: The area of a 5.00 x 8.00 rectangle is 40.000000
 >>> Program exited with exit code 0
 
-% echo '2.3 8' |  nodejs ../ansic.js p019-area-of-rectangle.c --rootdir=/home/derrell/ME
+% echo '2.3 8' |  ../dcc p019-area-of-rectangle.c --rootdir=/home/derrell/ME
 2.3 8
 STDOUT: 
 >>> Running program
 Please enter the width: Please enter the height: The area of a 2.30 x 8.00 rectangle is 18.400000
 >>> Program exited with exit code 0
 
-% echo '1' |  nodejs ../ansic.js p020-area-of-circle.c --rootdir=/home/derrell/ME
+% echo '1' |  ../dcc p020-area-of-circle.c --rootdir=/home/derrell/ME
 1
 STDOUT: 
 >>> Running program
 Please enter the radius of the circle: The area of a circle of radius 1.00 is 3.14
 >>> Program exited with exit code 0
 
-% echo '2' |  nodejs ../ansic.js p020-area-of-circle.c --rootdir=/home/derrell/ME
+% echo '2' |  ../dcc p020-area-of-circle.c --rootdir=/home/derrell/ME
 2
 STDOUT: 
 >>> Running program
 Please enter the radius of the circle: The area of a circle of radius 2.00 is 12.57
 >>> Program exited with exit code 0
 
-% nodejs ../ansic.js p021-argv.c --rootdir=/home/derrell/ME --cmdline='hello world'
+% ../dcc p021-argv.c --rootdir=/home/derrell/ME --cmdline='hello world'
 STDOUT: 
 >>> Running program
 Argument 0: a.out
@@ -208,7 +208,7 @@ Argument 1: hello
 Argument 2: world
 >>> Program exited with exit code 0
 
-% nodejs ../ansic.js p022-reverse-command-line.c --rootdir=/home/derrell/ME --cmdline='hello world'
+% ../dcc p022-reverse-command-line.c --rootdir=/home/derrell/ME --cmdline='hello world'
 STDOUT: 
 >>> Running program
 Argument 2: world
@@ -216,7 +216,7 @@ Argument 1: hello
 Argument 0: a.out
 >>> Program exited with exit code 0
 
-% nodejs ../ansic.js p023-scanf-returns-what.c --rootdir=/home/derrell/ME
+% ../dcc p023-scanf-returns-what.c --rootdir=/home/derrell/ME
 STDOUT: 
 >>> Running program
 5
@@ -227,19 +227,19 @@ STDOUT:
 End of input
 >>> Program exited with exit code 0
 
-% nodejs ../ansic.js p024-one-dim-array.c --rootdir=/home/derrell/ME
+% ../dcc p024-one-dim-array.c --rootdir=/home/derrell/ME
 STDOUT: 
 >>> Running program
 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 
 >>> Program exited with exit code 0
 
-% nodejs ../ansic.js p025-sum-of-bunch.c --rootdir=/home/derrell/ME
+% ../dcc p025-sum-of-bunch.c --rootdir=/home/derrell/ME
 STDOUT: 
 >>> Running program
 The sum is 75
 >>> Program exited with exit code 0
 
-% nodejs ../ansic.js p026-fgetc-and-toupper.c --rootdir=/home/derrell/ME
+% ../dcc p026-fgetc-and-toupper.c --rootdir=/home/derrell/ME
 STDOUT: 
 >>> Running program
 THIS IS A TEST 23 42 !@#$
@@ -247,14 +247,14 @@ THIS IS A TEST 23 42 !@#$
 And that's all, folks.
 >>> Program exited with exit code 0
 
-% echo ' 2 3 4 5 6 7 8 9 10 11 12 13 ' |  nodejs ../ansic.js p027-reverse.c --rootdir=/home/derrell/ME
+% echo ' 2 3 4 5 6 7 8 9 10 11 12 13 ' |  ../dcc p027-reverse.c --rootdir=/home/derrell/ME
  2 3 4 5 6 7 8 9 10 11 12 13 
 STDOUT: 
 >>> Running program
 Enter 10 numbers separated by spaces or newlines: 11 10 9 8 7 6 5 4 3 2 
 >>> Program exited with exit code 0
 
-% nodejs ../ansic.js p028-digit-sum.c --rootdir=/home/derrell/ME
+% ../dcc p028-digit-sum.c --rootdir=/home/derrell/ME
 STDOUT: 
 >>> Running program
 The digit sum of 1233 is 9
@@ -263,13 +263,13 @@ The digit sum of 9 is 9
 The digit sum of 111111111 is 9
 >>> Program exited with exit code 0
 
-% nodejs ../ansic.js p029-average.c --rootdir=/home/derrell/ME
+% ../dcc p029-average.c --rootdir=/home/derrell/ME
 STDOUT: 
 >>> Running program
 The average is 2.500000
 >>> Program exited with exit code 0
 
-% echo '8 5' |  nodejs ../ansic.js p030-unfilledbox.c --rootdir=/home/derrell/ME
+% echo '8 5' |  ../dcc p030-unfilledbox.c --rootdir=/home/derrell/ME
 8 5
 STDOUT: 
 >>> Running program
@@ -283,62 +283,62 @@ And there you have it, folks: an unfilled box!
 
 >>> Program exited with exit code 0
 
-% nodejs ../ansic.js p038-blank-removal.c --rootdir=/home/derrell/ME --cmdline='/canning/p038-input'
+% ../dcc p038-blank-removal.c --rootdir=/home/derrell/ME --cmdline='/canning/p038-input'
 STDOUT: 
 >>> Running program
 Let's go to the movies.
 >>> Program exited with exit code 0
 
-% echo '5' |  nodejs ../ansic.js p054-fibonacci-iterative.c --rootdir=/home/derrell/ME
+% echo '5' |  ../dcc p054-fibonacci-iterative.c --rootdir=/home/derrell/ME
 5
 STDOUT: 
 >>> Running program
 Which number in the Fibonacci sequence would you like? The Fibonacci numbered 5 is 5
 Which number in the Fibonacci sequence would you like? >>> Program exited with exit code 0
 
-% echo '8' |  nodejs ../ansic.js p054-fibonacci-iterative.c --rootdir=/home/derrell/ME
+% echo '8' |  ../dcc p054-fibonacci-iterative.c --rootdir=/home/derrell/ME
 8
 STDOUT: 
 >>> Running program
 Which number in the Fibonacci sequence would you like? The Fibonacci numbered 8 is 21
 Which number in the Fibonacci sequence would you like? >>> Program exited with exit code 0
 
-% echo '12' |  nodejs ../ansic.js p054-fibonacci-iterative.c --rootdir=/home/derrell/ME
+% echo '12' |  ../dcc p054-fibonacci-iterative.c --rootdir=/home/derrell/ME
 12
 STDOUT: 
 >>> Running program
 Which number in the Fibonacci sequence would you like? The Fibonacci numbered 12 is 144
 Which number in the Fibonacci sequence would you like? >>> Program exited with exit code 0
 
-% echo '5' |  nodejs ../ansic.js p055-fibonacci-recursive.c --rootdir=/home/derrell/ME
+% echo '5' |  ../dcc p055-fibonacci-recursive.c --rootdir=/home/derrell/ME
 5
 STDOUT: 
 >>> Running program
 Which number in the Fibonacci sequence would you like? The Fibonacci numbered 5 is 5
 Which number in the Fibonacci sequence would you like? >>> Program exited with exit code 0
 
-% echo '8' |  nodejs ../ansic.js p055-fibonacci-recursive.c --rootdir=/home/derrell/ME
+% echo '8' |  ../dcc p055-fibonacci-recursive.c --rootdir=/home/derrell/ME
 8
 STDOUT: 
 >>> Running program
 Which number in the Fibonacci sequence would you like? The Fibonacci numbered 8 is 21
 Which number in the Fibonacci sequence would you like? >>> Program exited with exit code 0
 
-% echo '12' |  nodejs ../ansic.js p055-fibonacci-recursive.c --rootdir=/home/derrell/ME
+% echo '12' |  ../dcc p055-fibonacci-recursive.c --rootdir=/home/derrell/ME
 12
 STDOUT: 
 >>> Running program
 Which number in the Fibonacci sequence would you like? The Fibonacci numbered 12 is 144
 Which number in the Fibonacci sequence would you like? >>> Program exited with exit code 0
 
-% nodejs ../ansic.js p202-string-copy.c --rootdir=/home/derrell/ME --cmdline='hello'
+% ../dcc p202-string-copy.c --rootdir=/home/derrell/ME --cmdline='hello'
 STDOUT: 
 >>> Running program
 stringCopyByIndex copied: 'hello'
 stringCopyByDereference copied: 'hello'
 >>> Program exited with exit code 0
 
-% nodejs ../ansic.js p203-malloc-array-of-structs.c --rootdir=/home/derrell/ME
+% ../dcc p203-malloc-array-of-structs.c --rootdir=/home/derrell/ME
 STDOUT: 
 >>> Running program
 Marlo 17
@@ -349,7 +349,7 @@ Mark 29
 Sharon 18
 >>> Program exited with exit code 0
 
-% nodejs ../ansic.js p205-malloc-struct-array-print-reverse.c --rootdir=/home/derrell/ME
+% ../dcc p205-malloc-struct-array-print-reverse.c --rootdir=/home/derrell/ME
 STDOUT: 
 >>> Running program
 Sharon 18
@@ -360,7 +360,7 @@ Chris 23
 Marlo 17
 >>> Program exited with exit code 0
 
-% nodejs ../ansic.js p206-push-pop.c --rootdir=/home/derrell/ME
+% ../dcc p206-push-pop.c --rootdir=/home/derrell/ME
 STDOUT: 
 >>> Running program
  2
@@ -389,16 +389,16 @@ STDOUT:
 -999999
 >>> Program exited with exit code 0
 
-% nodejs ../ansic.js t001-global-pointer-initialized.c --rootdir=/home/derrell/ME
+% ../dcc t001-global-pointer-initialized.c --rootdir=/home/derrell/ME
 STDOUT: 
 >>> Running program
 chicken wing!
  huzzah
 >>> Program exited with exit code 0
 
-% nodejs ../ansic.js t002-decl-after-stmt.c --rootdir=/home/derrell/ME
+% ../dcc t002-decl-after-stmt.c --rootdir=/home/derrell/ME
 ERROR: Error: Command failed: 
-STDOUT: Parse error near line 9:
+STDOUT: Parse error near line 10:
 ...table statement    char            c;  
 ----------------------^
 	Declarations must precede executable statements.
@@ -406,26 +406,26 @@ STDOUT: Parse error near line 9:
 Errors encountered: 1
 
 
-% nodejs ../ansic.js t003-forward-decl.c --rootdir=/home/derrell/ME
+% ../dcc t003-forward-decl.c --rootdir=/home/derrell/ME
 STDOUT: 
 >>> Running program
 >>> Program exited with exit code 0
 
-% nodejs ../ansic.js t004-forward-decl-missing.c --rootdir=/home/derrell/ME
+% ../dcc t004-forward-decl-missing.c --rootdir=/home/derrell/ME
 ERROR: Error: Command failed: 
 STDOUT: 
 >>> Running program
-Error near line 5: Function 'doit' has not been defined.
+Error near line 6: Function 'doit' has not been defined.
 >>> Program had errors. It did not run to completion.
 
-% nodejs ../ansic.js t005-forward-decl-only.c --rootdir=/home/derrell/ME
+% ../dcc t005-forward-decl-only.c --rootdir=/home/derrell/ME
 ERROR: Error: Command failed: 
 STDOUT: 
 >>> Running program
-Error near line 7: Function 'doit' has not been defined.
+Error near line 8: Function 'doit' has not been defined.
 >>> Program had errors. It did not run to completion.
 
-% nodejs ../ansic.js t006-struct-decl-and-access.c --rootdir=/home/derrell/ME
+% ../dcc t006-struct-decl-and-access.c --rootdir=/home/derrell/ME
 STDOUT: 
 >>> Running program
 i=23 d=2.000000 e=4.200000 j=42
@@ -433,7 +433,7 @@ i=23 d=2.000000 e=4.200000 j=42
 &x.k=0xefd8
 >>> Program exited with exit code 0
 
-% nodejs ../ansic.js t007-struct-pointer-deref.c --rootdir=/home/derrell/ME
+% ../dcc t007-struct-pointer-deref.c --rootdir=/home/derrell/ME
 STDOUT: 
 >>> Running program
 Via structure access:
@@ -448,12 +448,12 @@ i=23 d=2.000000 e=4.200000 j=42
 &pX->k=0xefd4
 >>> Program exited with exit code 0
 
-% nodejs ../ansic.js t008-struct-redeclaration.c --rootdir=/home/derrell/ME
+% ../dcc t008-struct-redeclaration.c --rootdir=/home/derrell/ME
 ERROR: Error: Command failed: 
-STDOUT: Error near line 9: Redeclaration of struct/union X
+STDOUT: Error near line 9: Redeclaration of struct/union/enum X
 >>> Program had errors. It did not run to completion.
 
-% nodejs ../ansic.js t009-union-simple.c --rootdir=/home/derrell/ME
+% ../dcc t009-union-simple.c --rootdir=/home/derrell/ME
 STDOUT: 
 >>> Running program
 bytes: 44 33 22 11

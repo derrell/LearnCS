@@ -564,6 +564,7 @@ qx.Class.define("playground.c.lib.Node",
       var             continueButton;
       var             WORDSIZE = playground.c.machine.Memory.WORDSIZE;
 
+
       // Argument to case_struct_union_enum() to differentiate between cases
       var StructUnionEnum =
         {
@@ -4065,9 +4066,15 @@ qx.Class.define("playground.c.lib.Node",
                   }.bind(this),
                   failure);
               }.bind(this),
-              failure);
+              function(e)
+                {
+                  failure(e);
+                });
           }.bind(this),
-          failure);
+          function(e)
+          {
+            failure(e);
+          });
         break;
 
       case "parameter_list" :

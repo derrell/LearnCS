@@ -78,7 +78,7 @@ qx.Class.define("playground.c.Main",
       var             optimist;
       var             terminal;
 
-      if (bConsole)
+      if (bConsole || (typeof bTest != "undefined" && bTest))
       {
         // Option processing, when run from the command line
         optimist = require("optimist");
@@ -808,7 +808,10 @@ qx.Class.define("playground.c.Main",
                     process.exit(value.value);
                   }
                 }.bind(entryNode),
-                catchError);
+                function(e)
+                {
+                  catchError(e);
+                });
             }
             catch(e)
             {
