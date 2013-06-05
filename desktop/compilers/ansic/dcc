@@ -1,0 +1,55 @@
+#!/bin/bash
+
+BASE=/home/derrell/ME/android-developer/app-developer/desktop
+
+nodepath=$BASE/playground/source/class/playground/c
+nodepath=$nodepath:$BASE/compilers/ansic
+nodepath=$nodepath:$NODE_PATH
+
+export NODE_PATH=$nodepath
+export NODE_NO_READLINE=1
+export ARGS=$*
+
+cat > /tmp/dcc$$ <<EOF
+  bTest = true;
+  var args = process.env["ARGS"].split(" ");
+
+  require("lib/Symtab.js");
+  require("lib/Node.js");
+  require("lib/Preprocessor.js");
+  require("lib/Exit.js");
+  require("lib/RuntimeError.js");
+  require("lib/NotYetImplemented.js");
+  require("machine/Memory.js");
+  require("machine/Machine.js");
+  require("stdio/AbstractFile.js");
+  require("stdio/EofError.js");
+  require("stdio/Printf.js");
+  require("stdio/Scanf.js");
+  require("stdio/Stdin.js");
+  require("stdio/Stdout.js");
+  require("stdio/Stderr.js");
+  require("stdio/RemoteFile.js");
+  require("stdio/StringIn.js");
+  require("stdio/StringOut.js");
+  require("builtin/Stdlib.js");
+  require("builtin/Ctype.js");
+  require("builtin/Math.js");
+
+  var code = require('fs').readFileSync(require('path').resolve(args[0]),
+                                        "utf8");
+
+  playground.c.lib.Preprocessor.preprocess(
+    code,
+    function(preprocessedCode)
+    {
+      var ansic = require("ansic.js");
+      playground.c.Main.main(ansic.parser);
+      ansic.parse(preprocessedCode);
+    });
+EOF
+shift
+/usr/bin/env nodejs /tmp/dcc$$ "$@"
+exitCode=$?
+rm -f /tmp/dcc$$
+exit $exitCode
