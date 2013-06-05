@@ -280,9 +280,10 @@ qx.Class.define("playground.c.stdio.Printf",
 
             if (position >= arguments.length)
             {
-              throw new Error('got ' + arguments.length +
-                              ' printf arguments, insufficient for \'' + 
-                              this._format + '\'');
+              throw new playground.c.lib.RuntimeError(
+                playground.c.lib.Node._currentNode,
+                "Got " + arguments.length + 
+                " arguments, insufficient for format: " + this._format);
             }
 
             token.arg = arguments[position++];
