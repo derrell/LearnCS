@@ -49,6 +49,9 @@ qx.Class.define("playground.c.lib.Preprocessor",
     // initialized in defer
     settings : null,
 
+    // Files included by the preprocessor
+    includedFiles : [],
+
     preprocess : function(text, callback)
     {
       var             cpp;
@@ -60,6 +63,9 @@ qx.Class.define("playground.c.lib.Preprocessor",
 
       // Get an instance of the C preprocessor, with our specified settings
       cpp = statics._init(statics.settings);
+      
+      // Reset the list of files to include
+      statics.includedFiles = [];
       
       // Now pass it the caller-provided text
       preprocessed = cpp.run(text, "code.c");
@@ -466,7 +472,6 @@ qx.Class.define("playground.c.lib.Preprocessor",
 
           text = settings.comment_stripper(text);
           var blocks = text.split(block_re);
-
           var out = new Array(Math.floor(blocks.length / 3) + 2),
             outi = 0;
           for (var i = 0; i < out.length; ++i)
@@ -570,8 +575,11 @@ qx.Class.define("playground.c.lib.Preprocessor",
                   "no handler specified");
               }
 
-              settings.include_func(file, parts[1] === '<', function(
-                  contents)
+              settings.include_func(
+                file,
+                line,
+                parts[1] === '<', 
+                function(contents)
                 {
                   if (contents === null)
                   {
@@ -604,6 +612,7 @@ qx.Class.define("playground.c.lib.Preprocessor",
                       }
                     }
                     self._result(out, state);
+                    return true;
                   };
 
                   // construct a child preprocessor and let it share our
@@ -634,16 +643,45 @@ qx.Class.define("playground.c.lib.Preprocessor",
 
           var process_block = function(i, elem)
           {
+            var lines_this;
             var elem = blocks[i];
             switch (i % 3)
             {
               // code line, apply macro substitutions and copy to output.
             case 0:
 
-              line += elem.split('\n').length - 1;
+              if ((command == "if" ||
+                   command == "ifdef" ||
+                   command == "else" ||
+                   command == "endif") &&
+                  elem.charAt(0) == "\n")
+              {
+                elem = elem.substr(1);
+              }
+                   
+
+              lines_this = elem.split('\n').length - 1;
+              line += lines_this;
+var __PREFIX__ = "";
+//__PREFIX__ = "{" + command + ":" + lines_this + "}";
               if (!ifs_failed && trim(elem).length)
               {
-                out[outi++] = self.subs(elem, error, warn);
+                out[outi++] = __PREFIX__ + self.subs(elem, error, warn);
+              }
+              else if (command == "include" && lines_this > 1)
+              {
+                // djl: fill in blank lines for elided #include
+                out[outi++] = __PREFIX__ + (new Array(lines_this)).join("\n");
+              }
+              else if (command == "if" || command == "ifdef")
+              {
+                // djl: fill in blank lines for elided #if(def) or #else text
+                out[outi++] = __PREFIX__ + (new Array(lines_this + 1)).join("\n");
+              }
+              else if (typeof command != "undefined")
+              {
+                // djl: fill in blank lines for elided #if(def) or #else text
+                out[outi++] = __PREFIX__ + (new Array(lines_this)).join("\n");
               }
               break;
               // preprocessor statement, such as ifdef, endif, ..
@@ -905,7 +943,7 @@ qx.Class.define("playground.c.lib.Preprocessor",
           }
 
           pieces.push(new_text);
-          new_text = pieces.join('');
+          new_text = pieces.join('\n');
 
           // if macro substitution is complete, re-introduce any
           // '##' tokens previously substituted in order to keep them 
@@ -1630,16 +1668,19 @@ qx.Class.define("playground.c.lib.Preprocessor",
 
       error_func       : playground.c.lib.Preprocessor._output,
 
-      include_func     : function(file, is_global, resumer, error)
+      include_func     : function(file, line, is_global, resumer, error)
       {
-        // Return the #include to its original state
-        resumer(
-          [
-            '@include ',
-            is_global ? '<' : '"',
-            file,
-            is_global ? '>' : '"'
-          ].join(""));
+        // Push this include file onto the list of included files
+        statics.includedFiles.push(
+          {
+            file      : file,
+            line      : line,
+            is_global : is_global
+          });
+
+        // We've processed the include. Return a single space as _some_ text
+        // is required to avoid an error trap.
+        resumer(" ");
       },
 
       comment_stripper : function(text)

@@ -43,6 +43,7 @@ cat > /tmp/dcc$$ <<EOF
     code,
     function(preprocessedCode)
     {
+//      console.log("preproc=\n", preprocessedCode);
       var ansic = require("ansic.js");
       playground.c.Main.main(ansic.parser);
       ansic.parse(preprocessedCode);
@@ -51,5 +52,5 @@ EOF
 shift
 /usr/bin/env nodejs /tmp/dcc$$ "$@"
 exitCode=$?
-rm -f /tmp/dcc$$
+#rm -f /tmp/dcc$$
 exit $exitCode

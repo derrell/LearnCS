@@ -190,10 +190,6 @@ qx.Class.define("playground.c.Main",
       // Function called upon each error encountered during parsing
       parser.yy.parseError = error.parseError;
 
-      // Reset the includes and finalize lists
-      playground.c.Main.includes = [];
-      playground.c.Main.finalize = [];
-
       // Give the Node class access to the error object
       playground.c.lib.Node.setError(error);
 
@@ -231,6 +227,95 @@ qx.Class.define("playground.c.Main",
               playground.c.stdio[qx.lang.String.firstUp(stream)].getInstance();
           }
         });
+
+      // Reset the includes and finalize lists
+      playground.c.Main.includes = [];
+      playground.c.Main.finalize = [];
+
+      // Process the include files found by the preprocessor
+      playground.c.lib.Preprocessor.includedFiles.forEach(
+        function(inclFile)
+        {
+          var             include;
+          var             finalize;
+          var             includeError;
+          var             file = inclFile.file;
+          var             line = inclFile.line;
+
+          if (! inclFile.is_global)
+          {
+            throw new Error(
+              "Local file includes (with quotes) " +
+              "are not yet supported (\"" + file + "\")\n" +
+              "If it's a system include file, you should use angle brackets: " +
+              "<" + file + ">");
+          }
+
+          switch(file)
+          {
+          case "ctype.h" :
+            include = function()
+            {
+              return (playground.c.builtin.Ctype.include(file, line));
+            };
+            break;
+
+          case "math.h" :
+            include = function()
+            {
+              return (playground.c.builtin.Math.include(file, line));
+            };
+            break;
+
+          case "stdio.h" :
+            include = function()
+            {
+              return (playground.c.stdio.Stdio.include(file, line));
+            };
+            finalize = function()
+            {
+              playground.c.stdio.Stdio.finalize();
+            };
+            break;
+
+          case "stdlib.h" :
+            include = function()
+            {
+              return (playground.c.builtin.Stdlib.include(file, line));
+            };
+            finalize = function()
+            {
+              playground.c.builtin.Stdlib.finalize();
+            };
+            break;
+
+          default :
+            playground.c.lib.Node.getError().parseError(
+              "Include file not found (" + file + ")",
+              { line : line }); 
+            return;
+          }
+
+          // Add this include function to list of initializers
+          // so it'll be re-included after parsing
+          playground.c.Main.includes.push(include);
+
+          // If there's a finalization function, save it too
+          if (finalize)
+          {
+            playground.c.Main.finalize.push(finalize);
+          }
+
+          // Include it now, for continued parsing
+          includeError = include();
+          if (includeError)
+          {
+            playground.c.lib.Node.getError().parseError(
+                includeError.message, { line : line });
+            return;
+          }
+      });
+
 
       // Function to display rules as they are parsed
       parser.yy.R = function(rule)

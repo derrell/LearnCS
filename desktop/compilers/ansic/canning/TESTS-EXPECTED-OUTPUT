@@ -398,7 +398,7 @@ chicken wing!
 
 % ../dcc t002-decl-after-stmt.c --rootdir=/home/derrell/ME
 ERROR: Error: Command failed: 
-STDOUT: Parse error near line 10:
+STDOUT: Parse error near line 9:
 ...table statement    char            c;  
 ----------------------^
 	Declarations must precede executable statements.
@@ -415,14 +415,14 @@ STDOUT:
 ERROR: Error: Command failed: 
 STDOUT: 
 >>> Running program
-Error near line 6: Function 'doit' has not been defined.
+Error near line 5: Function 'doit' has not been defined.
 >>> Program had errors. It did not run to completion.
 
 % ../dcc t005-forward-decl-only.c --rootdir=/home/derrell/ME
 ERROR: Error: Command failed: 
 STDOUT: 
 >>> Running program
-Error near line 8: Function 'doit' has not been defined.
+Error near line 7: Function 'doit' has not been defined.
 >>> Program had errors. It did not run to completion.
 
 % ../dcc t006-struct-decl-and-access.c --rootdir=/home/derrell/ME
