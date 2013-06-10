@@ -298,6 +298,7 @@ qx.Class.define("playground.c.machine.Memory",
         case 0x04 :
         case "int" :
         case "signed int" :
+        case "enum" :
           return new Int32Array(this._memory, addr, numElem);
 
         case 0x05 :
