@@ -256,7 +256,19 @@ qx.Class.define("playground.Application",
               this.editor.getCode(),
               function(preprocessedText)
               {
-                this.__cppOutput.setValue(preprocessedText);
+                var             lines;
+                var             lineNum = 1;
+
+                // Split the preprocessed text by line
+                lines = preprocessedText.split("\n");
+                
+                // Prepend a line number to each one
+                lines = lines.map(
+                  function(line)
+                  {
+                    return ("      " + lineNum++).substr(-4) + " " + line;
+                  });
+                this.__cppOutput.setValue(lines.join("\n"));
               }.bind(this));
           }
         },
