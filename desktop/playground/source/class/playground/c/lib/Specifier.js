@@ -414,14 +414,14 @@ qx.Class.define("playground.c.lib.Specifier",
         
       case "struct" :
       case "union" :
+      case "enum" :
         structSymtab = this.getStructSymtab();
         byteCount = structSymtab ? structSymtab.getSize() : 0;
         break;
 
-      case "enum" :
       case "label" :
         throw new playground.c.lib.NotYetImplemented(this.__type +
-                                                     " ( in Specifier)");
+                                                     " (in Specifier)");
         break;
       }
 
@@ -443,9 +443,9 @@ qx.Class.define("playground.c.lib.Specifier",
       case "double" :
       case "struct" :
       case "union" :
+      case "enum" :
         return this.__type;
         
-      case "enum" :
       case "label" :
         throw new playground.c.lib.NotYetImplemented(this.__type +
                                                      " ( in Specifier)");

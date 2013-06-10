@@ -151,11 +151,8 @@ qx.Class.define("playground.c.lib.SymtabEntry",
         case "void" :
         case "struct" :
         case "union" :
-          parts.push(type);
-          break;
-
         case "enum" :
-          throw new Error("Don't yet know type/size of enum");
+          parts.push(type);
           break;
 
         case "label" :
