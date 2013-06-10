@@ -464,3 +464,47 @@ ERROR: Error: Command failed:
 STDOUT: Error near line 9: Error: line 9: Struct, union, or enum 'F' is not declared.
 >>> Program had errors. It did not run to completion.
 
+% ../dcc t012-preproc-correct-lines-if.c --rootdir=/home/derrell/ME --preproc
+STDOUT: 
+
+
+
+
+
+
+int main(int argc, char * argv[])
+{
+
+
+
+
+
+
+    printf("false\n");
+
+
+}
+
+
+% ../dcc t013-preproc-correct-lines-else.c --rootdir=/home/derrell/ME --preproc
+STDOUT: 
+
+
+
+
+
+
+int main(int argc, char * argv[])
+{
+
+    
+    printf("true\n");
+
+
+
+
+
+
+}
+
+

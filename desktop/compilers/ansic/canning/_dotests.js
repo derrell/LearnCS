@@ -264,6 +264,14 @@ var tests =
 
     {
       name  : "t011-undef-enum-param.c"
+    },
+    {
+      name   : "t012-preproc-correct-lines-if.c",
+      extras : [ "--preproc" ]
+    },
+    {
+      name   : "t013-preproc-correct-lines-else.c",
+      extras : [ "--preproc" ]
     }
   ];
 
@@ -317,6 +325,9 @@ var tests =
      // ... then provide them
      cmd.push("--cmdline='" + test.args.toString() + "'");
    }
+
+   // Add any extra arguments
+   Array.prototype.push.apply(cmd, test.extras || []);
 
    console.log("% " + cmd.join(" ") +
                (test.stdin ? "\n" + test.stdin.toString() : ""));
