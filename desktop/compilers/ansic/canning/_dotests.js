@@ -258,6 +258,12 @@ var tests =
     },
     {
       name  : "t009-union-simple.c"
+    },
+    
+    // t010: Add simple enum test here
+
+    {
+      name  : "t011-undef-enum-param.c"
     }
   ];
 

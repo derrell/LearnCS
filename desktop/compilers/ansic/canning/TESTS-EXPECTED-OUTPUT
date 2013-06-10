@@ -459,3 +459,8 @@ STDOUT:
 bytes: 44 33 22 11
 >>> Program exited with exit code 0
 
+% ../dcc t011-undef-enum-param.c --rootdir=/home/derrell/ME
+ERROR: Error: Command failed: 
+STDOUT: Error near line 9: Error: line 9: Struct, union, or enum 'F' is not declared.
+>>> Program had errors. It did not run to completion.
+
