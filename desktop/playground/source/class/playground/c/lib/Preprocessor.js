@@ -649,39 +649,30 @@ qx.Class.define("playground.c.lib.Preprocessor",
             {
               // code line, apply macro substitutions and copy to output.
             case 0:
-
-              if ((command == "if" ||
-                   command == "ifdef" ||
-                   command == "else" ||
-                   command == "endif") &&
-                  elem.charAt(0) == "\n")
-              {
-                elem = elem.substr(1);
-              }
-                   
-
               lines_this = elem.split('\n').length - 1;
               line += lines_this;
-var __PREFIX__ = "";
-//__PREFIX__ = "{" + command + ":" + lines_this + "}";
+var __PRE__ = "";
+//__PRE__ = "{" + command + ":" + lines_this + "}";
               if (!ifs_failed && trim(elem).length)
               {
-                out[outi++] = __PREFIX__ + self.subs(elem, error, warn);
+                if (command == "else")
+                {
+                  out[outi++] = "\n";
+                }
+                out[outi++] = __PRE__ + self.subs(elem, error, warn);
               }
               else if (command == "include" && lines_this > 1)
               {
-                // djl: fill in blank lines for elided #include
-                out[outi++] = __PREFIX__ + (new Array(lines_this)).join("\n");
+                out[outi++] = __PRE__ + (new Array(lines_this + 1)).join("\n");
               }
-              else if (command == "if" || command == "ifdef")
+              else if (command == "if" ||
+                       command == "ifdef")
               {
-                // djl: fill in blank lines for elided #if(def) or #else text
-                out[outi++] = __PREFIX__ + (new Array(lines_this + 1)).join("\n");
+                out[outi++] = __PRE__ + (new Array(lines_this)).join("\n");
               }
               else if (typeof command != "undefined")
               {
-                // djl: fill in blank lines for elided #if(def) or #else text
-                out[outi++] = __PREFIX__ + (new Array(lines_this)).join("\n");
+                out[outi++] = __PRE__ + (new Array(lines_this + 1)).join("\n");
               }
               break;
               // preprocessor statement, such as ifdef, endif, ..
@@ -1000,7 +991,7 @@ var __PREFIX__ = "";
             }
           }
 
-          var text = arr.join('\n');
+          var text = arr.join('');
           if (settings.completion_func)
           {
             settings.completion_func(text, arr, state);
