@@ -523,6 +523,7 @@ qx.Class.define("playground.c.lib.Node",
       var             sp;
       var             origSp;
       var             addr;
+      var             name;
       var             offset;
       var             intSize;
       var             depth;
@@ -1925,7 +1926,7 @@ qx.Class.define("playground.c.lib.Node",
          */
 
         // We don't need to do this if we're executing
-        if (bExecuting)
+        if (bExecuting && this.children[0].type != "enum")
         {
           success();
           break;
@@ -2354,14 +2355,18 @@ qx.Class.define("playground.c.lib.Node",
         this.children[0].process(
           data,
           bExecuting,
-          function()
+          function(entry)
           {
+            if (entry)
+            {
+              data.entry = entry;
+            }
             // Append the specifiers to the specifier/declarator list
             data.specAndDecl.push(data.specifiers);
 
             // Calculate the offset in the symbol table for this symbol
             // table entry, based on the now-complete specifiers and
-            // declarators
+            // declarators. (Only do this the first time, when not executing.)
             data.entry.calculateOffset();
 
             // Process the enumerator's value
@@ -2425,12 +2430,6 @@ qx.Class.define("playground.c.lib.Node",
          *   0: enumerator
          *   ...
          */
-        if (bExecuting)
-        {
-          success();
-          break;
-        }
-        
         // Assume an initial enumerator value of 0
         data.enumValue = 0;
         
@@ -3293,7 +3292,8 @@ qx.Class.define("playground.c.lib.Node",
         if (! bExecuting)
         {
           // If we're declaring something...
-          if (data.specifiers)
+          if (data.specifiers && 
+              (! data.bIsParameter || ! this.value.match(/^struct#/)))
           {
             // This symbol shouldn't exist. Create a symbol table entry for it
             entry = playground.c.lib.Symtab.getCurrent().add(
@@ -3352,8 +3352,21 @@ qx.Class.define("playground.c.lib.Node",
             // If it doesn't exist...
             if (! entry)
             {
-              this.error("Identifier '" + this.value + "' is not declared.",
-                         true);
+
+              // Get the structure name without the prefixed "struct#"
+              name = this.value.replace(/^struct#/, "");
+              
+              if (name != this.value)
+              {
+                this.error("Struct, union, or enum '" + name + 
+                           "' is not declared.",
+                           true);
+              }
+              else
+              {
+                this.error("Identifier '" + name + "' is not declared.",
+                           true);
+              }
               // not reached
               break;
             }
@@ -4565,9 +4578,10 @@ qx.Class.define("playground.c.lib.Node",
         // structures, unions, and enums are handled nearly identically, here.
         function case_struct_union_enum(sueType)
         {
-          // Only applicable before executing
           // Only applicable before executing and when in a declaration
-          if (bExecuting && ! data.specifiers)
+          if (bExecuting &&
+              ! data.specifiers &&
+              sueType != StructUnionEnum.Enum)
           {
             success();
             return;
@@ -4674,7 +4688,13 @@ qx.Class.define("playground.c.lib.Node",
               }
 
               // If we have a symbol table, we'll need to pop it later
-              if (symtab)
+              // Enum values, however, don't get added to that symbol table
+              // (at present)
+              if (sueType == StructUnionEnum.Enum)
+              {
+                playground.c.lib.Symtab.popStack();
+              }
+              else if (symtab)
               {
                 bNeedPopStack = true;
               }
