@@ -84,7 +84,8 @@ qx.Class.define("playground.c.machine.Memory",
       "unsigned long long" : 4,
       "float"              : 4,
       "double"             : 4,
-      "pointer"            : 2
+      "pointer"            : 2,
+      "enum"               : 4
     },
 
     /** Ranges of memory */
@@ -562,10 +563,10 @@ qx.Class.define("playground.c.machine.Memory",
       sp -= playground.c.machine.Memory.WORDSIZE;
 
       // Is this new stack pointer inside the untouched, virgin area?
-      if (sp < rts.virgin)
+      if (sp < rts.virgin + playground.c.machine.Memory.virgin.rts)
       {
         // Yup. All above is no longer virgin. Leave a bit of unused margin.
-        rts.virgin = sp - playground.c.machine.Memory.virgin.rts;
+        rts.virgin = sp - (playground.c.machine.Memory.virgin.rts * 2);
 
         // If virgin space exceeds the allotment...
         if (rts.virgin < rts.start)

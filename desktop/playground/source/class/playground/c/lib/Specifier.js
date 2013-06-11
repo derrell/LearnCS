@@ -414,9 +414,12 @@ qx.Class.define("playground.c.lib.Specifier",
         byteCount = playground.c.machine.Memory.typeSize[this.__type];
         break;
         
+      case "enum" :
+        byteCount = playground.c.machine.Memory.typeSize["int"];
+        break;
+
       case "struct" :
       case "union" :
-      case "enum" :
         structSymtab = this.getStructSymtab();
         byteCount = structSymtab ? structSymtab.getSize() : 0;
         break;
