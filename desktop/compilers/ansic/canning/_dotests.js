@@ -286,6 +286,14 @@ var tests =
     },
     {
       name   : "t016-switch-default.c"
+    },
+    {
+      name   : "t017-macro-good.c",
+      extras : [ "--preproc" ]
+    },
+    {
+      name   : "t018-macro-bad.c",
+      extras : [ "--preproc" ]
     }
   ];
 
