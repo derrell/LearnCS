@@ -40,6 +40,22 @@ qx.Class.define("playground.c.builtin.Ctype",
         //
         [
           {
+            name : "isdigit",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.builtin.Ctype.isdigit.apply(null, args);
+            }
+          },
+          {
+            name : "isspace",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.builtin.Ctype.isspace.apply(null, args);
+            }
+          },
+          {
             name : "toupper",
             func : function()
             {
@@ -64,7 +80,7 @@ qx.Class.define("playground.c.builtin.Ctype",
                 }
               };
 
-            // Add printf
+            // Add the symbol
             entry = rootSymtab.add(info.name, 0, false);
             if (! entry)
             {
@@ -94,6 +110,48 @@ qx.Class.define("playground.c.builtin.Ctype",
       }
       
       return null;
+    },
+
+    /**
+     * Determine if a character is a digit
+     */
+    isdigit : function(success, failure, c)
+    {
+      var             specOrDecl;
+
+      // Create a specifier for the return value
+      specOrDecl = new playground.c.lib.Specifier(
+        playground.c.lib.Node._currentNode,
+        "int");
+
+      // Return true if the character is a digit; false otherwise
+      success(
+        {
+          value       : c >= 0x30 && c <= 0x39,
+          specAndDecl : [ specOrDecl ]
+        });
+    },
+
+    /**
+     * Determine if a character is whitespace
+     */
+    isspace : function(success, failure, c)
+    {
+      var             specOrDecl;
+
+      // Create a specifier for the return value
+      specOrDecl = new playground.c.lib.Specifier(
+        playground.c.lib.Node._currentNode,
+        "int");
+
+      // Return true if the character is a space (0x20), form feed (0x0c),
+      // newline (0x0a), carriage return (0x0d), horizontal tab (0x09), or
+      // vertical tab (0x0b).
+      success(
+        {
+          value       : [ 0x20, 0x0c, 0x0a, 0x0d, 0x09, 0x0b ].indexOf(c) != -1,
+          specAndDecl : [ specOrDecl ]
+        });
     },
 
     /**
