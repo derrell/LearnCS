@@ -233,6 +233,11 @@ var tests =
     },
 
     {
+      name  : "p207-rpn-calculator.c",
+      stdin : "1 2 + p 1 2 s + p 3 5 - p 2 2 * 3 3 * * p 2 3 + 4 s * p 2 + a q"
+    },
+
+    {
       name  : "t001-global-pointer-initialized.c"
     },
     {

@@ -389,6 +389,21 @@ STDOUT:
 -999999
 >>> Program exited with exit code 0
 
+% echo '1 2 + p 1 2 s + p 3 5 - p 2 2 * 3 3 * * p 2 3 + 4 s * p 2 + a q' |  ../dcc p207-rpn-calculator.c --rootdir=/home/derrell/ME
+1 2 + p 1 2 s + p 3 5 - p 2 2 * 3 3 * * p 2 3 + 4 s * p 2 + a q
+STDOUT: 
+>>> Running program
+3
+ 2 1
+3
+-2
+36
+ 4 5
+20
+Empty stack
+Unrecognized command
+>>> Program exited with exit code 0
+
 % ../dcc t001-global-pointer-initialized.c --rootdir=/home/derrell/ME
 STDOUT: 
 >>> Running program
