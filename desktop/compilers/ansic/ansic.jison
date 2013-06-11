@@ -1449,13 +1449,13 @@ labeled_statement
     parser.yy.R("labeled_statement : CASE constant_expression ':' statement");
     $$ = new playground.c.lib.Node("case", yytext, yylineno);
     $$.children.push($2);
-    $$.children.push($4);
+    $$.children.push($4);       // this child is moved in statement_list
   }
   | DEFAULT ':' statement
   {
     parser.yy.R("labeled_statement : DEFAULT ':' statement");
     $$ = new playground.c.lib.Node("default", yytext, yylineno);
-    $$.children.push($3);
+    $$.children.push($3);       // this child is moved in statement_list
   }
   ;
 
