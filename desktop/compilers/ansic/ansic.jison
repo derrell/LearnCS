@@ -1510,13 +1510,43 @@ statement_list
   {
     parser.yy.R("statement_list : statement");
     $$ = new playground.c.lib.Node("statement_list", yytext, yylineno);
-    $$.children.push($1);
+    if ($1.type == "case")
+    {
+      $$.children.push($1);
+      $$.children.push($1.children[1]); // the case's statement
+      $1.children.length = 1;           // statement's not used there any more
+    }
+    else if ($1.type == "default")
+    {
+      $$.children.push($1);
+      $$.children.push($1.children[0]); // the default's statement
+      $1.children = [];                 // statement's not used there any more
+    }
+    else
+    {
+      $$.children.push($1);
+    }
   }
   | statement_list statement
   {
     parser.yy.R("statement_list : statement_list statement");
     $$ = $1;
-    $$.children.push($2);
+    if ($2.type == "case")
+    {
+      $$.children.push($2);
+      $$.children.push($2.children[1]); // the case's statement
+      $2.children.length = 1;           // statement's not used there any more
+    }
+    else if ($2.type == "default")
+    {
+      $$.children.push($2);
+      $$.children.push($2.children[0]); // the default's statement
+      $2.children = [];                 // statement's not used there any more
+    }
+    else
+    {
+      $$.children.push($2);
+    }
   }
   | statement_list save_position declaration
   {

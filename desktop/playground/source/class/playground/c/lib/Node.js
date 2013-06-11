@@ -2009,12 +2009,10 @@ qx.Class.define("playground.c.lib.Node",
          *   0 :statement
          */
 
-        // We only process default expressions while executing. We must,
-        // however, process any compound statements herein, so process the
-        // default statement if not executing.
+        // We only process default expressions while executing.
         if (! bExecuting)
         {
-          this.children[0].process(data, bExecuting, success, failure);
+          success();
           break;
         }
         else
@@ -5153,7 +5151,7 @@ qx.Class.define("playground.c.lib.Node",
                              map =
                                {
                                  order : subnode.caseAndBreak.length,
-                                 node  : child.children[1]
+                                 next  : i + 1
                                };
                              subnode.cases[value] = map;
                              subnode.caseAndBreak.push(map);
@@ -5192,7 +5190,7 @@ qx.Class.define("playground.c.lib.Node",
                          map =
                            {
                              order : subnode.caseAndBreak.length,
-                             node  : child.children[0]
+                             next  : i + 1
                            };
                          subnode.cases["default"] = map;
                          subnode.caseAndBreak.push(map);
@@ -5229,37 +5227,54 @@ qx.Class.define("playground.c.lib.Node",
                 function switch_find_case()
                 {
                   var             i;
+                  var             thisCase;
 
                   // Get map of nodes for each case
                   cases = subnode.cases;
                   caseAndBreak = subnode.caseAndBreak;
-                  subnode = cases[value1.value] || cases["default"];
+                  thisCase = cases[value1.value] || cases["default"];
 
                   // Did we find a case to execute?
-                  if (typeof subnode != "undefined")
+                  if (typeof thisCase != "undefined")
                   {
                     // Yup. Process it and all following nodes (until a break is
                     // hit)
-                    i = subnode.order;
+                    i = thisCase.next;
                     (function()
                      {
                        var             fSelf = arguments.callee;
 
-                       caseAndBreak[i].node.process(
-                         data,
-                         bExecuting,
-                         function()
+                       // If this is a case or default statement, skip it
+                       if (subnode.children[i].type == "case" ||
+                           subnode.children[i].type == "default")
+                       {
+                         if (++i < subnode.children.length)
                          {
-                           if (++i < caseAndBreak.length)
+                           fSelf.bind(this)();
+                         }
+                         else
+                         {
+                           success();
+                         }
+                       }
+                       else
+                       {
+                         subnode.children[i].process(
+                           data,
+                           bExecuting,
+                           function()
                            {
-                             fSelf.bind(this)();
-                           }
-                           else
-                           {
-                             success();
-                           }
-                         }.bind(this),
-                         fail);
+                             if (++i < subnode.children.length)
+                             {
+                               fSelf.bind(this)();
+                             }
+                             else
+                             {
+                               success();
+                             }
+                           }.bind(this),
+                           fail);
+                       }
                      }).bind(this)();
                   }
                   else
