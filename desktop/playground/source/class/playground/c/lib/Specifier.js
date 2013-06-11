@@ -100,13 +100,15 @@ qx.Class.define("playground.c.lib.Specifier",
       {
         // do nothing
       }
-      else if (this.__storage !== null && this.__storage != value)
+      else if (this.__storage !== null && 
+               this.__storage != value &&
+               value !== null)  // allow setting back to null
       {
         throw new playground.c.lib.RuntimeError(
           this.__node,
           "Can not specify " + value + 
             " in addition to previously specified " + this.__storage +
-            ". Is there possibly a missing semicolon?");
+            ". Is there possibly a missing semicolon?" + "\n" + e.stack);
       }
       
       // Save the new value

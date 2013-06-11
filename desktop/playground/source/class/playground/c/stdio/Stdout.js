@@ -14,8 +14,16 @@ qx.Class.define("playground.c.stdio.Stdout",
   
   construct : function()
   {
+    var             handle;
+
     // Call the superclass constructor, indicating that this is an output file.
     this.base(arguments, "w");
+    
+    // We successfully opened the file. Assign a file handle.
+    handle = playground.c.stdio.Stdio._stdoutFileHandle;
+
+    // Save our file instance at that handle index
+    playground.c.stdio.Stdio._openFileHandles[handle] = this;
     
     // Stdout is line-buffered
     this._bLineBuf = true;

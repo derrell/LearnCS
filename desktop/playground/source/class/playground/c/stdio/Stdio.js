@@ -35,8 +35,14 @@ qx.Class.define("playground.c.stdio.Stdio",
     /** Mappings to open files */
     _openFileHandles : {},
 
+    /** File handle for stdin */
+    _stdinFileHandle  : 0x1000,
+    
+    /** File handle for stdout */
+    _stdoutFileHandle : 0x1001,
+
     /** File handle for stderr. All other file handles come after this one. */
-    _stderrFileHandle : 0x1000,
+    _stderrFileHandle : 0x1002,
 
     /** Next open file index */
     _nextFileHandle : null,
@@ -108,6 +114,15 @@ qx.Class.define("playground.c.stdio.Stdio",
             name : "fgetc",
             func : function()
             {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.stdio.Stdio.fgetc.apply(null, args);
+            }
+          },
+          {
+            name : "getc",
+            func : function()
+            {
+              // getc is an alias for fgetc
               var args = Array.prototype.slice.call(arguments);
               playground.c.stdio.Stdio.fgetc.apply(null, args);
             }
@@ -219,6 +234,44 @@ qx.Class.define("playground.c.stdio.Stdio",
                 ]);
               entry.calculateOffset();
               mem.set(entry.getAddr(), "pointer", 0);
+            }
+          },
+          {
+            name : "stdin",
+            func : function(entry, node)
+            {
+              var             specifier;
+              specifier = new playground.c.lib.Specifier(node, "void");
+              specifier.setConstant("constant");
+
+              entry.setSpecAndDecl(
+                [
+                  new playground.c.lib.Declarator(node, "pointer"),
+                  specifier
+                ]);
+              entry.calculateOffset();
+              mem.set(entry.getAddr(), 
+                      "pointer", 
+                      playground.c.stdio.Stdio._stdinFileHandle);
+            }
+          },
+          {
+            name : "stdout",
+            func : function(entry, node)
+            {
+              var             specifier;
+              specifier = new playground.c.lib.Specifier(node, "void");
+              specifier.setConstant("constant");
+
+              entry.setSpecAndDecl(
+                [
+                  new playground.c.lib.Declarator(node, "pointer"),
+                  specifier
+                ]);
+              entry.calculateOffset();
+              mem.set(entry.getAddr(), 
+                      "pointer", 
+                      playground.c.stdio.Stdio._stdoutFileHandle);
             }
           },
           {

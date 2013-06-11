@@ -20,8 +20,16 @@ qx.Class.define("playground.c.stdio.Stdin",
    */
   construct : function()
   {
+    var             handle;
+
     // Call the superclass constructor, indicating that this is an input file.
     this.base(arguments, "r");
+    
+    // We successfully opened the file. Assign a file handle.
+    handle = playground.c.stdio.Stdio._stdinFileHandle;
+
+    // Save our file instance at that handle index
+    playground.c.stdio.Stdio._openFileHandles[handle] = this;
     
     // Arrange to be notified when there's input data available
     try
