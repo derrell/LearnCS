@@ -549,3 +549,13 @@ default-a
 default-b
 >>> Program exited with exit code 0
 
+% ../dcc t017-macro-good.c --rootdir=/home/derrell/ME --preproc
+STDOUT: 
+
+printf("%d\n", b);
+
+
+% ../dcc t018-macro-bad.c --rootdir=/home/derrell/ME --preproc
+STDOUT: Error near line 4: illegal invocation of macro X, expected 2 parameters but got 1
+>>> Preprocessor encountered an error
+
