@@ -934,7 +934,7 @@ var __PRE__ = "";
           }
 
           pieces.push(new_text);
-          new_text = pieces.join('\n');
+          new_text = pieces.join('');
 
           // if macro substitution is complete, re-introduce any
           // '##' tokens previously substituted in order to keep them 
