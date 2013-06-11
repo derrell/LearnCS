@@ -108,7 +108,7 @@ qx.Class.define("playground.c.lib.Specifier",
           this.__node,
           "Can not specify " + value + 
             " in addition to previously specified " + this.__storage +
-            ". Is there possibly a missing semicolon?" + "\n" + e.stack);
+            ". Is there possibly a missing semicolon?");
       }
       
       // Save the new value
