@@ -252,24 +252,31 @@ qx.Class.define("playground.Application",
         {
           if (e.getData()[0] == cppPage)
           {
-            playground.c.lib.Preprocessor.preprocess(
-              this.editor.getCode(),
-              function(preprocessedText)
-              {
-                var             lines;
-                var             lineNum = 1;
+            try
+            {
+              playground.c.lib.Preprocessor.preprocess(
+                this.editor.getCode(),
+                function(preprocessedText)
+                {
+                  var             lines;
+                  var             lineNum = 1;
 
-                // Split the preprocessed text by line
-                lines = preprocessedText.split("\n");
-                
-                // Prepend a line number to each one
-                lines = lines.map(
-                  function(line)
-                  {
-                    return ("      " + lineNum++).substr(-4) + " " + line;
-                  });
-                this.__cppOutput.setValue(lines.join("\n"));
-              }.bind(this));
+                  // Split the preprocessed text by line
+                  lines = preprocessedText.split("\n");
+
+                  // Prepend a line number to each one
+                  lines = lines.map(
+                    function(line)
+                    {
+                      return ("      " + lineNum++).substr(-4) + " " + line;
+                    });
+                  this.__cppOutput.setValue(lines.join("\n"));
+                }.bind(this));
+            }
+            catch(e)
+            {
+              this.__cppOutput.setValue("Errors encountered. See 'Terminal'");
+            }
           }
         },
         this);
@@ -1095,17 +1102,24 @@ qx.Class.define("playground.Application",
         this.__modified = true;
       }
 
-      playground.c.lib.Preprocessor.preprocess(
-        code,
-        function(preprocessedCode)
-        {
-          require(["resource/playground/script/ansic.js"],
-                  function(ansic)
-                  {
-                    playground.c.Main.main(ansic);
-                    ansic.parse(preprocessedCode);
-                  });
-        }.bind(this));
+      try
+      {
+        playground.c.lib.Preprocessor.preprocess(
+          code,
+          function(preprocessedCode)
+          {
+            require(["resource/playground/script/ansic.js"],
+                    function(ansic)
+                    {
+                      playground.c.Main.main(ansic);
+                      ansic.parse(preprocessedCode);
+                    });
+          }.bind(this));
+      }
+      catch(e)
+      {
+
+      }
     },
 
 

@@ -39,21 +39,28 @@ cat > /tmp/dcc$$ <<EOF
   var code = require('fs').readFileSync(require('path').resolve(args[0]),
                                         "utf8");
 
-  playground.c.lib.Preprocessor.preprocess(
-    code,
-    function(preprocessedCode)
-    {
-      if (args.indexOf("--preproc") != -1)
+  try
+  {
+    playground.c.lib.Preprocessor.preprocess(
+      code,
+      function(preprocessedCode)
       {
-        console.log(preprocessedCode);
-      }
-      else
-      {
-        var ansic = require("ansic.js");
-        playground.c.Main.main(ansic.parser);
-        ansic.parse(preprocessedCode);
-      }
-    });
+        if (args.indexOf("--preproc") != -1)
+        {
+          console.log(preprocessedCode);
+        }
+        else
+        {
+          var ansic = require("ansic.js");
+          playground.c.Main.main(ansic.parser);
+          ansic.parse(preprocessedCode);
+        }
+      });
+  }
+  catch(e)
+  {
+    console.log(">>> Preprocessor encountered an error");
+  }
 EOF
 shift
 /usr/bin/env nodejs /tmp/dcc$$ "$@"

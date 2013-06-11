@@ -74,7 +74,14 @@ qx.Class.define("playground.c.lib.Preprocessor",
 
     _output : function(text)
     {
-      playground.c.Main.output(text);
+      try
+      {
+        playground.c.Main.output(text + "\n");
+      }
+      catch(e)
+      {
+        console.log(text);
+      }
     },
 
     _init: function(settings)
@@ -489,14 +496,14 @@ qx.Class.define("playground.c.lib.Preprocessor",
           // wrapped error function, augments line number and file
           var error = function(text)
           {
-            settings.error_func("(cpp) error # " + name + ":" + line + ": " +
+            settings.error_func("Error near line " + line + ": " +
               text);
           };
 
           // wrapped warning function, augments line number and file
           var warn = function(text)
           {
-            settings.warn_func("(cpp) warning # " + name + ":" + line + ": " +
+            settings.warn_func("Error near line " + line + ": " +
               text);
           };
 
