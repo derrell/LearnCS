@@ -272,6 +272,15 @@ var tests =
     {
       name   : "t013-preproc-correct-lines-else.c",
       extras : [ "--preproc" ]
+    },
+    {
+      name   : "t014-switch-break.c"
+    },
+    {
+      name   : "t015-switch-no-break.c"
+    },
+    {
+      name   : "t016-switch-default.c"
     }
   ];
 

@@ -508,3 +508,29 @@ int main(int argc, char * argv[])
 }
 
 
+% ../dcc t014-switch-break.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+0a
+0b
+0c
+>>> Program exited with exit code 0
+
+% ../dcc t015-switch-no-break.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+1a
+1b
+1c
+2a
+2b
+2c
+>>> Program exited with exit code 0
+
+% ../dcc t016-switch-default.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+default-a
+default-b
+>>> Program exited with exit code 0
+
