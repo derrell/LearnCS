@@ -161,6 +161,17 @@ qx.Class.define("playground.view.Toolbar",
         marginTop : 14
       });
     this.add(label);
+
+    label = new qx.ui.basic.Label("a.out");
+    label.set(
+      {
+        marginTop   : 14,
+        marginLeft  : 12,
+        marginRight : 8,
+        font        : "bold"
+      });
+    this.add(label);
+
     var cmdLine = new qx.ui.form.TextField();
     cmdLine.set(
       {
