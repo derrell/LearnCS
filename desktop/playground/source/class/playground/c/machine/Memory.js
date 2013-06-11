@@ -124,14 +124,14 @@ qx.Class.define("playground.c.machine.Memory",
       "gas" :                   // Globals and Statics
       {
         start  : 10 * 1024,
-        length : 256,
+        length : 10 * 1024,
         virgin : null           // initialized in defer()
       },
 
       "heap" :                  // Heap
       {
-        start  : 12 * 1024,
-        length : 256,
+        start  : 20 * 1024,
+        length : 10 * 1024,
         virgin : null           // initialized in defer()
       },
 
