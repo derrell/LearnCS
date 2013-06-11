@@ -51,6 +51,8 @@ qx.Class.define("playground.c.stdio.Stdio",
     {
       var             rootSymtab;
       var             mem;
+      var             stdin;
+      var             stdout;
       var             stderr;
       
       try
@@ -61,7 +63,11 @@ qx.Class.define("playground.c.stdio.Stdio",
         // Get the root symbol table
         rootSymtab = playground.c.lib.Symtab.getByName("*");
 
-        // Save the stderr handle, if it exists
+        // Save the standard handles, if they exists
+        stdin = playground.c.stdio.Stdio._openFileHandles[
+                   playground.c.stdio.Stdio._stdinFileHandle];
+        stdout = playground.c.stdio.Stdio._openFileHandles[
+                   playground.c.stdio.Stdio._stdoutFileHandle];
         stderr = playground.c.stdio.Stdio._openFileHandles[
                    playground.c.stdio.Stdio._stderrFileHandle];
 
@@ -70,7 +76,11 @@ qx.Class.define("playground.c.stdio.Stdio",
         playground.c.stdio.Stdio._nextFileHandle = 
           playground.c.stdio.Stdio._stderrFileHandle + 1;
 
-        // Restore the stderr handle, if it existed
+        // Restore the standard handles, if they existed
+        playground.c.stdio.Stdio._openFileHandles[
+          playground.c.stdio.Stdio._stdinFileHandle] = stdin;
+        playground.c.stdio.Stdio._openFileHandles[
+          playground.c.stdio.Stdio._stdoutFileHandle] = stdout;
         playground.c.stdio.Stdio._openFileHandles[
           playground.c.stdio.Stdio._stderrFileHandle] = stderr;
         
@@ -103,14 +113,6 @@ qx.Class.define("playground.c.stdio.Stdio",
             }
           },
           {
-            name : "putchar",
-            func : function()
-            {
-              var args = Array.prototype.slice.call(arguments);
-              playground.c.stdio.Stdio.putchar.apply(null, args);
-            }
-          },
-          {
             name : "fgetc",
             func : function()
             {
@@ -125,6 +127,22 @@ qx.Class.define("playground.c.stdio.Stdio",
               // getc is an alias for fgetc
               var args = Array.prototype.slice.call(arguments);
               playground.c.stdio.Stdio.fgetc.apply(null, args);
+            }
+          },
+          {
+            name : "ungetc",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.stdio.Stdio.ungetc.apply(null, args);
+            }
+          },
+          {
+            name : "putchar",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.stdio.Stdio.putchar.apply(null, args);
             }
           },
           {
@@ -388,7 +406,11 @@ qx.Class.define("playground.c.stdio.Stdio",
       {
         for (handle in playground.c.stdio.Stdio._openFileHandles)
         {
-          if (handle != playground.c.stdio.Stdio._stderrFileHandle)
+          if ([
+                playground.c.stdio.Stdio._stdinFileHandle,
+                playground.c.stdio.Stdio._stdoutFileHandle,
+                playground.c.stdio.Stdio._stderrFileHandle
+              ].indexOf(handle) != -1)
           {
             remoteFile = playground.c.stdio.Stdio._openFileHandles[handle];
             playground.c.Main.output(
@@ -600,6 +622,57 @@ qx.Class.define("playground.c.stdio.Stdio",
             });
         },
         failure);
+    },
+
+    /**
+     * Push a single character back onto an input stream
+     *
+     * @param c {Character}
+     *   The character to be pushed back onto the input stream
+     * 
+     * @param handle {playground.c.stdio.AbstractFile}
+     *   The file handle
+     */
+    ungetc : function(success, failure, c, handle)
+    {
+      var             stream;
+      var             specOrDecl;
+
+      // Create a specifier for the return value
+      specOrDecl = new playground.c.lib.Specifier(
+        playground.c.lib.Node._currentNode,
+        "int");
+
+      // If we don't already have an AbstractFile object...
+      if (! (handle instanceof playground.c.stdio.AbstractFile))
+      {
+        // ... retrieve it from the specified handle
+        stream = playground.c.stdio.Stdio._openFileHandles[handle];
+
+        // Did we find one?
+        if (typeof stream == "undefined")
+        {
+          success(
+            {
+              value       : playground.c.stdio.AbstractFile.EOF,
+              specAndDecl : [ specOrDecl ]
+            });
+          return;
+        }
+      }
+      else
+      {
+        stream = handle;
+      }
+      
+      // Put the character back onto the input stream
+      stream.ungetc(String.fromCharCode(c));
+
+      success(
+        {
+          value       : String.fromCharCode(c),
+          specAndDecl : [ specOrDecl ]
+        });
     },
 
     /**
