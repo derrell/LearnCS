@@ -1578,7 +1578,7 @@ qx.Class.define("playground.c.lib.Node",
         // executing.
         if (! bExecuting)
         {
-          this.children[1].process(data, bExecuting, success, failure);
+          success();
         }
         else
         {
@@ -2013,7 +2013,6 @@ qx.Class.define("playground.c.lib.Node",
         if (! bExecuting)
         {
           success();
-          break;
         }
         else
         {
@@ -5079,7 +5078,7 @@ qx.Class.define("playground.c.lib.Node",
           
           // Process the compound statement.
           this.children[1].process(data, bExecuting, success, failure);
-          break;
+          return;
         }
 
         this._tryIt(
@@ -5279,7 +5278,8 @@ qx.Class.define("playground.c.lib.Node",
                   }
                   else
                   {
-                    console.log("Ignoring switch value " + value1.value);
+                    console.log("Case not found in switch: " + value1.value);
+                    success();
                   }
                 }
               }.bind(this),
