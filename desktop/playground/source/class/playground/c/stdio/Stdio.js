@@ -599,11 +599,22 @@ qx.Class.define("playground.c.stdio.Stdio",
         // Did we find one?
         if (typeof stream == "undefined")
         {
-          failure(new playground.c.lib.RuntimeError(
-                    playground.c.lib.Node._currentNode,
-                    "Invalid file handle, causing an attempt to access an " +
-                    "uninitialized or illegal memory address. " +
-                    "(This is sometimes called a 'Segmentation Fault'.)"));
+          if (handle === 0)
+          {
+            failure(new playground.c.lib.RuntimeError(
+                      playground.c.lib.Node._currentNode,
+                      "Invalid file handle. " +
+                      "Maybe you forgot to test for a NULL return value " +
+                      "from fopen()?"));
+          }
+          else
+          {
+            failure(new playground.c.lib.RuntimeError(
+                      playground.c.lib.Node._currentNode,
+                      "Invalid file handle, causing an attempt to access " +
+                      "an uninitialized or illegal memory address. " +
+                      "(This is sometimes called a 'Segmentation Fault'.)"));
+          }
           return;
         }
       }
@@ -736,11 +747,22 @@ qx.Class.define("playground.c.stdio.Stdio",
               playground.c.lib.Node._currentNode,
               "int");
 
-            failure(new playground.c.lib.RuntimeError(
-                      playground.c.lib.Node._currentNode,
-                      "Invalid file handle, causing an attempt to access an " +
-                      "uninitialized or illegal memory address. " +
-                      "(This is sometimes called a 'Segmentation Fault'.)"));
+            if (handle === 0)
+            {
+              failure(new playground.c.lib.RuntimeError(
+                        playground.c.lib.Node._currentNode,
+                        "Invalid file handle. " +
+                        "Maybe you forgot to test for a NULL return value " +
+                        "from fopen()?"));
+            }
+            else
+            {
+              failure(new playground.c.lib.RuntimeError(
+                        playground.c.lib.Node._currentNode,
+                        "Invalid file handle, causing an attempt to access " +
+                        "an uninitialized or illegal memory address. " +
+                        "(This is sometimes called a 'Segmentation Fault'.)"));
+            }
             return;
           }
         }
@@ -809,11 +831,22 @@ qx.Class.define("playground.c.stdio.Stdio",
               playground.c.lib.Node._currentNode,
               "int");
 
-            failure(new playground.c.lib.RuntimeError(
-                      playground.c.lib.Node._currentNode,
-                      "Invalid file handle, causing an attempt to access an " +
-                      "uninitialized or illegal memory address. " +
-                      "(This is sometimes called a 'Segmentation Fault'.)"));
+            if (handle === 0)
+            {
+              failure(new playground.c.lib.RuntimeError(
+                        playground.c.lib.Node._currentNode,
+                        "Invalid file handle. " +
+                        "Maybe you forgot to test for a NULL return value " +
+                        "from fopen()?"));
+            }
+            else
+            {
+              failure(new playground.c.lib.RuntimeError(
+                        playground.c.lib.Node._currentNode,
+                        "Invalid file handle, causing an attempt to access " +
+                        "an uninitialized or illegal memory address. " +
+                        "(This is sometimes called a 'Segmentation Fault'.)"));
+            }
             return;
           }
         }
