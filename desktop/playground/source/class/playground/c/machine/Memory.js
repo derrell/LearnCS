@@ -875,16 +875,6 @@ qx.Class.define("playground.c.machine.Memory",
           word       : null    // will become the native memory word
         };
 
-      // Point to the end of the symbol's memory space.
-      size = symbol.getSize();
-      symbol.getArraySizes().forEach(
-        function(multiplier)
-        {
-          size *= multiplier;
-        });
-      addr += size;
-      
-
       // Determine which region of memory this symbol is in. 
       if ((addr >= info.gas.start && 
            addr < info.gas.start + info.gas.length))
@@ -902,6 +892,18 @@ qx.Class.define("playground.c.machine.Memory",
         region = "rts";
       }
       
+      if (region != "rts")
+      {
+        // Point to the end of the symbol's memory space.
+        size = symbol.getSize();
+        symbol.getArraySizes().forEach(
+          function(multiplier)
+          {
+            size *= multiplier;
+          });
+        addr += size;
+      }
+
       // Adjust the untouched, virgin region
       if (region == "rts" && addr < info[region].virgin)
       {
