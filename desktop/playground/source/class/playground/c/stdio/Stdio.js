@@ -518,6 +518,7 @@ qx.Class.define("playground.c.stdio.Stdio",
         failure(new playground.c.lib.RuntimeError(
                   playground.c.lib.Node._currentNode,
                   "This file handle is not currently open"));
+        return;
       }
     },
 
@@ -598,11 +599,11 @@ qx.Class.define("playground.c.stdio.Stdio",
         // Did we find one?
         if (typeof stream == "undefined")
         {
-          success(
-            {
-              value       : playground.c.stdio.AbstractFile.EOF,
-              specAndDecl : [ specOrDecl ]
-            });
+          failure(new playground.c.lib.RuntimeError(
+                    playground.c.lib.Node._currentNode,
+                    "Invalid file handle, causing an attempt to access an " +
+                    "uninitialized or illegal memory address. " +
+                    "(This is sometimes called a 'Segmentation Fault'.)"));
           return;
         }
       }
@@ -735,11 +736,11 @@ qx.Class.define("playground.c.stdio.Stdio",
               playground.c.lib.Node._currentNode,
               "int");
 
-            success(
-              {
-                value       : playground.c.stdio.AbstractFile.EOF,
-                specAndDecl : [ specOrDecl ]
-              });
+            failure(new playground.c.lib.RuntimeError(
+                      playground.c.lib.Node._currentNode,
+                      "Invalid file handle, causing an attempt to access an " +
+                      "uninitialized or illegal memory address. " +
+                      "(This is sometimes called a 'Segmentation Fault'.)"));
             return;
           }
         }
@@ -808,11 +809,11 @@ qx.Class.define("playground.c.stdio.Stdio",
               playground.c.lib.Node._currentNode,
               "int");
 
-            success(
-              {
-                value       : playground.c.stdio.AbstractFile.EOF,
-                specAndDecl : [ specOrDecl ]
-              });
+            failure(new playground.c.lib.RuntimeError(
+                      playground.c.lib.Node._currentNode,
+                      "Invalid file handle, causing an attempt to access an " +
+                      "uninitialized or illegal memory address. " +
+                      "(This is sometimes called a 'Segmentation Fault'.)"));
             return;
           }
         }
