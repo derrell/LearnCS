@@ -559,3 +559,17 @@ printf("%d\n", b);
 STDOUT: Error near line 4: illegal invocation of macro X, expected 2 parameters but got 1
 >>> Preprocessor encountered an error
 
+% ../dcc t019-fscanf-null-handle.c --rootdir=/home/derrell/ME
+ERROR: Error: Command failed: 
+STDOUT: 
+>>> Running program
+Error near line 9: Invalid file handle. Maybe you forgot to test for a NULL return value from fopen()?
+>>> Program had errors. It did not run to completion.
+
+% ../dcc t020-fscanf-bad-handle.c --rootdir=/home/derrell/ME
+ERROR: Error: Command failed: 
+STDOUT: 
+>>> Running program
+Error near line 9: Invalid file handle, causing an attempt to access an uninitialized or illegal memory address. (This is sometimes called a 'Segmentation Fault'.)
+>>> Program had errors. It did not run to completion.
+

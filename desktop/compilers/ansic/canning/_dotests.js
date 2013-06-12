@@ -294,6 +294,12 @@ var tests =
     {
       name   : "t018-macro-bad.c",
       extras : [ "--preproc" ]
+    },
+    {
+      name   : "t019-fscanf-null-handle.c"
+    },
+    {
+      name   : "t020-fscanf-bad-handle.c"
     }
   ];
 
