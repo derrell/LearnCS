@@ -5999,12 +5999,19 @@ qx.Class.define("playground.c.lib.Node",
      */
     _tryIt : function(tryBlock, catchBlock, success, failure)
     {
-      tryBlock(
-        success,
-        function(error)
-        {
-          catchBlock(error, success, failure);
-        });
+      try
+      {
+        tryBlock(
+          success,
+          function(error)
+          {
+            catchBlock(error, success, failure);
+          });
+      }
+      catch(error)
+      {
+        catchBlock(error, success, failure);
+      }
     },
     
     /**
