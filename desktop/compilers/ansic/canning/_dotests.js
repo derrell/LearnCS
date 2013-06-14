@@ -300,6 +300,10 @@ var tests =
     },
     {
       name   : "t020-fscanf-bad-handle.c"
+    },
+    {
+      name   : "t021-preproc-leading-blank-lines.c",
+      extras : [ "--preproc" ]
     }
   ];
 

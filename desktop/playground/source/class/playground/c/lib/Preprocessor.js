@@ -677,7 +677,7 @@ var __PRE__ = "";
               {
                 out[outi++] = __PRE__ + (new Array(lines_this)).join("\n");
               }
-              else if (typeof command != "undefined")
+              else
               {
                 out[outi++] = __PRE__ + (new Array(lines_this + 1)).join("\n");
               }
