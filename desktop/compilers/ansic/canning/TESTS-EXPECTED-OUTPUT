@@ -573,3 +573,27 @@ STDOUT:
 Error near line 9: Invalid file handle, causing an attempt to access an uninitialized or illegal memory address. (This is sometimes called a 'Segmentation Fault'.)
 >>> Program had errors. It did not run to completion.
 
+% ../dcc t021-preproc-leading-blank-lines.c --rootdir=/home/derrell/ME --preproc
+STDOUT: 
+
+
+
+
+
+
+
+
+int main(int argc, char * argv[])
+{
+
+    
+    printf("true\n");
+
+
+
+
+
+
+}
+
+
