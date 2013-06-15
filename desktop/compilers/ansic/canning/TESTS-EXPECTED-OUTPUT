@@ -418,6 +418,7 @@ STDOUT: Parse error near line 9:
 ----------------------^
 	Declarations must precede executable statements.
 
+
 Errors encountered: 1
 
 
