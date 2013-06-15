@@ -603,9 +603,8 @@ qx.Class.define("playground.c.stdio.Stdio",
           {
             failure(new playground.c.lib.RuntimeError(
                       playground.c.lib.Node._currentNode,
-                      "Invalid file handle. " +
                       "Maybe you forgot to test for a NULL return value " +
-                      "from fopen()?"));
+                      "from fopen()? Invalid file handle."));
           }
           else
           {
@@ -751,9 +750,8 @@ qx.Class.define("playground.c.stdio.Stdio",
             {
               failure(new playground.c.lib.RuntimeError(
                         playground.c.lib.Node._currentNode,
-                        "Invalid file handle. " +
                         "Maybe you forgot to test for a NULL return value " +
-                        "from fopen()?"));
+                        "from fopen()? Invalid file handle."));
             }
             else
             {
@@ -835,9 +833,8 @@ qx.Class.define("playground.c.stdio.Stdio",
             {
               failure(new playground.c.lib.RuntimeError(
                         playground.c.lib.Node._currentNode,
-                        "Invalid file handle. " +
                         "Maybe you forgot to test for a NULL return value " +
-                        "from fopen()?"));
+                        "from fopen()? Invalid file handle."));
             }
             else
             {
