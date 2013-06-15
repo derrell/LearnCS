@@ -150,6 +150,34 @@ qx.Class.define("playground.c.Main",
 
           if (true)
           {
+            // Strip off entry meaningless text that we'll replicate
+            str = str.replace(/^Parse error on.*\n.*\n.*\n/, "");
+
+            // Trap the most common errors: missing semicolon
+            str = str.replace(
+              new RegExp(
+                "Expecting " +
+                "'\\(', '\\)', '[[]', ']', " +
+                "'[.]', 'PTR_OP', " +
+                "'INC_OP', 'DEC_OP', " + 
+                "',', '\\&', '\\*', '\\+', '\\-', '/', '%', " +
+                "'LEFT_OP', 'RIGHT_OP', '<', '>', 'LE_OP', 'GE_OP', " +
+                "'EQ_OP', 'NE_OP', '[^]', '[|]', 'AND_OP', 'OR_OP', " +
+                "'\\?', ':', '=', " +
+                "'MUL_ASSIGN', 'DIV_ASSIGN', 'MOD_ASSIGN', " +
+                "'ADD_ASSIGN', 'SUB_ASSIGN', 'LEFT_ASSIGN', 'RIGHT_ASSIGN', " +
+                "'AND_ASSIGN', 'XOR_ASSIGN', 'OR_ASSIGN', ';', 'RBRACE', " +
+                "got .*"),
+              "Maybe you forgot a semicolon?");
+
+                  
+            str = str.replace(
+              new RegExp(
+                "Expecting " +
+                "'\\)', ']', ',', ':', ';', " +
+                "got .*"),
+              "Maybe you forgot a semicolon?");
+
             // If we have a previous position to display, then show it;
             // otherwise show the current position, along with the error
             // description.
@@ -162,7 +190,7 @@ qx.Class.define("playground.c.Main",
 
             if (str)
             {
-              errStr += "\t" + str + "\n";
+              errStr += "\t" + str + "\n\n";
             }
 
             playground.c.Main.output(errStr);
