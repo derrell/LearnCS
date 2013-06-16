@@ -413,7 +413,7 @@ chicken wing!
 
 % ../dcc t002-decl-after-stmt.c --rootdir=/home/derrell/ME
 ERROR: Error: Command failed: 
-STDOUT: Parse error near line 9:
+STDOUT: Error: See arrow pointing to position of error near line 9:
 ...table statement    char            c;  
 ----------------------^
 	Declarations must precede executable statements.
@@ -564,7 +564,7 @@ STDOUT: Error near line 4: illegal invocation of macro X, expected 2 parameters 
 ERROR: Error: Command failed: 
 STDOUT: 
 >>> Running program
-Error near line 9: Invalid file handle. Maybe you forgot to test for a NULL return value from fopen()?
+Error near line 9: Maybe you forgot to test for a NULL return value from fopen()? Invalid file handle.
 >>> Program had errors. It did not run to completion.
 
 % ../dcc t020-fscanf-bad-handle.c --rootdir=/home/derrell/ME
