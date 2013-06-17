@@ -40,7 +40,7 @@ qx.Class.define("playground.view.Header",
 
     var version = 
       new qxc.ui.versionlabel.VersionLabel("<i>" + this.tr("LearnCS!") + "</i>",
-                                           "0.020");
+                                           "0.021");
     version.set(
       {
         font : "default",

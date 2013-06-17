@@ -65,5 +65,5 @@ EOF
 shift
 /usr/bin/env nodejs /tmp/dcc$$ "$@"
 exitCode=$?
-#rm -f /tmp/dcc$$
+rm -f /tmp/dcc$$
 exit $exitCode
