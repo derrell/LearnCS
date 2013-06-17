@@ -39,8 +39,7 @@ qx.Class.define("playground.view.Header",
     // /////////
 
     var version = 
-      new qxc.ui.versionlabel.VersionLabel("<i>" + this.tr("LearnCS!") + "</i>",
-                                           "0.021");
+      new qxc.ui.versionlabel.VersionLabel("Version", "0.021");
     version.set(
       {
         font : "default",
@@ -67,7 +66,7 @@ qx.Class.define("playground.view.Header",
 
     this.__group.bind("modelSelection[0]", this, "mode");
 
-    this.add(new qx.ui.basic.Label(this.tr("Playground")));
+    this.add(new qx.ui.basic.Label("LearnCS!"));
     this.add(new qx.ui.core.Spacer(30));
     
     this.add(consoleButton);
