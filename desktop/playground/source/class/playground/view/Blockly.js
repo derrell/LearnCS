@@ -190,6 +190,20 @@ qx.Class.define("playground.view.Blockly",
           Blockly.BlockSvg.TITLE_HEIGHT = 12;
  */
  
+          Blockly.Language["declare_type"] = {
+            helpUrl: 'http://www.example.com/',
+            init: function() {
+              this.appendDummyInput()
+                .appendTitle(new Blockly.FieldDropdown(
+                               [
+                                 ["simple", "simple"], 
+                                 ["advanced", "advanced"]]),
+                             "type");
+              this.setTooltip('');
+            }
+          };
+
+
           Blockly.Language["declare"] = {
             helpUrl: 'http://www.example.com/',
             init: function() {
@@ -200,14 +214,10 @@ qx.Class.define("playground.view.Blockly",
                   .appendTitle(new Blockly.FieldTextInput("NAME"), "name");
               this.appendDummyInput()
                   .appendTitle("as");
-              this.appendStatementInput("declarators");
-              this.appendDummyInput()
+              this.appendDummyInput("static")
                   .appendTitle("static")
                   .appendTitle(new Blockly.FieldCheckbox("FALSE"), "static");
-              this.appendDummyInput()
-                  .appendTitle("const")
-                  .appendTitle(new Blockly.FieldCheckbox("FALSE"), "const");
-              this.appendDummyInput()
+              this.appendDummyInput("spacer")
                   .appendTitle(" ");
               this.appendDummyInput()
                 .appendTitle(new Blockly.FieldDropdown(
@@ -229,6 +239,59 @@ qx.Class.define("playground.view.Blockly",
               this.setNextStatement(true);
               this.setInputsInline(true);
               this.setTooltip('');
+              this.setMutator(new Blockly.Mutator([]));
+            },
+            
+            decompose : function(workspace) {
+              var typeBlock = new Blockly.Block(workspace, 'declare_type');
+              typeBlock.initSvg();
+              typeBlock.setTitleValue(
+                this.getInput("declarators") ? "advanced" : "simple",
+                "type");
+              return typeBlock;
+            },
+            
+            compose : function(typeBlock) {
+              var type = typeBlock.getTitleValue("type");
+              
+              // Remove the declarators and const. If the endpoint is
+              // 'advanced' then we'll re-add them.
+              [ "declarators", "const" ].forEach(
+                function(input)
+                {
+                  var             inputBlock = this.getInput(input);
+
+                  if (inputBlock)
+                  {
+//                    inputBlock.bumpNeighbours_();
+                    this.removeInput(input);
+                  }
+                },
+                this);
+
+              switch(type)
+              {
+              case "simple" :
+                break;
+                
+              case "advanced" :
+                // Add the declarators statement
+                this.appendStatementInput("declarators");
+                this.moveInputBefore("declarators", "static");
+                
+                // Add the const checkbox
+                this.appendDummyInput("const")
+                    .appendTitle("const")
+                    .appendTitle(new Blockly.FieldCheckbox("FALSE"), "const");
+                this.moveInputBefore("const", "spacer");
+                break;
+                
+              default:
+                throw new Error("Unexpected type from declare mutator");
+              }
+
+              typeBlock.bumpNeighbours_();
+              this.bumpNeighbours_();
             }
           };
 
