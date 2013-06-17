@@ -931,15 +931,24 @@ qx.Class.define("playground.c.machine.Memory",
     },
 
     /**
-     * Remove symbol information. This is used for heap allocations.
+     * Remove symbol information. This is used for heap allocations and at the
+     * end of a program run.
      * 
-     * @param addr {Number}
-     *   The address for which symbol information is to be removed
+     * @param addr {Number?}
+     *   The address for which symbol information is to be removed. If not
+     *   provided, then symbol information for all symbols is removed
      */
     removeSymbolInfo : function(addr)
     {
-      // Remove this symbol info
-      delete this._symInfo[addr];
+      if (typeof addr != "undefined")
+      {
+        // Remove this symbol info
+        delete this._symbolInfo[addr];
+      }
+      else
+      {
+        this._symbolInfo = {};
+      }
     },
 
     /**

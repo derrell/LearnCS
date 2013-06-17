@@ -576,6 +576,9 @@ qx.Class.define("playground.c.Main",
         // We're finished with this activation record.
         mem.endActivationRecord();
 
+        // Flush the arguments and any global variables from the memory view
+        mem.removeSymbolInfo();
+
         try
         {
           // We're stopped. Retrieve the data in memory, ...
