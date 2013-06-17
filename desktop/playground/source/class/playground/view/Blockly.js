@@ -190,20 +190,69 @@ qx.Class.define("playground.view.Blockly",
           Blockly.BlockSvg.TITLE_HEIGHT = 12;
  */
  
-          Blockly.Language["function"] = {
+          Blockly.Language["declare"] = {
             helpUrl: 'http://www.example.com/',
             init: function() {
-              this.setColour(230);
+              this.setColour(32);
               this.appendDummyInput()
-                .appendTitle(new Blockly.FieldTextInput("Function"), 
-                             "function_name");
-              this.appendStatementInput("local variables")
-                .setAlign(Blockly.ALIGN_RIGHT)
-                .appendTitle("local variables");
-              this.appendStatementInput("statements")
-                .setAlign(Blockly.ALIGN_RIGHT)
-                .appendTitle("statements");
-          //    this.setOutput(true, "Number");
+                  .appendTitle("declare variable");
+              this.appendDummyInput()
+                  .appendTitle(new Blockly.FieldTextInput("NAME"), "name");
+              this.appendDummyInput()
+                  .appendTitle("as");
+              this.appendStatementInput("declarators");
+              this.appendDummyInput()
+                  .appendTitle("static")
+                  .appendTitle(new Blockly.FieldCheckbox("FALSE"), "static");
+              this.appendDummyInput()
+                  .appendTitle("const")
+                  .appendTitle(new Blockly.FieldCheckbox("FALSE"), "const");
+              this.appendDummyInput()
+                  .appendTitle(" ");
+              this.appendDummyInput()
+                .appendTitle(new Blockly.FieldDropdown(
+                               [
+                                 ["char", "char"],
+                                 ["short", "short"],
+                                 ["int", "int"],
+                                 ["long", "long"],
+                                 ["long long", "long_long"],
+                                 ["unsigned char", "unsigned_char"],
+                                 ["unsigned short", "unsigned_short"],
+                                 ["unsigned long", "unsigned_long"],
+                                 ["unsigned long long", "unsigned_long_long"],
+                                 ["float", "float"],
+                                 ["double", "double"]
+                               ]),
+                             "ctype");
+              this.setPreviousStatement(true);
+              this.setNextStatement(true);
+              this.setInputsInline(true);
+              this.setTooltip('');
+            }
+          };
+
+          Blockly.Language["pointer_to"] = {
+            helpUrl: 'http://www.example.com/',
+            init: function() {
+              this.setColour(40);
+              this.appendDummyInput()
+                  .appendTitle("pointer to");
+              this.setPreviousStatement(true); // 2nd arg: ["string", "list"]
+              this.setNextStatement(true);     // ditto
+              this.setTooltip('');
+            }
+          };
+
+          Blockly.Language["array_of"] = {
+            helpUrl: 'http://www.example.com/',
+            init: function() {
+              this.setColour(40);
+              this.appendDummyInput()
+                  .appendTitle("array of")
+                  .appendTitle(new Blockly.FieldTextInput("3"), "count");
+              this.setPreviousStatement(true);
+              this.setNextStatement(true);
               this.setTooltip('');
             }
           };
@@ -267,7 +316,9 @@ qx.Class.define("playground.view.Blockly",
                   "  <category name='Controls'>" +
                   "    <block type='controls_if'></block>" +
                   "    <block type='controls_repeat'></block>" +
-                  "    <block type='function'></block>" +
+                  "    <block type='declare'></block>" +
+                  "    <block type='pointer_to'></block>" +
+                  "    <block type='array_of'></block>" +
                   "  </category>" +
                   "  <category name='Others'>" +
                   "    <block type='logic_compare'></block>" +
