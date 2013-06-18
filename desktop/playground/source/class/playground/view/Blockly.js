@@ -272,7 +272,7 @@ qx.Class.define("playground.view.Blockly",
                   }
                   else
                   {
-                    console.log("UNEXPECTED DECLARATOR: " + declarator);
+                    // Ignore other entries in the list (e.g. count for arrays)
                     return;
                   }
 
