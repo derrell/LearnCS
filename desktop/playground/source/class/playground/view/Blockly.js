@@ -195,13 +195,17 @@ qx.Class.define("playground.view.Blockly",
             init: function() {
               this.setColour(32);
               this.appendDummyInput()
-                  .appendTitle("declare variable");
+                .appendTitle("declare variable");
               this.appendDummyInput()
-                  .appendTitle(new Blockly.FieldTextInput("NAME"), "name");
+                .appendTitle(new Blockly.FieldTextInput("NAME"), "name");
               this.appendDummyInput()
-                  .appendTitle("as");
-              this.appendDummyInput("spacer")
-                  .appendTitle(" ");
+                .appendTitle("as:");
+              this.appendDummyInput()
+                .appendTitle("", "declarators");
+              this.appendDummyInput()
+                .appendTitle("", "static");
+              this.appendDummyInput()
+                .appendTitle("", "const");
               this.appendDummyInput()
                 .appendTitle(new Blockly.FieldDropdown(
                                [
@@ -232,26 +236,114 @@ qx.Class.define("playground.view.Blockly",
               var declarators;
               var ctype;
               var declareBlock = new Blockly.Block(workspace, 'declare_editor');
+              var block;
+              var target;
 
               declareBlock.initSvg();
 
               // Retrieve the values from this block
               name = this.getTitleValue("name");
-              bStatic = this.getTitleValue("static") !== null;
-              bConst = this.getTitleValue("const") !== null;
               declarators = this.getTitleValue("declarators");
+              bStatic = this.getTitleValue("static") == "static";
+              bConst = this.getTitleValue("const") == "const";
               ctype = this.getTitleValue("type");
+              
+              // For adding declarators, maintain a target to which each
+              // declarator block will be connected.
+              target = declareBlock.getInput("declarators").connection;
+
+              // Parse the declarators by replacing spaces with underscores at
+              // known places, then splitting at spaces
+              declarators =
+                declarators.replace(/array(s?) of +([0-9]+)/g, "array_of=$2");
+              declarators =
+                declarators.replace(/pointer(s?) to/g, "pointer_to");
+              declarators = declarators.split(" ");
+              declarators.forEach(
+                function(declarator)
+                {
+                  if (declarator.match(/array(s?)_of/))
+                  {
+                    block = new Blockly.Block(workspace, "array_of");
+                  }
+                  else if (declarator.match(/pointer(s?)_to/))
+                  {
+                    block = new Blockly.Block(workspace, "pointer_to");
+                  }
+                  else
+                  {
+                    console.log("UNEXPECTED DECLARATOR: " + declarator);
+                    return;
+                  }
+
+                  block.initSvg();
+                  target.connect(block.previousConnection);
+                  target = block.nextConnection;
+                });
               
               // Set those values in the block editor
               declareBlock.setTitleValue(name, "name");
-              declareBlock.setTitleValue(bStatic, "static");
-              declareBlock.setTitleValue(bConst, "const");
+              declareBlock.setTitleValue(bStatic ? "TRUE" : "FALSE", "static");
+              declareBlock.setTitleValue(bConst ? "TRUE" : "FALSE", "const");
               declareBlock.setTitleValue(ctype, "type");
 
               return declareBlock;
             },
             
             compose : function(declareBlock) {
+              var name;
+              var bStatic;
+              var bConst;
+              var declarators;
+              var declaratorList;
+              var ctype;
+              var bPlural = false;
+              
+              // Retrieve the values from this block
+              name = declareBlock.getTitleValue("name");
+              bStatic = declareBlock.getTitleValue("static") !== "FALSE";
+              bConst = declareBlock.getTitleValue("const") !== "FALSE";
+              declarators = declareBlock.getInput("declarators");
+              
+              declaratorList = [];
+              declarators.connection.sourceBlock_.childBlocks_.forEach(
+                function(child)
+                {
+                  switch(child.type)
+                  {
+                  case "pointer_to" :
+                    declaratorList.push(bPlural ? "pointers to" : "pointer to");
+                    break;
+                    
+                  case "array_of" :
+                    declaratorList.push(bPlural ? "arrays of " : "array of ");
+                    declaratorList.push(child.getTitleValue("count"));
+                    bPlural = true;
+                    break;
+                    
+                  default:
+                    throw new Error("Unexpected declarator type: " + 
+                                    child.type);
+                  }
+                  
+                  // Follow child list, recursively
+                  child.childBlocks_.forEach(arguments.callee);
+                });
+              
+              // Remove empty declarator list entries
+              while (declaratorList.indexOf("") != -1)
+              {
+                delete declaratorList[declaratorList.indexOf("")];
+              }
+
+              ctype = declareBlock.getTitleValue("type");
+              
+              // Set those values in the block editor
+              this.setTitleValue(name, "name");
+              this.setTitleValue(bStatic ? "static" : "", "static");
+              this.setTitleValue(bConst ? "const" : "", "const");
+              this.setTitleValue(declaratorList.join(" "), "declarators");
+              this.setTitleValue(ctype, "type");
             }
           };
 
@@ -264,7 +356,7 @@ qx.Class.define("playground.view.Blockly",
               this.appendDummyInput()
                   .appendTitle(new Blockly.FieldTextInput("NAME"), "name");
               this.appendDummyInput()
-                  .appendTitle("as");
+                  .appendTitle("as:");
               this.appendStatementInput("declarators");
               this.appendDummyInput()
                   .appendTitle("static", null)
