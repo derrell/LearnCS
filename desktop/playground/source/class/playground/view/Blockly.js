@@ -190,20 +190,6 @@ qx.Class.define("playground.view.Blockly",
           Blockly.BlockSvg.TITLE_HEIGHT = 12;
  */
  
-          Blockly.Language["declare_type"] = {
-            helpUrl: 'http://www.example.com/',
-            init: function() {
-              this.appendDummyInput()
-                .appendTitle(new Blockly.FieldDropdown(
-                               [
-                                 ["simple", "simple"], 
-                                 ["advanced", "advanced"]]),
-                             "type");
-              this.setTooltip('');
-            }
-          };
-
-
           Blockly.Language["declare"] = {
             helpUrl: 'http://www.example.com/',
             init: function() {
@@ -214,9 +200,6 @@ qx.Class.define("playground.view.Blockly",
                   .appendTitle(new Blockly.FieldTextInput("NAME"), "name");
               this.appendDummyInput()
                   .appendTitle("as");
-              this.appendDummyInput("static")
-                  .appendTitle("static")
-                  .appendTitle(new Blockly.FieldCheckbox("FALSE"), "static");
               this.appendDummyInput("spacer")
                   .appendTitle(" ");
               this.appendDummyInput()
@@ -234,64 +217,81 @@ qx.Class.define("playground.view.Blockly",
                                  ["float", "float"],
                                  ["double", "double"]
                                ]),
-                             "ctype");
+                             "type");
               this.setPreviousStatement(true);
               this.setNextStatement(true);
               this.setInputsInline(true);
               this.setTooltip('');
-              this.setMutator(new Blockly.Mutator([]));
+              this.setMutator(new Blockly.Mutator(["pointer_to", "array_of"]));
             },
             
             decompose : function(workspace) {
-              var typeBlock = new Blockly.Block(workspace, 'declare_type');
-              typeBlock.initSvg();
-              typeBlock.setTitleValue(
-                this.getInput("declarators") ? "advanced" : "simple",
-                "type");
-              return typeBlock;
+              var name;
+              var bStatic;
+              var bConst;
+              var declarators;
+              var ctype;
+              var declareBlock = new Blockly.Block(workspace, 'declare_editor');
+
+              declareBlock.initSvg();
+
+              // Retrieve the values from this block
+              name = this.getTitleValue("name");
+              bStatic = this.getTitleValue("static") !== null;
+              bConst = this.getTitleValue("const") !== null;
+              declarators = this.getTitleValue("declarators");
+              ctype = this.getTitleValue("type");
+              
+              // Set those values in the block editor
+              declareBlock.setTitleValue(name, "name");
+              declareBlock.setTitleValue(bStatic, "static");
+              declareBlock.setTitleValue(bConst, "const");
+              declareBlock.setTitleValue(ctype, "type");
+
+              return declareBlock;
             },
             
-            compose : function(typeBlock) {
-              var type = typeBlock.getTitleValue("type");
-              
-              // Remove the declarators and const. If the endpoint is
-              // 'advanced' then we'll re-add them.
-              [ "declarators", "const" ].forEach(
-                function(input)
-                {
-                  var             inputBlock = this.getInput(input);
+            compose : function(declareBlock) {
+            }
+          };
 
-                  if (inputBlock)
-                  {
-//                    inputBlock.bumpNeighbours_();
-                    this.removeInput(input);
-                  }
-                },
-                this);
-
-              switch(type)
-              {
-              case "simple" :
-                break;
-                
-              case "advanced" :
-                // Add the declarators statement
-                this.appendStatementInput("declarators");
-                this.moveInputBefore("declarators", "static");
-                
-                // Add the const checkbox
-                this.appendDummyInput("const")
-                    .appendTitle("const")
-                    .appendTitle(new Blockly.FieldCheckbox("FALSE"), "const");
-                this.moveInputBefore("const", "spacer");
-                break;
-                
-              default:
-                throw new Error("Unexpected type from declare mutator");
-              }
-
-              typeBlock.bumpNeighbours_();
-              this.bumpNeighbours_();
+          Blockly.Language["declare_editor"] = {
+            helpUrl: 'http://www.example.com/',
+            init: function() {
+              this.setColour(32);
+              this.appendDummyInput()
+                  .appendTitle("declare variable");
+              this.appendDummyInput()
+                  .appendTitle(new Blockly.FieldTextInput("NAME"), "name");
+              this.appendDummyInput()
+                  .appendTitle("as");
+              this.appendStatementInput("declarators");
+              this.appendDummyInput()
+                  .appendTitle("static", null)
+                  .appendTitle(new Blockly.FieldCheckbox("FALSE"), "static");
+              this.appendDummyInput("const")
+                .appendTitle("const", null)
+                .appendTitle(new Blockly.FieldCheckbox("FALSE"), "const");
+              this.appendDummyInput("spacer")
+                  .appendTitle(" ");
+              this.appendDummyInput()
+                .appendTitle(new Blockly.FieldDropdown(
+                               [
+                                 ["char", "char"],
+                                 ["short", "short"],
+                                 ["int", "int"],
+                                 ["long", "long"],
+                                 ["long long", "long_long"],
+                                 ["unsigned char", "unsigned_char"],
+                                 ["unsigned short", "unsigned_short"],
+                                 ["unsigned long", "unsigned_long"],
+                                 ["unsigned long long", "unsigned_long_long"],
+                                 ["float", "float"],
+                                 ["double", "double"]
+                               ]),
+                             "type");
+              this.setInputsInline(true);
+              this.setTooltip('');
             }
           };
 
