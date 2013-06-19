@@ -190,6 +190,18 @@ qx.Class.define("playground.view.Blockly",
           Blockly.BlockSvg.TITLE_HEIGHT = 12;
  */
  
+          Blockly.Language["globals"] = {
+            helpUrl: 'http://www.example.com/',
+            init: function() {
+              this.setColour(24);
+              this.appendDummyInput()
+                .appendTitle("global variables and type definitions");
+              this.appendStatementInput("declarations")
+                  .setCheck("Declaration");
+              this.setTooltip('');
+            }
+          };
+
           Blockly.Language["declare"] = {
             helpUrl: 'http://www.example.com/',
             init: function() {
@@ -222,8 +234,8 @@ qx.Class.define("playground.view.Blockly",
                                  ["double", "double"]
                                ]),
                              "type");
-              this.setPreviousStatement(true);
-              this.setNextStatement(true);
+              this.setPreviousStatement(true, "Declaration");
+              this.setNextStatement(true, "Declaration");
               this.setInputsInline(true);
               this.setTooltip('');
               this.setMutator(new Blockly.Mutator(["pointer_to", "array_of"]));
@@ -305,6 +317,7 @@ qx.Class.define("playground.view.Blockly",
               bConst = declareBlock.getTitleValue("const") !== "FALSE";
               declarators = declareBlock.getInput("declarators");
               
+              // Create a single string corresponding to all of the declarators
               declaratorList = [];
               declarators.connection.sourceBlock_.childBlocks_.forEach(
                 function(child)
@@ -347,6 +360,7 @@ qx.Class.define("playground.view.Blockly",
             }
           };
 
+          // Used in mutator for "declare" block
           Blockly.Language["declare_editor"] = {
             helpUrl: 'http://www.example.com/',
             init: function() {
@@ -387,6 +401,7 @@ qx.Class.define("playground.view.Blockly",
             }
           };
 
+          // Used in mutator for "declare" block
           Blockly.Language["pointer_to"] = {
             helpUrl: 'http://www.example.com/',
             init: function() {
@@ -399,6 +414,7 @@ qx.Class.define("playground.view.Blockly",
             }
           };
 
+          // Used in mutator for "declare" block
           Blockly.Language["array_of"] = {
             helpUrl: 'http://www.example.com/',
             init: function() {
@@ -408,6 +424,52 @@ qx.Class.define("playground.view.Blockly",
                   .appendTitle(new Blockly.FieldTextInput("3"), "count");
               this.setPreviousStatement(true);
               this.setNextStatement(true);
+              this.setTooltip('');
+            }
+          };
+
+          Blockly.Language["function"] = {
+            helpUrl: 'http://www.example.com/',
+            init: function() {
+              this.setColour(290);
+              this.appendDummyInput()
+                  .appendTitle("function")
+                  .appendTitle(new Blockly.FieldTextInput("NAME"), "name");
+              this.appendDummyInput()
+                  .appendTitle("local variables");
+              this.appendStatementInput("declarations")
+                  .setCheck("Declaration");
+              this.appendDummyInput()
+                  .appendTitle("do");
+              this.appendStatementInput("statements")
+                .setCheck([
+                            "Statement", 
+                            "Return with output",
+                            "Return without output" 
+                          ]);
+              this.setTooltip('');
+            }
+          };
+
+          Blockly.Language["return_with_output"] = {
+            helpUrl: 'http://www.example.com/',
+            init: function() {
+              this.setColour(290);
+              this.appendDummyInput()
+                  .appendTitle("leave function giving output");
+              this.appendValueInput("retval");
+              this.setPreviousStatement(true, "Return with output");
+              this.setTooltip('');
+            }
+          };
+
+          Blockly.Language["return_no_output"] = {
+            helpUrl: 'http://www.example.com/',
+            init: function() {
+              this.setColour(290);
+              this.appendDummyInput()
+                  .appendTitle("leave function without output");
+              this.setPreviousStatement(true, "Return without output");
               this.setTooltip('');
             }
           };
@@ -471,9 +533,11 @@ qx.Class.define("playground.view.Blockly",
                   "  <category name='Controls'>" +
                   "    <block type='controls_if'></block>" +
                   "    <block type='controls_repeat'></block>" +
+                  "    <block type='globals'></block>" +
                   "    <block type='declare'></block>" +
-                  "    <block type='pointer_to'></block>" +
-                  "    <block type='array_of'></block>" +
+                  "    <block type='function'></block>" +
+                  "    <block type='return_with_output'></block>" +
+                  "    <block type='return_no_output'></block>" +
                   "  </category>" +
                   "  <category name='Others'>" +
                   "    <block type='logic_compare'></block>" +
