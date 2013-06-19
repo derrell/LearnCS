@@ -197,7 +197,7 @@ qx.Class.define("playground.view.Blockly",
               this.appendDummyInput()
                 .appendTitle("global variables and type definitions");
               this.appendStatementInput("declarations")
-                  .setCheck("Declaration");
+                .setCheck("Declaration");
               this.setTooltip('');
             }
           };
@@ -211,7 +211,21 @@ qx.Class.define("playground.view.Blockly",
               this.appendDummyInput()
                 .appendTitle(new Blockly.FieldTextInput("NAME"), "name");
               this.appendDummyInput()
-                .appendTitle("as:");
+                .appendTitle("as");
+              this.appendValueInput("type", "Type");
+              this.setPreviousStatement(true, "Declaration");
+              this.setNextStatement(true, "Declaration");
+              this.setInputsInline(true);
+              this.setTooltip('');
+            }
+          };
+
+          Blockly.Language["type"] = {
+            helpUrl: 'http://www.example.com/',
+            init: function() {
+              this.setColour(32);
+              this.appendDummyInput()
+                .appendTitle("type");
               this.appendDummyInput()
                 .appendTitle("", "declarators");
               this.appendDummyInput()
@@ -234,27 +248,24 @@ qx.Class.define("playground.view.Blockly",
                                  ["double", "double"]
                                ]),
                              "type");
-              this.setPreviousStatement(true, "Declaration");
-              this.setNextStatement(true, "Declaration");
+              this.setOutput(true, "Type");
               this.setInputsInline(true);
               this.setTooltip('');
               this.setMutator(new Blockly.Mutator(["pointer_to", "array_of"]));
             },
             
             decompose : function(workspace) {
-              var name;
               var bStatic;
               var bConst;
               var declarators;
               var ctype;
-              var declareBlock = new Blockly.Block(workspace, 'declare_editor');
+              var typeBlock = new Blockly.Block(workspace, 'type_editor');
               var block;
               var target;
 
-              declareBlock.initSvg();
+              typeBlock.initSvg();
 
               // Retrieve the values from this block
-              name = this.getTitleValue("name");
               declarators = this.getTitleValue("declarators");
               bStatic = this.getTitleValue("static") == "static";
               bConst = this.getTitleValue("const") == "const";
@@ -262,7 +273,7 @@ qx.Class.define("playground.view.Blockly",
               
               // For adding declarators, maintain a target to which each
               // declarator block will be connected.
-              target = declareBlock.getInput("declarators").connection;
+              target = typeBlock.getInput("declarators").connection;
 
               // Parse the declarators by replacing spaces with underscores at
               // known places, then splitting at spaces
@@ -294,16 +305,14 @@ qx.Class.define("playground.view.Blockly",
                 });
               
               // Set those values in the block editor
-              declareBlock.setTitleValue(name, "name");
-              declareBlock.setTitleValue(bStatic ? "TRUE" : "FALSE", "static");
-              declareBlock.setTitleValue(bConst ? "TRUE" : "FALSE", "const");
-              declareBlock.setTitleValue(ctype, "type");
+              typeBlock.setTitleValue(bStatic ? "TRUE" : "FALSE", "static");
+              typeBlock.setTitleValue(bConst ? "TRUE" : "FALSE", "const");
+              typeBlock.setTitleValue(ctype, "type");
 
-              return declareBlock;
+              return typeBlock;
             },
             
-            compose : function(declareBlock) {
-              var name;
+            compose : function(typeBlock) {
               var bStatic;
               var bConst;
               var declarators;
@@ -312,10 +321,9 @@ qx.Class.define("playground.view.Blockly",
               var bPlural = false;
               
               // Retrieve the values from this block
-              name = declareBlock.getTitleValue("name");
-              bStatic = declareBlock.getTitleValue("static") !== "FALSE";
-              bConst = declareBlock.getTitleValue("const") !== "FALSE";
-              declarators = declareBlock.getInput("declarators");
+              bStatic = typeBlock.getTitleValue("static") !== "FALSE";
+              bConst = typeBlock.getTitleValue("const") !== "FALSE";
+              declarators = typeBlock.getInput("declarators");
               
               // Create a single string corresponding to all of the declarators
               declaratorList = [];
@@ -349,10 +357,9 @@ qx.Class.define("playground.view.Blockly",
                 delete declaratorList[declaratorList.indexOf("")];
               }
 
-              ctype = declareBlock.getTitleValue("type");
+              ctype = typeBlock.getTitleValue("type");
               
               // Set those values in the block editor
-              this.setTitleValue(name, "name");
               this.setTitleValue(bStatic ? "static" : "", "static");
               this.setTitleValue(bConst ? "const" : "", "const");
               this.setTitleValue(declaratorList.join(" "), "declarators");
@@ -360,18 +367,13 @@ qx.Class.define("playground.view.Blockly",
             }
           };
 
-          // Used in mutator for "declare" block
-          Blockly.Language["declare_editor"] = {
+          // Used in mutator for "type" block
+          Blockly.Language["type_editor"] = {
             helpUrl: 'http://www.example.com/',
             init: function() {
               this.setColour(32);
-              this.appendDummyInput()
-                  .appendTitle("declare variable");
-              this.appendDummyInput()
-                  .appendTitle(new Blockly.FieldTextInput("NAME"), "name");
-              this.appendDummyInput()
-                  .appendTitle("as:");
-              this.appendStatementInput("declarators");
+              this.appendStatementInput("declarators")
+                  .appendTitle("type");
               this.appendDummyInput()
                   .appendTitle("static", null)
                   .appendTitle(new Blockly.FieldCheckbox("FALSE"), "static");
@@ -401,7 +403,7 @@ qx.Class.define("playground.view.Blockly",
             }
           };
 
-          // Used in mutator for "declare" block
+          // Used in mutator for "type" block
           Blockly.Language["pointer_to"] = {
             helpUrl: 'http://www.example.com/',
             init: function() {
@@ -414,7 +416,7 @@ qx.Class.define("playground.view.Blockly",
             }
           };
 
-          // Used in mutator for "declare" block
+          // Used in mutator for "type" block
           Blockly.Language["array_of"] = {
             helpUrl: 'http://www.example.com/',
             init: function() {
@@ -435,41 +437,251 @@ qx.Class.define("playground.view.Blockly",
               this.appendDummyInput()
                   .appendTitle("function")
                   .appendTitle(new Blockly.FieldTextInput("NAME"), "name");
-              this.appendDummyInput()
-                  .appendTitle("local variables");
-              this.appendStatementInput("declarations")
+              this.appendValueInput("result_type")
+                  .appendTitle("produces result type")
+                  .setCheck("Type");
+              this.appendStatementInput("inputs")
+                  .appendTitle("inputs")
                   .setCheck("Declaration");
-              this.appendDummyInput()
-                  .appendTitle("do");
+              this.appendStatementInput("declarations")
+                  .appendTitle("local variables", "local_vars")
+                  .setCheck("Declaration");
               this.appendStatementInput("statements")
+                .appendTitle("do")
                 .setCheck([
                             "Statement", 
-                            "Return with output",
-                            "Return without output" 
+                            "Return with result",
+                            "Return without result" 
                           ]);
               this.setTooltip('');
+              this.setInputsInline(true);
+              this.setMutator(new Blockly.Mutator([]));
+            },
+            
+            decompose : function(workspace) {
+              var functionBlock = new Blockly.Block(workspace,
+                                                    'function_editor');
+
+              functionBlock.initSvg();
+              
+              // Set editor values based on the current function settings
+              functionBlock.setTitleValue(
+                this.getInput("inputs") !== null ? "TRUE" : "FALSE", 
+                "has_inputs");
+              functionBlock.setTitleValue(
+                this.getInput("result_type") !== null ? "TRUE" : "FALSE", 
+                "has_result");
+              functionBlock.setTitleValue(
+                this.getInput("declarations") !== null ? "TRUE" : "FALSE", 
+                "has_local_vars");
+
+              return functionBlock;
+            },
+            
+            compose : function(functionBlock) {
+              var i;
+              var names;
+              var input;
+              var bHasResult =
+                functionBlock.getTitleValue("has_result") == "TRUE";
+              var bHasInputs =
+                functionBlock.getTitleValue("has_inputs") == "TRUE";
+              var bHasLocalVars =
+                functionBlock.getTitleValue("has_local_vars") == "TRUE";
+              
+              //
+              // result_type
+              //
+
+              // If the function will not produce a result, then...
+              input = this.getInput("result_type");
+              if (! bHasResult)
+              {
+                // If it currently produces a result...
+                if (input)
+                {
+                  // ... then remove any child blocks, ...
+                  if (input.connection.targetConnection)
+                  {
+                    input.connection.targetConnection.sourceBlock_.unplug(
+                      false, true);
+                  }
+                  
+                  // ... and then remove the input
+                  this.removeInput("result_type");
+                }
+              }
+              else
+              {
+                // The function must produce a result. If it currently doesn't..
+                if (! input)
+                {
+                  // ... then add a result
+                  this.appendValueInput("result_type")
+                    .appendTitle("produces result type")
+                    .setCheck("Type");
+                  
+                  // Figure out where to insert it. Put it as low as possible.
+                  names = 
+                    [
+                      "inputs",
+                      "declarations",
+                      "statements"
+                    ];
+                  for (i = 0; i < names.length; i++)
+                  {
+                    if (this.getInput(names[i]))
+                    {
+                      this.moveInputBefore("result_type", names[i]);
+                      break;
+                    }
+                  }
+                }
+              }
+              
+              //
+              // inputs
+              //
+
+              // If the function will not produce a result, then...
+              input = this.getInput("inputs");
+              if (! bHasInputs)
+              {
+                // If it currently has inputs...
+                if (input)
+                {
+                  // ... then remove any child blocks, ...
+                  if (input.connection.targetConnection)
+                  {
+                    input.connection.targetConnection.sourceBlock_.unplug(
+                      false, true);
+                  }
+                  
+                  // ... and then remove the input
+                  this.removeInput("inputs");
+                }
+              }
+              else
+              {
+                // The function must have inputs. If it currently doesn't..
+                if (! input)
+                {
+                  // ... then add a statement input
+                  this.appendStatementInput("inputs")
+                    .appendTitle("inputs")
+                    .setCheck("Declaration");
+                  
+                  // Figure out where to insert it. Put it as low as possible.
+                  names = 
+                    [
+                      "declarations",
+                      "statements"
+                    ];
+                  for (i = 0; i < names.length; i++)
+                  {
+                    if (this.getInput(names[i]))
+                    {
+                      this.moveInputBefore("inputs", names[i]);
+                      break;
+                    }
+                  }
+                }
+              }
+
+              //
+              // local variables (declarations)
+              //
+
+              // If the function will not produce a result, then...
+              input = this.getInput("declarations");
+              if (! bHasLocalVars)
+              {
+                // If it currently has local variables...
+                if (input)
+                {
+                  // ... then remove any child blocks, ...
+                  if (input.connection.targetConnection)
+                  {
+                    input.connection.targetConnection.sourceBlock_.unplug(
+                      false, true);
+                  }
+                  
+                  // ... and then remove the input
+                  this.removeInput("declarations");
+                }
+              }
+              else
+              {
+                // The function must have local vars. If it currently doesn't..
+                if (! input)
+                {
+                  // ... then add a statement input
+                  this.appendStatementInput("declarations")
+                    .appendTitle("local variables")
+                    .setCheck("Declaration");
+                  
+                  // Figure out where to insert it. Put it as low as possible.
+                  names = 
+                    [
+                      "statements"
+                    ];
+                  for (i = 0; i < names.length; i++)
+                  {
+                    if (this.getInput(names[i]))
+                    {
+                      this.moveInputBefore("declarations", names[i]);
+                      break;
+                    }
+                  }
+                }
+              }
             }
           };
 
-          Blockly.Language["return_with_output"] = {
+          Blockly.Language["function_editor"] = {
             helpUrl: 'http://www.example.com/',
             init: function() {
               this.setColour(290);
               this.appendDummyInput()
-                  .appendTitle("leave function giving output");
-              this.appendValueInput("retval");
-              this.setPreviousStatement(true, "Return with output");
+                .appendTitle("function");
+              this.appendDummyInput()
+                .setAlign(Blockly.ALIGN_RIGHT)
+                .appendTitle("produces a result")
+                .appendTitle(new Blockly.FieldCheckbox("FALSE"),
+                             "has_result");
+              this.appendDummyInput()
+                .setAlign(Blockly.ALIGN_RIGHT)
+                .appendTitle("receives inputs")
+                .appendTitle(new Blockly.FieldCheckbox("FALSE"),
+                             "has_inputs");
+              this.appendDummyInput()
+                .setAlign(Blockly.ALIGN_RIGHT)
+                .appendTitle("has local variables")
+                .appendTitle(new Blockly.FieldCheckbox("FALSE"),
+                             "has_local_vars");
               this.setTooltip('');
             }
           };
 
-          Blockly.Language["return_no_output"] = {
+          Blockly.Language["return_with_result"] = {
             helpUrl: 'http://www.example.com/',
             init: function() {
               this.setColour(290);
               this.appendDummyInput()
-                  .appendTitle("leave function without output");
-              this.setPreviousStatement(true, "Return without output");
+                  .appendTitle("leave function producing result");
+              this.appendValueInput("retval");
+              this.setPreviousStatement(true, "Return with result");
+              this.setTooltip('');
+            }
+          };
+
+          Blockly.Language["return_no_result"] = {
+            helpUrl: 'http://www.example.com/',
+            init: function() {
+              this.setColour(290);
+              this.appendDummyInput()
+                  .appendTitle("leave function without result");
+              this.setPreviousStatement(true, "Return without result");
               this.setTooltip('');
             }
           };
@@ -534,10 +746,15 @@ qx.Class.define("playground.view.Blockly",
                   "    <block type='controls_if'></block>" +
                   "    <block type='controls_repeat'></block>" +
                   "    <block type='globals'></block>" +
-                  "    <block type='declare'></block>" +
+                  "    <block type='declare'> " +
+                  "      <value name='type'>" +
+                  "        <block type='type'></block>" +
+                  "      </value>" +
+                  "    </block>" +
+                  "    <block type='type'></block>" +
                   "    <block type='function'></block>" +
-                  "    <block type='return_with_output'></block>" +
-                  "    <block type='return_no_output'></block>" +
+                  "    <block type='return_with_result'></block>" +
+                  "    <block type='return_no_result'></block>" +
                   "  </category>" +
                   "  <category name='Others'>" +
                   "    <block type='logic_compare'></block>" +
