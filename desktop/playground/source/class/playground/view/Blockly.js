@@ -171,6 +171,54 @@ qx.Class.define("playground.view.Blockly",
      * @lint ignoreUndefined(Blockly,require)
      */
     __onEditorAppear : function() {
+      function addRemoveInput(inputName, bExists, fAppendInput, insertBefore)
+      {
+        var             i;
+        var             input;
+
+        // See if the input field exists
+        input = this.getInput(inputName);
+        if (! bExists)
+        {
+          // If it currently does...
+          if (input)
+          {
+            // ... then remove any child blocks, ...
+            if (input.connection.targetConnection)
+            {
+              input.connection.targetConnection.sourceBlock_.unplug(
+                false, true);
+            }
+
+            // ... and then remove the input
+            this.removeInput(inputName);
+          }
+        }
+        else
+        {
+          // The function must include this input. If it currently doesn't..
+          if (! input)
+          {
+            // ... then add it
+            fAppendInput.call(this);
+
+            // If it needs to go someplace other than the very end...
+            if (insertBefore)
+            {
+              // Figure out where to insert it. Put it as low as possible.
+              for (i = 0; i < insertBefore.length; i++)
+              {
+                if (this.getInput(insertBefore[i]))
+                {
+                  this.moveInputBefore(inputName, insertBefore[i]);
+                  break;
+                }
+              }
+            }
+          }
+        }
+      }
+
       // timout needed for chrome to not get the ACE layout wrong and show the
       // text on top of the gutter
       qx.event.Timer.once(
@@ -446,7 +494,7 @@ qx.Class.define("playground.view.Blockly",
               this.appendStatementInput("declarations")
                   .appendTitle("local variables", "local_vars")
                   .setCheck("Declaration");
-              this.appendStatementInput("statements")
+              this.appendStatementInput("body")
                 .appendTitle("do")
                 .setCheck([
                             "Statement", 
@@ -479,9 +527,6 @@ qx.Class.define("playground.view.Blockly",
             },
             
             compose : function(functionBlock) {
-              var i;
-              var names;
-              var input;
               var bHasResult =
                 functionBlock.getTitleValue("has_result") == "TRUE";
               var bHasInputs =
@@ -489,152 +534,41 @@ qx.Class.define("playground.view.Blockly",
               var bHasLocalVars =
                 functionBlock.getTitleValue("has_local_vars") == "TRUE";
               
-              //
-              // result_type
-              //
-
-              // If the function will not produce a result, then...
-              input = this.getInput("result_type");
-              if (! bHasResult)
-              {
-                // If it currently produces a result...
-                if (input)
-                {
-                  // ... then remove any child blocks, ...
-                  if (input.connection.targetConnection)
-                  {
-                    input.connection.targetConnection.sourceBlock_.unplug(
-                      false, true);
-                  }
-                  
-                  // ... and then remove the input
-                  this.removeInput("result_type");
-                }
-              }
-              else
-              {
-                // The function must produce a result. If it currently doesn't..
-                if (! input)
-                {
-                  // ... then add a result
+              // add or remove result_type
+              addRemoveInput.call(
+                this,
+                "result_type", 
+                bHasResult,
+                function() {
                   this.appendValueInput("result_type")
                     .appendTitle("produces result type")
                     .setCheck("Type");
-                  
-                  // Figure out where to insert it. Put it as low as possible.
-                  names = 
-                    [
-                      "inputs",
-                      "declarations",
-                      "statements"
-                    ];
-                  for (i = 0; i < names.length; i++)
-                  {
-                    if (this.getInput(names[i]))
-                    {
-                      this.moveInputBefore("result_type", names[i]);
-                      break;
-                    }
-                  }
-                }
-              }
+                },
+                [ "inputs", "declarations", "body" ]);
               
-              //
-              // inputs
-              //
-
-              // If the function will not produce a result, then...
-              input = this.getInput("inputs");
-              if (! bHasInputs)
-              {
-                // If it currently has inputs...
-                if (input)
-                {
-                  // ... then remove any child blocks, ...
-                  if (input.connection.targetConnection)
-                  {
-                    input.connection.targetConnection.sourceBlock_.unplug(
-                      false, true);
-                  }
-                  
-                  // ... and then remove the input
-                  this.removeInput("inputs");
-                }
-              }
-              else
-              {
-                // The function must have inputs. If it currently doesn't..
-                if (! input)
-                {
-                  // ... then add a statement input
+              // add or remove inputs
+              addRemoveInput.call(
+                this,
+                "inputs", 
+                bHasInputs,
+                function() {
                   this.appendStatementInput("inputs")
                     .appendTitle("inputs")
                     .setCheck("Declaration");
-                  
-                  // Figure out where to insert it. Put it as low as possible.
-                  names = 
-                    [
-                      "declarations",
-                      "statements"
-                    ];
-                  for (i = 0; i < names.length; i++)
-                  {
-                    if (this.getInput(names[i]))
-                    {
-                      this.moveInputBefore("inputs", names[i]);
-                      break;
-                    }
-                  }
-                }
-              }
+                },
+                [ "declarations", "body" ]);
 
-              //
-              // local variables (declarations)
-              //
-
-              // If the function will not produce a result, then...
-              input = this.getInput("declarations");
-              if (! bHasLocalVars)
-              {
-                // If it currently has local variables...
-                if (input)
-                {
-                  // ... then remove any child blocks, ...
-                  if (input.connection.targetConnection)
-                  {
-                    input.connection.targetConnection.sourceBlock_.unplug(
-                      false, true);
-                  }
-                  
-                  // ... and then remove the input
-                  this.removeInput("declarations");
-                }
-              }
-              else
-              {
-                // The function must have local vars. If it currently doesn't..
-                if (! input)
-                {
-                  // ... then add a statement input
+              // add or remove local variables (declarations)
+              addRemoveInput.call(
+                this,
+                "declarations", 
+                bHasLocalVars,
+                function() {
                   this.appendStatementInput("declarations")
                     .appendTitle("local variables")
                     .setCheck("Declaration");
-                  
-                  // Figure out where to insert it. Put it as low as possible.
-                  names = 
-                    [
-                      "statements"
-                    ];
-                  for (i = 0; i < names.length; i++)
-                  {
-                    if (this.getInput(names[i]))
-                    {
-                      this.moveInputBefore("declarations", names[i]);
-                      break;
-                    }
-                  }
-                }
-              }
+                },
+                [ "body" ]);
             }
           };
 
@@ -646,17 +580,17 @@ qx.Class.define("playground.view.Blockly",
                 .appendTitle("function");
               this.appendDummyInput()
                 .setAlign(Blockly.ALIGN_RIGHT)
-                .appendTitle("produces a result")
+                .appendTitle("produces a result?")
                 .appendTitle(new Blockly.FieldCheckbox("FALSE"),
                              "has_result");
               this.appendDummyInput()
                 .setAlign(Blockly.ALIGN_RIGHT)
-                .appendTitle("receives inputs")
+                .appendTitle("receives inputs?")
                 .appendTitle(new Blockly.FieldCheckbox("FALSE"),
                              "has_inputs");
               this.appendDummyInput()
                 .setAlign(Blockly.ALIGN_RIGHT)
-                .appendTitle("has local variables")
+                .appendTitle("has local variables?")
                 .appendTitle(new Blockly.FieldCheckbox("FALSE"),
                              "has_local_vars");
               this.setTooltip('');
@@ -668,7 +602,7 @@ qx.Class.define("playground.view.Blockly",
             init: function() {
               this.setColour(290);
               this.appendDummyInput()
-                  .appendTitle("leave function producing result");
+                .appendTitle("leave function producing result");
               this.appendValueInput("retval");
               this.setPreviousStatement(true, "Return with result");
               this.setTooltip('');
@@ -680,8 +614,117 @@ qx.Class.define("playground.view.Blockly",
             init: function() {
               this.setColour(290);
               this.appendDummyInput()
-                  .appendTitle("leave function without result");
+                .appendTitle("leave function without result");
               this.setPreviousStatement(true, "Return without result");
+              this.setTooltip('');
+            }
+          };
+
+          Blockly.Language["loop"] = {
+            helpUrl: 'http://www.example.com/',
+            init: function() {
+              this.setColour(120);
+              this.appendDummyInput()
+                 .appendTitle("loop");
+              this.appendValueInput("condition")
+                .appendTitle("while true:")
+                .setCheck("Expression");
+              this.appendStatementInput("body")
+                .appendTitle("do")
+                .setCheck("Statement");
+              this.setInputsInline(true);
+              this.setPreviousStatement(true);
+              this.setNextStatement(true);
+              this.setTooltip('');
+              this.setMutator(new Blockly.Mutator([]));
+            },
+            
+            decompose : function(workspace) {
+              var loopBlock = new Blockly.Block(workspace, 'loop_editor');
+
+              loopBlock.initSvg();
+              
+              // Set editor values based on the current function settings
+              loopBlock.setTitleValue(
+                this.getInput("initialize") !== null ? "TRUE" : "FALSE", 
+                "has_initialize");
+              loopBlock.setTitleValue(
+                this.getInput("condition") !== null ? "TRUE" : "FALSE", 
+                "has_condition");
+              loopBlock.setTitleValue(
+                this.getInput("after_each") !== null ? "TRUE" : "FALSE", 
+                "has_after_each");
+
+              return loopBlock;
+            },
+            
+            compose : function(loopBlock) {
+              var bHasInitialize =
+                loopBlock.getTitleValue("has_initialize") == "TRUE";
+              var bHasCondition =
+                loopBlock.getTitleValue("has_condition") == "TRUE";
+              var bHasAfterEach =
+                loopBlock.getTitleValue("has_after_each") == "TRUE";
+              
+              // add or remove initialization
+              addRemoveInput.call(
+                this,
+                "initialize", 
+                bHasInitialize,
+                function() {
+                  this.appendStatementInput("initialize")
+                    .appendTitle("initialize")
+                    .setCheck("Statement");
+                },
+                [ "condition", "body" ]);
+              
+              // add or remove the condition
+              addRemoveInput.call(
+                this,
+                "condition", 
+                bHasCondition,
+                function() {
+                  this.appendValueInput("condition")
+                    .appendTitle("while true:")
+                    .setCheck("Expression");
+                },
+                [ "body" ]);
+              
+              // add or remove after-each-iteration
+              addRemoveInput.call(
+                this,
+                "after_each", 
+                bHasAfterEach,
+                function() {
+                  this.appendStatementInput("after_each")
+                    .appendTitle("after each iteration")
+                    .setCheck("Statement");
+                },
+                null);
+            }
+          };
+
+          Blockly.Language["loop_editor"] = {
+            helpUrl: 'http://www.example.com/',
+            init: function() {
+              this.setColour(120);
+              this.appendDummyInput()
+                .appendTitle("loop");
+              this.appendDummyInput()
+                .setAlign(Blockly.ALIGN_RIGHT)
+                .appendTitle("requires initialization?")
+                .appendTitle(new Blockly.FieldCheckbox("FALSE"),
+                             "has_initialize");
+              this.appendDummyInput()
+                .setAlign(Blockly.ALIGN_RIGHT)
+                .appendTitle("loop terminates on a condition?")
+                .appendTitle(new Blockly.FieldCheckbox("FALSE"),
+                             "has_condition");
+              this.appendDummyInput()
+                .setAlign(Blockly.ALIGN_RIGHT)
+                .appendTitle("requires post-iteration code?")
+                .appendTitle(new Blockly.FieldCheckbox("FALSE"),
+                             "has_after_each");
               this.setTooltip('');
             }
           };
@@ -755,6 +798,7 @@ qx.Class.define("playground.view.Blockly",
                   "    <block type='function'></block>" +
                   "    <block type='return_with_result'></block>" +
                   "    <block type='return_no_result'></block>" +
+                  "    <block type='loop'></block>" +
                   "  </category>" +
                   "  <category name='Others'>" +
                   "    <block type='logic_compare'></block>" +
