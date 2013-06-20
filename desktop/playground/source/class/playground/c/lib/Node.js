@@ -3191,7 +3191,6 @@ qx.Class.define("playground.c.lib.Node",
               // It's not a return code. Re-throw the error
               this._throwIt(error, succ, fail);
             }
-
           }.bind(this),
         
           success,
@@ -5617,11 +5616,13 @@ qx.Class.define("playground.c.lib.Node",
     __assignHelper : function(data, fOp, bUseOld, 
                               success, failure, bUnary, bPostOp)
     {
+      var             i;
       var             type;
       var             value;
       var             value1;
       var             value3;
-      var             multiplier = 1;
+      var             size;
+      var             initializerList;
       var             specOrDecl;
       var             specAndDecl;
       var             bFirst;
@@ -5662,10 +5663,10 @@ qx.Class.define("playground.c.lib.Node",
             {
             case "pointer" :
             case "function" :
-            case "array" :
               type = "pointer";
               break;
 
+            case "array" :
             case "address" :
               // Find out the type based on the next specifier/declarator
               if (bFirst)
@@ -5713,8 +5714,7 @@ qx.Class.define("playground.c.lib.Node",
             {
               // ... then figure out the size of what's pointed to
               specAndDecl = value1.specAndDecl.slice(1);
-              multiplier =
-                specAndDecl[0].calculateByteCount(1, specAndDecl, 0);
+              size = specAndDecl[0].calculateByteCount(1, specAndDecl, 0);
             }
 
             value3 = 
@@ -5723,44 +5723,109 @@ qx.Class.define("playground.c.lib.Node",
                 specAndDecl : [ new playground.c.lib.Specifier("int") ]
               };
             
-            saveAndReturn.bind(this)();
+            saveAndReturn.bind(this)(success);
+            return;
           }
           else
           {
-            this.children[1].process(
-              data,
-              true,
-              function(v)
+            if (this.children[1].type != "initializer_list")
+            {
+              this.children[1].process(
+                data,
+                true,
+                initializeValue.bind(this, success),
+                failure);
+              return;
+            }
+            else
+            {
+              initializerList = this.children[1].children;
+              
+              // Ensure the lvalue is a non-scalar if more than one initializer
+              if (initializerList.length > 1)
               {
-                var             specAndDecl;
+                // FIXME: implement this test.
+              }
+              
+              // Ensure there are no more initializers than a fixed array length
+              if (((! (specAndDecl[0] instanceof playground.c.lib.Declarator) &&
+                    initializerList.length > 1)) ||
+                  ((specAndDecl[0] instanceof playground.c.lib.Declarator &&
+                    initializerList.length > specAndDecl[0].getArrayCount())))
+              {
+                // FIXME: implement this
+                console.log("too many initializers");
+              }
 
-                if (typeof v != "undefined")
-                {
-                  value3 = this.getExpressionValue(v, data);
+              // If we're initializing an array, find out the type of each
+              // element of the array
+              
 
-                  // If the value being assigned to is a pointer and the
-                  // RHS's type is some sort of int...
-                  if ((value1.specAndDecl[0].getType() == "pointer" ||
-                       value1.specAndDecl[0].getType() == "array") &&
-                      value3.specAndDecl[0] .getType() == "int")
+              if (initializerList.length > 0)
+              {
+                i = 0;
+                initializerList[i].process(
+                  data,
+                  true,
+                  function(v)
                   {
-                    // ... then figure out the size of what's pointed to
-                    specAndDecl = value1.specAndDecl.slice(1);
-                    multiplier =
-                      specAndDecl[0].calculateByteCount(1, specAndDecl, 0);
-                  }
+                    var             fSelf = arguments.callee;
 
-                  saveAndReturn.bind(this)();
-                }
-                else
-                {
-                  success();
-                }
-              }.bind(this),
-              failure);
+                    initializeValue.call(
+                      this,
+                      function()
+                      {
+                        if (++i < initializerList.length)
+                        {
+                          initializerList[i].process(
+                            data,
+                            true,
+                            fSelf.bind(this),
+                            failure);
+                        }
+                        else
+                        {
+                          success();
+                        }
+                      }.bind(this),
+                      v);
+                  }.bind(this),
+                  failure);
+              }
+              else
+              {
+                success();
+              }
+            }
           }
 
-          function saveAndReturn()
+          function initializeValue(succ, v)
+          {
+            var             specAndDecl;
+
+            if (typeof v != "undefined")
+            {
+              value3 = this.getExpressionValue(v, data);
+
+              // If the value being assigned to is a pointer and the
+              // RHS's type is some sort of int...
+              if ((value1.specAndDecl[0].getType() == "pointer" ||
+                   value1.specAndDecl[0].getType() == "array") &&
+                  value3.specAndDecl[0] .getType() == "int")
+              {
+                // ... then figure out the size of what's pointed to
+                specAndDecl = value1.specAndDecl.slice(1);
+                size = specAndDecl[0].calculateByteCount(1, specAndDecl, 0);
+              }
+
+              saveAndReturn.bind(this)(succ);
+            }
+            else
+            {
+              succ();
+            }
+          }
+          function saveAndReturn(succ)
           {
             // Ensure they're not writing to a constant
             if (! data.bIsInitializer && 
@@ -5786,7 +5851,7 @@ qx.Class.define("playground.c.lib.Node",
                 new playground.c.lib.Declarator(this, "address"));
 
               // Return the address of the struct
-              success(
+              succ(
                 {
                   value       : value1.value,
                   specAndDecl : specAndDecl
@@ -5799,7 +5864,7 @@ qx.Class.define("playground.c.lib.Node",
             playground.c.lib.Node.__mem.set(
               value1.value,
               type,
-              fOp(value, value3.value * multiplier));
+              fOp(value, value3.value));
 
             // If this is not a post-increment or post-decrement...
             if (! bPostOp)
@@ -5820,8 +5885,12 @@ qx.Class.define("playground.c.lib.Node",
                 new playground.c.lib.Declarator(this, "address"));
             }
 
+            // Increment the address by the size of this element, in case
+            // we're in an initializer list.
+            value1.value += size;
+
             // Retrieve the value and return it
-            success(
+            succ(
               {
                 value       : value,
                 specAndDecl : specAndDecl.slice(0)
