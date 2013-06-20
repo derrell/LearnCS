@@ -620,7 +620,7 @@ qx.Class.define("playground.view.Blockly",
             }
           };
 
-          Blockly.Language["loop"] = {
+          Blockly.Language["for_loop"] = {
             helpUrl: 'http://www.example.com/',
             init: function() {
               this.setColour(120);
@@ -633,14 +633,14 @@ qx.Class.define("playground.view.Blockly",
                 .appendTitle("do")
                 .setCheck("Statement");
               this.setInputsInline(true);
-              this.setPreviousStatement(true);
-              this.setNextStatement(true);
+              this.setPreviousStatement(true, "Statement");
+              this.setNextStatement(true, "Statement");
               this.setTooltip('');
               this.setMutator(new Blockly.Mutator([]));
             },
             
             decompose : function(workspace) {
-              var loopBlock = new Blockly.Block(workspace, 'loop_editor');
+              var loopBlock = new Blockly.Block(workspace, 'for_loop_editor');
 
               loopBlock.initSvg();
               
@@ -704,7 +704,7 @@ qx.Class.define("playground.view.Blockly",
             }
           };
 
-          Blockly.Language["loop_editor"] = {
+          Blockly.Language["for_loop_editor"] = {
             helpUrl: 'http://www.example.com/',
             init: function() {
               this.setColour(120);
@@ -725,6 +725,23 @@ qx.Class.define("playground.view.Blockly",
                 .appendTitle("requires post-iteration code?")
                 .appendTitle(new Blockly.FieldCheckbox("FALSE"),
                              "has_after_each");
+              this.setTooltip('');
+            }
+          };
+
+          Blockly.Language["do_while_loop"] = {
+            helpUrl: 'http://www.example.com/',
+            init: function() {
+              this.setColour(120);
+              this.appendDummyInput()
+                .appendTitle("loop at least once");
+              this.appendStatementInput("body")
+                .appendTitle("do");
+              this.appendValueInput("condition")
+                .appendTitle("while true:");
+              this.setInputsInline(true);
+              this.setPreviousStatement(true, "Statement");
+              this.setNextStatement(true, "Statement");
               this.setTooltip('');
             }
           };
@@ -798,7 +815,8 @@ qx.Class.define("playground.view.Blockly",
                   "    <block type='function'></block>" +
                   "    <block type='return_with_result'></block>" +
                   "    <block type='return_no_result'></block>" +
-                  "    <block type='loop'></block>" +
+                  "    <block type='for_loop'></block>" +
+                  "    <block type='do_while_loop'></block>" +
                   "  </category>" +
                   "  <category name='Others'>" +
                   "    <block type='logic_compare'></block>" +
