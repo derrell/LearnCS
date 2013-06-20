@@ -761,6 +761,49 @@ qx.Class.define("playground.view.Blockly",
           */
 
 
+          /*
+           * Redefine Blockly's checkType_ function to prevent promiscuous
+           * blocks (those which do not specify a type) from connecting when
+           * the other connection requires a specific type.
+           *
+           * We also, here, allow a function to be provided (instead of just a
+           * string), for more sophisticated checks.
+           */
+          Blockly.Connection.prototype.checkType_ = function(otherConnection) {
+            if (false) {        // original code
+              if (!this.check_ || !otherConnection.check_) {
+                // One or both sides are promiscuous enough that anything will
+                // fit.
+                return true;
+              }
+            } else {            // djl code
+              // allow connection if both blocks are promiscuous
+              if (!this.check_ && !otherConnection.check_) {
+                return true;
+              }
+              
+              // disallow connection if only one block is promiscuous
+              if ((!this.check_ && otherConnection.check_) ||
+                  (this.check_ && !otherConnection.check_)) {
+                return false;
+              }
+            }
+            // Find any intersection in the check lists.
+            for (var x = 0; x < this.check_.length; x++) {
+              if (this.check_[x] instanceof Function) {
+                if (this.check_[x].call(this, otherConnection)) {
+                  return true;
+                }
+              } else {
+                if (otherConnection.check_.indexOf(this.check_[x]) != -1) {
+                  return true;
+                }
+              }
+            }
+            // No intersection.
+            return false;
+          };
+
           // Reduce default font sizes
           Blockly.Css.CONTENT =
             Blockly.Css.CONTENT.map(
