@@ -5697,6 +5697,9 @@ qx.Class.define("playground.c.lib.Node",
             break;
           } while (true);
 
+          // Get a copy of the original specifier/declarator list again
+          specAndDecl = value1.specAndDecl.slice(0);
+
           // Retrieve the current value
           if (type != "struct" && type != "union" && type != "enum")
           {
@@ -5810,11 +5813,21 @@ qx.Class.define("playground.c.lib.Node",
               // If the value being assigned to is a pointer and the
               // RHS's type is some sort of int...
               if ((value1.specAndDecl[0].getType() == "pointer" ||
-                   value1.specAndDecl[0].getType() == "array") &&
-                  value3.specAndDecl[0] .getType() == "int")
+                   value1.specAndDecl[0].getType() == "array")
+/*
+                &&
+                  value3.specAndDecl[0] .getType() == "int"
+*/
+                )
               {
                 // ... then figure out the size of what's pointed to
                 specAndDecl = value1.specAndDecl.slice(1);
+                size = specAndDecl[0].calculateByteCount(1, specAndDecl, 0);
+              }
+              else
+              {
+                // otherwise, get the size of the thing itself.
+                specAndDecl = value1.specAndDecl.slice(0);
                 size = specAndDecl[0].calculateByteCount(1, specAndDecl, 0);
               }
 
