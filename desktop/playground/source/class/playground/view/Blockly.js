@@ -171,6 +171,13 @@ qx.Class.define("playground.view.Blockly",
      * @lint ignoreUndefined(Blockly,require)
      */
     __onEditorAppear : function() {
+
+      /*
+       * Add an input field if it doesn't exist and should;
+       * Remove it if it exists but shouldn't.
+       * 
+       * @param inputName {String}
+       */
       function addRemoveInput(inputName, bExists, fAppendInput, insertBefore)
       {
         var             i;
