@@ -212,6 +212,7 @@ qx.Class.define("playground.c.lib.Declarator",
         }
         break;
         
+      case "address" :
       case "function" :
       case "pointer" :
       case "builtIn" :
