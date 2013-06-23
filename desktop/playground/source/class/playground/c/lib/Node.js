@@ -106,10 +106,10 @@ qx.Class.define("playground.c.lib.Node",
     _currentNode : null,
 
     /** Maximum number of recursive calls before unwind */
-    _unwindInit : 10,
+    _unwindInit : 0,            // initialized in defer
 
     /** Number of recursive calls remaining before we must unwind via timeout */
-    _unwindCount : null,        // initialized in defer
+    _unwindCount : 0,           // initialized in defer
 
     /** Depth of function call, for activation record name */
     _depth : 0,
@@ -578,6 +578,32 @@ qx.Class.define("playground.c.lib.Node",
       // Make the current node available globally
       playground.c.lib.Node._currentNode = this;
 
+      // Save the arguments to this function
+      args = qx.lang.Array.cast(arguments, Array);
+
+      if (playground.c.lib.Node._unwindCount-- === 0)
+      {
+        // There's no breakpoint. Reset the unwind count.
+        playground.c.lib.Node._unwindCount =
+          playground.c.lib.Node._unwindInit;
+
+        // Unwind the stack by executing via timeout to continue shortly.
+        window.setTimeout(
+          function()
+          {
+            try
+            {
+              this.process.apply(this, args);
+            }
+            catch(e)
+            {
+              failure(e);
+            }
+          }.bind(this),
+          0);
+        return;
+      }
+
       if (bExecuting)
       {
         function displayMemoryTemplateView()
@@ -650,9 +676,6 @@ qx.Class.define("playground.c.lib.Node",
           // Save the current line to prevent reentry until line number changes
           playground.c.lib.Node._prevLine = this.line;
           
-          // Save the arguments to this function
-          args = qx.lang.Array.cast(arguments, Array);
-
           // Do we need to stop at a breakpoint?
           breakpoints = editor.getBreakpoints();
 
@@ -753,56 +776,6 @@ qx.Class.define("playground.c.lib.Node",
                     }
                   },
                 this);
-            return;
-          }
-          else if (playground.c.lib.Node._unwindCount-- === 0)
-          {
-            // There's no breakpoint. Reset the unwind count.
-            playground.c.lib.Node._unwindCount =
-              playground.c.lib.Node._unwindInit;
-
-            // Unwind the stack by executing via timeout to continue shortly.
-            window.setTimeout(
-              function()
-              {
-                try
-                {
-                  this.process.apply(this, args);
-                }
-                catch(e)
-                {
-                  failure(e);
-                }
-              }.bind(this),
-              0);
-            return;
-          }
-        }
-        else if (! memTemplate)
-        {
-          if (playground.c.lib.Node._unwindCount-- === 0)
-          {
-            // There's no breakpoint. Reset the unwind count.
-            playground.c.lib.Node._unwindCount =
-              playground.c.lib.Node._unwindInit;
-
-            // Save the arguments to this function
-            args = qx.lang.Array.cast(arguments, Array);
-
-            // Unwind the stack by executing via timeout to continue shortly.
-            window.setTimeout(
-              function(userData, timerId)
-              {
-                try
-                {
-                  this.process.apply(this, args);
-                }
-                catch(e)
-                {
-                  failure(e);
-                }
-              }.bind(this),
-              0);
             return;
           }
         }
@@ -6119,7 +6092,35 @@ qx.Class.define("playground.c.lib.Node",
     // Retrieve a reference to memory, for easy access
     playground.c.lib.Node.__mem = playground.c.machine.Memory.getInstance();
 
-    // Initialize the unwind count
+/*
+    // Calculate the maximum recursion count, and use a portion of that for
+    // the maximum recursion that we'll allow in our continuation-passing
+    // style.
+    playground.c.lib.Node._unwindInit =
+      (function()
+       {
+         var             i = 0;
+         
+         try
+         {
+           (function()
+            {
+              ++i;
+              arguments.callee();
+            })();
+         }
+         catch(e)
+         {
+           console.log("e=" + e);
+         }
+         
+         console.log("recursion count: " + i);
+         return i / 50;
+       })();
+*/
+    playground.c.lib.Node._unwindInit = 20;
+
+    // Initialize the counter to begin recursion.
     playground.c.lib.Node._unwindCount = playground.c.lib.Node._unwindInit;
   }
 });
