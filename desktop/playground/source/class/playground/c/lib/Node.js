@@ -5808,11 +5808,23 @@ qx.Class.define("playground.c.lib.Node",
               // FIXME: implement this test.
             }
 
-            // Ensure there are no more initializers than a fixed array length
+            // Ensure there is no more than one initializer for a scalar
+// FIXME: finds structs
             if (((! (specAndDecl[0] instanceof playground.c.lib.Declarator) &&
-                  initializerList.length > 1)) ||
-                ((specAndDecl[0] instanceof playground.c.lib.Declarator &&
-                  initializerList.length > specAndDecl[0].getArrayCount())))
+                  initializerList.length > 1)))
+            {
+              // FIXME: implement this
+              failure(
+                new playground.c.lib.RuntimeError(
+                  this,
+                  "There can only be one single initializer; found " +
+                  initializerList.length + " initializers."));
+              return;
+            }
+
+            // Ensure there are no more initializers than a fixed array length
+            if ((specAndDecl[0] instanceof playground.c.lib.Declarator &&
+                 initializerList.length > specAndDecl[0].getArrayCount()))
             {
               // FIXME: implement this
               failure(
