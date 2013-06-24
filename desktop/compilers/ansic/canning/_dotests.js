@@ -315,6 +315,9 @@ var tests =
 */
     {
       name   : "t024-call-int-as-func.c"
+    },
+    {
+      name   : "t025-call-function-via-pointer.c"
     }
   ];
 
