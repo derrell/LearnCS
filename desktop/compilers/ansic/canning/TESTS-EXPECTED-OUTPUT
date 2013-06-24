@@ -598,6 +598,36 @@ int main(int argc, char * argv[])
 }
 
 
+% ../dcc t022-array-initialize.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+a=23 b=23 c[0]=1 c[1]=2 d[0]=3 d[1]=4
+arr55[0]=no
+arr55[1]=first
+arr55[2]=second
+arr55[3]=third
+arr55[4]=fourth
+arr33[0]=hi
+arr33[1]=there
+arr33[2]=world
+arr53[0]=yo!
+arr53[1]=one
+arr53[2]=two
+chars[0]=61=a
+chars[1]=62=b
+chars[2]=63=c
+chars[3]=64=d
+chars[4]=65=e
+chars[5]=00= 
+>>> Program exited with exit code 0
+
+% ../dcc t023-array-initialize-bad-1.c --rootdir=/home/derrell/ME
+ERROR: Error: Command failed: 
+STDOUT: 
+>>> Running program
+Error near line 4: Array size is 2, initializer length is 3. Initializers do not fit in array.
+>>> Program had errors. It did not run to completion.
+
 % ../dcc t024-call-int-as-func.c --rootdir=/home/derrell/ME
 ERROR: Error: Command failed: 
 STDOUT: 

@@ -3500,8 +3500,10 @@ qx.Class.define("playground.c.lib.Node",
 
               // If we're not executing, and we find that the declarator is an
               // array without a length, then determine the length by the number
-              // of children of the initializer_list (child 1). If that node
-              // isn't an initializer_list, then generate a run-time error.
+              // of children of the initializer (child 1). If that node
+              // isn't an initializer_list (or a string_literal, if we're
+              // initializing a character array), then generate a run-time
+              // error.
               if (! bExecuting &&
                   ! data.bIsParameter &&
                   this.type == "init_declarator" &&
@@ -3511,10 +3513,29 @@ qx.Class.define("playground.c.lib.Node",
                   specOrDecl.getType() == "array" &&
                   specOrDecl.getArrayCount() === null)
               {
-                // Array length is unknown. If there's no initializer list...
-                if (this.children[1].type != "initializer_list")
+                // Array length is unknown. If this is a char array and
+                // there's a character string initializer...
+                if (data.entry.getSpecAndDecl().length == 1 &&
+                    data.specifiers &&
+                    data.specifiers.getType() == "int" &&
+                    data.specifiers.getSize() == "char" &&
+                    this.children[1].children.length == 1 &&
+                    this.children[1].children[0].type == "string_literal")
                 {
-                  // ... then generate an error.
+                  // Array length is length of string, including null terminator
+                  specOrDecl.setArrayCount(
+                    this.children[1].children[0].value.length + 1);
+                  
+                }
+                else if (this.children[1].type == "initializer_list")
+                {
+                  // There is an initializer list. Use its length to set the
+                  // array's length.
+                  specOrDecl.setArrayCount(this.children[1].children.length);
+                }
+                else
+                {
+                  // There's no way to ascertain the array length.
                   failure(
                     new playground.c.lib.RuntimeError(
                       this,
@@ -3522,10 +3543,6 @@ qx.Class.define("playground.c.lib.Node",
                       "an array size, nor implicitly with an initializer."));
                   return;
                 }
-
-                // There is an initializer list. Use its length to set the
-                // array's length.
-                specOrDecl.setArrayCount(this.children[1].children.length);
               }
 
               // Add the specifier to the end of the specifier/declarator list
@@ -5669,6 +5686,8 @@ qx.Class.define("playground.c.lib.Node",
       var             value;
       var             value1;
       var             value3;
+      var             addr;
+      var             str;
       var             size;
       var             initializerList;
       var             specOrDecl;
@@ -5777,74 +5796,133 @@ qx.Class.define("playground.c.lib.Node",
             saveAndReturn.bind(this)(success);
             return;
           }
-          else
+          
+          // Not unary. See if we're handling an initializer list
+          if (this.children[1].type == "initializer_list")
           {
-            if (this.children[1].type != "initializer_list")
+            initializerList = this.children[1].children;
+
+            // Ensure the lvalue is a non-scalar if more than one initializer
+            if (initializerList.length > 1)
             {
-              this.children[1].process(
+              // FIXME: implement this test.
+            }
+
+            // Ensure there are no more initializers than a fixed array length
+            if (((! (specAndDecl[0] instanceof playground.c.lib.Declarator) &&
+                  initializerList.length > 1)) ||
+                ((specAndDecl[0] instanceof playground.c.lib.Declarator &&
+                  initializerList.length > specAndDecl[0].getArrayCount())))
+            {
+              // FIXME: implement this
+              failure(
+                new playground.c.lib.RuntimeError(
+                  this,
+                  "Array size is " + specAndDecl[0].getArrayCount() + ", " +
+                  "initializer length is " + 
+                  initializerList.length +
+                  ". Initializers do not fit in array."));
+              return;
+            }
+
+            if (initializerList.length > 0)
+            {
+              i = 0;
+              initializerList[i].process(
                 data,
                 true,
-                initializeValue.bind(this, success),
+                function(v)
+                {
+                  var             fSelf = arguments.callee;
+
+                  initializeValue.call(
+                    this,
+                    function()
+                    {
+                      if (++i < initializerList.length)
+                      {
+                        initializerList[i].process(
+                          data,
+                          true,
+                          fSelf.bind(this),
+                          failure);
+                      }
+                      else
+                      {
+                        success();
+                      }
+                    }.bind(this),
+                    v);
+                }.bind(this),
                 failure);
-              return;
             }
             else
             {
-              initializerList = this.children[1].children;
-              
-              // Ensure the lvalue is a non-scalar if more than one initializer
-              if (initializerList.length > 1)
-              {
-                // FIXME: implement this test.
-              }
-              
-              // Ensure there are no more initializers than a fixed array length
-              if (((! (specAndDecl[0] instanceof playground.c.lib.Declarator) &&
-                    initializerList.length > 1)) ||
-                  ((specAndDecl[0] instanceof playground.c.lib.Declarator &&
-                    initializerList.length > specAndDecl[0].getArrayCount())))
-              {
-                // FIXME: implement this
-                console.log("too many initializers");
-              }
-
-              if (initializerList.length > 0)
-              {
-                i = 0;
-                initializerList[i].process(
-                  data,
-                  true,
-                  function(v)
-                  {
-                    var             fSelf = arguments.callee;
-
-                    initializeValue.call(
-                      this,
-                      function()
-                      {
-                        if (++i < initializerList.length)
-                        {
-                          initializerList[i].process(
-                            data,
-                            true,
-                            fSelf.bind(this),
-                            failure);
-                        }
-                        else
-                        {
-                          success();
-                        }
-                      }.bind(this),
-                      v);
-                  }.bind(this),
-                  failure);
-              }
-              else
-              {
-                success();
-              }
+              success();
             }
+            
+            return;
           }
+
+          // See if we're initializing a char array from a character string
+          if (v instanceof playground.c.lib.SymtabEntry &&
+              v.getSpecAndDecl().length == 2 &&
+              v.getSpecAndDecl() &&
+              (specOrDecl = v.getSpecAndDecl()[0]) &&
+              specOrDecl.getType() == "array" &&
+              (specOrDecl = v.getSpecAndDecl()[1]) &&
+              specOrDecl.getType() == "int" &&
+              specOrDecl.getSize() == "char" &&
+              this.children[1].children.length == 1 &&
+              this.children[1].children[0].type == "string_literal")
+          {
+            // We are. Copy the string in to the array address.
+            // Get a reference to the string, for faster reference
+            str = this.children[1].children[0].value;
+
+            // If we're initializing an array and the initializer is too long...
+            specOrDecl = v.getSpecAndDecl()[0];
+            if (specOrDecl.getType() == "array" &&
+                str.length > specOrDecl.getArrayCount())
+            {
+              // ... then generate a run-time error
+              failure(
+                new playground.c.lib.RuntimeError(
+                  this,
+                  "Array size is " + specOrDecl.getArrayCount() + ", " +
+                  "initializer length (including null terminator) is " + 
+                  (str.length + 1) +
+                  ". Initializers do not fit in array."));
+              return;
+            }
+            
+            // Copy the string to memory
+            addr = v.getAddr();
+            str.split("").forEach(
+              function(c, i)
+              {
+                playground.c.lib.Node.__mem.set(addr + i, 
+                                                "char", 
+                                                c.charCodeAt(0));
+              });
+
+            // Null terminate the string
+            playground.c.lib.Node.__mem.set(addr + str.length, "char", 0);
+            success();
+            return;
+          }
+
+          // No initializer list
+          this.children[1].process(
+            data,
+            true,
+            initializeValue.bind(this, success),
+            failure);
+          return;
+
+          // ----------------------------------------------------------- //
+          // utility functions
+          // ----------------------------------------------------------- //
 
           function initializeValue(succ, v)
           {
@@ -5857,12 +5935,7 @@ qx.Class.define("playground.c.lib.Node",
               // If the value being assigned to is a pointer and the
               // RHS's type is some sort of int...
               if ((value1.specAndDecl[0].getType() == "pointer" ||
-                   value1.specAndDecl[0].getType() == "array")
-/*
-                &&
-                  value3.specAndDecl[0] .getType() == "int"
-*/
-                )
+                   value1.specAndDecl[0].getType() == "array"))
               {
                 // ... then figure out the size of what's pointed to
                 specAndDecl = value1.specAndDecl.slice(1);
