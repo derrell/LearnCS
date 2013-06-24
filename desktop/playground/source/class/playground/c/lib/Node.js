@@ -5779,10 +5779,6 @@ qx.Class.define("playground.c.lib.Node",
                 console.log("too many initializers");
               }
 
-              // If we're initializing an array, find out the type of each
-              // element of the array
-              
-
               if (initializerList.length > 0)
               {
                 i = 0;
