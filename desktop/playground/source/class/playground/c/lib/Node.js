@@ -1966,29 +1966,26 @@ qx.Class.define("playground.c.lib.Node",
             }
 
             // Process the remaining sub-nodes
-            if (this.children.length > 0)
-            {
-              i = 1;
-              this.children[i].process(
-                data,
-                bExecuting,
-                function()
+            i = 1;
+            this.children[i].process(
+              data,
+              bExecuting,
+              function()
+              {
+                if (++i < this.children.length)
                 {
-                  if (++i < this.children.length)
-                  {
-                    this.children[i].process(
-                      data,
-                      bExecuting,
-                      arguments.callee.bind(this),
-                      failure);
-                  }
-                  else
-                  {
-                    success(entry);
-                  }
-                }.bind(this),
-                failure);
-            }
+                  this.children[i].process(
+                    data,
+                    bExecuting,
+                    arguments.callee.bind(this),
+                    failure);
+                }
+                else
+                {
+                  success(entry);
+                }
+              }.bind(this),
+              failure);
           }.bind(this),
           failure);
         break;
@@ -3499,6 +3496,38 @@ qx.Class.define("playground.c.lib.Node",
             bExecuting,
             function()
             {
+              var             specOrDecl;
+
+              // If we're not executing, and we find that the declarator is an
+              // array without a length, then determine the length by the number
+              // of children of the initializer_list (child 1). If that node
+              // isn't an initializer_list, then generate a run-time error.
+              if (! bExecuting &&
+                  ! data.bIsParameter &&
+                  this.type == "init_declarator" &&
+                  data.entry instanceof playground.c.lib.SymtabEntry &&
+                  data.entry.getSpecAndDecl() &&
+                  (specOrDecl = data.entry.getSpecAndDecl()[0]) &&
+                  specOrDecl.getType() == "array" &&
+                  specOrDecl.getArrayCount() === null)
+              {
+                // Array length is unknown. If there's no initializer list...
+                if (this.children[1].type != "initializer_list")
+                {
+                  // ... then generate an error.
+                  failure(
+                    new playground.c.lib.RuntimeError(
+                      this,
+                      "Array is not given a length, either explicitly via " +
+                      "an array size, nor implicitly with an initializer."));
+                  return;
+                }
+
+                // There is an initializer list. Use its length to set the
+                // array's length.
+                specOrDecl.setArrayCount(this.children[1].children.length);
+              }
+
               // Add the specifier to the end of the specifier/declarator list
               data.specAndDecl.push(data.specifiers);
 
