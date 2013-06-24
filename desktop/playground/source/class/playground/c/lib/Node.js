@@ -1948,6 +1948,23 @@ qx.Class.define("playground.c.lib.Node",
           {
             var             i;
 
+            /* 
+             * FIXME. We should support pointers to functions. It will require
+             * some fair amount of work, since functions are referenced by
+             * their Node, and are not currently anyplace in memory. (Using
+             * the non-displayed area of memory reserved for constants might
+             * be appropriate. Allocate a word for each function so that
+             * pointers to functions have a real memory address to store.
+             */
+            if (bExecuting && typeof entry == "undefined")
+            {
+              failure(
+                new playground.c.lib.RuntimeError(
+                  this,
+                  "Pointers to functions are not currently supported."));
+              return;
+            }
+
             // Process the remaining sub-nodes
             if (this.children.length > 0)
             {
@@ -2055,6 +2072,18 @@ qx.Class.define("playground.c.lib.Node",
                               this,
                               "Can not dereference " + value.getName() + 
                                 " because it is not an address type."),
+                            success,
+                            failure);
+              return;
+            }
+            
+            // We don't currently support pointers to functions
+            if (type == "pointer" && specAndDecl[0].getType() == "function")
+            {
+              this._throwIt(new playground.c.lib.RuntimeError(
+                              this,
+                              "Dereferencing pointers to function is " +
+                              "currently not supported."),
                             success,
                             failure);
               return;
@@ -2727,7 +2756,7 @@ qx.Class.define("playground.c.lib.Node",
             
             // Get the address of that entry, which is the node for the called
             // function, or the reference of a built-in function.
-            value2 = value1.getAddr();
+            value2 = value1.getAddr(); // THIS RETURNS A NODE
 
             // Save any old argument array
             oldArgs = data.args;
