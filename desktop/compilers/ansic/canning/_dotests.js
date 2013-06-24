@@ -304,6 +304,17 @@ var tests =
     {
       name   : "t021-preproc-leading-blank-lines.c",
       extras : [ "--preproc" ]
+    },
+/*
+    {
+      name   : "t022-array-initialize.c.c"
+    },
+    {
+      name   : "t023-array-initialize-bad-1.c"
+    },
+*/
+    {
+      name   : "t024-call-int-as-func.c"
     }
   ];
 

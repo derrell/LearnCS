@@ -2721,6 +2721,8 @@ qx.Class.define("playground.c.lib.Node",
           bExecuting,
           function(v)
           {
+            var             type;
+
             value1 = v;
             
             // Get the address of that entry, which is the node for the called
@@ -2730,11 +2732,26 @@ qx.Class.define("playground.c.lib.Node",
             // Save any old argument array
             oldArgs = data.args;
 
+            // Get the type of this (supposed) funciton
+            type = value1.getSpecAndDecl()[0].getType();
+
             // Prepare to save arguments in a JS array as well as on the
             // stack, in case this is a built-in function being called.
-            if (value1.getSpecAndDecl()[0].getType() == "builtIn")
+            if (type == "builtIn")
             {
               data.args = [];
+            }
+            else if (type != "function")
+            {
+              failure(
+                new playground.c.lib.RuntimeError(
+                  this,
+                  "Attempting to call function '" +
+                  value1.getName() +
+                  "' but '" +
+                  value1.getName() +
+                  "' is not declared as a function."));
+              return;
             }
             else
             {

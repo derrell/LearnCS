@@ -598,3 +598,10 @@ int main(int argc, char * argv[])
 }
 
 
+% ../dcc t024-call-int-as-func.c --rootdir=/home/derrell/ME
+ERROR: Error: Command failed: 
+STDOUT: 
+>>> Running program
+Error near line 5: Attempting to call function 'i' but 'i' is not declared as a function.
+>>> Program had errors. It did not run to completion.
+
