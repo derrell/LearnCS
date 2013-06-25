@@ -10,6 +10,7 @@
 /*
 #ignore(require)
 #ignore(process)
+#ignore(bTest)
 
 #require(playground.c.builtin.Ctype)
 #require(playground.c.builtin.Math)
