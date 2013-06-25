@@ -39,7 +39,7 @@ qx.Class.define("playground.view.Header",
     // /////////
 
     var version = 
-      new qxc.ui.versionlabel.VersionLabel("Playground", "0.023");
+      new qxc.ui.versionlabel.VersionLabel("Playground", "0.024");
     version.set(
       {
         font : "default",
