@@ -6,7 +6,7 @@ int main(int argc, char * argv[])
     int c[2] = { 1, 2 };
     int d[] = { 3, 4 };
     char * arr55[5] = { "no", "first", "second", "third", "fourth" };
-    char * arr33[] = { "hi", "there", "world" };
+    char * arr_3[] = { "hi", "there", "world" };
     char * arr53[5] = { "yo!", "one", "two" };
     char chars[] = "abcde";
 
@@ -19,7 +19,7 @@ int main(int argc, char * argv[])
 
     for (a = 0; a < 3; a++)
     {
-        printf("arr33[%d]=%s\n", a, arr33[a]);
+        printf("arr_3[%d]=%s\n", a, arr_3[a]);
     }
 
     for (a = 0; a < 3; a++)
