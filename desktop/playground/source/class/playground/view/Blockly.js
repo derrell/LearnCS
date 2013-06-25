@@ -226,8 +226,7 @@ qx.Class.define("playground.view.Blockly",
         }
       }
 
-      // timout needed for chrome to not get the ACE layout wrong and show the
-      // text on top of the gutter
+      // Allow time for DOM elements to be created
       qx.event.Timer.once(
         function() 
         {
@@ -245,9 +244,12 @@ qx.Class.define("playground.view.Blockly",
           Blockly.BlockSvg.TITLE_HEIGHT = 12;
  */
  
-          Blockly.Language["globals"] = {
+          Blockly.Language["globals"] = 
+          {
             helpUrl: 'http://www.example.com/',
-            init: function() {
+            
+            init: function() 
+            {
               this.setColour(24);
               this.appendDummyInput()
                 .appendTitle("global variables and type definitions");
@@ -257,9 +259,12 @@ qx.Class.define("playground.view.Blockly",
             }
           };
 
-          Blockly.Language["declare"] = {
+          Blockly.Language["declare"] = 
+          {
             helpUrl: 'http://www.example.com/',
-            init: function() {
+            
+            init: function() 
+            {
               this.setColour(32);
               this.appendDummyInput()
                 .appendTitle("declare variable");
@@ -275,9 +280,12 @@ qx.Class.define("playground.view.Blockly",
             }
           };
 
-          Blockly.Language["type"] = {
+          Blockly.Language["type"] = 
+          {
             helpUrl: 'http://www.example.com/',
-            init: function() {
+            
+            init: function() 
+            {
               this.setColour(32);
               this.appendDummyInput()
                 .appendTitle("type");
@@ -309,7 +317,8 @@ qx.Class.define("playground.view.Blockly",
               this.setMutator(new Blockly.Mutator(["pointer_to", "array_of"]));
             },
             
-            decompose : function(workspace) {
+            decompose : function(workspace) 
+            {
               var bStatic;
               var bConst;
               var declarators;
@@ -367,7 +376,8 @@ qx.Class.define("playground.view.Blockly",
               return typeBlock;
             },
             
-            compose : function(typeBlock) {
+            compose : function(typeBlock) 
+            {
               var bStatic;
               var bConst;
               var declarators;
@@ -423,20 +433,23 @@ qx.Class.define("playground.view.Blockly",
           };
 
           // Used in mutator for "type" block
-          Blockly.Language["type_editor"] = {
+          Blockly.Language["type_editor"] = 
+          {
             helpUrl: 'http://www.example.com/',
-            init: function() {
+            
+            init: function() 
+            {
               this.setColour(32);
               this.appendStatementInput("declarators")
-                  .appendTitle("type");
+                .appendTitle("type");
               this.appendDummyInput()
-                  .appendTitle("static", null)
-                  .appendTitle(new Blockly.FieldCheckbox("FALSE"), "static");
+                .appendTitle("static", null)
+                .appendTitle(new Blockly.FieldCheckbox("FALSE"), "static");
               this.appendDummyInput("const")
                 .appendTitle("const", null)
                 .appendTitle(new Blockly.FieldCheckbox("FALSE"), "const");
               this.appendDummyInput("spacer")
-                  .appendTitle(" ");
+                .appendTitle(" ");
               this.appendDummyInput()
                 .appendTitle(new Blockly.FieldDropdown(
                                [
@@ -459,12 +472,15 @@ qx.Class.define("playground.view.Blockly",
           };
 
           // Used in mutator for "type" block
-          Blockly.Language["pointer_to"] = {
+          Blockly.Language["pointer_to"] = 
+          {
             helpUrl: 'http://www.example.com/',
-            init: function() {
+            
+            init: function() 
+            {
               this.setColour(40);
               this.appendDummyInput()
-                  .appendTitle("pointer to");
+                .appendTitle("pointer to");
               this.setPreviousStatement(true); // 2nd arg: ["string", "list"]
               this.setNextStatement(true);     // ditto
               this.setTooltip('');
@@ -472,35 +488,41 @@ qx.Class.define("playground.view.Blockly",
           };
 
           // Used in mutator for "type" block
-          Blockly.Language["array_of"] = {
+          Blockly.Language["array_of"] = 
+          {
             helpUrl: 'http://www.example.com/',
-            init: function() {
+            
+            init: function() 
+            {
               this.setColour(40);
               this.appendDummyInput()
-                  .appendTitle("array of")
-                  .appendTitle(new Blockly.FieldTextInput("3"), "count");
+                .appendTitle("array of")
+                .appendTitle(new Blockly.FieldTextInput("3"), "count");
               this.setPreviousStatement(true);
               this.setNextStatement(true);
               this.setTooltip('');
             }
           };
 
-          Blockly.Language["function"] = {
+          Blockly.Language["function"] = 
+          {
             helpUrl: 'http://www.example.com/',
-            init: function() {
+            
+            init: function() 
+            {
               this.setColour(290);
               this.appendDummyInput()
-                  .appendTitle("function")
-                  .appendTitle(new Blockly.FieldTextInput("NAME"), "name");
+                .appendTitle("function")
+                .appendTitle(new Blockly.FieldTextInput("NAME"), "name");
               this.appendValueInput("result_type")
-                  .appendTitle("produces result type")
-                  .setCheck("Type");
+                .appendTitle("produces result type")
+                .setCheck("Type");
               this.appendStatementInput("inputs")
-                  .appendTitle("inputs")
-                  .setCheck("Declaration");
+                .appendTitle("inputs")
+                .setCheck("Declaration");
               this.appendStatementInput("declarations")
-                  .appendTitle("local variables", "local_vars")
-                  .setCheck("Declaration");
+                .appendTitle("local variables", "local_vars")
+                .setCheck("Declaration");
               this.appendStatementInput("body")
                 .appendTitle("do")
                 .setCheck([
@@ -513,7 +535,8 @@ qx.Class.define("playground.view.Blockly",
               this.setMutator(new Blockly.Mutator([]));
             },
             
-            decompose : function(workspace) {
+            decompose : function(workspace) 
+            {
               var functionBlock = new Blockly.Block(workspace,
                                                     'function_editor');
 
@@ -533,7 +556,8 @@ qx.Class.define("playground.view.Blockly",
               return functionBlock;
             },
             
-            compose : function(functionBlock) {
+            compose : function(functionBlock) 
+            {
               var bHasResult =
                 functionBlock.getTitleValue("has_result") == "TRUE";
               var bHasInputs =
@@ -546,7 +570,8 @@ qx.Class.define("playground.view.Blockly",
                 this,
                 "result_type", 
                 bHasResult,
-                function() {
+                function() 
+                {
                   this.appendValueInput("result_type")
                     .appendTitle("produces result type")
                     .setCheck("Type");
@@ -558,7 +583,8 @@ qx.Class.define("playground.view.Blockly",
                 this,
                 "inputs", 
                 bHasInputs,
-                function() {
+                function() 
+                {
                   this.appendStatementInput("inputs")
                     .appendTitle("inputs")
                     .setCheck("Declaration");
@@ -570,7 +596,8 @@ qx.Class.define("playground.view.Blockly",
                 this,
                 "declarations", 
                 bHasLocalVars,
-                function() {
+                function() 
+                {
                   this.appendStatementInput("declarations")
                     .appendTitle("local variables")
                     .setCheck("Declaration");
@@ -581,7 +608,9 @@ qx.Class.define("playground.view.Blockly",
 
           Blockly.Language["function_editor"] = {
             helpUrl: 'http://www.example.com/',
-            init: function() {
+            
+            init: function() 
+            {
               this.setColour(290);
               this.appendDummyInput()
                 .appendTitle("function");
@@ -604,9 +633,12 @@ qx.Class.define("playground.view.Blockly",
             }
           };
 
-          Blockly.Language["return_with_result"] = {
+          Blockly.Language["return_with_result"] = 
+          {
             helpUrl: 'http://www.example.com/',
-            init: function() {
+            
+            init: function() 
+            {
               this.setColour(290);
               this.appendDummyInput()
                 .appendTitle("leave function producing result");
@@ -616,9 +648,12 @@ qx.Class.define("playground.view.Blockly",
             }
           };
 
-          Blockly.Language["return_no_result"] = {
+          Blockly.Language["return_no_result"] = 
+          {
             helpUrl: 'http://www.example.com/',
-            init: function() {
+            
+            init: function() 
+            {
               this.setColour(290);
               this.appendDummyInput()
                 .appendTitle("leave function without result");
@@ -627,9 +662,12 @@ qx.Class.define("playground.view.Blockly",
             }
           };
 
-          Blockly.Language["for_loop"] = {
+          Blockly.Language["for_loop"] = 
+          {
             helpUrl: 'http://www.example.com/',
-            init: function() {
+            
+            init: function() 
+            {
               this.setColour(120);
               this.appendDummyInput()
                  .appendTitle("loop");
@@ -646,7 +684,8 @@ qx.Class.define("playground.view.Blockly",
               this.setMutator(new Blockly.Mutator([]));
             },
             
-            decompose : function(workspace) {
+            decompose : function(workspace) 
+            {
               var loopBlock = new Blockly.Block(workspace, 'for_loop_editor');
 
               loopBlock.initSvg();
@@ -665,7 +704,8 @@ qx.Class.define("playground.view.Blockly",
               return loopBlock;
             },
             
-            compose : function(loopBlock) {
+            compose : function(loopBlock) 
+            {
               var bHasInitialize =
                 loopBlock.getTitleValue("has_initialize") == "TRUE";
               var bHasCondition =
@@ -678,7 +718,8 @@ qx.Class.define("playground.view.Blockly",
                 this,
                 "initialize", 
                 bHasInitialize,
-                function() {
+                function() 
+                {
                   this.appendStatementInput("initialize")
                     .appendTitle("initialize")
                     .setCheck("Statement");
@@ -690,7 +731,8 @@ qx.Class.define("playground.view.Blockly",
                 this,
                 "condition", 
                 bHasCondition,
-                function() {
+                function() 
+                {
                   this.appendValueInput("condition")
                     .appendTitle("while true:")
                     .setCheck("Expression");
@@ -702,7 +744,8 @@ qx.Class.define("playground.view.Blockly",
                 this,
                 "after_each", 
                 bHasAfterEach,
-                function() {
+                function() 
+                {
                   this.appendStatementInput("after_each")
                     .appendTitle("after each iteration")
                     .setCheck("Statement");
@@ -711,9 +754,12 @@ qx.Class.define("playground.view.Blockly",
             }
           };
 
-          Blockly.Language["for_loop_editor"] = {
+          Blockly.Language["for_loop_editor"] = 
+          {
             helpUrl: 'http://www.example.com/',
-            init: function() {
+            
+            init: function() 
+            {
               this.setColour(120);
               this.appendDummyInput()
                 .appendTitle("loop");
@@ -736,9 +782,12 @@ qx.Class.define("playground.view.Blockly",
             }
           };
 
-          Blockly.Language["do_while_loop"] = {
+          Blockly.Language["do_while_loop"] = 
+          {
             helpUrl: 'http://www.example.com/',
-            init: function() {
+            
+            init: function() 
+            {
               this.setColour(120);
               this.appendDummyInput()
                 .appendTitle("loop at least once");
@@ -754,7 +803,8 @@ qx.Class.define("playground.view.Blockly",
           };
 
           /*
-          Blockly.JavaScript.function = function() {
+          Blockly.JavaScript.function = function() 
+          {
             var statements_local_variables = 
               Blockly.JavaScript.statementToCode(this, 'local variables');
             var statements_statements = 
@@ -776,7 +826,8 @@ qx.Class.define("playground.view.Blockly",
            * We also, here, allow a function to be provided (instead of just a
            * string), for more sophisticated checks.
            */
-          Blockly.Connection.prototype.checkType_ = function(otherConnection) {
+          Blockly.Connection.prototype.checkType_ = function(otherConnection) 
+          {
             if (false) {        // original code
               if (!this.check_ || !otherConnection.check_) {
                 // One or both sides are promiscuous enough that anything will
