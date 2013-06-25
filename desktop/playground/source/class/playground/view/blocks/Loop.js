@@ -33,8 +33,10 @@ qx.Class.define("playground.view.blocks.Loop",
         this.appendDummyInput()
            .appendTitle("loop");
         this.appendValueInput("condition")
-          .appendTitle("while true:")
+          .appendTitle("while")
           .setCheck("Expression");
+        this.appendDummyInput("condition-text")
+          .appendTitle("is true (non-zero)");
         this.appendStatementInput("body")
           .appendTitle("do")
           .setCheck("Statement");
@@ -82,7 +84,7 @@ qx.Class.define("playground.view.blocks.Loop",
           function() 
           {
             this.appendStatementInput("initialize")
-              .appendTitle("initialize")
+              .appendTitle("one-time initialization")
               .setCheck("Statement");
           },
           [ "condition", "body" ]);
@@ -95,8 +97,20 @@ qx.Class.define("playground.view.blocks.Loop",
           function() 
           {
             this.appendValueInput("condition")
-              .appendTitle("while true:")
+              .appendTitle("while")
               .setCheck("Expression");
+          },
+          [ "body" ]);
+
+        // add or remove the condition text
+        playground.view.Blockly.addRemoveInput.call(
+          this,
+          "condition-text", 
+          bHasCondition,
+          function() 
+          {
+            this.appendDummyInput("condition-text")
+              .appendTitle("is true (non-zero)");
           },
           [ "body" ]);
 
@@ -126,7 +140,7 @@ qx.Class.define("playground.view.blocks.Loop",
           .appendTitle("loop");
         this.appendDummyInput()
           .setAlign(Blockly.ALIGN_RIGHT)
-          .appendTitle("requires initialization?")
+          .appendTitle("requires one-time initialization?")
           .appendTitle(new Blockly.FieldCheckbox("FALSE"),
                        "has_initialize");
         this.appendDummyInput()
@@ -155,7 +169,9 @@ qx.Class.define("playground.view.blocks.Loop",
         this.appendStatementInput("body")
           .appendTitle("do");
         this.appendValueInput("condition")
-          .appendTitle("while true:");
+          .appendTitle("while");
+        this.appendDummyInput()
+          .appendTitle("is true (non-zero)");
         this.setInputsInline(true);
         this.setPreviousStatement(true, "Statement");
         this.setNextStatement(true, "Statement");

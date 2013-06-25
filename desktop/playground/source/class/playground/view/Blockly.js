@@ -97,7 +97,7 @@ qx.Class.define("playground.view.Blockly",
         if (input)
         {
           // ... then remove any child blocks, ...
-          if (input.connection.targetConnection)
+          if (input.connection && input.connection.targetConnection)
           {
             input.connection.targetConnection.sourceBlock_.unplug(
               false, true);
