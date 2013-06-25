@@ -316,6 +316,12 @@ var tests =
     },
     {
       name   : "t025-call-function-via-pointer.c"
+    },
+    {
+      name   : "t026-struct-initialize.c"
+    },
+    {
+      name   : "t027-union-initialize.c"
     }
   ];
 

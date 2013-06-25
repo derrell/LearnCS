@@ -5800,20 +5800,24 @@ qx.Class.define("playground.c.lib.Node",
           // Not unary. See if we're handling an initializer list
           if (this.children[1].type == "initializer_list")
           {
+            // Get a reference to the initializer list, for quick access
             initializerList = this.children[1].children;
 
-            // Ensure the lvalue is a non-scalar if more than one initializer
-            if (initializerList.length > 1)
+            // Struct and union initializers are not currently implmeneted
+            if (specAndDecl[specAndDecl.length - 1].getType() == "struct" || 
+                specAndDecl[specAndDecl.length - 1].getType() == "union")
             {
-              // FIXME: implement this test.
+              failure(
+                new playground.c.lib.RuntimeError(
+                  this,
+                  type + " initializers are not currently supported."));
+              return;
             }
 
             // Ensure there is no more than one initializer for a scalar
-// FIXME: finds structs
-            if (((! (specAndDecl[0] instanceof playground.c.lib.Declarator) &&
-                  initializerList.length > 1)))
+            if ((! (specAndDecl[0] instanceof playground.c.lib.Declarator) &&
+                initializerList.length > 1))
             {
-              // FIXME: implement this
               failure(
                 new playground.c.lib.RuntimeError(
                   this,
@@ -5826,7 +5830,6 @@ qx.Class.define("playground.c.lib.Node",
             if ((specAndDecl[0] instanceof playground.c.lib.Declarator &&
                  initializerList.length > specAndDecl[0].getArrayCount()))
             {
-              // FIXME: implement this
               failure(
                 new playground.c.lib.RuntimeError(
                   this,
@@ -5924,7 +5927,7 @@ qx.Class.define("playground.c.lib.Node",
             return;
           }
 
-          // No initializer list
+          // No initializers.
           this.children[1].process(
             data,
             true,

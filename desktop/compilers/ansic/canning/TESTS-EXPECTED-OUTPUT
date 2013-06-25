@@ -642,3 +642,17 @@ STDOUT:
 Error near line 10: Pointers to functions are not currently supported.
 >>> Program had errors. It did not run to completion.
 
+% ../dcc t026-struct-initialize.c --rootdir=/home/derrell/ME
+ERROR: Error: Command failed: 
+STDOUT: 
+>>> Running program
+Error near line 7: struct initializers are not currently supported.
+>>> Program had errors. It did not run to completion.
+
+% ../dcc t027-union-initialize.c --rootdir=/home/derrell/ME
+ERROR: Error: Command failed: 
+STDOUT: 
+>>> Running program
+Error near line 7: union initializers are not currently supported.
+>>> Program had errors. It did not run to completion.
+
