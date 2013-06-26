@@ -31,7 +31,8 @@ qx.Class.define("playground.view.blocks.Blocks",
         playground.view.blocks.Globals,
         playground.view.blocks.Type,
         playground.view.blocks.Function,
-        playground.view.blocks.Loop
+        playground.view.blocks.Loop,
+        playground.view.blocks.If
       ];
   }
 });
