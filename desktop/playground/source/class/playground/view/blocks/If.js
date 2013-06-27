@@ -30,12 +30,12 @@ qx.Class.define("playground.view.blocks.If",
       init: function ()
       {
         this.setColour(120);
-        this.appendValueInput('if0')
+        this.appendValueInput("if0", "Expression")
           .setCheck(Boolean)
           .appendTitle("if");
         this.appendDummyInput("if-text0")
           .appendTitle("is true (non-zero)");
-        this.appendStatementInput('do0')
+        this.appendStatementInput("do0", "Statement")
           .appendTitle("then do");
         this.setInputsInline(true);
         this.setPreviousStatement(true);
@@ -178,12 +178,14 @@ qx.Class.define("playground.view.blocks.If",
           {
           case 'if_elseif':
             this.elseifCount_++;
-            ifInput = this.appendValueInput('if' + this.elseifCount_)
+            ifInput = this.appendValueInput("if" + this.elseifCount_, 
+                                            "Expression")
               .setCheck(Boolean)
               .appendTitle("otherwise if");
             this.appendDummyInput('if-text' + this.elseifCount_)
               .appendTitle("is true (non-zero)");
-            doInput = this.appendStatementInput('do' + this.elseifCount_);
+            doInput = this.appendStatementInput("do" + this.elseifCount_,
+                                                "Statement");
             doInput.appendTitle("then do");
             // Reconnect any child blocks.
             if (clauseBlock.valueConnection_)
@@ -198,7 +200,7 @@ qx.Class.define("playground.view.blocks.If",
 
           case 'if_else':
             this.elseCount_++;
-            elseInput = this.appendStatementInput('else');
+            elseInput = this.appendStatementInput("else", "Statement");
             elseInput.appendTitle("in all other cases do");
             // Reconnect any child blocks.
             if (clauseBlock.statementConnection_)
