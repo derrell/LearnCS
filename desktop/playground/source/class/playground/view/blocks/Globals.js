@@ -27,6 +27,8 @@ qx.Class.define("playground.view.blocks.Globals",
     {
       helpUrl: 'http://www.example.com/',
 
+      category : "variables",
+
       init: function() 
       {
         this.setColour(24);

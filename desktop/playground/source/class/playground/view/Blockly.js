@@ -152,12 +152,24 @@ qx.Class.define("playground.view.Blockly",
       // For each block in the map...
       for (blockName in blocks)
       {
-        // ... add that block to the array of registered blocks
+        // ... skip names always in a class' statics
+        if ([
+              "$$type", "$$original", 
+              "classname", "basename",
+              "toString", "superclass", "constructor"
+            ].indexOf(blockName) != -1)
+        {
+          continue;
+        }
+
+        // Add other blocks to the array of registered blocks,
+        // both as map entries and in the array
         playground.view.Blockly._registeredBlocks.push(
-          {
-            name   : blockName,
-            config : blocks[blockName]
-          });
+          playground.view.Blockly._registeredBlocks[blockName] = 
+            {
+              name   : blockName,
+              config : blocks[blockName]
+            });
       }
     }
   },
@@ -383,6 +395,7 @@ qx.Class.define("playground.view.Blockly",
                 path    : "resource/playground/blockly/",
                 toolbox : (
                   "<xml>" +
+                  this._addRegisteredBlocks() + "</category>" +
                   "  <category name='Controls'>" +
                   "    <block type='controls_if'></block>" +
                   "    <block type='controls_repeat'></block>" +
@@ -448,6 +461,74 @@ qx.Class.define("playground.view.Blockly",
         }, 
         this,
         500);
+    },
+
+
+    /**
+     * Add registered blocks by converting them to XML for inclusion
+     * in the Blockly container.
+     */
+    _addRegisteredBlocks : function()
+    {
+      var             category = null;
+      var             blockList;
+      var             xml = [];
+
+      // Sort the registered blocks by category
+      blockList = 
+        playground.view.Blockly._registeredBlocks.sort(
+          function(a, b)
+          {
+            var             aCat = a.config.category || "a";
+            var             bCat = b.config.category || "a";
+
+            return aCat < bCat ? -1 : aCat > bCat ? 1 : 0;
+          });
+
+      blockList.forEach(
+        function(blockInfo)
+        {
+          var             cat;
+
+          // Get the category name
+          cat = blockInfo.config.category;
+          
+          // If there's no category, don't add the block
+          if (! cat)
+          {
+            return;
+          }
+
+          // If this is a new category...
+          if (cat != category)
+          {
+            // If we were in a category already...
+            if (category !== null)
+            {
+              // then end it
+              xml.push("</category>");
+            }
+
+            // then assign this as the category
+            category = cat;
+
+            // Begin the new category
+            xml.push("<category name='" + category + "'>");
+          }
+
+          // Add this block
+          xml.push("<block type='" + blockInfo.name + "'>");
+          if (blockInfo.config.embed)
+          {
+            xml.push("<value name='type'>");
+            arguments.callee(
+              playground.view.Blockly._registeredBlocks[blockInfo.config.embed]);
+            xml.push("</value>");
+          }
+          xml.push("</block>");
+        });
+
+      return xml.join("\n");
     },
 
 

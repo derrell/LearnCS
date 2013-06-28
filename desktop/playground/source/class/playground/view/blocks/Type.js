@@ -27,6 +27,10 @@ qx.Class.define("playground.view.blocks.Type",
     {
       helpUrl: 'http://www.example.com/',
 
+      category : "variables",
+
+      embed : "type",
+
       init: function() 
       {
         this.setColour(32);
@@ -47,6 +51,8 @@ qx.Class.define("playground.view.blocks.Type",
     "type" :
     {
       helpUrl: 'http://www.example.com/',
+
+      category : "variables",
 
       init: function() 
       {

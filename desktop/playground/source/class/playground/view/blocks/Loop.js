@@ -27,6 +27,8 @@ qx.Class.define("playground.view.blocks.Loop",
     {
       helpUrl: 'http://www.example.com/',
 
+      category : "control",
+
       init: function() 
       {
         this.setColour(120);
@@ -160,6 +162,8 @@ qx.Class.define("playground.view.blocks.Loop",
     "do_while_loop" :
     {
       helpUrl: 'http://www.example.com/',
+
+      category : "control",
 
       init: function() 
       {

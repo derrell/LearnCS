@@ -27,6 +27,8 @@ qx.Class.define("playground.view.blocks.Function",
     {
       helpUrl: 'http://www.example.com/',
 
+      category : "function",
+
       init: function() 
       {
         this.setColour(290);
@@ -157,6 +159,8 @@ qx.Class.define("playground.view.blocks.Function",
     {
       helpUrl: 'http://www.example.com/',
 
+      category : "function",
+
       init: function() 
       {
         this.setColour(290);
@@ -171,6 +175,8 @@ qx.Class.define("playground.view.blocks.Function",
     "return_no_result" :
     {
       helpUrl: 'http://www.example.com/',
+
+      category : "function",
 
       init: function() 
       {
