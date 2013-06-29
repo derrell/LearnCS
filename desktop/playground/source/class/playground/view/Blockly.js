@@ -397,8 +397,8 @@ qx.Class.define("playground.view.Blockly",
                   "<xml>" +
                   this._addRegisteredBlocks() + "</category>" +
                   "  <category name='Controls'>" +
+                  "    <block type='if'></block>" +
                   "    <block type='controls_if'></block>" +
-                  "    <block type='controls_repeat'></block>" +
                   "    <block type='globals'></block>" +
                   "    <block type='declare'> " +
                   "      <value name='type'>" +
