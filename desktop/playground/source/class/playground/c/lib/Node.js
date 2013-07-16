@@ -3307,7 +3307,12 @@ qx.Class.define("playground.c.lib.Node",
           if (data.specifiers && 
               (! data.bIsParameter || ! this.value.match(/^struct#/)))
           {
-            // This symbol shouldn't exist. Create a symbol table entry for it
+            // This symbol shouldn't exist. Create a symbol table entry for it.
+            //
+            // (If this is about to be a declaration of a variable of type
+            // structure, and the structure itself was previously declared, we
+            // might end up throwing away this symbol, which would end up
+            // shadowing the real structure declaration.)
             entry = playground.c.lib.Symtab.getCurrent().add(
               this.value, this.line, false, data.bIsParameter, data.bIsDefine);
 
@@ -4689,6 +4694,47 @@ qx.Class.define("playground.c.lib.Node",
 
               // When executing, we are given the entry.
               data.entry = data.entry || v;
+
+// FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME
+// FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME
+// FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME
+//
+// Given the following example code:
+//
+// #include <stdlib.h>
+// #include <stdio.h>
+//
+// struct Swingset1
+// {
+//     int numSwings;
+//     int swingsInUse;
+// };
+//
+// int main(int argc, char * argv[])
+// {
+//     struct Swingset2
+//     {
+//         int numSwings;
+//         int swingsInUse;
+//     };
+//     
+//     struct Swingset1 swingset1; // <-- HERE
+//     struct Swingset2 swingset2;
+//     
+//     printf("sizeof(swingset1) = %d sizeof(swingset2) = %d\n",
+//             sizeof(swingset1), sizeof(swingset2));
+//
+//     return 0;
+// }
+//
+// At the location marked by HERE, an extra symbol table entry
+// was created (in "identifier") for struct#Swingset1, shadowing
+// the one created for the global declaration of struct
+// Swingset1. We need to delete the symbol table entry in
+// data.entry, in this case, and retrieve the higher-level one
+// (which might not be global, with ample nesting). We can base
+// whether to do so, at least in part, on whether
+// this.children[0].type is "__null__"
 
               // Retrieve or create the symbol table for this struct's,
               // union's, or enum's members
