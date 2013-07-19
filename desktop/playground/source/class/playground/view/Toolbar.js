@@ -255,14 +255,7 @@ qx.Class.define("playground.view.Toolbar",
       this.tr("Memory View"), "icon/22/apps/utilities-log-viewer.png"
     );
     this.add(this.__showMemTemplateButton);
-    if (qx.core.Environment.get("qx.debug"))
-    {
-      this.__showMemTemplateButton.setValue(true);
-    }
-    else
-    {
-      this.__showMemTemplateButton.setValue(false);
-    }
+    this.__showMemTemplateButton.setValue(true);
     this.__showMemTemplateButton.setToolTipText(
       this.tr("Show/hide memory view"));
     this.__showMemTemplateButton.addListener(

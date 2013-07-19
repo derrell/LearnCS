@@ -378,13 +378,6 @@ qx.Class.define("playground.Application",
       // hides/shows it
       this.memTemplateBox = infosplit;
 
-      // Initially hide the memory template view in the build version
-      // (See also Toolbar.js and the initial button's value)
-      if (! qx.core.Environment.get("qx.debug"))
-      {
-        infosplit.exclude();
-      }
-
       infosplit.add(vbox, 2);
       // ...djl
       
