@@ -512,6 +512,8 @@ qx.Class.define("playground.c.lib.Preprocessor",
 
           var process_directive = function(command, elem, i)
           {
+            var extraText;
+
             switch (command)
             {
             case "define":
@@ -572,7 +574,20 @@ qx.Class.define("playground.c.lib.Preprocessor",
               var parts = elem.match(include_re);
               if (parts[4])
               {
-                error("unrecognized characters in include: " + elem);
+                extraText = parts[4];
+
+                // Ignore trailing comments
+                if (! extraText.match(/ *\/\//) &&
+                    ! extraText.match(/ *\/\*/))
+                {
+                  error("unrecognized characters in include: " + elem);
+                }
+                else if (extraText.match(/ *\/\*/))
+                {
+                  // disallow /*-style comments on #include lines
+                  error("Only // is allowed for comments on #include " +
+                        "line, not /* (in LearnCS!).");
+                }
               }
               var file = (parts[2] || '') + (parts[3] || '');
 
