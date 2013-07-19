@@ -4695,46 +4695,26 @@ qx.Class.define("playground.c.lib.Node",
               // When executing, we are given the entry.
               data.entry = data.entry || v;
 
-// FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME
-// FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME
-// FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME
-//
-// Given the following example code:
-//
-// #include <stdlib.h>
-// #include <stdio.h>
-//
-// struct Swingset1
-// {
-//     int numSwings;
-//     int swingsInUse;
-// };
-//
-// int main(int argc, char * argv[])
-// {
-//     struct Swingset2
-//     {
-//         int numSwings;
-//         int swingsInUse;
-//     };
-//     
-//     struct Swingset1 swingset1; // <-- HERE
-//     struct Swingset2 swingset2;
-//     
-//     printf("sizeof(swingset1) = %d sizeof(swingset2) = %d\n",
-//             sizeof(swingset1), sizeof(swingset2));
-//
-//     return 0;
-// }
-//
-// At the location marked by HERE, an extra symbol table entry
-// was created (in "identifier") for struct#Swingset1, shadowing
-// the one created for the global declaration of struct
-// Swingset1. We need to delete the symbol table entry in
-// data.entry, in this case, and retrieve the higher-level one
-// (which might not be global, with ample nesting). We can base
-// whether to do so, at least in part, on whether
-// this.children[0].type is "__null__"
+              // If there's no struct/union/enum declaration here (only a
+              // reference to a pre-existing type)...
+              if (this.children[0].type == "_null_" &&
+                  playground.c.lib.Symtab.getCurrent().getParent() != null)
+              {
+                // ... then find the entry of the previously-declared
+                // struct/union/enum.
+                entry = playground.c.lib.Symtab.getCurrent().getParent().get(
+                  data.entry.getName());
+                
+                // Did we find one?
+                if (entry)
+                {
+                  // Yup. Remove the automatically-created entry...
+                  playground.c.lib.Symtab.getCurrent().remove(entry.getName());
+
+                  // ... and replace it with the one previously declared
+                  data.entry = entry;
+                }
+              }
 
               // Retrieve or create the symbol table for this struct's,
               // union's, or enum's members

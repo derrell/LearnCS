@@ -450,6 +450,24 @@ qx.Class.define("playground.c.lib.Symtab",
       return entry;
     },
 
+    /**
+     * Remove a symbol table entry.
+     * 
+     * @param symName {String}
+     *   The name of the symbol to be removed from this symbol table
+     */
+    remove : function(symName)
+    {
+      var             index;
+      var             entry = this.__symbols[symName];
+
+      // Remove this symbol from the symbols map
+      delete this.__symbols[symName];
+      
+      // Remove this symbol from the symbolOrder list.
+      index = this.__symbolOrder.indexOf(entry);
+      this.__symbolOrder.splice(index, 1);
+    },
 
     /**
      * Retrieve a symbol from a symbol table chain. If the symbol is not found

@@ -656,3 +656,12 @@ STDOUT:
 Error near line 7: union initializers are not currently supported.
 >>> Program had errors. It did not run to completion.
 
+% ../dcc t028-global-struct-decl.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+sizeof(struct Swingset1) = 8 sizeof(struct Swingset2) = 8
+sizeof(swingset1) = 8 sizeof(swingset2) = 8
+Swingset1: 1 of 2 swings in use
+Swingset2: 3 of 5 swings in use
+>>> Program exited with exit code 0
+

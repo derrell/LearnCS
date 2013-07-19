@@ -322,6 +322,9 @@ var tests =
     },
     {
       name   : "t027-union-initialize.c"
+    },
+    {
+      name   : "t028-global-struct-decl.c"
     }
   ];
 
