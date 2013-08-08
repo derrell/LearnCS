@@ -1,0 +1,32 @@
+{
+  "info" : 
+  {
+    "name" : "dbif",
+
+    "summary" : "LIBERATED example database interface",
+    "description" : "The database interface for the LIBERATED example",
+    
+    "license" : "GPL Version 2",
+    "authors" : 
+    [
+      {
+        "name" : "Derrell Lipman (derrell)",
+        "email" : "derrell.lipman@unwireduniverse.com"
+      }
+    ],
+
+    "version" : "trunk",
+    "qooxdoo-versions": ["1.7"]
+  },
+  
+  "provides" : 
+  {
+    "namespace"   : "playground.dbif",
+    "encoding"    : "utf-8",
+    "class"       : "source/class",
+    "resource"    : "source/resource",
+    "translation" : "source/translation",
+    "type"        : "contribution"
+  }
+}
+

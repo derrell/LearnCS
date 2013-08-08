@@ -1,0 +1,99 @@
+Course
+  id                    : key,
+  name                  : string
+  owners                : array of User.id
+  authors               : array of User.id
+  intro_video           : string
+  intro_image           : string // shown if intro_video is null
+  intro_text            : string
+
+Lesson
+  id                    : key,
+  name                  : string,
+  video                 : string
+  nextType              : enum { Lesson, Assessment }
+  nextItem              : Lesson.id or Assessment.id
+
+Assessment
+  id                    : key,
+  name                  : string,
+  scale                 : number
+  starter_code          : string,
+  eval_script           : longstring
+  
+User
+  id                    : key
+  email                 : string
+  displayName           : string
+
+Registration
+  id                    : key,
+  user                  : User.id
+  course                : Course.id
+
+  // "highest" indicates how far they've ever gotten, allowing retaking
+  // lessons but still tracking their highest  one. UserCourseStatus can be
+  // used to find repeated lessons and assessments.
+  highest_type          : enum { Lesson, Assessment }
+  highest_item          : Lesson.id or Assessment.id
+  enroll_timestamp      : date,
+  complete_timestamp    : date
+
+UserCourseStatus
+  id                    : key
+  registration          : Registration.id
+  timestamp             : date
+  type                  : enum { Lesson, Assessment }
+  item                  : Lesson.id or Assessment.id
+  completed             : boolean
+  assessment_score      : number // if type==Assessment and completed==true
+
+// for future evaluation of how user codes
+UserCodingAction
+  id                    : key
+  registration          : Registration.key
+  assessment            : Assessment.key
+  timestamp             : date
+
+  // one of:            :
+  set_position          : [ line : number, col : number ]
+  keysequence           : string
+  breakpoint_at         : number
+  button_press          : string // gui id of button which was pressed
+
+  // one of:
+  errors                : string // if button_press is 'Run'
+  parse_tree            : json   // if button_press is 'Run'
+
+
+Notes
+-----
+
+- need not be an entire course
+- work with students in Computing 1
+  - paid to work with me on the side
+  - mini-class
+- Computing 1 labs
+  - 8-9 sections
+  - assessments
+  - everyone in course instroduced to LearnCS! at the beginning
+  - surveys with students
+    - did it help them think about the material?
+  - flag in code to collect or not collect data
+  - is there any correlation between use of LearnCS! and their performance
+  - integrate with CS authentication system
+  - track
+    - do they use the notional machine depiction (default to not displayed)
+    - breakpoint usage, as indication of looking at memory
+    - correlate usage of LearnCS! with submissions to auto-grader
+      - need to use known authentication to match
+    - hyphothesis?
+    - assessment
+      - work with LearnCS! correlated to submission time
+      - students who use tool do better on tests
+      - take less time on assignments
+      - assignment scores are higher
+      - number of submissions?
+
+- develop labs that can be used with or without LearnCS! except for first few
+  labs which will all use LearnCS!

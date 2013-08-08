@@ -6,6 +6,7 @@
 
    Copyright:
      2004-2009 1&1 Internet AG, Germany, http://www.1und1.de
+     2013 Derrell Lipman
 
    License:
      LGPL: http://www.gnu.org/licenses/lgpl.html
@@ -14,6 +15,7 @@
 
    Authors:
      * Martin Wittemann (martinwittemann)
+     * Derrell Lipman (derrell)
 
 ************************************************************************ */
 /**
@@ -28,8 +30,16 @@ qx.Class.define("playground.view.Header",
    */
   construct : function()
   {
+    var             mycall;
+
     this.base(arguments, new qx.ui.layout.HBox());
     this.setAppearance("app-header");
+
+    // Prepare to issue remote procedure calls
+    this.__rpc = new qx.io.remote.Rpc();
+    this.__rpc.setProtocol("2.0");
+    this.__rpc.setUrl("/rpc");
+    this.__rpc.setServiceName("learncs");
 
     // EVIL HACK
     this.addListener("appear", function() {
@@ -37,6 +47,12 @@ qx.Class.define("playground.view.Header",
       el.setStyle("top", (parseInt(el.getStyle("top")) + 1) + "px");
     }, this);
     // /////////
+
+    var whoAmI = new playground.view.WhoAmI();
+    whoAmI.set(
+      {
+        font : "default"
+      });
 
     var version = 
       new qxc.ui.versionlabel.VersionLabel("Playground", "0.025");
@@ -67,13 +83,51 @@ qx.Class.define("playground.view.Header",
     this.__group.bind("modelSelection[0]", this, "mode");
 
     this.add(new qx.ui.basic.Label("LearnCS!"));
-    this.add(new qx.ui.core.Spacer(30));
+    this.add(new qx.ui.core.Spacer(40));
     
     this.add(consoleButton);
 //    this.add(mobileButton);
     
     this.add(new qx.ui.core.Spacer(), { flex : 1 });
+    this.add(whoAmI);
+
+    this.add(new qx.ui.core.Spacer(), { flex : 1 });
     this.add(version);
+
+    // When the page appears...
+    this.addListener(
+      "appear",
+      function(e)
+      {
+        // If there's a request in progress...
+        if (mycall)
+        {
+          // ... then abort it
+          this.__rpc.abort(mycall);
+        }
+
+        // Issue an RPC to initialize ourself and get our whoAmI data
+        mycall = this.__rpc.callAsync(
+          function(result, ex, id) 
+          {
+            // This call is complete
+            mycall = null;
+
+            // Was there an exception?
+            if (ex == null) 
+            {
+              // Nope. Display returned data.
+              whoAmI.set(result.whoAmI);
+              whoAmI.setLogoutUrl(result.logoutUrl);
+            } 
+            else
+            {
+              alert("Async(" + id + ") exception: " + ex);
+            }
+          }, 
+          "userInit");
+      },
+      this);
   },
 
 
@@ -89,9 +143,9 @@ qx.Class.define("playground.view.Header",
 
 
   members : {
+    __rpc : null,
     __buttons : null,
     __group : null,
-
 
     // property apply
     _applyMode : function(value) {

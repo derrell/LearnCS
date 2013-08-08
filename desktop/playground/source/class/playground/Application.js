@@ -123,6 +123,31 @@ qx.Class.define("playground.Application",
       // Call super class
       this.base(arguments);
 
+      // Enable logging in debug variant
+      if (qx.core.Environment.get("qx.debug"))
+      {
+        var             appender;
+        appender = qx.log.appender.Native;
+        appender = qx.log.appender.Console;
+      }
+
+      // Enable simulation in the source version; disable it in the
+      // build version (unless qx.debug is specifically set in the config
+      // file).
+      if (qx.core.Environment.get("qx.debug"))
+      {
+        // Start the RPC simulator by getting its singleton instance
+        this.dbif = playground.dbif.DbifSim.getInstance();
+
+        // Select to use the simulated transport
+        liberated.sim.remote.MRpc.SIMULATE = true;
+      }
+      else
+      {
+        // Use the real transport
+        liberated.sim.remote.MRpc.SIMULATE = false;        
+      }
+
       // container layout
       var layout = new qx.ui.layout.VBox();
 
