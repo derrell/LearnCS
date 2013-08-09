@@ -82,6 +82,11 @@ qx.Class.define("playground.ServerOp",
     {
       // Abort the request.
       this.__rpc.abort(id);
+    },
+    
+    statusReport : function(data)
+    {
+      console.log("\n\nStatus report:\n" + JSON.stringify(data, null, "  "));
     }
   },
   

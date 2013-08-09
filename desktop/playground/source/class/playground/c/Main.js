@@ -194,6 +194,13 @@ qx.Class.define("playground.c.Main",
               errStr += "\t" + str + "\n\n";
             }
 
+            // Send the error as a status report
+            hash.displayError = errStr;
+            playground.c.Main._statusReport(
+              {
+                error : JSON.stringify(hash, null, "  ")
+              });
+
             playground.c.Main.output(errStr);
           }
           else
@@ -443,8 +450,14 @@ qx.Class.define("playground.c.Main",
             error.stack + "\n";
         }
 
+        // Send the error message as a status report
+        playground.c.Main._statusReport(
+          {
+            exit_crash : message
+          });
+
+        // Output the error message
         playground.c.Main.output(message);
-        
         playground.c.Main.output(
           ">>> Program had errors. It did not run to completion.\n");
 
@@ -452,6 +465,19 @@ qx.Class.define("playground.c.Main",
         {
           process.exit(1);
         }
+      }
+    },
+
+    _statusReport : function(data)
+    {
+      try
+      {
+        data.snapshot = qx.core.Init.getApplication().editor.getCode();
+        playground.ServerOp.statusReport(data);
+      }
+      catch(e)
+      {
+        // ignore error; will fail when not in gui environment
       }
     },
 
@@ -497,13 +523,21 @@ qx.Class.define("playground.c.Main",
         function(fInclude)
         {
           var             error;
+          var             message;
 
           error = fInclude();
           if (error)
           {
-            playground.c.Main.output(
+            message =
               "Error near line " + error.node.line +
-                ": " + error.message + "\n");
+              ": " + error.message + "\n";
+            playground.c.Main.output(message);
+
+            // Send the error message as a status report
+            playground.c.Main._statusReport(
+              {
+                exit_crash : message
+              });
           }
         });
 
@@ -604,6 +638,8 @@ qx.Class.define("playground.c.Main",
 
       function catchError(error)
       {
+        var             message;
+
         // Was this actually an Exit request?
         if (error instanceof playground.c.lib.Exit)
         {
@@ -621,6 +657,12 @@ qx.Class.define("playground.c.Main",
             ">>> " +
             "Program exited with exit code " + error.exitCode + "\n");
 
+          // Send the exit code as a status report
+          playground.c.Main._statusReport(
+            {
+              exit_code : error.exitCode
+            });
+
           if (typeof process != "undefined")
           {
             process.exit(error.exitCode);
@@ -633,35 +675,44 @@ qx.Class.define("playground.c.Main",
         // Determine what type of error we encountered
         if (error instanceof playground.c.lib.Break)
         {
-          playground.c.Main.output(
+          message =
             "Error near line " + error.node.line + ": " + 
             "Found 'break' not in a loop, " +
-            "nor immediately within a 'switch'\n");
+            "nor immediately within a 'switch'\n";
         }
         else if (error instanceof playground.c.lib.Continue)
         {
-          playground.c.Main.output(
+          message =
             "Error near line " + error.node.line + ": " + 
-            "Found 'continue' not immediately within a loop\n");
+            "Found 'continue' not immediately within a loop\n";
         }
         else if (error instanceof playground.c.lib.RuntimeError)
         {
-          playground.c.Main.output(
-            "Error near line " + error.node.line + ": " + error.message + "\n");
+          message =
+            "Error near line " + error.node.line + ": " + error.message + "\n";
         }
         else if (error instanceof playground.c.lib.NotYetImplemented)
         {
-          playground.c.Main.output("Not yet implemented: " +
-                                   error.nodeType + "\n");
+          message = error.nodeType + "\n";
         }
         else
         {
-          playground.c.Main.output("Internal error near line " +
-                                   playground.c.lib.Node._currentNode.line +
-                                   ": " + error + "\n");
-          playground.c.Main.output(error.stack + "\n");
+          message =
+            "Internal error near line " +
+            playground.c.lib.Node._currentNode.line +
+            ": " + error + "\n" +
+            error.stack + "\n";
         }
         
+        // Output the error message
+        playground.c.Main.output(message);
+        
+        // Send the error message as a status report
+        playground.c.Main._statusReport(
+          {
+            exit_crash : message
+          });
+
         // Clean up after program completion
         completion();
 
@@ -680,6 +731,8 @@ qx.Class.define("playground.c.Main",
         false,
         function()
         {
+          var             message;
+
           if (playground.c.Main.debugFlags.symtab)
           {
             playground.c.lib.Symtab.display();
@@ -924,25 +977,39 @@ qx.Class.define("playground.c.Main",
                     ">>> " +
                     "Program exited with exit code " + value.value + "\n");
 
-                  if (typeof process != "undefined")
+                  // Send the error message as a status report
+                  playground.c.Main._statusReport(
+                    {
+                      exit_code : value.value
+                    });
+
+                    if (typeof process != "undefined")
+                    {
+                      process.exit(value.value);
+                    }
+                  }.bind(entryNode),
+                  function(e)
                   {
-                    process.exit(value.value);
-                  }
-                }.bind(entryNode),
-                function(e)
-                {
-                  catchError(e);
-                });
+                    catchError(e);
+                  });
+              }
+              catch(e)
+              {
+                catchError(e);
+              }
             }
-            catch(e)
-            {
-              catchError(e);
-            }
-          }
           else
           {
-            playground.c.Main.output(
-              "Missing main() function\n");
+            message = "Missing main() function\n";
+            
+            // Output the error message
+            playground.c.Main.output(message);
+
+            // Send the error message as a status report
+            playground.c.Main._statusReport(
+              {
+                exit_crash : message
+              });
 
             if (typeof process != "undefined")
             {

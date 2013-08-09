@@ -59,26 +59,47 @@ UserCodingAction
   // ... but for now, we'll live with this:
   user                  : User.id
   
-  // automatically-generated timestamp for this record
+  // Automatically-generated timestamp for this record
   timestamp             : date
 
-  // one of:
+  // User's code (in editor) at this time
   snapshot              : longstring
-  set_breakpoint_at     : number
-  breakpoint_stop_at    : number
-  show_memory_view      : boolean
-  button_press          : string // gui id of button which was pressed
-  exit_code             : number
-  exit_crash            : string
-/* and TBD later...
-  set_position          : [ line : number, col : number ]
-  keysequence           : string
-*/
 
-  // if button_press is 'Run' then
-  // one of:
-  errors                : string
+  // A breakpoint is set at the specified line number
+  set_breakpoint_at     : number
+
+  // A breakpoint is hit, during execution, at specified line number
+  breakpoint_stop_at    : number
+
+  // The Memory View button is toggled; boolean indictes whether it's now shown
+  show_memory_view      : boolean
+
+  // A button is pressed (Run/Step/Continue)
+  button_press          : string // gui id of button which was pressed
+
+  // The program terminates via an exit() call or return from main
+  exit_code             : number
+
+  // The program crashed. Value is the resulting error string.
+  exit_crash            : string
+
+
+#if 0 // for later...
+  // Movement within the editor. Value is resulting line and column number
+  set_position          : [ line : number, col : number ]
+
+  // Sequence of (generally printable) characters
+  keysequence           : string
+#endif
+
+  // If parse tree is properly built, a depiction thereof
   parse_tree            : json
+
+  // if a compile or run-time error occurs, the native (and possibly)
+  // displayed error messages
+  error                 : string
+  displayError          : string
+
 
 
 Notes
