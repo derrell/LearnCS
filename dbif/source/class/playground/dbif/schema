@@ -51,19 +51,31 @@ UserCourseStatus
 // for future evaluation of how user codes
 UserCodingAction
   id                    : key
-  registration          : Registration.key
-  assessment            : Assessment.key
+
+  // ultimately, we'd like this...
+  registration          : Registration.id
+  assessment            : Assessment.id
+
+  // ... but for now, we'll live with this:
+  user                  : User.id
+  
   timestamp             : date
 
   // one of:            :
+  snapshot              : longstring
   set_position          : [ line : number, col : number ]
   keysequence           : string
-  breakpoint_at         : number
+  set_breakpoint_at     : number
+  breakpoint_stop_at    : number
+  show_memory_view      : boolean
   button_press          : string // gui id of button which was pressed
+  exit_code             : number
+  exit_crash            : boolean
 
+  // if button_press is 'Run' then
   // one of:
-  errors                : string // if button_press is 'Run'
-  parse_tree            : json   // if button_press is 'Run'
+  errors                : string
+  parse_tree            : json
 
 
 Notes

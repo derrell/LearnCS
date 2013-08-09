@@ -11,19 +11,8 @@ qx.Mixin.define("playground.dbif.MSimData",
   {
     Db : 
     {
-      "counter" : 
+      "user" : 
       {
-        "x" : 
-        {
-          "id" : "x",
-          "count" : 23
-        },
-        
-        "y" :
-        {
-          "id" : "y",
-          "count" : 42
-        }
       }
     }
   }

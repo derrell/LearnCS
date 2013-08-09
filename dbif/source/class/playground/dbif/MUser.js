@@ -39,13 +39,51 @@ qx.Mixin.define("playground.dbif.MUser",
      */
     userInit : function(error)
     {
-      var ret =
+      var             userId;
+      var             userObj;
+      var             userData;
+      var             ret;
+      
+      // Get the pre-calculated values for our return value
+      ret =
         {
           whoAmI    : this.getWhoAmI(),
           logoutUrl : this.getLogoutUrl()
         };
 
-      return ret;
+      // Ensure that this user has an ObjUser object in the datastore
+      return liberated.dbif.Entity.asTransaction(
+        function()
+        {
+          // See if this user is already registered
+          userData = liberated.dbif.Entity.query("playground.dbif.ObjUser");
+          
+          // If not...
+          if (userData.length === 0)
+          {
+            // ... then create the user object
+            userObj = new playground.dbif.ObjUser();
+
+            // Get the object's data
+            userData = userObj.getData();
+            
+            // Assign the email address
+            userData.email = ret.whoAmI.email;
+            
+            // Write it back to the database
+            userObj.put();
+          }
+          else
+          {
+            // User is already registered. Get the one and only query result.
+            userData = userData[0];
+          }
+          
+          // Add the id to the return data
+          ret.userId = userData.id;
+
+          return ret;
+        });
     }
   }
 });
