@@ -1,24 +1,9 @@
-/* ************************************************************************
-
-   qooxdoo - the new era of web development
-
-   http://qooxdoo.org
-
-   Copyright:
-     2008-2009 1&1 Internet AG, Germany, http://www.1und1.de
-
-   License:
-     LGPL: http://www.gnu.org/licenses/lgpl.html
-     EPL: http://www.eclipse.org/org/documents/epl-v10.php
-     See the LICENSE file in the project's top-level directory for details.
-
-   Authors:
-     * Andreas Ecker (ecker)
-     * Yuecel Beser (ybeser)
-     * Jonathan Weiß (jonathan_rass)
-     * Martin Wittemann (martinwittemann)
-
-************************************************************************ */
+/**
+ * Copyright (c) 2013 Derrell Lipman
+ * 
+ * License:
+ *   GPL Version 2: http://www.gnu.org/licenses/gpl-2.0.html 
+ */
 
 /* ************************************************************************
 

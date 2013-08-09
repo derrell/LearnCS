@@ -35,12 +35,6 @@ qx.Class.define("playground.view.Header",
     this.base(arguments, new qx.ui.layout.HBox());
     this.setAppearance("app-header");
 
-    // Prepare to issue remote procedure calls
-    this.__rpc = new qx.io.remote.Rpc();
-    this.__rpc.setProtocol("2.0");
-    this.__rpc.setUrl("/rpc");
-    this.__rpc.setServiceName("learncs");
-
     // EVIL HACK
     this.addListener("appear", function() {
       var el = this.getContentElement();
@@ -99,33 +93,25 @@ qx.Class.define("playground.view.Header",
       "appear",
       function(e)
       {
-        // If there's a request in progress...
-        if (mycall)
-        {
-          // ... then abort it
-          this.__rpc.abort(mycall);
-        }
+        // ... issue a request to initialize ourself. The result will contain
+        // my user id and a logout URL
+        playground.Rpc.request(
+          // function to call
+          "userInit",
 
-        // Issue an RPC to initialize ourself and get our whoAmI data
-        mycall = this.__rpc.callAsync(
-          function(result, ex, id) 
+          // success handler
+          function(result, id)
           {
-            // This call is complete
-            mycall = null;
+            // Success. Display the result values.
+            whoAmI.set(result.whoAmI);
+            whoAmI.setLogoutUrl(result.logoutUrl);
+          },
 
-            // Was there an exception?
-            if (ex == null) 
-            {
-              // Nope. Display returned data.
-              whoAmI.set(result.whoAmI);
-              whoAmI.setLogoutUrl(result.logoutUrl);
-            } 
-            else
-            {
-              alert("Async(" + id + ") exception: " + ex);
-            }
-          }, 
-          "userInit");
+          // failure handler
+          function(ex, id)
+          {
+            alert("RPC " + id + " exception: " + ex);
+          });
       },
       this);
   },
@@ -143,7 +129,6 @@ qx.Class.define("playground.view.Header",
 
 
   members : {
-    __rpc : null,
     __buttons : null,
     __group : null,
 
