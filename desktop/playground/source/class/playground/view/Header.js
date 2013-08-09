@@ -95,7 +95,7 @@ qx.Class.define("playground.view.Header",
       {
         // ... issue a request to initialize ourself. The result will contain
         // my user id and a logout URL
-        playground.Rpc.request(
+        playground.ServerOp.rpc(
           // function to call
           "userInit",
 

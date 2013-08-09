@@ -417,6 +417,8 @@ qx.Class.define("playground.c.Main",
 
     process : function(root, argv)
     {
+      var             message;
+
       try
       {
         playground.c.Main._process(root, argv);
@@ -425,22 +427,24 @@ qx.Class.define("playground.c.Main",
       {
         if (error instanceof playground.c.lib.RuntimeError)
         {
-          playground.c.Main.output(
-            "Error near line " + error.node.line + ": " + error.message + "\n");
+          message =
+            "Error near line " + error.node.line + ": " + error.message + "\n";
         }
         else if (error instanceof playground.c.lib.NotYetImplemented)
         {
-          playground.c.Main.output("Not yet implemented: " +
-                                   error.nodeType + "\n");
+          message = "Not yet implemented: " + error.nodeType + "\n";
         }
         else
         {
-          playground.c.Main.output("Internal error near line " +
-                                   playground.c.lib.Node._currentNode.line +
-                                   ": " + error + "\n");
-          playground.c.Main.output(error.stack + "\n");
+          message =
+            "Internal error near line " +
+            playground.c.lib.Node._currentNode.line +
+            ": " + error + "\n" + 
+            error.stack + "\n";
         }
 
+        playground.c.Main.output(message);
+        
         playground.c.Main.output(
           ">>> Program had errors. It did not run to completion.\n");
 

@@ -59,18 +59,21 @@ UserCodingAction
   // ... but for now, we'll live with this:
   user                  : User.id
   
+  // automatically-generated timestamp for this record
   timestamp             : date
 
-  // one of:            :
+  // one of:
   snapshot              : longstring
-  set_position          : [ line : number, col : number ]
-  keysequence           : string
   set_breakpoint_at     : number
   breakpoint_stop_at    : number
   show_memory_view      : boolean
   button_press          : string // gui id of button which was pressed
   exit_code             : number
-  exit_crash            : boolean
+  exit_crash            : string
+/* and TBD later...
+  set_position          : [ line : number, col : number ]
+  keysequence           : string
+*/
 
   // if button_press is 'Run' then
   // one of:

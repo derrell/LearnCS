@@ -5,7 +5,7 @@
  *   GPL Version 2: http://www.gnu.org/licenses/gpl-2.0.html 
  */
 
-qx.Class.define("playground.Rpc",
+qx.Class.define("playground.ServerOp",
 {
   type   : "static",
   
@@ -38,7 +38,7 @@ qx.Class.define("playground.Rpc",
      *   An opaque value which can be passed to the cancel() method, to cancel
      *   this RPC request.
      */
-    request : function(name, cbSuccess, cbFailure)
+    rpc : function(name, cbSuccess, cbFailure)
     {
       var             id;
 
@@ -47,7 +47,7 @@ qx.Class.define("playground.Rpc",
         function(result, ex, id) 
         {
           // We received a result. Decrement the count of requests in progress
-          --playground.Rpc.__inProgress;
+          --playground.ServerOp.__inProgress;
 
           // Was there an exception?
           if (ex == null) 
@@ -65,7 +65,7 @@ qx.Class.define("playground.Rpc",
         name);
       
       // Increment the count of requests in progress
-      ++playground.Rpc.__inProgress;
+      ++playground.ServerOp.__inProgress;
       
       // Give 'em the id, so they might have the option to cancel the request
       return id;
@@ -78,7 +78,7 @@ qx.Class.define("playground.Rpc",
      * @param id {Var}
      *   An opaque request identifier previously returned by request().
      */
-    cancel : function(id)
+    rpcCancel : function(id)
     {
       // Abort the request.
       this.__rpc.abort(id);
