@@ -13,6 +13,10 @@ qx.Mixin.define("playground.dbif.MSimData",
     {
       "user" : 
       {
+      },
+      
+      "usage_detail" :
+      {
       }
     }
   }

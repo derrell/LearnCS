@@ -14,9 +14,7 @@ qx.Class.define("playground.dbif.ObjUser",
     // Pre-initialize the data
     this.setData(
       {
-        "id"          : null,
-        "email"       : "",
-        "displayName" : ""
+        "id"          : null
       });
 
     // Call the superclass constructor
@@ -39,7 +37,7 @@ qx.Class.define("playground.dbif.ObjUser",
         "displayName" : "String"
       };
 
-    // Register our property types.  'id' is the key field.
+    // Register our property types.
     liberated.dbif.Entity.registerPropertyTypes("user",
                                                 databaseProperties,
                                                 "id");

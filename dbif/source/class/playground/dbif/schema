@@ -49,7 +49,7 @@ UserCourseStatus
   assessment_score      : number // if type==Assessment and completed==true
 
 // for future evaluation of how user codes
-UserCodingAction
+UsageDetail
   id                    : key
 
   // ultimately, we'd like this...

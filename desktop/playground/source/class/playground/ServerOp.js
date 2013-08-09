@@ -20,10 +20,6 @@ qx.Class.define("playground.ServerOp",
     /**
      * Issue a remote procedure call request.
      * 
-     * @param name {String}
-     *   The name of the function to be called, within the namespace
-     *   initialized in our defer() function.
-     * 
      * @param cbSuccess {Function}
      *   Callback function to be called upon successful result from RPC. The
      *   function will be passed two arguments: the RPC result value, and the
@@ -34,16 +30,30 @@ qx.Class.define("playground.ServerOp",
      *   will be passed two arguments: the RPC exception map, and the id of
      *   the request.
      * 
+     * @param name {String}
+     *   The name of the function to be called, within the namespace
+     *   initialized in our defer() function.
+     * 
+     * @param args {Array}
+     *   Arguments to pass to the remote procedure call
+     * 
      * @return {Var}
      *   An opaque value which can be passed to the cancel() method, to cancel
      *   this RPC request.
      */
-    rpc : function(name, cbSuccess, cbFailure)
+    rpc : function(cbSuccess, cbFailure, name, args)
     {
       var             id;
 
-      // Issue the RPC
-      id = this.__rpc.callAsync(
+      // If there were no arguments provided, create an empty argument list;
+      // otherwise clone the argument list.
+      args = args ? args.slice(0) : [];
+
+      // Prepend to the arguments, the name of the function to be called
+      args.unshift(name);
+      
+      // Prepend to the arguments, the callback function
+      args.unshift(
         function(result, ex, id) 
         {
           // We received a result. Decrement the count of requests in progress
@@ -61,8 +71,10 @@ qx.Class.define("playground.ServerOp",
             typeof console != "undefined" && console.log(ex);
             cbFailure && cbFailure(ex, id);
           }
-        }, 
-        name);
+        });
+      
+      // Issue the RPC
+      id = this.__rpc.callAsync.apply(this.__rpc, args);
       
       // Increment the count of requests in progress
       ++playground.ServerOp.__inProgress;
@@ -86,7 +98,11 @@ qx.Class.define("playground.ServerOp",
     
     statusReport : function(data)
     {
-      console.log("\n\nStatus report:\n" + JSON.stringify(data, null, "  "));
+      playground.ServerOp.rpc(
+        null,                   // success callback
+        null,                   // failure callback
+        "usageDetail",          // function to be called
+        [ data ]);              // arguments to function
     }
   },
   

@@ -80,10 +80,10 @@ qx.Mixin.define("playground.dbif.MUser",
           }
           
           // Add the id to the return data
-          ret.userId = userData.id;
+          this.setMyUserId(userData.id);
 
           return ret;
-        });
+        }.bind(this));
     }
   }
 });

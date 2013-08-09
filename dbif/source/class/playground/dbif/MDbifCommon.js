@@ -9,7 +9,8 @@ qx.Mixin.define("playground.dbif.MDbifCommon",
 {
   include :
   [
-    playground.dbif.MUser
+    playground.dbif.MUser,
+    playground.dbif.MUsageDetail
   ],
 
   construct : function()
@@ -33,6 +34,15 @@ qx.Mixin.define("playground.dbif.MDbifCommon",
       apply    : "_applyWhoAmI"
     },
     
+    /**
+     * The database (ObjUser) ID of the current user
+     */
+    myUserId :
+    {
+      init     : null,
+      apply    : "_applyMyUserId"
+    },
+
     logoutUrl :
     {
       init     : "",
@@ -45,6 +55,11 @@ qx.Mixin.define("playground.dbif.MDbifCommon",
     _applyWhoAmI : function(value, old)
     {
       playground.dbif.MDbifCommon.__whoAmI = value;
+    },
+
+    _applyMyUserId : function(value, old)
+    {
+      playground.dbif.MDbifCommon.__myUserId = value;
     }
   },
 
@@ -59,6 +74,17 @@ qx.Mixin.define("playground.dbif.MDbifCommon",
     currentTimestamp : function()
     {
       return new Date().getTime();
+    },
+
+    /**
+     * Retrieve the id of the current user
+     * 
+     * @return {Number}
+     *   The id of the current user
+     */
+    getCurrentUserId : function()
+    {
+      return playground.dbif.MDbifCommon.__myUserId;
     },
 
     /**

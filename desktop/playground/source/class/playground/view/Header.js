@@ -96,9 +96,6 @@ qx.Class.define("playground.view.Header",
         // ... issue a request to initialize ourself. The result will contain
         // my user id and a logout URL
         playground.ServerOp.rpc(
-          // function to call
-          "userInit",
-
           // success handler
           function(result, id)
           {
@@ -111,7 +108,11 @@ qx.Class.define("playground.view.Header",
           function(ex, id)
           {
             alert("RPC " + id + " exception: " + ex);
-          });
+          },
+
+          // function to call
+          "userInit"
+        );
       },
       this);
   },
