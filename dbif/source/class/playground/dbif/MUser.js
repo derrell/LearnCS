@@ -56,7 +56,13 @@ qx.Mixin.define("playground.dbif.MUser",
         function()
         {
           // See if this user is already registered
-          userData = liberated.dbif.Entity.query("playground.dbif.ObjUser");
+          userData = liberated.dbif.Entity.query(
+            "playground.dbif.ObjUser",
+            {
+              op    : "element",
+              field : "email",
+              value : whoAmI.email
+            });
           
           // If not...
           if (userData.length === 0)
