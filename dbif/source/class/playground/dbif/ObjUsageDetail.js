@@ -14,9 +14,19 @@ qx.Class.define("playground.dbif.ObjUsageDetail",
     // Pre-initialize the data
     this.setData(
       {
-        "id"           : null,
-        "user"         : playground.dbif.MDbifCommon.getCurrentUserId(),
-        "timestamp"    : playground.dbif.MDbifCommon.currentTimestamp()
+        "id"                 : null,
+        "user"               : playground.dbif.MDbifCommon.getCurrentUserId(),
+        "timestamp"          : playground.dbif.MDbifCommon.currentTimestamp(),
+        "snapshot"           : null,
+        "set_breakpoint_at"  : 0,
+        "breakpoint_stop_at" : 0,
+        "show_memory_view"   : null,
+        "button_press"       : null,
+        "exit_code"          : -1,
+        "exit_crash"         : null,
+        "parse_tree"         : null,
+        "error"              : null,
+        "displayError"       : null
       });
 
     // Call the superclass constructor
@@ -55,8 +65,8 @@ qx.Class.define("playground.dbif.ObjUsageDetail",
         /** Line number at which a breakpoint has occurred during execution */
         "breakpoint_stop_at" : "Integer",
         
-        /** Memory View button was toggled. New value is stored. */
-        "show_memory_view"   : "Integer",
+        /** Memory View button was toggled. New boolean string is stored. */
+        "show_memory_view"   : "String",
         
         /** A button was pressed. Value is "Run", "Step", "Continue" */
         "button_press"       : "String",
