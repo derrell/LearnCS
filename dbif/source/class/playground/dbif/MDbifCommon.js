@@ -125,6 +125,9 @@ qx.Mixin.define("playground.dbif.MDbifCommon",
       case "learncs.userInit":
         return ! bAnonymous;    // Access is allowed if they're logged in
 
+      case "learncs.usageDetail":
+        return ! bAnonymous;    // Access is allowed if they're logged in
+
 /*
       case "learncs.somePrivateMethod":
         return (me == "joe@blow.com");
