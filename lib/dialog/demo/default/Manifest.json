@@ -1,0 +1,34 @@
+{
+  "info" : 
+  {
+    "name" : "Dialog Demo",
+
+    "summary" : "Dialog Demo",
+    "description" : "This is a demo for the dialog widgets, called from client code",
+    
+    "homepage" : "http://demo.qooxdoo.org/contrib/Dialog",
+
+    "license" : "LGPL/EPL",
+    "authors" : 
+    [
+      {
+        "name" : "Christian Boulanger (cboulanger)",
+        "email" : "christian.boulanger@qxtransformer.org"
+      }
+    ],
+
+    "version" : "trunk",
+    "qooxdoo-versions": ["1.0","1.2","1.3","1.4","1.5"]
+  },
+  
+  "provides" : 
+  {
+    "namespace"   : "dialog.demo",
+    "encoding"    : "utf-8",
+    "class"       : "source/class",
+    "resource"    : "source/resource",
+    "translation" : "source/translation",
+    "type"        : "application"
+  }
+}
+
