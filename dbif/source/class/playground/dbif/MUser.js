@@ -59,9 +59,9 @@ qx.Mixin.define("playground.dbif.MUser",
           userData = liberated.dbif.Entity.query(
             "playground.dbif.ObjUser",
             {
-              op    : "element",
+              type  : "element",
               field : "email",
-              value : whoAmI.email
+              value : ret.whoAmI.email
             });
           
           // If not...

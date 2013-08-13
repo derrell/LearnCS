@@ -60,6 +60,9 @@
         { 
          "manifest" : "../../dbif/Manifest.json"
         },
+        {
+          "manifest" : "../../lib/dialog/Manifest.json"
+        },
         { 
          "manifest" : "../../lib/uploadwidget/Manifest.json"
         }

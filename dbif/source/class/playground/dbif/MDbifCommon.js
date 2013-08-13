@@ -24,7 +24,7 @@ qx.Mixin.define("playground.dbif.MDbifCommon",
   {
     /**
      * Information about the currently-logged-in user. The value is a map
-     * containing the fields: email, userId, and isAdmin.
+     * containing the fields: email, isAdmin, and optionally, displayName.
      */
     whoAmI :
     {

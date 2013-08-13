@@ -45,15 +45,7 @@ qx.Mixin.define("playground.dbif.MUsageDetail",
       // Write it to the database
       detailObj.put();
 
-      return liberated.dbif.Entity.query(
-        "playground.dbif.ObjUsageData",
-        {
-          op    : "element",
-          field : "id",
-          value : detailData.id
-        });
-
-//      return 0;
+      return 0;
     }
   }
 });

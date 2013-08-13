@@ -33,9 +33,109 @@ qx.Class.define("playground.dbif.DbifSim",
       });
       
       // Provide the logout URL
-      this.setLogoutUrl("javascript:alert(\"logout clicked\");");
+//      this.setLogoutUrl("javascript:alert(\"logout clicked\");");
+      this.setLogoutUrl("javascript:playground.dbif.DbifSim.changeWhoAmI();");
   },
   
+  statics :
+  {
+    changeWhoAmI : function(context)
+    {
+      var formData =  
+      {
+        'email'   : 
+        {
+          'type'  : "ComboBox", 
+          'label' : "Login",
+          'value' : null,
+          'options' : [ ]
+        },
+        'isAdmin'   : 
+        {
+          'type'  : "SelectBox", 
+          'label' : "User type",
+          'value' : null,
+          'options' : 
+          [
+            { 'label' : "Normal",        'value' : false }, 
+            { 'label' : "Administrator", 'value' : true  }
+          ]
+        }
+      };
+      
+      // Retrieve all of the user records
+      liberated.dbif.Entity.query("playground.dbif.ObjUser").forEach(
+        function(user, i)
+        {
+          // Add this user to the list
+          formData.email.options.push(
+            {
+              label : user.email
+            });
+        });
+
+      dialog.Dialog.form(
+        "You have been logged out. Please log in.",
+        formData,
+        function(result)
+        {
+          var             userObj;
+          var             userData;
+          var             displayName;
+          var             guiWhoAmI;
+          var             backendWhoAmI;
+
+          // Try to get this user's ID. Does the user exist?
+          userData = liberated.dbif.Entity.query("playground.dbif.ObjUser",
+                                                 {
+                                                   "type" : "element",
+                                                   "field" : "email",
+                                                   "value" : result.email
+                                                 });
+          
+          // Did we find it?
+          if (userData.length > 0)
+          {
+            // Yup. There will be only one object. Get it.
+            userData = userData[0];
+          }
+          else
+          {
+            // User didn't exist. Creat him.
+            userObj = new playground.dbif.ObjUser();
+            userData = userObj.getData();
+            userData.email = result.email;
+            userObj.put();
+          }
+
+          // Allow quick access to the backend whoAmI, logoutUrl, and userId
+          backendWhoAmI = playground.dbif.DbifSim.getInstance();
+            
+          // Save the backend whoAmI information
+          backendWhoAmI.setWhoAmI(
+          {
+            email             : userData.email,
+            isAdmin           : result.isAdmin
+          });
+
+          // Save the logout URL (this function)
+          backendWhoAmI.setLogoutUrl(
+            "javascript:playground.dbif.DbifSim.changeWhoAmI();");
+          
+          // Save the user id
+          backendWhoAmI.setMyUserId(userData.id);
+          
+          // Update the gui too
+          guiWhoAmI = qx.core.Init.getApplication().getUserData("whoAmI");
+          guiWhoAmI.setIsAdmin(result.isAdmin);
+          guiWhoAmI.setEmail(userData.email);
+          guiWhoAmI.setLogoutUrl(
+            "javascript:playground.dbif.DbifSim.changeWhoAmI();");
+        }
+      );
+    }
+  },
+
   members :
   {
     __rpc : null,

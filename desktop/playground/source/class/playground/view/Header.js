@@ -47,6 +47,9 @@ qx.Class.define("playground.view.Header",
       {
         font : "default"
       });
+    
+    // Allow the simulated dbif to alter this object upon logout/login
+    qx.core.Init.getApplication().setUserData("whoAmI", whoAmI);
 
     var version = 
       new qxc.ui.versionlabel.VersionLabel("Playground", "0.025");

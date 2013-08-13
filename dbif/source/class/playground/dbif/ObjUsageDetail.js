@@ -35,7 +35,7 @@ qx.Class.define("playground.dbif.ObjUsageDetail",
   
   defer : function(statics)
   {
-    liberated.dbif.Entity.registerEntityType(statics.classname, "user");
+    liberated.dbif.Entity.registerEntityType(statics.classname, "usage_detail");
 
     var databaseProperties =
       {
