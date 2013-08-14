@@ -65,7 +65,7 @@ qx.Mixin.define("playground.dbif.MUser",
             });
           
           // If not...
-          if (userData.length === 0)
+         if (userData.length === 0)
           {
             // ... then create the user object
             userObj = new playground.dbif.ObjUser();
