@@ -1105,6 +1105,8 @@ qx.Class.define("playground.Application",
         this.__modified = true;
       }
 
+      playground.c.Main.output("", true);
+
       try
       {
         playground.c.lib.Preprocessor.preprocess(

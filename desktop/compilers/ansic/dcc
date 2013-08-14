@@ -59,7 +59,7 @@ cat > /tmp/dcc$$ <<EOF
   }
   catch(e)
   {
-    console.log(">>> Preprocessor encountered an error");
+    console.log(">>> Preprocessor encountered an error: " + e);
   }
 EOF
 shift

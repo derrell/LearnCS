@@ -572,7 +572,15 @@ qx.Class.define("playground.c.lib.Preprocessor",
               elem = self.subs(elem,
                 {}, error, warn);
               var parts = elem.match(include_re);
-              if (parts[4])
+              if (! parts)
+              {
+                // #include was not followed by an angle-bracketted nor
+                // double-quoted file name
+                error("#include must be followed by a file name enclosed " +
+                      "either in angle brackets, such as <stdio.h> or in " +
+                      "double quotes, such as \"defs.h\"");
+              }
+              else if (parts[4])
               {
                 extraText = parts[4];
 

@@ -761,9 +761,7 @@ qx.Class.define("playground.c.Main",
           // exists, to run the program
           if (entryNode)
           {
-            playground.c.Main.output(
-              "\n>>> Running program\n",
-              true);
+            playground.c.Main.output("\n>>> Running program\n");
 
             // Prepare to call main(). Reset the machine.
             machine.initAll();
