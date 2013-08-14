@@ -280,10 +280,12 @@ qx.Class.define("playground.c.Main",
 
           if (! inclFile.is_global)
           {
-            throw new Error(
-              "Local file includes (with quotes) " +
-              "are not yet supported (\"" + file + "\")\n" +
-              "If it's a system include file, you should use angle brackets: " +
+            throw (
+              "Error near line " + line + ": " +
+              "#include for local files (with quotes) " +
+              "is not yet supported: \"" + file + "\"\n" +
+              "If it's a system include file, you should use angle brackets " +
+              "instead: " +
               "<" + file + ">");
           }
 

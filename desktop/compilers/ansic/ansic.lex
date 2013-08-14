@@ -153,10 +153,16 @@ NL                      [\n]
 .			{ /* ignore bad characters */ }
 
 
-<inc>\"(\\.|[^\\"])*\"  {       playground.c.lib.Node.getError().parseError(
-        "Local file includes (with quotes) " +
-        "are not yet supported (" + yytext + ")\n" +
-        "If it's a system include file, you should use angle brackets: " +
+<inc>\"(\\.|[^\\"])*\"  {
+    //
+    // NOTE: This error isn't caught here. See Main.js where the included
+    // files are handled. (FIXME: This code is never hit. Find out why.)
+    //
+    playground.c.lib.Node.getError().parseError(
+        "#include for local files (with quotes) " +
+        "is not yet supported: " + yytext + "\n" +
+        "If it's a system include file, you should use angle brackets " +
+        "instead: " +
         " <" + yytext.substr(1, yytext.length - 2) + ">",
         { line : yylineno });
 }
