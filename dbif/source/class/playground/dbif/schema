@@ -65,17 +65,17 @@ UsageDetail
   // User's code (in editor) at this time
   snapshot              : longstring
 
-  // A breakpoint is set at the specified line number
-  set_breakpoint_at     : number
+  // A breakpoint changed. Value is the row that toggled
+  breakpoint_row        : number,
+
+  // A breakpoint changed. Value is "on" or "off"
+  breakpoint_value      : string,
+
+  // A breakpoint changed. Value is the new array of breakpoints
+  breakpoints           : array of number
 
   // A breakpoint is hit, during execution, at specified line number
   breakpoint_stop_at    : number
-
-  // The Memory View button is toggled; boolean indictes whether it's now shown
-  show_memory_view      : boolean
-
-  // A button is pressed (Run/Step/Continue)
-  button_press          : string // gui id of button which was pressed
 
   // The program terminates via an exit() call or return from main
   exit_code             : number
@@ -83,14 +83,23 @@ UsageDetail
   // The program crashed. Value is the resulting error string.
   exit_crash            : string
 
+  // Change action ("insertText", "removeText", etc.)
+  change_action         : string
 
-#if 0 // for later...
-  // Movement within the editor. Value is resulting line and column number
-  set_position          : [ line : number, col : number ]
+  // Change start location (row, col)
+  change_start          : array containing row, col
 
-  // Sequence of (generally printable) characters
-  keysequence           : string
-#endif
+  // Change end location (row, col)
+  change_end            : array containing row, col
+
+  // Changed text
+  change_text           : string,
+
+  // The Memory View button is toggled; boolean indictes whether it's now shown
+  show_memory_view      : boolean
+
+  // A button is pressed (Run/Step/Continue)
+  button_press          : string // gui id of button which was pressed
 
   // If parse tree is properly built, a depiction thereof
   parse_tree            : json

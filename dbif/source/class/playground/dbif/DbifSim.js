@@ -167,20 +167,21 @@ qx.Class.define("playground.dbif.DbifSim",
       if (typeof localStorage.simDB == "string")
       {
         qx.Bootstrap.debug("Reading DB from Web Storage");
-        liberated.sim.Dbif.setDb(qx.lang.Json.parse(localStorage.simDB));
+        liberated.sim.Dbif.setDb(qx.lang.Json.parse(localStorage.simDB),
+                                 localStorage.nextKey || 0);
       }
       else
       {
         // No database yet stored. Retrieve the database from the MSimData mixin
         qx.Bootstrap.debug("No database yet. Using new SIM database.");
-        liberated.sim.Dbif.setDb(playground.dbif.MSimData.Db);
+        liberated.sim.Dbif.setDb(playground.dbif.MSimData.Db, 0);
       }
     }
     else
     {
       // Retrieve the database from the MSimData mixin
       qx.Bootstrap.debug("No Web Storage available. Using new SIM database.");
-      liberated.sim.Dbif.setDb(playground.dbif.MSimData.Db);
+      liberated.sim.Dbif.setDb(playground.dbif.MSimData.Db, 0);
     }
     
     // Register our put & query functions

@@ -284,7 +284,30 @@ qx.Class.define("playground.view.Editor",
 
           session.doc.on("change", updateDataOnDocChange);
 
-          // djl: enable/disable breakpoints by click in gutter
+          // track changes in the editor
+          editor.on(
+            "change",
+            function(e)
+            {
+              // Generate a status report showing text changes in the editor.
+              playground.ServerOp.statusReport(
+                {
+                  change_action : e.data.action,
+                  change_start  : 
+                    [
+                      e.data.range.start.row + 1,
+                      e.data.range.start.column + 1
+                    ],
+                  change_end    :
+                    [
+                      e.data.range.end.row + 1,
+                      e.data.range.end.column + 1
+                    ],
+                  change_text   : e.data.text
+                });
+            });
+
+          // enable/disable breakpoints by click in gutter
           editor.on(
             "guttermousedown", 
             function(e)
@@ -306,18 +329,40 @@ qx.Class.define("playground.view.Editor",
               // 'session' is in e.editor.session, but we have it already
 
               var row = e.getDocumentPosition().row;
+              var value;
               
               // Is there already a breakpoint on this line?
               if (! session.getBreakpoints()[row])
               {
                 // Nope. Set one.
                 session.setBreakpoint(row);
+                value = "on";
               }
               else
               {
                 // There is already a breakpoint here. Clear it.
                 session.clearBreakpoint(row);
+                value = "off";
               }
+              
+              // Generate a status report showing breakpoint change
+              playground.ServerOp.statusReport(
+                {
+                  breakpoint_row   : row + 1, // make 1-relative
+                  breakpoint_value : value,
+
+                  // map non-null to row #, then filter out formerly null values
+                  breakpoints      : session.getBreakpoints().map(
+                    function(elem, index)
+                    {
+                      return !!elem ? index + 1 : 0;
+                    }).filter(
+                      function(elem)
+                      {
+                        return elem !== 0;
+                      })
+                });
+              
               e.stop();
             });
 

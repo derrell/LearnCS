@@ -716,6 +716,12 @@ qx.Class.define("playground.c.lib.Node",
             // Scroll to this line.
             editor.scrollToLine(this.line - 1);
 
+            // Generate a status report showing we're stopped at a breakpoint
+            playground.ServerOp.statusReport(
+              {
+                breakpoint_stop_at : this.line
+              });
+
             // Reset unwind count, since we're unwinding by awaiting an event
             playground.c.lib.Node._unwindCount =
               playground.c.lib.Node._unwindInit;
@@ -730,6 +736,13 @@ qx.Class.define("playground.c.lib.Node",
 
                     try
                     {
+                      // Generate a status report showing that they've pressed
+                      // Step
+                      playground.ServerOp.statusReport(
+                        {
+                          button_press : "Step"
+                        });
+
                       // Note that they pressed the Step button, to break at
                       // next line.
                       playground.c.lib.Node._bStep = true;
@@ -758,6 +771,13 @@ qx.Class.define("playground.c.lib.Node",
 
                     try
                     {
+                      // Generate a status report showing that they've pressed
+                      // Continue
+                      playground.ServerOp.statusReport(
+                        {
+                          button_press : "Continue"
+                        });
+
                       // Do not break at the next line (unless there's a
                       // breakpoint at that line)
                       playground.c.lib.Node._bStep = false;

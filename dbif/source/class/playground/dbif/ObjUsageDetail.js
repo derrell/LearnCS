@@ -17,14 +17,21 @@ qx.Class.define("playground.dbif.ObjUsageDetail",
         "id"                 : null,
         "user"               : playground.dbif.MDbifCommon.getCurrentUserId(),
         "timestamp"          : playground.dbif.MDbifCommon.currentTimestamp(),
+        "session_change"     : null,
         "snapshot"           : null,
-        "set_breakpoint_at"  : 0,
+        "breakpoint_row"     : 0,
+        "breakpoint_value"   : null,
+        "breakpoints"        : null,
         "breakpoint_stop_at" : 0,
-        "show_memory_view"   : null,
-        "button_press"       : null,
         "exit_code"          : -1,
         "exit_crash"         : null,
-        "parse_tree"         : null,
+        "change_action"      : null,
+        "change_start"       : null,
+        "change_end"         : null,
+        "change_text"        : null,
+        "show_memory_view"   : null,
+        "button_press"       : null,
+        "filename"           : null,
         "error"              : null,
         "displayError"       : null
       });
@@ -56,20 +63,23 @@ qx.Class.define("playground.dbif.ObjUsageDetail",
         // User-provided members
         //
 
+        /** Session change, e.g. new session, load new file, etc. */
+        "session_change"     : "string", // may be issued by MUser
+
         /** User's code (in editor) at this time */
         "snapshot"           : "LongString",
         
-        /** Line number at which a breakpoint has been set */
-        "set_breakpoint_at"  : "Integer",
+        /** A breakpoint changed. Value is row that toggled */
+        "breakpoint_row"     : "Number",
+
+        /** A breakpoint changed. Value is "on" or "off" */
+        "breakpoint_value"   : "String",
+
+        /** A breakpoint changed. Value is the current breakpoint rows array */
+        "breakpoints"        : "NumberArray",
         
         /** Line number at which a breakpoint has occurred during execution */
         "breakpoint_stop_at" : "Integer",
-        
-        /** Memory View button was toggled. New boolean string is stored. */
-        "show_memory_view"   : "String",
-        
-        /** A button was pressed. Value is "Run", "Step", "Continue" */
-        "button_press"       : "String",
         
         /** The program terminated via an exit() call or return from main */
         "exit_code"          : "Integer",
@@ -77,9 +87,27 @@ qx.Class.define("playground.dbif.ObjUsageDetail",
         /** The program crashed. Value is the resulting error string. */
         "exit_crash"         : "String",
         
-        /** Parse tree, after being properly generated (via Run) */
-        "parse_tree"         : "LongString",
+        /** Change action ("insertText", "removeText", etc.) */
+        "change_action"      : "string",
         
+        /** Change start location (row, col) */
+        "change_start"       : "NumberArray",
+        
+        /** Change end location (row, col) */
+        "change_end"         : "NumberArray",
+        
+        /** Changed text */
+        "change_text"        : "String",
+
+        /** Memory View button was toggled. New boolean string is stored. */
+        "show_memory_view"   : "String",
+        
+        /** A button was pressed, e.g., "Run", "Step", "Continue" */
+        "button_press"       : "String",
+        
+        /** File name, if button_press is "Load File" */
+        "filename"           : "String",
+
         /** Compiler or run-time error, as JSON depiction of hash map */
         "error"              : "LongString",
         

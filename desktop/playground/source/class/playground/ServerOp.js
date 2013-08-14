@@ -17,6 +17,12 @@ qx.Class.define("playground.ServerOp",
     /** Number of requests currently in progress */
     __inProgress : 0,
 
+    /** Queue of data to be sent to the server */
+    __queue : [],
+
+    /** timer handle to send enqueued data */
+    __timer : null,
+
     /**
      * Issue a remote procedure call request.
      * 
@@ -98,11 +104,44 @@ qx.Class.define("playground.ServerOp",
     
     statusReport : function(data)
     {
-      playground.ServerOp.rpc(
-        null,                   // success callback
-        null,                   // failure callback
-        "usageDetail",          // function to be called
-        [ data ]);              // arguments to function
+      var             queue = playground.ServerOp.__queue;
+
+      // Enqueue this new request
+      queue.push(data);
+      
+      // Is there already a timer active?
+      if (playground.ServerOp.__timer)
+      {
+        // Yup. Nothing more to do right now.
+        return;
+      }
+      
+      // Start a timer to post the usage detail data
+      playground.ServerOp.__timer = qx.util.TimerManager.getInstance().start(
+        function(userData, timerId)
+        {
+          // Add a snapshot immediately before sending this batch of reports
+          queue.push(
+            {
+              snapshot      : qx.core.Init.getApplication().editor.getCode()
+            });
+
+          playground.ServerOp.rpc(
+            null,                             // success callback
+            null,                             // failure callback
+            "usageDetail",                    // function to be called
+            [ queue ]);                       // arguments to function
+          
+          // The queue has been processed. Reset it.
+          playground.ServerOp.__queue = [];
+
+          // There's no longer a timer running.
+          playground.ServerOp.__timer = null;
+        },
+        0,
+        this,
+        null,
+        2000);
     }
   },
   

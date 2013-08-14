@@ -24,28 +24,36 @@ qx.Mixin.define("playground.dbif.MUsageDetail",
     /**
      * A usage detail status report
      *
-     * @param data {Map}
-     *   Usage detail map. Fields are as in "User-provided" section of
+     * @param dataList {Array of Map}
+     *   Array of usage detail maps. Fields are as in "User-provided" section of
      *   ObjUsageDetail
      */
-    usageDetail : function(data, error)
+    usageDetail : function(dataList, error)
     {
       var             detailObj;
       var             detailData;
 
-      // Create the usage detail object
-      detailObj = new playground.dbif.ObjUsageDetail();
+      return liberated.dbif.Entity.asTransaction(
+        function()
+        {
+          dataList.forEach(
+            function(data)
+            {
+              // Create the usage detail object
+              detailObj = new playground.dbif.ObjUsageDetail();
 
-      // Get the object's data
-      detailData = detailObj.getData();
+              // Get the object's data
+              detailData = detailObj.getData();
 
-      // Merge the provided members into the new object's data
-      qx.lang.Object.mergeWith(detailData, data, true);
+              // Merge the provided members into the new object's data
+              qx.lang.Object.mergeWith(detailData, data, true);
 
-      // Write it to the database
-      detailObj.put();
+              // Write it to the database
+              detailObj.put();
+            });
 
-      return 0;
+          return 0;
+        }.bind(this));
     }
   }
 });

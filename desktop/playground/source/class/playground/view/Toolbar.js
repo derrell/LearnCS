@@ -110,6 +110,13 @@ qx.Class.define("playground.view.Toolbar",
         var loadElement = loadButton.getInputElement().getDomElement();
         var selection = loadElement.files[0];
 
+        // Generate a status report showing that they've pressed Load File
+        playground.ServerOp.statusReport(
+          {
+            button_press : "Load File",
+            filename     : selection
+          });
+
         // Begin reading the file.
         reader.readAsText(selection);
       },
@@ -199,6 +206,13 @@ qx.Class.define("playground.view.Toolbar",
     this.add(runButton);
     runButton.setToolTipText(this.tr("Run the source code"));
     runButton.addListener("execute", function() {
+      // Generate a status report showing that they've pressed Run
+      playground.ServerOp.statusReport(
+        {
+          button_press : "Run"
+        });
+
+      // Run the program
       this.fireEvent("run");
     }, this);
 
@@ -261,8 +275,16 @@ qx.Class.define("playground.view.Toolbar",
     this.__showMemTemplateButton.addListener(
       "changeValue",
       function(e) {
+        var             bOn = !!e.getData();
+
+        // Generate a status report showing toggling of Memory Template view 
+        playground.ServerOp.statusReport(
+          {
+            show_memory_view : bOn.toString()
+          });
+
         // Show or hide the Memory Template view
-        if (e.getData())
+        if (bOn)
         {
           qx.core.Init.getApplication().memTemplateBox.show();
         }

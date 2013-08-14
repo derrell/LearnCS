@@ -52,7 +52,7 @@ qx.Mixin.define("playground.dbif.MUser",
         };
 
       // Ensure that this user has an ObjUser object in the datastore
-      return liberated.dbif.Entity.asTransaction(
+      liberated.dbif.Entity.asTransaction(
         function()
         {
           // See if this user is already registered
@@ -87,9 +87,18 @@ qx.Mixin.define("playground.dbif.MUser",
           
           // Add the id to the return data
           this.setMyUserId(userData.id);
-
-          return ret;
         }.bind(this));
+
+      // This is also the beginning of a new session. Note that.
+      this.usageDetail(
+        [
+          {
+            session_change : "new session"
+          }
+        ],
+        error);
+
+      return ret;
     }
   }
 });
