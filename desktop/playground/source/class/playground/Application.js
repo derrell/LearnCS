@@ -1116,8 +1116,15 @@ qx.Class.define("playground.Application",
             require(["resource/playground/script/ansic.js"],
                     function(ansic)
                     {
-                      playground.c.Main.main(ansic);
-                      ansic.parse(preprocessedCode);
+                      try
+                      {
+                        playground.c.Main.main(ansic);
+                        ansic.parse(preprocessedCode);
+                      }
+                      catch (e)
+                      {
+                        playground.c.Main.output(e);
+                      }
                     });
           }.bind(this));
       }

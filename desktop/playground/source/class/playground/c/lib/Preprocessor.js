@@ -577,8 +577,7 @@ qx.Class.define("playground.c.lib.Preprocessor",
                 // #include was not followed by an angle-bracketted nor
                 // double-quoted file name
                 error("#include must be followed by a file name enclosed " +
-                      "either in angle brackets, such as <stdio.h> or in " +
-                      "double quotes, such as \"defs.h\"");
+                      "in angle brackets, e.g., <stdio.h>");
               }
               else if (parts[4])
               {
