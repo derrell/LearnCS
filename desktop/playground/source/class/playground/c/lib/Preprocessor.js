@@ -553,7 +553,8 @@ qx.Class.define("playground.c.lib.Preprocessor",
 
               if (self.defined(head))
               {
-                warn(head + ' redefined');
+                // djl -- was warn() but made it an error, for this application
+                error(head + ' redefined');
               }
 
               if (!self._is_identifier(head) && !self._is_macro(head))
@@ -659,12 +660,12 @@ qx.Class.define("playground.c.lib.Preprocessor",
             case "pragma":
               if (!settings.pragma_func(elem))
               {
-                warn('ignoring unrecognized #pragma: ' + elem);
+                error('unrecognized #pragma: ' + elem);
               }
               break;
 
             default:
-              warn("unrecognized preprocessor command: " + command);
+              error("unrecognized preprocessor command: " + command);
               break;
             };
             return true;
@@ -751,7 +752,7 @@ var __PRE__ = "";
 
                   if (command == 'else' && elem.length)
                   {
-                    warn('ignoring tokens after else');
+                    error('nothing allowed after else');
                   }
                 }
 
@@ -1132,7 +1133,7 @@ var __PRE__ = "";
 
               if (!settings.pragma_func(pragma))
               {
-                warn('unrecognized _Pragma(): ' + pragma);
+                error('unrecognized _Pragma(): ' + pragma);
               }
 
               // always substitute an empty string so processing
