@@ -325,6 +325,24 @@ var tests =
     },
     {
       name   : "t028-global-struct-decl.c"
+    },
+    {
+      name   : "t029-include-missing-right-angle.c"
+    },
+    {
+      name   : "t030-include-missing-left-angle.c"
+    },
+    {
+      name   : "t031-include-missing-both-angles.c"
+    },
+    {
+      name   : "t032-include-with-quotes.c"
+    },
+    {
+      name   : "t033-include-missing-right-quote.c"
+    },
+    {
+      name   : "t034-include-missing-left-quote.c"
     }
   ];
 

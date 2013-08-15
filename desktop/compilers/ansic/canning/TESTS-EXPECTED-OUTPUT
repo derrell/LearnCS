@@ -557,8 +557,10 @@ printf("%d\n", b);
 
 
 % ../dcc t018-macro-bad.c --rootdir=/home/derrell/ME --preproc
+ERROR: Error: Command failed: 
 STDOUT: Error near line 4: illegal invocation of macro X, expected 2 parameters but got 1
->>> Preprocessor encountered an error
+>>> Preprocessor encountered an error:
+TypeError: Cannot call method 'replace' of undefined
 
 % ../dcc t019-fscanf-null-handle.c --rootdir=/home/derrell/ME
 ERROR: Error: Command failed: 
@@ -664,4 +666,40 @@ sizeof(swingset1) = 8 sizeof(swingset2) = 8
 Swingset1: 1 of 2 swings in use
 Swingset2: 3 of 5 swings in use
 >>> Program exited with exit code 0
+
+% ../dcc t029-include-missing-right-angle.c --rootdir=/home/derrell/ME
+ERROR: Error: Command failed: 
+STDOUT: Error near line 1: #include must be followed by a file name enclosed in angle brackets, e.g., <stdio.h>
+>>> Preprocessor encountered an error:
+Error near line 1: #include must be followed by a file name enclosed in angle brackets, e.g., <stdio.h>
+
+% ../dcc t030-include-missing-left-angle.c --rootdir=/home/derrell/ME
+ERROR: Error: Command failed: 
+STDOUT: Error near line 1: #include must be followed by a file name enclosed in angle brackets, e.g., <stdio.h>
+>>> Preprocessor encountered an error:
+Error near line 1: #include must be followed by a file name enclosed in angle brackets, e.g., <stdio.h>
+
+% ../dcc t031-include-missing-both-angles.c --rootdir=/home/derrell/ME
+ERROR: Error: Command failed: 
+STDOUT: Error near line 1: #include must be followed by a file name enclosed in angle brackets, e.g., <stdio.h>
+>>> Preprocessor encountered an error:
+Error near line 1: #include must be followed by a file name enclosed in angle brackets, e.g., <stdio.h>
+
+% ../dcc t032-include-with-quotes.c --rootdir=/home/derrell/ME
+ERROR: Error: Command failed: 
+STDOUT: >>> Preprocessor encountered an error:
+Error near line 1: #include for local files (with quotes) is not yet supported: "defs.h"
+If it's a system include file, you should use angle brackets instead: <defs.h>
+
+% ../dcc t033-include-missing-right-quote.c --rootdir=/home/derrell/ME
+ERROR: Error: Command failed: 
+STDOUT: Error near line 1: #include must be followed by a file name enclosed in angle brackets, e.g., <stdio.h>
+>>> Preprocessor encountered an error:
+Error near line 1: #include must be followed by a file name enclosed in angle brackets, e.g., <stdio.h>
+
+% ../dcc t034-include-missing-left-quote.c --rootdir=/home/derrell/ME
+ERROR: Error: Command failed: 
+STDOUT: Error near line 1: #include must be followed by a file name enclosed in angle brackets, e.g., <stdio.h>
+>>> Preprocessor encountered an error:
+Error near line 1: #include must be followed by a file name enclosed in angle brackets, e.g., <stdio.h>
 
