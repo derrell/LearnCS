@@ -291,6 +291,13 @@ qx.Class.define("playground.c.Main",
 
           switch(file)
           {
+          case "learncs.h" :
+            include = function()
+            {
+              return (playground.c.builtin.Learncs.include(file, line));
+            };
+            break;
+
           case "ctype.h" :
             include = function()
             {
