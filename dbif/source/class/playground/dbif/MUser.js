@@ -28,8 +28,8 @@ qx.Mixin.define("playground.dbif.MUser",
      *   Map containing the following members:
      *
      *     whoAmI : {Map}
-     *       email : {String}
-     *         user's email address
+     *       user : {String}
+     *         user name
      *
      *       isAdmin : {Boolean}
      *         true if the user is an administrator; false otherwise
@@ -60,8 +60,8 @@ qx.Mixin.define("playground.dbif.MUser",
             "playground.dbif.ObjUser",
             {
               type  : "element",
-              field : "email",
-              value : ret.whoAmI.email
+              field : "user",
+              value : ret.whoAmI.user
             });
           
           // If not...
@@ -73,19 +73,26 @@ qx.Mixin.define("playground.dbif.MUser",
             // Get the object's data
             userData = userObj.getData();
             
-            // Assign the email address
-            userData.email = ret.whoAmI.email;
+            // Assign the user name
+            userData.user = ret.whoAmI.user;
             
             // Write it back to the database
             userObj.put();
+
+            // Retrieve the ID of the just-written entity
+            userData = liberated.dbif.Entity.query(
+              "playground.dbif.ObjUser",
+              {
+                type  : "element",
+                field : "user",
+                value : ret.whoAmI.user
+              })[0];
           }
           else
           {
             // User is already registered. Get the one and only query result.
             userData = userData[0];
           }
-          
-          // Add the id to the return data
           this.setMyUserId(userData.id);
         }.bind(this));
 
@@ -93,7 +100,7 @@ qx.Mixin.define("playground.dbif.MUser",
       this.usageDetail(
         [
           {
-            session_change : "new session"
+            type : "new session"
           }
         ],
         error);
