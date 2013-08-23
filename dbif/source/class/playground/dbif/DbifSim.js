@@ -27,7 +27,7 @@ qx.Class.define("playground.dbif.DbifSim",
     // Save the logged-in user. The whoAmI property is in MDbifCommon.
     this.setWhoAmI(
       {
-        email             : "jarjar@binks.org",
+        user              : "jarjar@binks.org",
         displayName       : "obnoxious",
         isAdmin           : true
       });
@@ -43,7 +43,7 @@ qx.Class.define("playground.dbif.DbifSim",
     {
       var formData =  
       {
-        'email'   : 
+        'user'   : 
         {
           'type'  : "ComboBox", 
           'label' : "Login",
@@ -68,9 +68,9 @@ qx.Class.define("playground.dbif.DbifSim",
         function(user, i)
         {
           // Add this user to the list
-          formData.email.options.push(
+          formData.user.options.push(
             {
-              label : user.email
+              label : user.user
             });
         });
 
@@ -89,8 +89,8 @@ qx.Class.define("playground.dbif.DbifSim",
           userData = liberated.dbif.Entity.query("playground.dbif.ObjUser",
                                                  {
                                                    "type" : "element",
-                                                   "field" : "email",
-                                                   "value" : result.email
+                                                   "field" : "user",
+                                                   "value" : result.user
                                                  });
           
           // Did we find it?
@@ -104,7 +104,7 @@ qx.Class.define("playground.dbif.DbifSim",
             // User didn't exist. Creat him.
             userObj = new playground.dbif.ObjUser();
             userData = userObj.getData();
-            userData.email = result.email;
+            userData.user = result.user;
             userObj.put();
           }
 
@@ -114,7 +114,7 @@ qx.Class.define("playground.dbif.DbifSim",
           // Save the backend whoAmI information
           backendWhoAmI.setWhoAmI(
           {
-            email             : userData.email,
+            user              : userData.user,
             isAdmin           : result.isAdmin
           });
 
@@ -128,7 +128,7 @@ qx.Class.define("playground.dbif.DbifSim",
           // Update the gui too
           guiWhoAmI = qx.core.Init.getApplication().getUserData("whoAmI");
           guiWhoAmI.setIsAdmin(result.isAdmin);
-          guiWhoAmI.setEmail(userData.email);
+          guiWhoAmI.setEmail(userData.user);
           guiWhoAmI.setLogoutUrl(
             "javascript:playground.dbif.DbifSim.changeWhoAmI();");
         }

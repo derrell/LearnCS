@@ -28,7 +28,7 @@ qx.Class.define("playground.view.WhoAmI",
     layout.setSpacingX(2);
     this._setLayout(layout);
     
-    this.setEmail("dlipman@cs.uml.edu");
+    this.setUser("anonymous");
     this.setLogoutUrl("");
   },
 
@@ -40,11 +40,11 @@ qx.Class.define("playground.view.WhoAmI",
       check : "String"
     },
     
-    /** This user's email address */
-    email :
+    /** This user's user name */
+    user :
     {
       check : "String",
-      apply : "_applyEmail"
+      apply : "_applyUser"
     },
     
     /** The user's visible name (not currently displayed, though) */
@@ -71,9 +71,9 @@ qx.Class.define("playground.view.WhoAmI",
   members :
   {
     // apply function
-    _applyEmail : function(value, old)
+    _applyUser : function(value, old)
     {
-      var control = this.getChildControl("email");
+      var control = this.getChildControl("user");
       if (control) 
       {
         control.setValue(value);
@@ -116,8 +116,8 @@ qx.Class.define("playground.view.WhoAmI",
         this._add(control, { row : 0, column : 0 });
         break;
 
-      case "email":
-        control = new qx.ui.basic.Label(this.getEmail());
+      case "user":
+        control = new qx.ui.basic.Label(this.getUser());
         control.setAnonymous(true);
         this._add(control, { row : 0, column : 1 });
         break;

@@ -30,8 +30,8 @@ qx.Class.define("playground.dbif.ObjUser",
         /** Id of this user */
         "id"          : "Key",
         
-        /** User's email address */
-        "email"       : "String",
+        /** User name */
+        "user"        : "String",
         
         /** User's display name (mostly for the instructor) */
         "displayName" : "String"
