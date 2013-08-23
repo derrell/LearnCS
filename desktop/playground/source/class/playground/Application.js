@@ -388,6 +388,9 @@ qx.Class.define("playground.Application",
       // hides/shows it
       this.memTemplateBox = infosplit;
 
+      // default to hiding the memory template view
+      this.memTemplateBox.exclude();
+
       infosplit.add(vbox, 2);
       // ...djl
       

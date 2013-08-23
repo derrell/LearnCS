@@ -272,6 +272,11 @@ qx.Class.define("playground.view.Toolbar",
     this.__showMemTemplateButton.setValue(true);
     this.__showMemTemplateButton.setToolTipText(
       this.tr("Show/hide memory view"));
+    
+    // default to hiding the memory template view before adding listener that
+    // would send a status report showing the user toggling its view
+    this.__showMemTemplateButton.setValue(false);
+
     this.__showMemTemplateButton.addListener(
       "changeValue",
       function(e) {
