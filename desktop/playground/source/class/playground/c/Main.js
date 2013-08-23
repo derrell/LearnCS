@@ -180,14 +180,21 @@ qx.Class.define("playground.c.Main",
               "Maybe you forgot a semicolon?");
 
             // If we have a previous position to display, then show it;
-            // otherwise show the current position, along with the error
-            // description.
-            errStr =
-              "Error: See arrow pointing to position of error near line " +
-              hash.line +
-              ":\n" +
-              (prevPosition || parser.lexer.showPosition()) +
-              "\n";
+            // otherwise show the current position (if known), along with the
+            // error description.
+            if (! parser.lexer.matched)
+            {
+              errStr = "Error near line " + hash.line + ":\n";
+            }
+            else
+            {
+              errStr =
+                "Error: See arrow pointing to position of error near line " +
+                hash.line +
+                ":\n" +
+                (prevPosition || parser.lexer.showPosition()) +
+                "\n";
+            }
 
             if (str)
             {
