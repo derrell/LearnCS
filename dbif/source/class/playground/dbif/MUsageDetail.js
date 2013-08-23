@@ -48,6 +48,9 @@ qx.Mixin.define("playground.dbif.MUsageDetail",
               // Merge the provided members into the new object's data
               qx.lang.Object.mergeWith(detailData, data, true);
 
+              // Re-add (or overwrite, if the user was nasty), the user name
+              detailData.user = playground.dbif.MDbifCommon.getCurrentUserId();
+
               // Write it to the database
               detailObj.put();
             });
