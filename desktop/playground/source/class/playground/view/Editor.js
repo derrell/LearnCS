@@ -292,6 +292,7 @@ qx.Class.define("playground.view.Editor",
               // Generate a status report showing text changes in the editor.
               playground.ServerOp.statusReport(
                 {
+                  type          : "editor_change",
                   change_action : e.data.action,
                   change_start  : 
                     [
@@ -303,7 +304,8 @@ qx.Class.define("playground.view.Editor",
                       e.data.range.end.row + 1,
                       e.data.range.end.column + 1
                     ],
-                  change_text   : e.data.text
+                  change_text   : e.data.text,
+                  snapshot      : qx.core.Init.getApplication().editor.getCode()
                 });
             });
 
@@ -348,6 +350,7 @@ qx.Class.define("playground.view.Editor",
               // Generate a status report showing breakpoint change
               playground.ServerOp.statusReport(
                 {
+                  type             : "breakpoint_change",
                   breakpoint_row   : row + 1, // make 1-relative
                   breakpoint_value : value,
 

@@ -719,6 +719,7 @@ qx.Class.define("playground.c.lib.Node",
             // Generate a status report showing we're stopped at a breakpoint
             playground.ServerOp.statusReport(
               {
+                type               : "breakpoint_stop",
                 breakpoint_stop_at : this.line
               });
 
@@ -740,6 +741,7 @@ qx.Class.define("playground.c.lib.Node",
                       // Step
                       playground.ServerOp.statusReport(
                         {
+                          type         : "button_press",
                           button_press : "Step"
                         });
 
@@ -775,6 +777,7 @@ qx.Class.define("playground.c.lib.Node",
                       // Continue
                       playground.ServerOp.statusReport(
                         {
+                          type         : "button_press",
                           button_press : "Continue"
                         });
 

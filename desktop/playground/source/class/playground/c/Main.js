@@ -205,6 +205,7 @@ qx.Class.define("playground.c.Main",
             hash.displayError = errStr;
             playground.c.Main._statusReport(
               {
+                type  : "error",
                 error : JSON.stringify(hash, null, "  ")
               });
 
@@ -469,6 +470,7 @@ qx.Class.define("playground.c.Main",
         // Send the error message as a status report
         playground.c.Main._statusReport(
           {
+            type       : "exit_crash",
             exit_crash : message
           });
 
@@ -552,6 +554,7 @@ qx.Class.define("playground.c.Main",
             // Send the error message as a status report
             playground.c.Main._statusReport(
               {
+                type       : "exit_crash",
                 exit_crash : message
               });
           }
@@ -676,6 +679,7 @@ qx.Class.define("playground.c.Main",
           // Send the exit code as a status report
           playground.c.Main._statusReport(
             {
+              type      : "exit",
               exit_code : error.exitCode
             });
 
@@ -726,6 +730,7 @@ qx.Class.define("playground.c.Main",
         // Send the error message as a status report
         playground.c.Main._statusReport(
           {
+            type       : "exit_crash",
             exit_crash : message
           });
 
@@ -994,6 +999,7 @@ qx.Class.define("playground.c.Main",
                   // Send the error message as a status report
                   playground.c.Main._statusReport(
                     {
+                      type      : "exit",
                       exit_code : value.value
                     });
 
@@ -1022,6 +1028,7 @@ qx.Class.define("playground.c.Main",
             // Send the error message as a status report
             playground.c.Main._statusReport(
               {
+                type       : "exit_crash",
                 exit_crash : message
               });
 

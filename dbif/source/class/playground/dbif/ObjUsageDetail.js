@@ -17,8 +17,8 @@ qx.Class.define("playground.dbif.ObjUsageDetail",
         "id"                 : null,
         "user"               : playground.dbif.MDbifCommon.getCurrentUserId(),
         "timestamp"          : playground.dbif.MDbifCommon.currentTimestamp(),
+        "type"               : null,
         "session_change"     : null,
-        "snapshot"           : null,
         "breakpoint_row"     : 0,
         "breakpoint_value"   : null,
         "breakpoints"        : null,
@@ -32,8 +32,9 @@ qx.Class.define("playground.dbif.ObjUsageDetail",
         "show_memory_view"   : null,
         "button_press"       : null,
         "filename"           : null,
+        "displayError"       : null,
         "error"              : null,
-        "displayError"       : null
+        "snapshot"           : null
       });
 
     // Call the superclass constructor
@@ -63,12 +64,12 @@ qx.Class.define("playground.dbif.ObjUsageDetail",
         // User-provided members
         //
 
-        /** Session change, e.g. new session, load new file, etc. */
-        "session_change"     : "string", // may be issued by MUser
+        /** Type of detail in this entity */
+        "type"               : "String",
 
-        /** User's code (in editor) at this time */
-        "snapshot"           : "LongString",
-        
+        /** Session change, e.g. new session, load new file, etc. */
+        "session_change"     : "String", // may be issued by MUser
+
         /** A breakpoint changed. Value is row that toggled */
         "breakpoint_row"     : "Number",
 
@@ -108,11 +109,18 @@ qx.Class.define("playground.dbif.ObjUsageDetail",
         /** File name, if button_press is "Load File" */
         "filename"           : "String",
 
+        /** Displayed compiler or run-time error error */
+        "displayError"       : "String",
+
+        // put 'error' and 'snapshot' last, since their data can be long. This
+        // allows viewing the data without a mutli-line elements in the middle
+        // of the output.
+
         /** Compiler or run-time error, as JSON depiction of hash map */
         "error"              : "LongString",
         
-        /** Displayed compiler or run-time error error */
-        "displayError"       : "String"
+        /** User's code (in editor) at this time */
+        "snapshot"           : "LongString"
       };
 
     // Register our property types.

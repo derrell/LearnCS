@@ -113,6 +113,7 @@ qx.Class.define("playground.view.Toolbar",
         // Generate a status report showing that they've pressed Load File
         playground.ServerOp.statusReport(
           {
+            type         : "button_press",
             button_press : "Load File",
             filename     : selection
           });
@@ -209,6 +210,7 @@ qx.Class.define("playground.view.Toolbar",
       // Generate a status report showing that they've pressed Run
       playground.ServerOp.statusReport(
         {
+          type         : "button_press",
           button_press : "Run"
         });
 
@@ -285,6 +287,7 @@ qx.Class.define("playground.view.Toolbar",
         // Generate a status report showing toggling of Memory Template view 
         playground.ServerOp.statusReport(
           {
+            type             : "show_memory_view",
             show_memory_view : bOn.toString()
           });
 

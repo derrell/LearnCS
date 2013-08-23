@@ -123,6 +123,7 @@ qx.Class.define("playground.ServerOp",
           // Add a snapshot immediately before sending this batch of reports
           queue.push(
             {
+              type          : "snapshot",
               snapshot      : qx.core.Init.getApplication().editor.getCode()
             });
 
