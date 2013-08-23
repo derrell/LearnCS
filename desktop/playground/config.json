@@ -114,6 +114,7 @@
         "command"   :
         [
           "rsync -av ./build/ ../../backend-appengine/war/",
+          "rsync -av ./build/ ../../backend-jettysqlite/deploy/webapps/ROOT/"
         ]
       }
     },
