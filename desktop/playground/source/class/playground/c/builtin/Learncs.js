@@ -192,7 +192,7 @@ qx.Class.define("playground.c.builtin.Learncs",
                }
                
                // Was the input valid, i.e., beginning with a digit?
-               if (! input[0].match(/[0-9]/))
+               if (! input[0].match(/[-0-9]/))
                {
                  failure(new playground.c.lib.RuntimeError(
                            playground.c.lib.Node._currentNode,
