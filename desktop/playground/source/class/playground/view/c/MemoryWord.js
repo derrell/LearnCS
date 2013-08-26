@@ -33,12 +33,16 @@ qx.Class.define("playground.view.c.MemoryWord",
     this.gridLayout.setColumnFlex(0, 1);
     this.gridLayout.setColumnAlign(0, "center", "middle");
     
-    this.gridLayout.setColumnWidth(1, 40);
+    this.gridLayout.setColumnWidth(1, 50);
+    this.gridLayout.setColumnMaxWidth(1, 50);
+    this.gridLayout.setColumnMinWidth(1, 50);
     this.gridLayout.setColumnAlign(1, "center", "middle");
     
     for (col = 2; col < 6; col++)
     {
       this.gridLayout.setColumnWidth(col, 26);
+      this.gridLayout.setColumnMaxWidth(col, 26);
+      this.gridLayout.setColumnMinWidth(col, 26);
     }
     
     // Pre-create each of the child controls
@@ -154,6 +158,12 @@ qx.Class.define("playground.view.c.MemoryWord",
       nullable : true,
       apply    : "_applyGroup"
     }
+  },
+
+  statics :
+  {
+    /** base with which to display addresses */
+    addrBase   : 10
   },
 
   members :
@@ -328,11 +338,21 @@ qx.Class.define("playground.view.c.MemoryWord",
         return;
       }
 
-      value =
-        "<span style='font-weight: bold;'>" +
-        ("0000" + value.toString(16)).substr(-4) +
-//        ("00000" + value.toString(10)).substr(-5) +
-        "</span>";
+      if (playground.view.c.MemoryWord.addrBase == 16)
+      {
+        value =
+          "<span style='font-weight: bold;'>" +
+          ("0000" + value.toString(16)).substr(-4) +
+          "</span>";
+      }
+      else
+      {
+        value =
+          "<span style='font-weight: bold;'>" +
+          ("00000" + value.toString(10)).substr(-5) +
+          "</span>";
+
+      }
 
       this.getChildControl("addr1").setValue(value);
       this.getChildControl("addr2").setValue(value);

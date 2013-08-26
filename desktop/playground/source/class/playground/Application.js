@@ -334,6 +334,40 @@ qx.Class.define("playground.Application",
       // djl...
       // Create a composite container for the header
       var vbox = new qx.ui.container.Composite(new qx.ui.layout.VBox());
+      
+      // Add the radio buttons for displaying either decimal or hex addresses
+      var addrFormat = new qx.ui.container.Composite(new qx.ui.layout.HBox(12));
+      addrFormat.add(new qx.ui.core.Spacer(), { flex : 1 });
+      addrFormat.add(new qx.ui.basic.Label(this.tr("Address format: ")));
+
+      var decimal = new qx.ui.form.RadioButton("decimal");
+      var hex = new qx.ui.form.RadioButton("hex");
+      var mgr = new qx.ui.form.RadioGroup();
+      mgr.add(decimal, hex);
+      addrFormat.add(decimal);
+      addrFormat.add(hex);
+      addrFormat.add(new qx.ui.core.Spacer(), { flex : 1 });
+      
+      mgr.addListener(
+        "changeSelection",
+        function(e)
+        {
+          var             selection = mgr.getSelection()[0];
+          
+          playground.view.c.MemoryWord.addrBase = 
+            selection == decimal ? 10 : 16;
+          this.memTemplate.refresh();
+        },
+        this);
+
+      // The default is decimal view
+      decimal.setValue(true);
+      vbox.add(addrFormat);
+      
+      // Create some space between the radio buttons and the header
+      vbox.add(new qx.ui.core.Spacer(null, 12));
+
+      // Create the header for column labels of the memory view
       var header = new qx.ui.container.Composite();
 
       // Create a grid layout. Leave some horizontal space between elements.
@@ -345,18 +379,19 @@ qx.Class.define("playground.Application",
       gridLayout.setColumnFlex(0, 1);
       gridLayout.setColumnAlign(0, "center", "middle");
 
-      gridLayout.setColumnWidth(1, 40);
+      gridLayout.setColumnWidth(1, 50);
+      gridLayout.setColumnMaxWidth(1, 50);
+      gridLayout.setColumnMinWidth(1, 50);
       gridLayout.setColumnAlign(1, "center", "middle");
 
       for (var col = 2; col < 6; col++)
       {
-        gridLayout.setColumnWidth(col, 20);
+        gridLayout.setColumnWidth(col, 26);
+        gridLayout.setColumnMaxWidth(col, 26);
+        gridLayout.setColumnMinWidth(col, 26);
         gridLayout.setColumnAlign(col, "center", "middle");
       }
       
-      // empirically-determined width to get headers to align.
-      gridLayout.setColumnWidth(2, 12);
-
       var label = new qx.ui.basic.Label(
         "<span style='font-weight: bold;'>Name</span>");
       label.setRich(true);
