@@ -110,7 +110,7 @@ qx.Class.define("playground.view.Header",
           // failure handler
           function(ex, id)
           {
-            alert("RPC " + id + " exception: " + ex);
+            console.log("RPC " + id + " exception: " + ex);
           },
 
           // function to call
