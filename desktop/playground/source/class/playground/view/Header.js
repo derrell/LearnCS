@@ -96,7 +96,19 @@ qx.Class.define("playground.view.Header",
       "appear",
       function(e)
       {
-        // ... issue a request to initialize ourself. The result will contain
+        var             engine;
+
+        // ... determine what browser engine they're using
+        engine = qx.core.Environment.get("engine.name");
+        
+        if (engine != "webkit")
+        {
+          alert("You are using an unsupported browser. Many things may " +
+                "break in unexpected ways. Please use a recent version of " +
+               "Chrome (if you're on Windows or Linux), or Safari (for Mac).");
+        }
+
+        // Issue a request to initialize ourself. The result will contain
         // my user id and a logout URL
         playground.ServerOp.rpc(
           // success handler
@@ -110,7 +122,7 @@ qx.Class.define("playground.view.Header",
           // failure handler
           function(ex, id)
           {
-            console.log("RPC " + id + " exception: " + ex);
+            // Ignore the failure. Should not ever occur.
           },
 
           // function to call
