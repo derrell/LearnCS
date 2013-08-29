@@ -588,10 +588,20 @@ qx.Class.define("playground.view.c.MemoryWord",
       if (bIsPointer)
       {
         // It's a pointer, so highlight it
-        newValue =
-          "<span style='font-weight: bold; color: blue;'>" + 
-          ("0000" + value.toString(16)).substr(-4) +
-          "</span>";
+        if (playground.view.c.MemoryWord.addrBase == 16)
+        {
+          newValue =
+            "<span style='font-weight: bold; color: blue;'>" + 
+            ("0000" + value.toString(16)).substr(-4) +
+            "</span>";
+        }
+        else
+        {
+          newValue =
+            "<span style='font-weight: bold; color: blue;'>" + 
+            ("00000" + value.toString(10)).substr(-5) +
+            "</span>";
+        }
       }
       else if (type == "char")
       {
