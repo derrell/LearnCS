@@ -52,6 +52,14 @@ qx.Class.define("playground.c.builtin.Math",
             }
           },
           {
+            name : "pow",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.builtin.Math.pow.apply(null, args);
+            }
+          },
+          {
             name : "sqrt",
             func : function()
             {
@@ -172,6 +180,37 @@ qx.Class.define("playground.c.builtin.Math",
         failure(new playground.c.lib.RuntimeError(
                   playground.c.lib.Node._currentNode,
                   "sin() called with invalid argument: " + value));
+      }
+      else
+      {
+        // Create a specifier for the return value
+        specOrDecl = new playground.c.lib.Specifier(
+          playground.c.lib.Node._currentNode,
+          "double");
+
+        success(
+          {
+            value       : converted,
+            specAndDecl : [ specOrDecl ]
+          });
+      }
+    },
+
+    /**
+     * Take a number to a given power
+     */
+    pow : function(success, failure, x, y)
+    {
+      var             converted;
+      var             specOrDecl;
+      
+      converted = Math.pow(x, y);
+
+      if (isNaN(converted))
+      {
+        failure(new playground.c.lib.RuntimeError(
+                  playground.c.lib.Node._currentNode,
+                  "pow() called with invalid arguments: " + x + ", " + y));
       }
       else
       {
