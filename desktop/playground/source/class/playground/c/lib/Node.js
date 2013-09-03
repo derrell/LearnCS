@@ -4017,7 +4017,7 @@ qx.Class.define("playground.c.lib.Node",
             // Complete the operation
             success(
               { 
-                value       : ! value1.value,
+                value       : (! value1.value) ? 1 : 0,
                 specAndDecl : [ specOrDecl ]
               });
           }.bind(this),
