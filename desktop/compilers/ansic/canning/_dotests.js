@@ -343,6 +343,9 @@ var tests =
     },
     {
       name   : "t034-include-missing-left-quote.c"
+    },
+    {
+      name   : "t035-ctype.c"
     }
   ];
 
