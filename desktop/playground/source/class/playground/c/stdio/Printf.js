@@ -557,8 +557,8 @@ qx.Class.define("playground.c.stdio.Printf",
         // NaN -> a string  starting with 'nan' ('NAN' for 'F')
         //
         // this is not commonly implemented though.
-        //return '' + f;
-        f = 0;
+        return '' + f;
+        //f = 0;
       }
 
       switch(token.doubleNotation) 
