@@ -26,6 +26,27 @@ qx.Class.define("playground.c.builtin.Ctype",
   
   statics :
   {
+    /** upper case letter's ascii values. Initialized in defer */
+    _UPPER : null,
+
+    /** lower case letter's ascii values. Initialized in defer */
+    _LOWER : null,
+
+    /** upper can lower case letter's ascii values. Initialized in defer */
+    _ALPHA : null,
+
+    /** digits' ascii values. Initialized in defer */
+    _DIGIT : null,
+
+    /** upper white space ascii values. Initialized in defer */
+    _SPACE : null,
+
+    /** printable characters' ascii values. Initialized in defer */
+    _PRINT : null,
+
+    /** punctuation characters' ascii values. Initialized in defer */
+    _PUNCT : null,
+
     include : function(name, line)
     {
       var             rootSymtab;
@@ -53,6 +74,46 @@ qx.Class.define("playground.c.builtin.Ctype",
             {
               var args = Array.prototype.slice.call(arguments);
               playground.c.builtin.Ctype.isspace.apply(null, args);
+            }
+          },
+          {
+            name : "isupper",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.builtin.Ctype.isupper.apply(null, args);
+            }
+          },
+          {
+            name : "islower",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.builtin.Ctype.islower.apply(null, args);
+            }
+          },
+          {
+            name : "isalpha",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.builtin.Ctype.isalpha.apply(null, args);
+            }
+          },
+          {
+            name : "isprint",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.builtin.Ctype.isprint.apply(null, args);
+            }
+          },
+          {
+            name : "ispunct",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.builtin.Ctype.ispunct.apply(null, args);
             }
           },
           {
@@ -127,7 +188,7 @@ qx.Class.define("playground.c.builtin.Ctype",
       // Return true if the character is a digit; false otherwise
       success(
         {
-          value       : c >= 0x30 && c <= 0x39,
+          value       : (c >= 0x30 && c <= 0x39) ? 1 : 0,
           specAndDecl : [ specOrDecl ]
         });
     },
@@ -144,12 +205,117 @@ qx.Class.define("playground.c.builtin.Ctype",
         playground.c.lib.Node._currentNode,
         "int");
 
-      // Return true if the character is a space (0x20), form feed (0x0c),
-      // newline (0x0a), carriage return (0x0d), horizontal tab (0x09), or
-      // vertical tab (0x0b).
+      // Return true if the character is whitespace
       success(
         {
-          value       : [ 0x20, 0x0c, 0x0a, 0x0d, 0x09, 0x0b ].indexOf(c) != -1,
+          value       : (playground.c.builtin.Ctype._SPACE.indexOf(c) != -1
+                         ? 1 : 0),
+          specAndDecl : [ specOrDecl ]
+        });
+    },
+
+    /**
+     * Determine if a character is an upper case letter
+     */
+    isupper : function(success, failure, c)
+    {
+      var             specOrDecl;
+
+      // Create a specifier for the return value
+      specOrDecl = new playground.c.lib.Specifier(
+        playground.c.lib.Node._currentNode,
+        "int");
+
+      // Return true if the character is an upper case letter
+      success(
+        {
+          value       : (playground.c.builtin.Ctype._UPPER.indexOf(c) != -1 
+                         ? 1 : 0),
+          specAndDecl : [ specOrDecl ]
+        });
+    },
+
+    /**
+     * Determine if a character is a lower case letter
+     */
+    islower : function(success, failure, c)
+    {
+      var             specOrDecl;
+
+      // Create a specifier for the return value
+      specOrDecl = new playground.c.lib.Specifier(
+        playground.c.lib.Node._currentNode,
+        "int");
+
+      // Return true if the character is an upper case letter
+      success(
+        {
+          value       : (playground.c.builtin.Ctype._LOWER.indexOf(c) != -1
+                         ? 1 : 0),
+          specAndDecl : [ specOrDecl ]
+        });
+    },
+
+    /**
+     * Determine if a character is alpha (an upper or lower case character)
+     */
+    isalpha : function(success, failure, c)
+    {
+      var             specOrDecl;
+
+      // Create a specifier for the return value
+      specOrDecl = new playground.c.lib.Specifier(
+        playground.c.lib.Node._currentNode,
+        "int");
+
+      // Return true if the character is an upper or lower case letter
+      success(
+        {
+          value       : (playground.c.builtin.Ctype._ALPHA.indexOf(c) != -1
+                         ? 1 : 0),
+          specAndDecl : [ specOrDecl ]
+        });
+    },
+
+    /**
+     * Determine if a character is printable
+     */
+    isprint : function(success, failure, c)
+    {
+      var             specOrDecl;
+
+      // Create a specifier for the return value
+      specOrDecl = new playground.c.lib.Specifier(
+        playground.c.lib.Node._currentNode,
+        "int");
+
+      // Return true if the character is an upper case letter
+      success(
+        {
+          value       : (playground.c.builtin.Ctype._PRINT.indexOf(c) != -1
+                         ? 1 : 0),
+          specAndDecl : [ specOrDecl ]
+        });
+    },
+
+    /**
+     * Determine if a character is punctuation (printable, but not space or
+     * alphanumeric)
+     */
+    ispunct : function(success, failure, c)
+    {
+      var             specOrDecl;
+
+      // Create a specifier for the return value
+      specOrDecl = new playground.c.lib.Specifier(
+        playground.c.lib.Node._currentNode,
+        "int");
+
+      // Return true if the character is an upper case letter
+      success(
+        {
+          value       : (playground.c.builtin.Ctype._PUNCT.indexOf(c) != -1
+                         ? 1 : 0),
           specAndDecl : [ specOrDecl ]
         });
     },
@@ -187,5 +353,70 @@ qx.Class.define("playground.c.builtin.Ctype",
           specAndDecl : [ specOrDecl ]
         });
     }
+  },
+  
+  defer : function(statics)
+  {
+    // upper case letters
+    statics._UPPER =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map(
+        function(c)
+        {
+          return c.charCodeAt(0);
+        });
+
+    // lower case letters
+    statics._LOWER =
+      "abcdefghijklmnopqrstuvwxyz".split("").map(
+        function(c)
+        {
+          return c.charCodeAt(0);
+        });
+
+    // alphabetic: upper and lower case letters
+    statics._ALPHA = statics._UPPER.slice(0);
+    Array.prototype.push.apply(statics._ALPHA, statics._LOWER);
+
+    // digit characters
+    statics._DIGIT =
+      "0123456789".split("").map(
+        function(c)
+        {
+          return c.charCodeAt(0);
+        });
+
+    // whitespace
+    statics._SPACE =
+      " \t\n\v\f\r".split("").map(
+        function(c)
+        {
+          return c.charCodeAt(0);
+        });
+
+    // printable characters
+    statics._PRINT = (
+      function()
+      {
+        var             i;
+        var             printable = [];
+        
+        // Add all printable characters to the array
+        for (i = 0x20; i <= 0x7e; i++)
+        {
+          printable.push(i);
+        }
+        
+        return printable;
+      })();
+    
+    // punctuation
+    statics._PUNCT = statics._PRINT.filter(
+      function(c)
+      {
+        return (
+          statics._SPACE.indexOf(c) == -1 &&
+          statics._ALPHA.indexOf(c) == -1 &&
+          statics._DIGIT.indexOf(c) == -1);
+      });
   }
 });
