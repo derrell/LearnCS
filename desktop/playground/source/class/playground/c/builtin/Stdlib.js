@@ -178,8 +178,10 @@ qx.Class.define("playground.c.builtin.Stdlib",
           {
             playground.c.Main.output(
               "*** Unfreed memory allocated at line " + block.line + ": " + 
-                block.size + " bytes, at address 0x" +
-                block.start.toString(16) + "\n");
+                block.size + " bytes, at address " +
+                (playground.view.c.MemoryWord.addrBase == 16 ? "0x" : "") +
+                block.start.toString(playground.view.c.MemoryWord.addrBase) + 
+                "\n");
           });
       }
     },
@@ -463,7 +465,9 @@ qx.Class.define("playground.c.builtin.Stdlib",
         // Nope. Fail the request.
         failure(new playground.c.lib.RuntimeError(
                   playground.c.lib.Node._currentNode,
-                  "Attempting to free() address " + addr.toString(16) +
+                  "Attempting to free() address " + 
+                    (playground.view.c.MemoryWord.addrBase == 16 ? "0x" : "") +
+                    addr.toString(playground.view.c.MemoryWord.addrBase) +
                     " which is not currently malloced."));
         return;
       }

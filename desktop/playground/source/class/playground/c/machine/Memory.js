@@ -354,7 +354,10 @@ qx.Class.define("playground.c.machine.Memory",
           // an odd byte boundary.
           throw new playground.c.lib.RuntimeError(
             playground.c.lib.Node._currentNode,
-            "Invalid memory access at 0x" + addr.toString(16) + ": " +
+            "Invalid memory access at " +
+              (playground.view.c.MemoryWord.addrBase == 16 ? "0x" : "") +
+              addr.toString(playground.view.c.MemoryWord.addrBase) + 
+              ": " +
               "Can not access type '" + type + "' at this address. " +
               "(This is sometimes called a 'Bus Error'.)");
         }
@@ -404,8 +407,9 @@ qx.Class.define("playground.c.machine.Memory",
       {
         throw new playground.c.lib.RuntimeError(
           playground.c.lib.Node._currentNode,
-          "Invalid memory access at 0x" + 
-            addr.toString(16) + ": " +
+          "Invalid memory access at " + 
+            (playground.view.c.MemoryWord.addrBase == 16 ? "0x" : "") +
+            addr.toString(playground.view.c.MemoryWord.addrBase) + ": " +
             "Address to read from is not within the " +
             "'globals and statics', 'heap', or " +
             "'run time stack' regions of memory. " +
@@ -431,8 +435,9 @@ qx.Class.define("playground.c.machine.Memory",
       {
         throw new playground.c.lib.RuntimeError(
           playground.c.lib.Node._currentNode,
-          "Invalid memory access at 0x" + 
-            addr.toString(16) + ": " +
+          "Invalid memory access at " + 
+            (playground.view.c.MemoryWord.addrBase == 16 ? "0x" : "") +
+            addr.toString(playground.view.c.MemoryWord.addrBase) + ": " +
             "Size of object being assigned causes a " +
             "read beyond the " +
             "bounds of its 'globals and statics', 'heap', or " +
@@ -449,8 +454,9 @@ qx.Class.define("playground.c.machine.Memory",
           {
             throw new playground.c.lib.RuntimeError(
               playground.c.lib.Node._currentNode,
-              "Reading an uninitialized value from address 0x" +
-              (addr + i).toString(16));
+              "Reading an uninitialized value from address " +
+              (playground.view.c.MemoryWord.addrBase == 16 ? "0x" : "") +
+              (addr + i).toString(playground.view.c.MemoryWord.addrBase));
           }
         }
       }
@@ -494,8 +500,9 @@ qx.Class.define("playground.c.machine.Memory",
       {
         throw new playground.c.lib.RuntimeError(
           playground.c.lib.Node._currentNode,
-          "Invalid memory access at 0x" + 
-            addr.toString(16) + ": " +
+          "Invalid memory access at " + 
+            (playground.view.c.MemoryWord.addrBase == 16 ? "0x" : "") +
+            addr.toString(playground.view.c.MemoryWord.addrBase) + ": " +
             "Address to write to is not within the " +
             "'globals and statics', 'heap', or " +
             "'run time stack' regions of memory. " +
@@ -521,8 +528,9 @@ qx.Class.define("playground.c.machine.Memory",
       {
         throw new playground.c.lib.RuntimeError(
           playground.c.lib.Node._currentNode,
-          "Invalid memory access at 0x" + 
-            addr.toString(16) + ": " +
+          "Invalid memory access at " + 
+            (playground.view.c.MemoryWord.addrBase == 16 ? "0x" : "") +
+            addr.toString(playground.view.c.MemoryWord.addrBase) + ": " +
             "Size of object being assigned causes a " +
             "write beyond the " +
             "bounds of its 'globals and statics', 'heap', or " +
@@ -667,11 +675,13 @@ qx.Class.define("playground.c.machine.Memory",
                (addrDest >= info.rts.start &&
                 addrDest < info.rts.start  + info.rts.length)))
         {
-          throw new Error("Invalid memory access at " + 
-                          addrDest.toString(16) + ": " +
-                          "ASSIGN TO address is not within the " +
-                          "'globals and statics', 'heap', or " +
-                          "'run time stack' regions of memory.");
+          throw new Error(
+            "Invalid memory access at " + 
+              (playground.view.c.MemoryWord.addrBase == 16 ? "0x" : "") +
+              addrDest.toString(playground.view.c.MemoryWord.addrBase) + ": " +
+              "ASSIGN TO address is not within the " +
+              "'globals and statics', 'heap', or " +
+              "'run time stack' regions of memory.");
         }
 
         // Ensure that the access remains in one region of memory
@@ -695,12 +705,14 @@ qx.Class.define("playground.c.machine.Memory",
              addrSrc < info.rts.start  + info.rts.length &&
              addrSrc + sizeSrc > info.rts.start + info.rts.length))
         {
-          throw new Error("Invalid memory access at " + 
-                          addrSrc.toString(16) + ": " +
-                          "Size of object being assigned causes a " +
-                          "read beyond the " +
-                          "bounds of its 'globals and statics', 'heap', or " +
-                          "'run time stack' region of memory.");
+          throw new Error(
+            "Invalid memory access at " + 
+              (playground.view.c.MemoryWord.addrBase == 16 ? "0x" : "") +
+              addrSrc.toString(playground.view.c.MemoryWord.addrBase) + ": " +
+              "Size of object being assigned causes a " +
+              "read beyond the " +
+              "bounds of its 'globals and statics', 'heap', or " +
+              "'run time stack' region of memory.");
         }
 
         // Ensure that the access remains in one region of memory
@@ -724,22 +736,26 @@ qx.Class.define("playground.c.machine.Memory",
              addrDest < info.rts.start  + info.rts.length &&
              addrDest + sizeDest > info.rts.start + info.rts.length))
         {
-          throw new Error("Invalid memory access at " + 
-                          addrDest.toString(16) + ": " +
-                          "Size of object being assigned to causes a " +
-                          "write beyond " +
-                          "the bounds of its 'globals and statics', " +
-                          "'heap', or 'run time stack' region of memory.");
+          throw new Error(
+            "Invalid memory access at " + 
+              (playground.view.c.MemoryWord.addrBase == 16 ? "0x" : "") +
+              addrDest.toString(playground.view.c.MemoryWord.addrBase) + ": " +
+              "Size of object being assigned to causes a " +
+              "write beyond " +
+              "the bounds of its 'globals and statics', " +
+              "'heap', or 'run time stack' region of memory.");
         }
       }
 
       // Only values of size one can be at odd addresses
       if (addrSrc % 2 != 0 && typeSrc != "char" && typeSrc != "unsigned char")
       {
-        throw new Error("Invalid memory access at " +
-                        addrSrc.toString(16) + ": " +
-                        "only char or unsigned char can be read from " +
-                        "an odd address.");
+        throw new Error(
+          "Invalid memory access at " +
+            (playground.view.c.MemoryWord.addrBase == 16 ? "0x" : "") +
+            addrSrc.toString(playground.view.c.MemoryWord.addrBase) + ": " +
+            "only char or unsigned char can be read from " +
+            "an odd address.");
       }
 
       // Only values of size one can be at odd addresses
@@ -747,10 +763,12 @@ qx.Class.define("playground.c.machine.Memory",
           typeDest != "char" &&
           typeDest != "unsigned char")
       {
-        throw new Error("Invalid memory access at " + 
-                        addrDest.toString(16) + ": " +
-                        "only char or unsigned char can be written to " +
-                        "an odd address.");
+        throw new Error(
+          "Invalid memory access at " + 
+            (playground.view.c.MemoryWord.addrBase == 16 ? "0x" : "") +
+            addrDest.toString(playground.view.c.MemoryWord.addrBase) + ": " +
+            "only char or unsigned char can be written to " +
+            "an odd address.");
       }
 
       // Get an appropriate view into the memory, based on the source type
@@ -1284,8 +1302,11 @@ qx.Class.define("playground.c.machine.Memory",
         {
           if (typeof datum.group == "undefined")
           {
-            console.log("undefined group name at address " +
-                        datum.addr.toString(16) + ": " + JSON.stringify(datum));
+            console.log(
+              "undefined group name at address " +
+                (playground.view.c.MemoryWord.addrBase == 16 ? "0x" : "") +
+                datum.addr.toString(playground.view.c.MemoryWord.addrBase) +
+                ": " + JSON.stringify(datum));
           }
         });
 
