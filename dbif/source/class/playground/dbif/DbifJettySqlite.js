@@ -116,6 +116,6 @@ qx.Class.define("playground.dbif.DbifJettySqlite",
       });
     
     // Initialize the database
-    liberated.jetty.SqliteDbif.init("./learncs.db");
+    liberated.jetty.SqliteDbif.init("../learncs.db");
   }
 });
