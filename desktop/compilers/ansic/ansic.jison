@@ -1996,6 +1996,14 @@ string_literal
     parser.yy.R("string_literal : STRING_LITERAL");
     $$ = new playground.c.lib.Node("string_literal", yytext, yylineno);
         
+    // Ensure there are no hard, unescaped newlines in the string
+    if (yytext.match("\n"))
+    {
+      throw new Error("Line " + yylineno + ": " +
+                      "Newlines in strings must be inserted with \\n, not " +
+                      "by pressing Enter in the middle of the string.");
+    }
+
     // Borrowed from a patch to node-po by cdauth:
     // https://github.com/cdauth/node-po/commit/77aa531743234a07c95c04cee0222b2717d85b57
     $$.value = 
