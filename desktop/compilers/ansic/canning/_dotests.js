@@ -346,6 +346,15 @@ var tests =
     },
     {
       name   : "t035-ctype.c"
+    },
+    {
+      name   : "t036-assignment-error-1.c"
+    },
+    {
+      name   : "t037-assignment-error-2.c"
+    },
+    {
+      name   : "t038-assignment-error-3.c"
     }
   ];
 

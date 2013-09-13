@@ -176,24 +176,12 @@ qx.Class.define("playground.c.lib.Node",
      *
      * @param message {String}
      *   The error message to display
-     *
-     * @param bFatal {Boolean?}
-     *   Whether the message is fatal and should stop execution of the
-     *   program.
      */
-    error : function(message, bFatal)
+    error : function(message)
     {
       message = "Error: line " + this.line + ": " + message;
       ++playground.c.lib.Node.__error.errorCount;
-
-      if (bFatal)
-      {
-        throw new playground.c.lib.RuntimeError(this, message);
-      }
-      else
-      {
-        console.log(message);
-      }
+      throw new playground.c.lib.RuntimeError(this, message);
     },
 
     getExpressionValue : function(value, data, bNoDerefAddress)
@@ -224,8 +212,7 @@ qx.Class.define("playground.c.lib.Node",
         case "case" :
           // occurs during executing, so error is fatal
           this.error("Each 'case' statement must represent a constant " +
-                     "expression. It may not rely on any variables' values.",
-                     true);
+                     "expression. It may not rely on any variables' values.");
           value = null;
           break;
 
@@ -1331,6 +1318,20 @@ qx.Class.define("playground.c.lib.Node",
         {
           success();
           break;
+        }
+
+        // Ensure that the LHS is a primary expression, and not an address_of
+        if (this.children[0].type == "address_of")
+        {
+          failure(
+            new playground.c.lib.RuntimeError(
+              this,
+              "The left hand side of an assignment may not be " +
+              "the result of the address-of operator. " +
+              "The left hand side of an assignment must be " +
+              "a variable, pointer dereference, " +
+              "or array element reference."));
+          return;
         }
 
         // Assign the new value
@@ -3353,8 +3354,7 @@ qx.Class.define("playground.c.lib.Node",
               {
                 this.error("Identifier '" + this.value + "' " +
                            "was previously declared near line " +
-                           entry.getLine(),
-                           true);
+                           entry.getLine());
                 // not reached
                 break;
               }
@@ -3399,13 +3399,11 @@ qx.Class.define("playground.c.lib.Node",
               if (name != this.value)
               {
                 this.error("Struct, union, or enum '" + name + 
-                           "' is not declared.",
-                           true);
+                           "' is not declared.");
               }
               else
               {
-                this.error("Identifier '" + name + "' is not declared.",
-                           true);
+                this.error("Identifier '" + name + "' is not declared.");
               }
               // not reached
               break;
@@ -3441,7 +3439,9 @@ qx.Class.define("playground.c.lib.Node",
          *   0: identifier
          *   ...
          */
-        throw new Error("K&R-style declarations are not supported");
+        failure(new playground.c.lib.RuntimeError(
+                  this,
+                  "K&R-style declarations are not supported"));
         break;
 
       case "if" :
@@ -5254,8 +5254,7 @@ qx.Class.define("playground.c.lib.Node",
                              {
                                // Yup. This is an error.
                                this.error("Found multiple case labels for '" +
-                                          value + "' in 'switch'",
-                                          true);
+                                          value + "' in 'switch'");
                                return;     // not reached
                              }
 
@@ -5293,8 +5292,7 @@ qx.Class.define("playground.c.lib.Node",
                          {
                            // Yup. This is an error.
                            this.error("Found multiple 'default' labels " +
-                                      "in 'switch'",
-                                      true);
+                                      "in 'switch'");
                            return;     // not reached
                          }
 
@@ -5753,10 +5751,12 @@ qx.Class.define("playground.c.lib.Node",
           if (! (v instanceof playground.c.lib.SymtabEntry) &&
               v.specAndDecl[0].getType() != "address")
           {
-            this.error("The left hand side of an assignment must be " +
-                       "a variable, pointer dereference, " +
-                       "or array element reference");
-            success();
+            failure(
+              new playground.c.lib.RuntimeError(
+                this,
+                "The left hand side of an assignment must be " +
+                "a variable, pointer dereference, " +
+                "or array element reference"));
             return;
           }
 
