@@ -105,6 +105,9 @@ qx.Class.define("playground.c.lib.Node",
     /** Node which calls a built-in function */
     _currentNode : null,
 
+    /** User requested that the program be stopped */
+    _bStop : false,
+
     /** Maximum number of recursive calls before unwind */
     _unwindInit : 0,            // initialized in defer
 
@@ -567,6 +570,19 @@ qx.Class.define("playground.c.lib.Node",
 
       // Save the arguments to this function
       args = qx.lang.Array.cast(arguments, Array);
+
+      if (playground.c.lib.Node._bStop)
+      {
+        // We've been asked to stop.
+        failure(
+          new playground.c.lib.RuntimeError(
+            this,
+            "Program execution halted by user"));
+        
+        // Reset the flag
+        playground.c.lib.Node._bStop = false;
+        return;
+      }
 
       if (playground.c.lib.Node._unwindCount-- === 0)
       {

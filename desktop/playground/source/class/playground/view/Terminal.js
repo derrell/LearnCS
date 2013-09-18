@@ -113,7 +113,7 @@ qx.Class.define("playground.view.Terminal",
     clear : function()
     {
       // Clear the terminal window
-      this._textArea.setValue("");
+      this._textArea.setValue(null);
       
       // Flush prior input
       this._linebuf = [];
@@ -131,7 +131,7 @@ qx.Class.define("playground.view.Terminal",
       var             textArea = this._textArea;
       
       // Add the next text to the terminal
-      textArea.setValue(textArea.getValue() + text);
+      textArea.setValue((textArea.getValue() || "") + text);
       textArea.getContentElement().scrollToY(100000);
     },
 
