@@ -306,6 +306,13 @@ qx.Class.define("playground.c.Main",
             };
             break;
 
+          case "elevator.h" :
+            include = function()
+            {
+              return (playground.c.builtin.Elevator.include(file, line));
+            };
+            break;
+
           case "ctype.h" :
             include = function()
             {
