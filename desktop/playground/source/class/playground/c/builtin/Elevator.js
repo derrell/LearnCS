@@ -48,7 +48,7 @@ qx.Class.define("playground.c.builtin.Elevator",
     _butClose       : null,
     _state          : null,
     _timer          : null,
-    _eventQueue     : [],
+    _eventQueue     : null,
 
     include : function(name, line)
     {
@@ -228,6 +228,9 @@ qx.Class.define("playground.c.builtin.Elevator",
       
       // Initialize the state
       clazz._state = "doors-closed";
+
+      // Initialize the event queue
+      clazz._eventQueue = [];
 
       // If the elevator exists, dispose of it and the buttons
       if (clazz._elevator)
@@ -419,6 +422,9 @@ qx.Class.define("playground.c.builtin.Elevator",
 
             // Change state
             clazz._state = "doors-closed";
+            
+            // Fire the event indicating that the elevator is at the top floor
+            clazz._eventQueue.push(clazz.Event.AT_TOP);
           }
         },
         this);
@@ -507,6 +513,9 @@ qx.Class.define("playground.c.builtin.Elevator",
 
             // Change state
             clazz._state = "doors-closed";
+            
+            // Fire the event indicating that the elevator is at the top floor
+            clazz._eventQueue.push(clazz.Event.AT_BOTTOM);
           }
         },
         this);
