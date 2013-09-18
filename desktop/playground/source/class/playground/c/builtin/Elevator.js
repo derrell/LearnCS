@@ -36,7 +36,9 @@ qx.Class.define("playground.c.builtin.Elevator",
       CLOSE     : 4,
       
       AT_TOP    : 5,
-      AT_BOTTOM : 6
+      AT_BOTTOM : 6,
+      
+      TIMER     : 7
     },
 
     _graphicsCanvas : null,
@@ -49,6 +51,7 @@ qx.Class.define("playground.c.builtin.Elevator",
     _state          : null,
     _timer          : null,
     _eventQueue     : null,
+    _lastTime       : 0,
 
     include : function(name, line)
     {
@@ -70,7 +73,7 @@ qx.Class.define("playground.c.builtin.Elevator",
         this._graphicsCanvas.show();
         
         // Show the elevator and buttons in the graphics canvas
-        this._showElevatorAndButtons();
+        this._initAll();
 
         //
         // ... then add built-in functions.
@@ -220,12 +223,15 @@ qx.Class.define("playground.c.builtin.Elevator",
     /**
      * Show the elevator and buttons, in their initial location
      */
-    _showElevatorAndButtons : function()
+    _initAll : function()
     {
       var             door1;
       var             door2;
       var             clazz = playground.c.builtin.Elevator;
       
+      // Get the current time, so we know if it's time for a timer event
+      clazz._lastTime = new Date();
+
       // Initialize the state
       clazz._state = "doors-closed";
 
@@ -351,7 +357,6 @@ qx.Class.define("playground.c.builtin.Elevator",
         {
           clazz._eventQueue.push(clazz.Event.CLOSE);
         });
-
     },
     
     /**
@@ -735,16 +740,33 @@ qx.Class.define("playground.c.builtin.Elevator",
     {
       var             clazz = playground.c.builtin.Elevator;
       var             specOrDecl;
+      var             event;
+      var             now;
 
       // Create a specifier for the return value
       specOrDecl = new playground.c.lib.Specifier(
         playground.c.lib.Node._currentNode,
         "int");
 
+      // If it's been at least one second since our last timer event...
+      now = new Date();
+      if (now.getTime() > clazz._lastTime.getTime() + 1000)
+      {
+        // ... then save the current time, ...
+        clazz._lastTime = now;
+        
+        // ... and generate a Timer event
+        event = clazz.Event.TIMER;
+      }
+      else
+      {
+        event = clazz._eventQueue.shift() || clazz.Event.NONE;
+      }
+
       // Return the first button value from the button queue, or NONE
       success(
         {
-          value       : clazz._eventQueue.shift() || clazz.Event.NONE,
+          value       : event,
           specAndDecl : [ specOrDecl ]
         });
     }
