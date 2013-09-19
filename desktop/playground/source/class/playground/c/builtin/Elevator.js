@@ -748,11 +748,21 @@ qx.Class.define("playground.c.builtin.Elevator",
         playground.c.lib.Node._currentNode,
         "int");
 
-      // If it's been at least one second since our last timer event...
+      // Get the current times
       now = new Date();
-      if (now.getTime() > clazz._lastTime.getTime() + 1000)
+      
+      // Get the first event on the queue
+      event = clazz._eventQueue.shift();
+      
+      // Was there an event there?
+      if (event)
       {
-        // ... then save the current time, ...
+        // Yup. Nothing else to do.
+      }
+      else if (now.getTime() > clazz._lastTime.getTime() + 1000)
+      {
+        // There was no event waiting, but it's been more than one second
+        // since the last timer event was fired. Fire one now.
         clazz._lastTime = now;
         
         // ... and generate a Timer event
@@ -760,7 +770,9 @@ qx.Class.define("playground.c.builtin.Elevator",
       }
       else
       {
-        event = clazz._eventQueue.shift() || clazz.Event.NONE;
+        // There are no queued events, and it hasn't been one second yet. We
+        // have no event to provide to the user.
+         event = clazz.Event.NONE;
       }
 
       // Return the first button value from the button queue, or NONE
