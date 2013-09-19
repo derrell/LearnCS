@@ -15,11 +15,25 @@ qx.Class.define("playground.view.Terminal",
   {
     var             hBox;
     var             legend; 
+    var             graphics;
+    var             terminalVBox;
 
     // Call the superclass constructor
     this.base(arguments);
-    this._setLayout(new qx.ui.layout.VBox(2));
+    this._setLayout(new qx.ui.layout.HBox(8));
     
+    terminalVBox = new qx.ui.container.Composite(new qx.ui.layout.VBox(2));
+    this.add(terminalVBox, { flex : 2 });
+    
+    this._graphicsCanvas = 
+      new qx.ui.container.Composite(new qx.ui.layout.Canvas());
+    this._graphicsCanvas.setBackgroundColor("white");
+    this.add(this._graphicsCanvas, { flex : 1 });
+    
+    // Exclude the graphics canvas, by default
+    // (Also excluded in Application.js run() each time)
+    this._graphicsCanvas.exclude();
+
     // Create a horizontal box for the legend and EOF button
     hBox = new qx.ui.container.Composite(new qx.ui.layout.HBox());
 
@@ -38,7 +52,7 @@ qx.Class.define("playground.view.Terminal",
     hBox.add(this._butEof);
 
     // Add the horizontal box with the legend and the EOF button
-    this.add(hBox);
+    terminalVBox.add(hBox);
 
     // Create the embedded text field, which is the actual point of user
     // interaction
@@ -54,7 +68,7 @@ qx.Class.define("playground.view.Terminal",
         value      : "",
         wrap       : true
       });
-    this.add(this._textArea, { flex : 1 });
+    terminalVBox.add(this._textArea, { flex : 1 });
     
     // Trap keyboard input
     this._textArea.addListener("keypress", this._onKeyPress, this);
@@ -99,7 +113,7 @@ qx.Class.define("playground.view.Terminal",
     clear : function()
     {
       // Clear the terminal window
-      this._textArea.setValue("");
+      this._textArea.setValue(null);
       
       // Flush prior input
       this._linebuf = [];
@@ -117,7 +131,7 @@ qx.Class.define("playground.view.Terminal",
       var             textArea = this._textArea;
       
       // Add the next text to the terminal
-      textArea.setValue(textArea.getValue() + text);
+      textArea.setValue((textArea.getValue() || "") + text);
       textArea.getContentElement().scrollToY(100000);
     },
 
@@ -228,6 +242,12 @@ qx.Class.define("playground.view.Terminal",
       
       // Prevent the character from being echoed
       e.preventDefault();
+    },
+    
+    /** Retrieve the graphics canvas */
+    getGraphicsCanvas : function()
+    {
+      return this._graphicsCanvas;
     }
   }
 });

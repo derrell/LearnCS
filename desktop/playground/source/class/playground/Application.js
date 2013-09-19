@@ -332,7 +332,7 @@ qx.Class.define("playground.Application",
       }
 
       // djl...
-      // Create a composite container for the header
+      // Create a composite container for the memory template
       var vbox = new qx.ui.container.Composite(new qx.ui.layout.VBox());
       
       // Add the radio buttons for displaying either decimal or hex addresses
@@ -1143,6 +1143,11 @@ qx.Class.define("playground.Application",
         this.__modified = true;
       }
 
+      // Exclude the graphics terminal each time the program is run. If it's
+      // needed, it'll get re-included by the #include that requires it
+      var terminal = qx.core.Init.getApplication().getUserData("terminal");
+      terminal.getGraphicsCanvas().exclude();
+      
       playground.c.Main.output("", true);
 
       try

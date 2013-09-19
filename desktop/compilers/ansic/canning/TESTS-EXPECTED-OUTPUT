@@ -836,3 +836,24 @@ c: 0x7e ~ digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 1
 c: 0x7f   digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 0 punct: 0
 >>> Program exited with exit code 0
 
+% ../dcc t036-assignment-error-1.c --rootdir=/home/derrell/ME
+ERROR: Error: Command failed: 
+STDOUT: 
+>>> Running program
+Error near line 5: The left hand side of an assignment must be a variable, pointer dereference, or array element reference
+>>> Program had errors. It did not run to completion.
+
+% ../dcc t037-assignment-error-2.c --rootdir=/home/derrell/ME
+ERROR: Error: Command failed: 
+STDOUT: 
+>>> Running program
+Error near line 7: The left hand side of an assignment must be a variable, pointer dereference, or array element reference
+>>> Program had errors. It did not run to completion.
+
+% ../dcc t038-assignment-error-3.c --rootdir=/home/derrell/ME
+ERROR: Error: Command failed: 
+STDOUT: 
+>>> Running program
+Error near line 7: The left hand side of an assignment may not be the result of the address-of operator. The left hand side of an assignment must be a variable, pointer dereference, or array element reference.
+>>> Program had errors. It did not run to completion.
+

@@ -206,6 +206,7 @@ qx.Class.define("playground.view.Toolbar",
     );
     this.add(runButton);
     runButton.setToolTipText(this.tr("Run the source code"));
+    qx.core.Init.getApplication().setUserData("runButton", runButton);
     runButton.addListener("execute", function() {
       // Generate a status report showing that they've pressed Run
       playground.ServerOp.statusReport(
@@ -235,6 +236,21 @@ qx.Class.define("playground.view.Toolbar",
       this.tr("Continue running the program until the next breakpoint " +
               "or the program ends"));
     qx.core.Init.getApplication().setUserData("continueButton", continueButton);
+
+    // stop button
+    var stopButton = new qx.ui.toolbar.Button(
+      this.tr("Stop"), "icon/22/actions/process-stop.png");
+    this.add(stopButton);
+    stopButton.setToolTipText(
+      this.tr("Stop running the program"));
+    qx.core.Init.getApplication().setUserData("stopButton", stopButton);
+    stopButton.setEnabled(false);
+    stopButton.addListener(
+      "execute",
+      function(e)
+      {
+        playground.c.lib.Node._bStop = true;
+      });
 
     // highlighting button
     this.__highlightButton = new qx.ui.form.ToggleButton(

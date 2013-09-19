@@ -78,6 +78,7 @@ qx.Class.define("playground.c.Main",
       var             argv;
       var             optimist;
       var             terminal;
+      var             button;
 
       if (bConsole || (typeof bTest != "undefined" && bTest))
       {
@@ -148,6 +149,21 @@ qx.Class.define("playground.c.Main",
         {
           var             errStr;
           var             showPosition;
+          var             button;
+
+          try
+          {
+            // Disable the Stop button, reset the Stop flag, enable the Run
+            // button
+            button = qx.core.Init.getApplication().getUserData("stopButton");
+            button.setEnabled(false);
+            button = qx.core.Init.getApplication().getUserData("runButton");
+            button.setEnabled(true);
+          }
+          catch(e)
+          {
+            // fails in non-gui environment
+          }
 
           if (true)
           {
@@ -231,6 +247,20 @@ qx.Class.define("playground.c.Main",
         errorCount : 0
       };
 
+      try
+      {
+        // Enable the Stop button and disable the Run button
+        button = qx.core.Init.getApplication().getUserData("stopButton");
+        button.setEnabled(true);
+        button = qx.core.Init.getApplication().getUserData("runButton");
+        button.setEnabled(false);
+        playground.c.lib.Node._bStop = false;
+      }
+      catch(e)
+      {
+        // fails in non-gui environment
+      }
+
       // Function called upon each error encountered during parsing
       parser.yy.parseError = error.parseError;
 
@@ -303,6 +333,13 @@ qx.Class.define("playground.c.Main",
             include = function()
             {
               return (playground.c.builtin.Learncs.include(file, line));
+            };
+            break;
+
+          case "elevator.h" :
+            include = function()
+            {
+              return (playground.c.builtin.Elevator.include(file, line));
             };
             break;
 
@@ -392,6 +429,7 @@ qx.Class.define("playground.c.Main",
         {
           terminal.clear();
         }
+
         terminal.addOutput(str);
       }
       catch(e)
@@ -442,6 +480,7 @@ qx.Class.define("playground.c.Main",
     process : function(root, argv)
     {
       var             message;
+      var             button;
 
       try
       {
@@ -478,6 +517,20 @@ qx.Class.define("playground.c.Main",
         playground.c.Main.output(message);
         playground.c.Main.output(
           ">>> Program had errors. It did not run to completion.\n");
+
+        try
+        {
+          // Disable the Stop button, reset the Stop flag, enable the Run button
+          button = qx.core.Init.getApplication().getUserData("stopButton");
+          button.setEnabled(false);
+          button = qx.core.Init.getApplication().getUserData("runButton");
+          button.setEnabled(true);
+          playground.c.lib.Node._bStop = false;
+        }
+        catch(e)
+        {
+          // fails in non-gui environment
+        }
 
         if (typeof process != "undefined")
         {
@@ -569,6 +622,21 @@ qx.Class.define("playground.c.Main",
         var             editor;
         var             memData;
         var             model;
+        var             button;
+
+        try
+        {
+          // Disable the Stop button, reset the Stop flag, enable the Run button
+          button = qx.core.Init.getApplication().getUserData("stopButton");
+          button.setEnabled(false);
+          button = qx.core.Init.getApplication().getUserData("runButton");
+          button.setEnabled(true);
+          playground.c.lib.Node._bStop = false;
+        }
+        catch(e)
+        {
+          // fails in non-gui environment
+        }
 
         // Handle stdio clean-up
         playground.c.stdio.AbstractFile.onProgramEnd();
@@ -658,6 +726,21 @@ qx.Class.define("playground.c.Main",
       function catchError(error)
       {
         var             message;
+        var             button;
+
+        try
+        {
+          // Disable the Stop button, reset the Stop flag, enable the Run button
+          button = qx.core.Init.getApplication().getUserData("stopButton");
+          button.setEnabled(false);
+          button = qx.core.Init.getApplication().getUserData("runButton");
+          button.setEnabled(true);
+          playground.c.lib.Node._bStop = false;
+        }
+        catch(e)
+        {
+          // fails in non-gui environment
+        }
 
         // Was this actually an Exit request?
         if (error instanceof playground.c.lib.Exit)
@@ -1024,6 +1107,22 @@ qx.Class.define("playground.c.Main",
             
             // Output the error message
             playground.c.Main.output(message);
+
+            try
+            {
+              // Disable the Stop button, reset the Stop flag, enable the Run
+              // button
+              var button;
+              button = qx.core.Init.getApplication().getUserData("stopButton");
+              button.setEnabled(false);
+              button = qx.core.Init.getApplication().getUserData("runButton");
+              button.setEnabled(true);
+              playground.c.lib.Node._bStop = false;
+            }
+            catch(e)
+            {
+              // fails in non-gui environment
+            }
 
             // Send the error message as a status report
             playground.c.Main._statusReport(
