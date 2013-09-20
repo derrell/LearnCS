@@ -578,10 +578,7 @@ qx.Class.define("playground.c.lib.Node",
         playground.c.lib.Node._bStop = false;
 
         // We've been asked to stop.
-        failure(
-          new playground.c.lib.RuntimeError(
-            this,
-            "Program execution halted by user"));
+        failure(new playground.c.lib.Exit(127));
       }
 
       if (playground.c.lib.Node._bStop)
