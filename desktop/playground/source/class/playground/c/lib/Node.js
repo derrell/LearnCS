@@ -553,6 +553,7 @@ qx.Class.define("playground.c.lib.Node",
       var             editor;
       var             stepButton;
       var             continueButton;
+      var             stopButton;
       var             WORDSIZE = playground.c.machine.Memory.WORDSIZE;
 
 
@@ -571,7 +572,7 @@ qx.Class.define("playground.c.lib.Node",
       // Save the arguments to this function
       args = qx.lang.Array.cast(arguments, Array);
 
-      if (playground.c.lib.Node._bStop)
+      function stopProgram()
       {
         // We've been asked to stop.
         failure(
@@ -581,6 +582,11 @@ qx.Class.define("playground.c.lib.Node",
         
         // Reset the flag
         playground.c.lib.Node._bStop = false;
+      }
+
+      if (playground.c.lib.Node._bStop)
+      {
+        stopProgram();
         return;
       }
 
@@ -684,6 +690,7 @@ qx.Class.define("playground.c.lib.Node",
 
           stepButton = application.getUserData("stepButton");
           continueButton = application.getUserData("continueButton");
+          stopButton = application.getUserData("stopButton");
           
           // If there is a Step button listener active...
           if (playground.c.lib.Node._stepListenerId)
@@ -705,6 +712,17 @@ qx.Class.define("playground.c.lib.Node",
             
             // There's no active listener now.
             playground.c.lib.Node._continueListenerId = null;
+          }
+
+          // If there is a Stop button listener active...
+          if (playground.c.lib.Node._continueStopId)
+          {
+            // ... then remove the listener
+            continueButton.removeListenerById(
+              playground.c.lib.Node._stopListenerId);
+            
+            // There's no active listener now.
+            playground.c.lib.Node._stopListenerId = null;
           }
 
           // Is there a breakpoint at the current line?
@@ -802,6 +820,10 @@ qx.Class.define("playground.c.lib.Node",
                     }
                   },
                 this);
+            
+            playground.c.lib.Node._stopListenerId =
+              stopButton.addListenerOnce("execute", stopProgram);
+            
             return;
           }
         }
