@@ -574,14 +574,14 @@ qx.Class.define("playground.c.lib.Node",
 
       function stopProgram()
       {
+        // Reset the flag
+        playground.c.lib.Node._bStop = false;
+
         // We've been asked to stop.
         failure(
           new playground.c.lib.RuntimeError(
             this,
             "Program execution halted by user"));
-        
-        // Reset the flag
-        playground.c.lib.Node._bStop = false;
       }
 
       if (playground.c.lib.Node._bStop)
@@ -715,10 +715,10 @@ qx.Class.define("playground.c.lib.Node",
           }
 
           // If there is a Stop button listener active...
-          if (playground.c.lib.Node._continueStopId)
+          if (playground.c.lib.Node._stopListenerId)
           {
             // ... then remove the listener
-            continueButton.removeListenerById(
+            stopButton.removeListenerById(
               playground.c.lib.Node._stopListenerId);
             
             // There's no active listener now.
