@@ -28,17 +28,20 @@ qx.Class.define("playground.c.builtin.Elevator",
   {
     Event :
     {
-      NONE      : 0,                // no button has been pressed
+      NONE         : 0,                // no button has been pressed
 
-      UP        : 1,
-      DOWN      : 2,
-      OPEN      : 3,
-      CLOSE     : 4,
+      UP           : 1,
+      DOWN         : 2,
+      OPEN         : 3,
+      CLOSE        : 4,
       
-      AT_TOP    : 5,
-      AT_BOTTOM : 6,
+      AT_TOP       : 5,
+      AT_BOTTOM    : 6,
       
-      TIMER     : 7
+      DOORS_OPEN   : 7,
+      DOORS_CLOSED : 8,
+
+      TIMER        : 100
     },
 
     _graphicsCanvas : null,
@@ -622,6 +625,9 @@ qx.Class.define("playground.c.builtin.Elevator",
 
             // Change state
             clazz._state = "doors-open";
+            
+            // Fire the event indicating that elevator doors are fully open
+            clazz._eventQueue.push(clazz.Event.DOORS_OPEN);
           }
         },
         this);
@@ -718,6 +724,9 @@ qx.Class.define("playground.c.builtin.Elevator",
 
             // Change state
             clazz._state = "doors-closed";
+            
+            // Fire the event indicating that elevator doors are fully closed
+            clazz._eventQueue.push(clazz.Event.DOORS_CLOSED);
           }
         },
         this);
