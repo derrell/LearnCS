@@ -355,6 +355,9 @@ var tests =
     },
     {
       name   : "t038-assignment-error-3.c"
+    },
+    {
+      name   : "t039-multiple-case.c"
     }
   ];
 
