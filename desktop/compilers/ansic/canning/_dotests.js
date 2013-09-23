@@ -358,6 +358,12 @@ var tests =
     },
     {
       name   : "t039-multiple-case.c"
+    },
+    {
+      name   : "t040-case-enum.c"
+    },
+    {
+      name   : "t041-case-const.c"
     }
   ];
 

@@ -874,3 +874,17 @@ case 5
 case 5 (second try)
 >>> Program exited with exit code 0
 
+% ../dcc t040-case-enum.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+hello world
+hi there
+>>> Program exited with exit code 0
+
+% ../dcc t041-case-const.c --rootdir=/home/derrell/ME
+ERROR: Error: Command failed: 
+STDOUT: 
+>>> Running program
+Error near line 7: Error: line 7: Each 'case' statement must represent a constant expression. It may not rely on any variables' values.
+>>> Program had errors. It did not run to completion.
+
