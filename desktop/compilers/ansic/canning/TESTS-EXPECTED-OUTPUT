@@ -888,3 +888,10 @@ STDOUT:
 Error near line 7: Error: line 7: Each 'case' statement must represent a constant expression. It may not rely on any variables' values.
 >>> Program had errors. It did not run to completion.
 
+% ../dcc t042-non-special-escape.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+Hello world!
+ch=w
+>>> Program exited with exit code 0
+

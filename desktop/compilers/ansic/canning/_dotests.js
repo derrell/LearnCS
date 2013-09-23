@@ -364,6 +364,9 @@ var tests =
     },
     {
       name   : "t041-case-const.c"
+    },
+    {
+      name   : "t042-non-special-escape.c"
     }
   ];
 
