@@ -2035,8 +2035,9 @@ string_literal
     $$.value = 
       (function extract(string)
        {
+         // replace escaped specials that require special processing
          string = string.replace(
-           /\\([abtnvfr'"\\?]|([0-7]{3})|x([0-9a-fA-F]{2}))/g,
+           /\\([abtnvfr]|([0-7]{3})|x([0-9a-fA-F]{2}))/g,
            function(match, esc, oct, hex, offset, s)
            {
              if (oct)
@@ -2075,6 +2076,14 @@ string_literal
              default: 
                return esc;
              }
+           });
+
+         // replace the remaining simple escapes
+         string = string.replace(
+           /\\(.)/g,
+           function(match, esc, s)
+           {
+             return esc;
            });
 
          return string;
