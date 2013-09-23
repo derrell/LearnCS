@@ -212,18 +212,28 @@ qx.Class.define("playground.c.lib.Node",
         // mode (cases must be constant expressions)
         switch(data.constantOnly)
         {
-        case "case" :
-          // occurs during executing, so error is fatal
-          this.error("Each 'case' statement must represent a constant " +
-                     "expression. It may not rely on any variables' values.");
-          value = null;
-          break;
-
         case "array_decl" :
           // occurs before executing, so error need not be fatal
           this.error("Array sizes must be constants");
-          value = null;
+          // not reached
           break;
+
+        case "case" :
+          // Allow enum values, but disallow all other symtab entries
+          if (specAndDecl.length != 1 ||
+              ! specOrDecl.getConstant ||
+              specOrDecl.getConstant() != "enum_value")
+          {
+              // occurs during executing, so error is fatal
+              this.error("Each 'case' statement must represent a constant " +
+                         "expression. It may not rely on any variables' " +
+                         "values.");
+              // not reached
+          }
+
+          // We need to retrieve the enum value.
+
+          // Fall through...
 
         default:
           // need not be constant
@@ -2403,7 +2413,7 @@ qx.Class.define("playground.c.lib.Node",
         // Create our own data object with a new specifier for this enum
         data.id = "enum"; 
         data.specifiers = new playground.c.lib.Specifier(this);
-        data.specifiers.setConstant("constant");
+        data.specifiers.setConstant("enum_value");
         data.specAndDecl = [];
 
         // Process the identifier
