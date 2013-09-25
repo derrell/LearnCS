@@ -343,6 +343,13 @@ qx.Class.define("playground.c.Main",
             };
             break;
 
+          case "draw.h" :
+            include = function()
+            {
+              return (playground.c.builtin.Draw.include(file, line));
+            };
+            break;
+
           case "ctype.h" :
             include = function()
             {
