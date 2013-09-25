@@ -543,7 +543,7 @@ qx.Class.define("playground.c.Main",
     {
       try
       {
-        data.snapshot = qx.core.Init.getApplication().editor.getCode();
+//        data.snapshot = qx.core.Init.getApplication().editor.getCode();
         playground.ServerOp.statusReport(data);
       }
       catch(e)

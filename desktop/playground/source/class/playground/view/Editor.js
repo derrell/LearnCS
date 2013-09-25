@@ -289,6 +289,7 @@ qx.Class.define("playground.view.Editor",
             "change",
             function(e)
             {
+/*
               // Generate a status report showing text changes in the editor.
               playground.ServerOp.statusReport(
                 {
@@ -307,6 +308,7 @@ qx.Class.define("playground.view.Editor",
                   change_text   : e.data.text,
                   snapshot      : qx.core.Init.getApplication().editor.getCode()
                 });
+*/
             });
 
           // enable/disable breakpoints by click in gutter
