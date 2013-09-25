@@ -552,12 +552,13 @@ expression
   : assignment_expression
   {
     parser.yy.R("expression : assignment_expression");
-    $$ = $1;
+    $$ = new playground.c.lib.Node("expression", yytext, yylineno);
+    $$.children.push($1);
   }
   | expression ',' assignment_expression
   {
     parser.yy.R("expression : expression ',' assignment_expression");
-    $$ = new playground.c.lib.Node("expression", yytext, yylineno);
+    $$ = $1;
     $$.children.push($3);
   }
   ;

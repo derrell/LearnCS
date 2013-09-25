@@ -895,3 +895,10 @@ Hello world!
 ch=w
 >>> Program exited with exit code 0
 
+% ../dcc t043-for-loop-comma-list.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+i=1 j=10 k=20 l=30
+i=2 j=11 k=11 l=10
+>>> Program exited with exit code 0
+

@@ -367,6 +367,9 @@ var tests =
     },
     {
       name   : "t042-non-special-escape.c"
+    },
+    {
+      name   : "t043-for-loop-comma-list.c"
     }
   ];
 
