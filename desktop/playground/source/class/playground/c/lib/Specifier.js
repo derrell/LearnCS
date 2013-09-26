@@ -89,7 +89,6 @@ qx.Class.define("playground.c.lib.Specifier",
            ].indexOf(value) === -1)
       {
         throw new Error(
-          this.__node,
           "Internal error: Unexpected storage type: " + value);
       }
 
@@ -142,7 +141,6 @@ qx.Class.define("playground.c.lib.Specifier",
           ].indexOf(value) === -1)
       {
         throw new Error(
-          this.__node,
           "Internal error: Unexpected specifier type: " + value);
       }
 
@@ -189,7 +187,6 @@ qx.Class.define("playground.c.lib.Specifier",
       if ( [ "signed", "unsigned" ].indexOf(value) === -1)
       {
         throw new Error(
-          this.__node,
           "Internal error: Unexpected signedness: " + value);
       }
 
@@ -293,7 +290,6 @@ qx.Class.define("playground.c.lib.Specifier",
       if ( [ "constant", "enum_value" ].indexOf(value) === -1)
       {
         throw new Error(
-          this.__node,
           "Internal error: Unexpected constant: " + value);
       }
 
@@ -331,7 +327,6 @@ qx.Class.define("playground.c.lib.Specifier",
       if ( [ "volatile" ].indexOf(value) === -1)
       {
         throw new Error(
-          this.__node,
           "Internal error: Unexpected volatility: " + value);
       }
 
