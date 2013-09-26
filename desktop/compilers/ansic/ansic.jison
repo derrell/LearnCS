@@ -552,12 +552,13 @@ expression
   : assignment_expression
   {
     parser.yy.R("expression : assignment_expression");
-    $$ = $1;
+    $$ = new playground.c.lib.Node("expression", yytext, yylineno);
+    $$.children.push($1);
   }
   | expression ',' assignment_expression
   {
     parser.yy.R("expression : expression ',' assignment_expression");
-    $$ = new playground.c.lib.Node("expression", yytext, yylineno);
+    $$ = $1;
     $$.children.push($3);
   }
   ;
@@ -1510,43 +1511,69 @@ statement_list
   {
     parser.yy.R("statement_list : statement");
     $$ = new playground.c.lib.Node("statement_list", yytext, yylineno);
-    if ($1.type == "case")
+    $$.children.push($1);
+
+    // Recursively move the statement portion of 'case n : statement' up to
+    // the statement list
+    (function(thisNode, listNode)
     {
-      $$.children.push($1);
-      $$.children.push($1.children[1]); // the case's statement
-      $1.children.length = 1;           // statement's not used there any more
-    }
-    else if ($1.type == "default")
-    {
-      $$.children.push($1);
-      $$.children.push($1.children[0]); // the default's statement
-      $1.children = [];                 // statement's not used there any more
-    }
-    else
-    {
-      $$.children.push($1);
-    }
+      var             index;
+
+      switch(thisNode.type)
+      {
+        case "case" :
+          index = 1;
+          break;
+
+        case "default" :
+          index = 0;
+          break;
+
+        default :
+          // Not case nor default, so we have nothing to do
+          return;
+      }
+
+      // Move this case's statement to the statement list
+      listNode.children.push(thisNode.children[index]);
+      thisNode.children.length = 1;
+
+      // It's a case. Call recursively, to handle child being another case.
+      arguments.callee(thisNode.children[index], listNode);
+    })($1, $$);
   }
   | statement_list statement
   {
     parser.yy.R("statement_list : statement_list statement");
     $$ = $1;
-    if ($2.type == "case")
+    $$.children.push($2);
+
+    // Recursively move the statement portion of 'case n : statement' up to
+    // the statement list
+    (function(thisNode, listNode)
     {
-      $$.children.push($2);
-      $$.children.push($2.children[1]); // the case's statement
-      $2.children.length = 1;           // statement's not used there any more
-    }
-    else if ($2.type == "default")
-    {
-      $$.children.push($2);
-      $$.children.push($2.children[0]); // the default's statement
-      $2.children = [];                 // statement's not used there any more
-    }
-    else
-    {
-      $$.children.push($2);
-    }
+      switch(thisNode.type)
+      {
+        case "case" :
+          index = 1;
+          break;
+
+        case "default" :
+          index = 0;
+          break;
+
+        default :
+          // Not case nor default, so we have nothing to do
+          return;
+      }
+
+      // Move this case's statement to the statement list
+      listNode.children.push(thisNode.children[index]);
+      thisNode.children.length = 1;
+
+      // It's a case. Call recursively, to handle child being another case.
+      arguments.callee(thisNode.children[index], listNode);
+    })($2, $$);
   }
   | statement_list save_position declaration
   {
@@ -2009,8 +2036,9 @@ string_literal
     $$.value = 
       (function extract(string)
        {
+         // replace escaped specials that require special processing
          string = string.replace(
-           /\\([abtnvfr'"\\?]|([0-7]{3})|x([0-9a-fA-F]{2}))/g,
+           /\\([abtnvfr]|([0-7]{3})|x([0-9a-fA-F]{2}))/g,
            function(match, esc, oct, hex, offset, s)
            {
              if (oct)
@@ -2049,6 +2077,14 @@ string_literal
              default: 
                return esc;
              }
+           });
+
+         // replace the remaining simple escapes
+         string = string.replace(
+           /\\(.)/g,
+           function(match, esc, s)
+           {
+             return esc;
            });
 
          return string;

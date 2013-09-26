@@ -290,7 +290,7 @@ qx.Class.define("playground.c.lib.Specifier",
     setConstant : function(value)
     {
       // Ensure we have a valid value
-      if ( [ "constant" ].indexOf(value) === -1)
+      if ( [ "constant", "enum_value" ].indexOf(value) === -1)
       {
         throw new Error(
           this.__node,

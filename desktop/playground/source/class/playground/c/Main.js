@@ -343,6 +343,13 @@ qx.Class.define("playground.c.Main",
             };
             break;
 
+          case "draw.h" :
+            include = function()
+            {
+              return (playground.c.builtin.Draw.include(file, line));
+            };
+            break;
+
           case "ctype.h" :
             include = function()
             {
@@ -543,7 +550,7 @@ qx.Class.define("playground.c.Main",
     {
       try
       {
-        data.snapshot = qx.core.Init.getApplication().editor.getCode();
+//        data.snapshot = qx.core.Init.getApplication().editor.getCode();
         playground.ServerOp.statusReport(data);
       }
       catch(e)

@@ -857,3 +857,48 @@ STDOUT:
 Error near line 7: The left hand side of an assignment may not be the result of the address-of operator. The left hand side of an assignment must be a variable, pointer dereference, or array element reference.
 >>> Program had errors. It did not run to completion.
 
+% ../dcc t039-multiple-case.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+case 4 and default
+case 4 and default (second try)
+case 1
+case 1 (second try)
+case 2 and 3
+case 2 and 3 (second try)
+case 2 and 3
+case 2 and 3 (second try)
+case 4 and default
+case 4 and default (second try)
+case 5
+case 5 (second try)
+>>> Program exited with exit code 0
+
+% ../dcc t040-case-enum.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+hello world
+hi there
+>>> Program exited with exit code 0
+
+% ../dcc t041-case-const.c --rootdir=/home/derrell/ME
+ERROR: Error: Command failed: 
+STDOUT: 
+>>> Running program
+Error near line 7: Error: line 7: Each 'case' statement must represent a constant expression. It may not rely on any variables' values.
+>>> Program had errors. It did not run to completion.
+
+% ../dcc t042-non-special-escape.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+Hello world!
+ch=w
+>>> Program exited with exit code 0
+
+% ../dcc t043-for-loop-comma-list.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+i=1 j=10 k=20 l=30
+i=2 j=11 k=11 l=10
+>>> Program exited with exit code 0
+

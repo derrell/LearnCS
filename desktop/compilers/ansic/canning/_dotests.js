@@ -355,6 +355,21 @@ var tests =
     },
     {
       name   : "t038-assignment-error-3.c"
+    },
+    {
+      name   : "t039-multiple-case.c"
+    },
+    {
+      name   : "t040-case-enum.c"
+    },
+    {
+      name   : "t041-case-const.c"
+    },
+    {
+      name   : "t042-non-special-escape.c"
+    },
+    {
+      name   : "t043-for-loop-comma-list.c"
     }
   ];
 

@@ -120,12 +120,14 @@ qx.Class.define("playground.ServerOp",
       playground.ServerOp.__timer = qx.util.TimerManager.getInstance().start(
         function(userData, timerId)
         {
+/*
           // Add a snapshot immediately before sending this batch of reports
           queue.push(
             {
               type          : "snapshot",
               snapshot      : qx.core.Init.getApplication().editor.getCode()
             });
+*/
 
           playground.ServerOp.rpc(
             null,                             // success callback
@@ -142,7 +144,7 @@ qx.Class.define("playground.ServerOp",
         0,
         this,
         null,
-        2000);
+        5000);
     }
   },
   
