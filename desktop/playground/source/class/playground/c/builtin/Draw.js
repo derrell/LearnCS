@@ -92,6 +92,14 @@ qx.Class.define("playground.c.builtin.Draw",
             }
           },
           {
+            name : "draw_arc",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.builtin.Draw.draw_arc.apply(null, args);
+            }
+          },
+          {
             name : "draw_setColor",
             func : function()
             {
@@ -294,6 +302,29 @@ qx.Class.define("playground.c.builtin.Draw",
       
       // Draw a line from the current coordinates to the given coordinates
       context.lineTo(x, y);
+
+      // Return 0, although the return value is intended to be ignored
+      success(
+        {
+          value       : 0,
+          specAndDecl : [ specOrDecl ]
+        });
+    },
+    
+    draw_arc : function(success, failure, 
+                        x, y, radius, startAngle, endAngle, bAntiClockwise)
+    {
+      var             clazz = playground.c.builtin.Draw;
+      var             context = clazz._drawCanvas.getContext2d();
+      var             specOrDecl;
+
+      // Create a specifier for the return value
+      specOrDecl = new playground.c.lib.Specifier(
+        playground.c.lib.Node._currentNode,
+        "int");
+      
+      // Draw the specified arc
+      context.arc(x, y, radius, startAngle, endAngle, bAntiClockwise);
 
       // Return 0, although the return value is intended to be ignored
       success(
