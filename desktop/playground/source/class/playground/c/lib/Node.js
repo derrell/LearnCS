@@ -6069,12 +6069,25 @@ qx.Class.define("playground.c.lib.Node",
             // Ensure they're not writing to a constant
             if (! data.bIsInitializer && 
                 value1.specAndDecl[0] instanceof playground.c.lib.Specifier &&
-                value1.specAndDecl[0].getConstant() == "constant")
+                [
+                  "constant",
+                  "enum_value"
+                ].indexOf(value1.specAndDecl[0].getConstant()) != -1)
             {
               // They are! Bad programmer! Bad!
-              failure(new playground.c.lib.RuntimeError(
-                        this,
-                        "Can not alter a const variable."));
+              if (value1.specAndDecl[0].getConstant() == "constant")
+              {
+                failure(new playground.c.lib.RuntimeError(
+                          this,
+                          "Can not alter a const variable."));
+              }
+              else
+              {
+                failure(new playground.c.lib.RuntimeError(
+                          this,
+                          "Can not alter an enum value."));
+              }
+
               return;
             }
 

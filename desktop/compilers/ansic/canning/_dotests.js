@@ -370,6 +370,9 @@ var tests =
     },
     {
       name   : "t043-for-loop-comma-list.c"
+    },
+    {
+      name   : "t044-enum-value-lvalue.c"
     }
   ];
 

@@ -903,3 +903,10 @@ i=1 j=10 k=20 l=30
 i=2 j=11 k=11 l=10
 >>> Program exited with exit code 0
 
+% ../dcc t044-enum-value-lvalue.c --rootdir=/home/derrell/ME
+ERROR: Error: Command failed: 
+STDOUT: 
+>>> Running program
+Error near line 11: Can not alter an enum value.
+>>> Program had errors. It did not run to completion.
+
