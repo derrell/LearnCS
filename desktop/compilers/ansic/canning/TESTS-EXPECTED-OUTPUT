@@ -892,6 +892,7 @@ Error near line 7: Error: line 7: Each 'case' statement must represent a constan
 STDOUT: 
 >>> Running program
 Hello world!
+Escaped escape: \n
 ch=w
 >>> Program exited with exit code 0
 
