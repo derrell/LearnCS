@@ -49,14 +49,24 @@ qx.Class.define("playground.c.builtin.Draw",
         graphicsCanvas = terminal.getGraphicsCanvas();
         graphicsCanvas.show();
         
-        clazz._drawCanvas = new qx.ui.embed.Canvas().set(
+        // Initialize the draw list
+        clazz._drawList = [];
+
+        // Create the drawing canvas
+        clazz._drawCanvas = new qx.ui.embed.Canvas();
+        clazz._drawCanvas.set(
           {
             syncDimension : true
           });
+        
+        // Add it to the graphics canvas
         graphicsCanvas.add(clazz._drawCanvas, { edge : 0 } );
+        
+        // When we get a redraw event, redraw everything in the draw list
+        clazz._drawCanvas.addListener("redraw", clazz.finalize);
 
         //
-        // ... then add built-in functions.
+        // Add built-in functions.
         //
         [
           {
@@ -105,6 +115,14 @@ qx.Class.define("playground.c.builtin.Draw",
             {
               var args = Array.prototype.slice.call(arguments);
               playground.c.builtin.Draw.draw_setColor.apply(null, args);
+            }
+          },
+          {
+            name : "draw_clearRectangle",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.builtin.Draw.draw_clearRectangle.apply(null, args);
             }
           }
         ].forEach(
@@ -207,17 +225,27 @@ qx.Class.define("playground.c.builtin.Draw",
       return null;
     },
     
-    /**
-     * Begin drawing an object
-     */
-    draw_begin : function(success, failure)
+    finalize : function()
+    {
+      // The program has terminated. Draw everything in the draw list.
+      playground.c.builtin.Draw._drawList.forEach(
+        function(f)
+        {
+          f();
+        });      
+    },
+
+    __draw_common : function(success, failure, f)
     {
       var             clazz = playground.c.builtin.Draw;
       var             context = clazz._drawCanvas.getContext2d();
       var             specOrDecl;
 
-      // Begin a path
-      context.beginPath();
+      // Call the specified function
+      f(context);
+
+      // Also add the specified function to the draw list, for redraw events
+      clazz._drawList.push(function() { f(context); });
 
       // Create a specifier for the return value
       specOrDecl = new playground.c.lib.Specifier(
@@ -229,6 +257,21 @@ qx.Class.define("playground.c.builtin.Draw",
         {
           value       : 0,
           specAndDecl : [ specOrDecl ]
+        });
+    },
+
+    /**
+     * Begin drawing an object
+     */
+    draw_begin : function(success, failure)
+    {
+      playground.c.builtin.Draw.__draw_common(
+        success,
+        failure,
+        function(context)
+        {
+          // Begin a path
+          context.beginPath();
         });
     },
 
@@ -237,30 +280,20 @@ qx.Class.define("playground.c.builtin.Draw",
      */
     draw_finish : function(success, failure, bFill)
     {
-      var             clazz = playground.c.builtin.Draw;
-      var             context = clazz._drawCanvas.getContext2d();
-      var             specOrDecl;
-
-      // Either fill or stroke, as requested
-      if (bFill)
-      {
-        context.fill();
-      }
-      else
-      {
-        context.stroke();
-      }
-
-      // Create a specifier for the return value
-      specOrDecl = new playground.c.lib.Specifier(
-        playground.c.lib.Node._currentNode,
-        "int");
-      
-      // Return 0, although the return value is intended to be ignored
-      success(
+      playground.c.builtin.Draw.__draw_common(
+        success,
+        failure,
+        function(context)
         {
-          value       : 0,
-          specAndDecl : [ specOrDecl ]
+          // Either fill or stroke, as requested
+          if (bFill)
+          {
+            context.fill();
+          }
+          else
+          {
+            context.stroke();
+          }
         });
     },
 
@@ -269,76 +302,43 @@ qx.Class.define("playground.c.builtin.Draw",
      */
     draw_moveTo : function(success, failure, x, y)
     {
-      var             clazz = playground.c.builtin.Draw;
-      var             context = clazz._drawCanvas.getContext2d();
-      var             specOrDecl;
-
-      // Move to the specified coordinates
-      context.moveTo(x, y);
-
-      // Create a specifier for the return value
-      specOrDecl = new playground.c.lib.Specifier(
-        playground.c.lib.Node._currentNode,
-        "int");
-      
-      // Return 0, although the return value is intended to be ignored
-      success(
+      playground.c.builtin.Draw.__draw_common(
+        success,
+        failure,
+        function(context)
         {
-          value       : 0,
-          specAndDecl : [ specOrDecl ]
+          // Move to the specified coordinates
+          context.moveTo(x, y);
         });
     },
     
     draw_lineTo : function(success, failure, x, y)
     {
-      var             clazz = playground.c.builtin.Draw;
-      var             context = clazz._drawCanvas.getContext2d();
-      var             specOrDecl;
-
-      // Create a specifier for the return value
-      specOrDecl = new playground.c.lib.Specifier(
-        playground.c.lib.Node._currentNode,
-        "int");
-      
-      // Draw a line from the current coordinates to the given coordinates
-      context.lineTo(x, y);
-
-      // Return 0, although the return value is intended to be ignored
-      success(
+      playground.c.builtin.Draw.__draw_common(
+        success,
+        failure,
+        function(context)
         {
-          value       : 0,
-          specAndDecl : [ specOrDecl ]
+          // Draw a line from the current coordinates to the given coordinates
+          context.lineTo(x, y);
         });
     },
     
     draw_arc : function(success, failure, 
                         x, y, radius, startAngle, endAngle, bAntiClockwise)
     {
-      var             clazz = playground.c.builtin.Draw;
-      var             context = clazz._drawCanvas.getContext2d();
-      var             specOrDecl;
-
-      // Create a specifier for the return value
-      specOrDecl = new playground.c.lib.Specifier(
-        playground.c.lib.Node._currentNode,
-        "int");
-      
-      // Draw the specified arc
-      context.arc(x, y, radius, startAngle, endAngle, bAntiClockwise);
-
-      // Return 0, although the return value is intended to be ignored
-      success(
+      playground.c.builtin.Draw.__draw_common(
+        success,
+        failure,
+        function(context)
         {
-          value       : 0,
-          specAndDecl : [ specOrDecl ]
+          // Draw the specified arc
+          context.arc(x, y, radius, startAngle, endAngle, bAntiClockwise);
         });
     },
     
     draw_setColor : function(success, failure, color)
     {
-      var             clazz = playground.c.builtin.Draw;
-      var             context = clazz._drawCanvas.getContext2d();
-      var             specOrDecl;
       var             i;
       var             memBytes;
       var             jStr;
@@ -358,20 +358,26 @@ qx.Class.define("playground.c.builtin.Draw",
       }
       color = String.fromCharCode.apply(null, jStr);
             
-      // Create a specifier for the return value
-      specOrDecl = new playground.c.lib.Specifier(
-        playground.c.lib.Node._currentNode,
-        "int");
-      
-      // Set the stroke (line) and fill colors
-      context.strokeStyle = color;
-      context.fillStyle = color;
-
-      // Return 0, although the return value is intended to be ignored
-      success(
+      playground.c.builtin.Draw.__draw_common(
+        success,
+        failure,
+        function(context)
         {
-          value       : 0,
-          specAndDecl : [ specOrDecl ]
+          // Set the stroke (line) and fill colors
+          context.strokeStyle = color;
+          context.fillStyle = color;
+        });
+    },
+    
+    draw_clearRectangle : function(success, failure, x, y, width, height)
+    {
+      playground.c.builtin.Draw.__draw_common(
+        success,
+        failure,
+        function(context)
+        {
+          // Clear the specified rectangle
+          context.clearRect(x, y, width, height);
         });
     }
   }

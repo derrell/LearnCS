@@ -348,6 +348,10 @@ qx.Class.define("playground.c.Main",
             {
               return (playground.c.builtin.Draw.include(file, line));
             };
+            finalize = function()
+            {
+              playground.c.builtin.Draw.finalize();
+            };
             break;
 
           case "ctype.h" :
