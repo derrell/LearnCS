@@ -65,6 +65,22 @@ qx.Class.define("playground.c.builtin.Draw",
           {
             syncDimension : true
           });
+
+        graphicsCanvas.addListenerOnce(
+          "appear",
+          function(e)
+          {
+            var             sizeHint;
+
+            // Determine the size of the parent, if yet known
+            sizeHint = graphicsCanvas.getInnerSize();
+
+            clazz._drawCanvas.set(
+              {
+                canvasWidth  : sizeHint.width,
+                canvasHeight : sizeHint.height
+              });
+          });
         
         // Add it to the graphics canvas
         graphicsCanvas.add(clazz._drawCanvas, { edge : 0 } );
