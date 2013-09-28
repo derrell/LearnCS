@@ -52,6 +52,13 @@ qx.Class.define("playground.c.builtin.Draw",
         // Initialize the draw list
         clazz._drawList = [];
 
+        // Dispose of any old drawing canvas
+        if (clazz._drawCanvas)
+        {
+          clazz._drawCanvas.dispose();
+          clazz._drawCanvas = null;
+        }
+
         // Create the drawing canvas
         clazz._drawCanvas = new qx.ui.embed.Canvas();
         clazz._drawCanvas.set(
