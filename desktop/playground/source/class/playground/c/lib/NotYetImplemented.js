@@ -28,9 +28,9 @@ qx.Class.define("playground.c.lib.NotYetImplemented",
 {
   extend : qx.core.Object,
   
-  construct : function(nodeType)
+  construct : function(thingNotImplemented)
   {
     this.base(arguments);
-    this.nodeType = nodeType;
+    this.thingNotImplemented = thingNotImplemented;
   }
 });
