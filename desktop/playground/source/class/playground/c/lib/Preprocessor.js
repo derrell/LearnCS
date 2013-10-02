@@ -40,6 +40,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Copyright (c) 2013, Derrell Lipman
  * Converted to qooxdoo module
  */
+
+/*
+#require(playground.c.Main)
+*/
+
 qx.Class.define("playground.c.lib.Preprocessor",
 {
   type: "static",
@@ -51,6 +56,15 @@ qx.Class.define("playground.c.lib.Preprocessor",
 
     // Files included by the preprocessor
     includedFiles : [],
+
+    // Pragma settings
+    pragma :
+    {
+      debugFlags :
+      {
+        math : true
+      }
+    },
 
     preprocess : function(text, callback)
     {
@@ -1688,6 +1702,32 @@ var __PRE__ = "";
       warn_func        : playground.c.lib.Preprocessor._output,
 
       error_func       : playground.c.lib.Preprocessor._output,
+
+      pragma_func      : function(pragma)
+      {
+        var             fields;
+
+        // See if this is a debug pragma, in the form #pragma debug:math=0
+        if (pragma && pragma.match(/^debug:/))
+        {
+          // It appears to be. Try to split it up, and get its argument
+          fields = pragma.split(":");
+          
+          // Split up the argument
+          fields = fields[1].split("=");
+          
+          // What type of debug pragma is this?
+          switch(fields[0])
+          {
+          case "math" :
+            playground.c.lib.Preprocessor.pragma.debugFlags.math = 
+              Number(fields[1]);
+            return true;
+          }
+        }
+        
+        return false;
+      },
 
       include_func     : function(file, line, is_global, resumer, error)
       {
