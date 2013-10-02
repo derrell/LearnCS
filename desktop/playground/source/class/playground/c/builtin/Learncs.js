@@ -75,7 +75,7 @@ qx.Class.define("playground.c.builtin.Learncs",
               throw new playground.c.lib.RuntimeError(
                 node,
                 info.name + " being redefined. " +
-                  "Is math.h included multiple times?");
+                  "Is learncs.h included multiple times?");
             }
             declarator = new playground.c.lib.Declarator(
               {
