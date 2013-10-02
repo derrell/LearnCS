@@ -30,6 +30,9 @@ qx.Class.define("playground.c.builtin.Math",
     {
       var             rootSymtab;
       var             mem;
+      var             bLittleEndian;
+      var             ul;
+      var             data;
       
       try
       {
@@ -39,16 +42,47 @@ qx.Class.define("playground.c.builtin.Math",
         // Get the root symbol table
         rootSymtab = playground.c.lib.Symtab.getByName("*");
 
+        // Determine the endianness of the machine
+        // Play with the R1 register. Gain access to its bytes.
+        data = mem._getByType("unsigned char",
+                              playground.c.machine.Memory.register["R1"],
+                              4);
+
+        // Individually set the four bytes of R1 to determine endianness
+        data[0] = 0x00;
+        data[1] = 0x01;
+        data[2] = 0x02;
+        data[3] = 0x03;
+
+        // Read those four bytes as an unsigned long
+        ul = mem.getReg("R1", "unsigned long");
+
+        // Return true if this machine is little endian; false otherwise
+        bLittleEndian = (ul == 0x03020100);
+
+        // Determine the value of NaN
+        if (bLittleEndian)
+        {
+          // Set the individual bytes that represent 32-bit NaN
+          data[0] = 0x00;
+          data[1] = 0x00;
+          data[2] = 0xc0;
+          data[3] = 0x7f;
+          
+          // Read those four bytes as a double
+          playground.c.builtin.Math._NaN = mem.getReg("R1", "double");
+        }
+
         //
         // ... then add built-in functions.
         //
         [
           {
-            name : "sin",
+            name : "acos",
             func : function()
             {
               var args = Array.prototype.slice.call(arguments);
-              playground.c.builtin.Math.sin.apply(null, args);
+              playground.c.builtin.Math.acos.apply(null, args);
             }
           },
           {
@@ -57,6 +91,14 @@ qx.Class.define("playground.c.builtin.Math",
             {
               var args = Array.prototype.slice.call(arguments);
               playground.c.builtin.Math.pow.apply(null, args);
+            }
+          },
+          {
+            name : "sin",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.builtin.Math.sin.apply(null, args);
             }
           },
           {
@@ -111,7 +153,7 @@ qx.Class.define("playground.c.builtin.Math",
         // Define constants
         [
           {
-            name : "M_PI",
+            name : "NAN",
             func : function(entry, node)
             {
               var             specifier;
@@ -123,7 +165,9 @@ qx.Class.define("playground.c.builtin.Math",
                   specifier
                 ]);
               entry.calculateOffset();
-              mem.set(entry.getAddr(), "double", 3.14159265358979323846);
+              mem.set(entry.getAddr(),
+                      "double",
+                      playground.c.builtin.Math._NaN);
             }
           }
         ].forEach(
@@ -166,96 +210,95 @@ qx.Class.define("playground.c.builtin.Math",
     },
 
     /**
-     * Determine the sine of a number
+     * Utility function for use when the result can be calculated within a
+     * provided function, and a double is returned.
      */
-    sin : function(success, failure, value)
+    _common : function(success, failure, fConvert, errorStr, retType)
     {
       var             converted;
       var             specOrDecl;
       
-      converted = Math.sin(value);
+      // Call the provided conversion function
+      converted = fConvert();
 
       if (isNaN(converted))
       {
-        failure(new playground.c.lib.RuntimeError(
-                  playground.c.lib.Node._currentNode,
-                  "sin() called with invalid argument: " + value));
+        // If math debugging is enabled...
+        if (playground.c.lib.Preprocessor.pragma.debugFlags.math)
+        {
+          // Could not do the specified conversion with the provided arguments.
+          failure(new playground.c.lib.RuntimeError(
+                    playground.c.lib.Node._currentNode,
+                    errorStr));
+          return;
+        }
+        
+        // Debugging is not enabled. Just return NaN
+        converted = playground.c.builtin.Math._NaN;
       }
-      else
-      {
-        // Create a specifier for the return value
-        specOrDecl = new playground.c.lib.Specifier(
-          playground.c.lib.Node._currentNode,
-          "double");
 
-        success(
-          {
-            value       : converted,
-            specAndDecl : [ specOrDecl ]
-          });
-      }
+      // If no return type was provided, use "double"
+      retType = retType || "double";
+
+      // Create a specifier for the return value
+      specOrDecl = new playground.c.lib.Specifier(
+        playground.c.lib.Node._currentNode,
+        retType);
+
+      // We were successful!
+      success(
+        {
+          value       : converted,
+          specAndDecl : [ specOrDecl ]
+        });
     },
 
-    /**
-     * Take a number to a given power
-     */
+    acos : function(success, failure, x)
+    {
+      playground.c.builtin.Math._common(
+        success,
+        failure,
+        function()
+        {
+          return Math.acos(x);
+        },
+        "acos() called with invalid argument: " + x);
+    },
+
     pow : function(success, failure, x, y)
     {
-      var             converted;
-      var             specOrDecl;
-      
-      converted = Math.pow(x, y);
-
-      if (isNaN(converted))
-      {
-        failure(new playground.c.lib.RuntimeError(
-                  playground.c.lib.Node._currentNode,
-                  "pow() called with invalid arguments: " + x + ", " + y));
-      }
-      else
-      {
-        // Create a specifier for the return value
-        specOrDecl = new playground.c.lib.Specifier(
-          playground.c.lib.Node._currentNode,
-          "double");
-
-        success(
-          {
-            value       : converted,
-            specAndDecl : [ specOrDecl ]
-          });
-      }
+      playground.c.builtin.Math._common(
+        success,
+        failure,
+        function()
+        {
+          return Math.pow(x, y);
+        },
+        "pow() called with invalid arguments: " + x + ", " + y);
     },
 
-    /**
-     * Determine the square root of a number
-     */
-    sqrt : function(success, failure, value)
+    sin : function(success, failure, x)
     {
-      var             converted;
-      var             specOrDecl;
-      
-      converted = Math.sqrt(value);
+      playground.c.builtin.Math._common(
+        success,
+        failure,
+        function()
+        {
+          return Math.sin(x);
+        },
+        "sin() called with invalid argument: " + x);
+    },
 
-      if (isNaN(converted))
-      {
-        failure(new playground.c.lib.RuntimeError(
-                  playground.c.lib.Node._currentNode,
-                  "sqrt() called with invalid argument: " + value));
-      }
-      else
-      {
-        // Create a specifier for the return value
-        specOrDecl = new playground.c.lib.Specifier(
-          playground.c.lib.Node._currentNode,
-          "double");
-
-        success(
-          {
-            value       : converted,
-            specAndDecl : [ specOrDecl ]
-          });
-      }
+    sqrt : function(success, failure, x)
+    {
+      playground.c.builtin.Math._common(
+        success,
+        failure,
+        function()
+        {
+          return Math.sqrt(x);
+        },
+        "sqrt() called with invalid argument: " + x);
     }
   }
 });
