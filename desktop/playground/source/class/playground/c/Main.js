@@ -58,8 +58,8 @@ qx.Class.define("playground.c.Main",
   {
     debugFlags :
     {
-      ast    : false,
-      symtab : false
+      ast       : false,
+      symtab    : false
     },
 
     commandeLine : null,
@@ -506,7 +506,9 @@ qx.Class.define("playground.c.Main",
         }
         else if (error instanceof playground.c.lib.NotYetImplemented)
         {
-          message = "Not yet implemented: " + error.nodeType + "\n";
+          message =
+            "This feature is not yet implemented in LearnCS!: " +
+            error.thingNotImplemented + "\n";
         }
         else
         {
@@ -626,7 +628,7 @@ qx.Class.define("playground.c.Main",
 
       // Initialize the machine singleton, which initializes the registers
       machine = playground.c.machine.Machine.getInstance();
-
+      
       function completion()
       {
         var             application;
@@ -807,7 +809,9 @@ qx.Class.define("playground.c.Main",
         }
         else if (error instanceof playground.c.lib.NotYetImplemented)
         {
-          message = error.nodeType + "\n";
+          message =
+            "This feature is not yet implemented in LearnCS!: " +
+            error.thingNotImplemented + "\n";
         }
         else
         {
