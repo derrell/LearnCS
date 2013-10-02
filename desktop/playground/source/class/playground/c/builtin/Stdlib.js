@@ -140,7 +140,7 @@ qx.Class.define("playground.c.builtin.Stdlib",
             // Add symbol to symbol table
             entry = rootSymtab.add(info.name, 0, false);
             if (! entry) 
-           {
+            {
               throw new playground.c.lib.RuntimeError(
                 node,
                 info.name + " being redefined. " +
