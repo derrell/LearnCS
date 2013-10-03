@@ -75,10 +75,7 @@ int main(int argc, char * argv[])
     printf("floor(1.9999999)  = %f\n", floor(1.9999999));
     printf("\n");
 
-    printf("labs(-999999L) = %f\n", labs(-999999L));
-    printf("labs(0L)       = %f\n", labs(0L));
-    printf("labs(999999L)  = %f\n", labs(999999L));
-    printf("\n");
+    
 
     return 0;
 }
