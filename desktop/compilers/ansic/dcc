@@ -1,6 +1,9 @@
 #!/bin/bash
 
 BASE=/home/derrell/ME/android-developer/app-developer/desktop
+if [ ! -e ${BASE} ]; then
+    BASE=/home/derrell/ME/android-developer/AppDeveloper.git/desktop
+fi
 
 nodepath=$BASE/playground/source/class/playground/c
 nodepath=$nodepath:$BASE/compilers/ansic
