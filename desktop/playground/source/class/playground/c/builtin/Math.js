@@ -26,6 +26,11 @@ qx.Class.define("playground.c.builtin.Math",
   
   statics :
   {
+    // The maximum random number returned by rand(). Allow adding 1 without
+    // overflow, so that the return value from rand() can be [0, _RandMax]
+    // (inclusive).
+    _RandMax : 0x7ffffffe,
+
     include : function(name, line)
     {
       var             rootSymtab;
@@ -60,18 +65,25 @@ qx.Class.define("playground.c.builtin.Math",
         // Return true if this machine is little endian; false otherwise
         bLittleEndian = (ul == 0x03020100);
 
-        // Determine the value of NaN
+        // Determine the value of NaN. Set the individual bytes that represent
+        // 32-bit NaN, in the appropriate order based on endianness.
         if (bLittleEndian)
         {
-          // Set the individual bytes that represent 32-bit NaN
           data[0] = 0x00;
           data[1] = 0x00;
           data[2] = 0xc0;
           data[3] = 0x7f;
-          
-          // Read those four bytes as a double
-          playground.c.builtin.Math._NaN = mem.getReg("R1", "double");
         }
+        else
+        {
+          data[0] = 0x7f;
+          data[1] = 0xc0;
+          data[2] = 0x00;
+          data[3] = 0x00;
+        }
+
+        // Read those four bytes as a double to obtain our NaN value
+        playground.c.builtin.Math._NaN = mem.getReg("R1", "double");
 
         //
         // ... then add built-in functions.
@@ -86,11 +98,99 @@ qx.Class.define("playground.c.builtin.Math",
             }
           },
           {
+            name : "asin",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.builtin.Math.asin.apply(null, args);
+            }
+          },
+          {
+            name : "atan",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.builtin.Math.atan.apply(null, args);
+            }
+          },
+          {
+            name : "ceil",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.builtin.Math.ceil.apply(null, args);
+            }
+          },
+          {
+            name : "cos",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.builtin.Math.cos.apply(null, args);
+            }
+          },
+          {
+            name : "exp",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.builtin.Math.exp.apply(null, args);
+            }
+          },
+          {
+            name : "fabs",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.builtin.Math.fabs.apply(null, args);
+            }
+          },
+          {
+            name : "floor",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.builtin.Math.floor.apply(null, args);
+            }
+          },
+          {
+            name : "log",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.builtin.Math.log.apply(null, args);
+            }
+          },
+          {
+            name : "log2",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.builtin.Math.log2.apply(null, args);
+            }
+          },
+          {
+            name : "log10",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.builtin.Math.log10.apply(null, args);
+            }
+          },
+          {
             name : "pow",
             func : function()
             {
               var args = Array.prototype.slice.call(arguments);
               playground.c.builtin.Math.pow.apply(null, args);
+            }
+          },
+          {
+            name : "rand",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.builtin.Math.rand.apply(null, args);
             }
           },
           {
@@ -107,6 +207,22 @@ qx.Class.define("playground.c.builtin.Math",
             {
               var args = Array.prototype.slice.call(arguments);
               playground.c.builtin.Math.sqrt.apply(null, args);
+            }
+          },
+          {
+            name : "srand",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.builtin.Math.srand.apply(null, args);
+            }
+          },
+          {
+            name : "tan",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.builtin.Math.tan.apply(null, args);
             }
           }
         ].forEach(
@@ -152,22 +268,170 @@ qx.Class.define("playground.c.builtin.Math",
 
         // Define constants
         [
+
+          {
+            name : "M_E",
+	    func : function()
+            {
+              return (
+                {
+                  type  : "double",
+                  value : 2.7182818284590452354	// e
+                });
+            }
+          },
+          {
+            name : "M_LOG2E",
+	    func : function()
+            {
+              return (
+                {
+                  type  : "double",
+                  value : 1.4426950408889634074	// log_2 e
+                });
+            }
+          },
+          {
+            name : "M_LOG10E",
+	    func : function()
+            {
+              return (
+                {
+                  type  : "double",
+                  value : 0.43429448190325182765	// log_10 e
+                });
+            }
+          },
+          {
+            name : "M_LN2",
+	    func : function()
+            {
+              return (
+                {
+                  type  : "double",
+                  value : 0.69314718055994530942	// log_e 2
+                });
+            }
+          },
+          {
+            name : "M_LN10",
+	    func : function()
+            {
+              return (
+                {
+                  type  : "double",
+                  value : 2.30258509299404568402	// log_e 10
+                });
+            }
+          },
+          {
+            name : "M_PI",
+            func : function()
+            {
+              return (
+                {
+                  type  : "double", 
+                  value : 3.14159265358979323846
+                });
+            }
+          },
+          {
+            name : "M_PI_2",
+	    func : function()
+            {
+              return (
+                {
+                  type  : "double",
+                  value : 1.57079632679489661923	// pi/2
+                });
+            }
+          },
+          {
+            name : "M_PI_4",
+	    func : function()
+            {
+              return (
+                {
+                  type  : "double",
+                  value : 0.78539816339744830962	// pi/4
+                });
+            }
+          },
+          {
+            name : "M_1_PI",
+	    func : function()
+            {
+              return (
+                {
+                  type  : "double",
+                  value : 0.31830988618379067154	// 1/pi
+                });
+            }
+          },
+          {
+            name : "M_2_PI",
+	    func : function()
+            {
+              return (
+                {
+                  type  : "double",
+                  value : 0.63661977236758134308	// 2/pi
+                });
+            }
+          },
+          {
+            name : "M_2_SQRTPI",
+	    func : function()
+            {
+              return (
+                {
+                  type  : "double",
+                  value : 1.12837916709551257390	// 2/sqrt(pi)
+                });
+            }
+          },
+          {
+            name : "M_SQRT2",
+	    func : function()
+            {
+              return (
+                {
+                  type  : "double",
+                  value : 1.41421356237309504880	// sqrt(2)
+                });
+            }
+          },
+          {
+            name : "M_SQRT1_2",
+	    func : function()
+            {
+              return (
+                {
+                  type  : "double",
+                  value : 0.70710678118654752440	// 1/sqrt(2)
+                });
+            }
+          },
           {
             name : "NAN",
-            func : function(entry, node)
+            func : function()
             {
-              var             specifier;
-              specifier = new playground.c.lib.Specifier(node, "double");
-              specifier.setConstant("constant");
-
-              entry.setSpecAndDecl(
-                [
-                  specifier
-                ]);
-              entry.calculateOffset();
-              mem.set(entry.getAddr(),
-                      "double",
-                      playground.c.builtin.Math._NaN);
+              return (
+                {
+                  type  : "double", 
+                  value : playground.c.builtin.Math._NaN
+                });
+            }
+          },
+          {
+            name : "RAND_MAX",
+            func : function()
+            {
+              return (
+                {
+                  type  : "int",
+                  value : playground.c.builtin.Math._RandMax
+                });
             }
           }
         ].forEach(
@@ -175,6 +439,8 @@ qx.Class.define("playground.c.builtin.Math",
           {
             var             entry;
             var             node;
+            var             def;
+            var             specifier;
 
             // Simulate a node, for the specifiers and declarators
             node =
@@ -196,9 +462,22 @@ qx.Class.define("playground.c.builtin.Math",
                   "Is math.h included multiple times?");
             }
 
-            // Call the provided function to initialize the value and create
-            // and set she specifier/declarator list in the symbol table entry
-            info.func(entry, node);
+            // Get the type and value for the constant
+            def = info.func();
+
+            // Create a specifier for this constant
+            specifier = new playground.c.lib.Specifier(node, def.type);
+            specifier.setConstant("constant");
+
+            // Add the specifier/declarator list to the symtab entry
+            entry.setSpecAndDecl(
+              [
+                specifier
+              ]);
+            entry.calculateOffset();
+            
+            // Save the constant's value
+            mem.set(entry.getAddr(), def.type, def.value);
           });
       }
       catch(e)
@@ -213,7 +492,7 @@ qx.Class.define("playground.c.builtin.Math",
      * Utility function for use when the result can be calculated within a
      * provided function, and a double is returned.
      */
-    _common : function(success, failure, fConvert, errorStr, retType)
+    _commonFunction : function(success, failure, fConvert, errorStr, retType)
     {
       var             converted;
       var             specOrDecl;
@@ -255,7 +534,7 @@ qx.Class.define("playground.c.builtin.Math",
 
     acos : function(success, failure, x)
     {
-      playground.c.builtin.Math._common(
+      playground.c.builtin.Math._commonFunction(
         success,
         failure,
         function()
@@ -265,9 +544,139 @@ qx.Class.define("playground.c.builtin.Math",
         "acos() called with invalid argument: " + x);
     },
 
+    asin : function(success, failure, x)
+    {
+      playground.c.builtin.Math._commonFunction(
+        success,
+        failure,
+        function()
+        {
+          return Math.asin(x);
+        },
+        "asin() called with invalid argument: " + x);
+    },
+
+    atan : function(success, failure, x)
+    {
+      playground.c.builtin.Math._commonFunction(
+        success,
+        failure,
+        function()
+        {
+          return Math.atan(x);
+        },
+        "atan() called with invalid argument: " + x);
+    },
+
+    ceil : function(success, failure, x)
+    {
+      playground.c.builtin.Math._commonFunction(
+        success,
+        failure,
+        function()
+        {
+          return Math.ceil(x);
+        },
+        "ceil() called with invalid argument: " + x);
+    },
+
+    cos : function(success, failure, x)
+    {
+      playground.c.builtin.Math._commonFunction(
+        success,
+        failure,
+        function()
+        {
+          return Math.cos(x);
+        },
+        "cos() called with invalid argument: " + x);
+    },
+
+    exp : function(success, failure, x)
+    {
+      playground.c.builtin.Math._commonFunction(
+        success,
+        failure,
+        function()
+        {
+          return Math.exp(x);
+        },
+        "exp() called with invalid argument: " + x);
+    },
+
+    fabs : function(success, failure, x)
+    {
+      playground.c.builtin.Math._commonFunction(
+        success,
+        failure,
+        function()
+        {
+          if (isNaN(x))
+          {
+            return playground.c.builtin.Math._NaN;
+          }
+          
+          if (x < 0.0)
+          {
+            return -x;
+          }
+          
+          return x;
+        },
+        "fabs() called with invalid argument: " + x);
+    },
+
+    floor : function(success, failure, x)
+    {
+      playground.c.builtin.Math._commonFunction(
+        success,
+        failure,
+        function()
+        {
+          return Math.floor(x);
+        },
+        "floor() called with invalid argument: " + x);
+    },
+
+    log : function(success, failure, x)
+    {
+      playground.c.builtin.Math._commonFunction(
+        success,
+        failure,
+        function()
+        {
+          return Math.log(x);
+        },
+        "log() called with invalid argument: " + x);
+    },
+
+    log2 : function(success, failure, x)
+    {
+      playground.c.builtin.Math._commonFunction(
+        success,
+        failure,
+        function()
+        {
+          return Math.LOG2E * Math.log(x);
+        },
+        "log2() called with invalid argument: " + x);
+    },
+
+    log10 : function(success, failure, x)
+    {
+      playground.c.builtin.Math._commonFunction(
+        success,
+        failure,
+        function()
+        {
+          return Math.LOG10E * Math.log(x);
+        },
+        "log10() called with invalid argument: " + x);
+    },
+
     pow : function(success, failure, x, y)
     {
-      playground.c.builtin.Math._common(
+      playground.c.builtin.Math._commonFunction(
         success,
         failure,
         function()
@@ -277,9 +686,22 @@ qx.Class.define("playground.c.builtin.Math",
         "pow() called with invalid arguments: " + x + ", " + y);
     },
 
+    rand : function(success, failure)
+    {
+      playground.c.builtin.Math._commonFunction(
+        success,
+        failure,
+        function()
+        {
+          return Math.floor(
+            Math.random() * (playground.c.builtin.Math._RandMax + 1));
+        },
+        "Internal error: rand() failed");
+    },
+
     sin : function(success, failure, x)
     {
-      playground.c.builtin.Math._common(
+      playground.c.builtin.Math._commonFunction(
         success,
         failure,
         function()
@@ -291,7 +713,7 @@ qx.Class.define("playground.c.builtin.Math",
 
     sqrt : function(success, failure, x)
     {
-      playground.c.builtin.Math._common(
+      playground.c.builtin.Math._commonFunction(
         success,
         failure,
         function()
@@ -299,6 +721,31 @@ qx.Class.define("playground.c.builtin.Math",
           return Math.sqrt(x);
         },
         "sqrt() called with invalid argument: " + x);
+    },
+
+    srand : function(success, failure, x)
+    {
+      failure(new playground.c.lib.RuntimeError(
+                playground.c.lib.Node._currentNode,
+                "srand() is not supported in LearnCS! since the random " +
+                "number generator is pre-seeded. If you would like to " +
+                "make your program portable by retaining the call to " +
+                "srand(), use it like this:\n" +
+                "#ifndef LEARNCS\n" +
+                "  srand(seedVal);\n" +
+                "#endif"));
+    },
+
+    tan : function(success, failure, x)
+    {
+      playground.c.builtin.Math._commonFunction(
+        success,
+        failure,
+        function()
+        {
+          return Math.tan(x);
+        },
+        "tan() called with invalid argument: " + x);
     }
   }
 });
