@@ -26,11 +26,6 @@ qx.Class.define("playground.c.builtin.Math",
   
   statics :
   {
-    // The maximum random number returned by rand(). Allow adding 1 without
-    // overflow, so that the return value from rand() can be [0, _RandMax]
-    // (inclusive).
-    _RandMax : 0x7ffffffe,
-
     include : function(name, line)
     {
       var             rootSymtab;
@@ -186,14 +181,6 @@ qx.Class.define("playground.c.builtin.Math",
             }
           },
           {
-            name : "rand",
-            func : function()
-            {
-              var args = Array.prototype.slice.call(arguments);
-              playground.c.builtin.Math.rand.apply(null, args);
-            }
-          },
-          {
             name : "sin",
             func : function()
             {
@@ -210,14 +197,6 @@ qx.Class.define("playground.c.builtin.Math",
             }
           },
           {
-            name : "srand",
-            func : function()
-            {
-              var args = Array.prototype.slice.call(arguments);
-              playground.c.builtin.Math.srand.apply(null, args);
-            }
-          },
-          {
             name : "tan",
             func : function()
             {
@@ -231,6 +210,13 @@ qx.Class.define("playground.c.builtin.Math",
             var             entry;
             var             declarator;
             var             node;
+
+            // If there's an initialization function...
+            if (info.init)
+            {
+              // ... then call it
+              info.init();
+            }
 
             // Simulate a node, for the specifiers and declarators
             node =
@@ -268,7 +254,6 @@ qx.Class.define("playground.c.builtin.Math",
 
         // Define constants
         [
-
           {
             name : "M_E",
 	    func : function()
@@ -422,17 +407,6 @@ qx.Class.define("playground.c.builtin.Math",
                   value : playground.c.builtin.Math._NaN
                 });
             }
-          },
-          {
-            name : "RAND_MAX",
-            func : function()
-            {
-              return (
-                {
-                  type  : "int",
-                  value : playground.c.builtin.Math._RandMax
-                });
-            }
           }
         ].forEach(
           function(info)
@@ -490,7 +464,7 @@ qx.Class.define("playground.c.builtin.Math",
 
     /**
      * Utility function for use when the result can be calculated within a
-     * provided function, and a double is returned.
+     * provided function
      */
     _commonFunction : function(success, failure, fConvert, errorStr, retType)
     {
@@ -686,19 +660,6 @@ qx.Class.define("playground.c.builtin.Math",
         "pow() called with invalid arguments: " + x + ", " + y);
     },
 
-    rand : function(success, failure)
-    {
-      playground.c.builtin.Math._commonFunction(
-        success,
-        failure,
-        function()
-        {
-          return Math.floor(
-            Math.random() * (playground.c.builtin.Math._RandMax + 1));
-        },
-        "Internal error: rand() failed");
-    },
-
     sin : function(success, failure, x)
     {
       playground.c.builtin.Math._commonFunction(
@@ -721,19 +682,6 @@ qx.Class.define("playground.c.builtin.Math",
           return Math.sqrt(x);
         },
         "sqrt() called with invalid argument: " + x);
-    },
-
-    srand : function(success, failure, x)
-    {
-      failure(new playground.c.lib.RuntimeError(
-                playground.c.lib.Node._currentNode,
-                "srand() is not supported in LearnCS! since the random " +
-                "number generator is pre-seeded. If you would like to " +
-                "make your program portable by retaining the call to " +
-                "srand(), use it like this:\n" +
-                "#ifndef LEARNCS\n" +
-                "  srand(seedVal);\n" +
-                "#endif"));
     },
 
     tan : function(success, failure, x)
