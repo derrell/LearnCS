@@ -51,6 +51,12 @@ qx.Class.define("playground.c.lib.Preprocessor",
 
   statics:
   {
+    // Predefined macros
+    predefined :
+    {
+      LEARNCS : ''
+    },
+
     // initialized in defer
     settings : null,
 
@@ -78,6 +84,12 @@ qx.Class.define("playground.c.lib.Preprocessor",
       // Get an instance of the C preprocessor, with our specified settings
       cpp = statics._init(statics.settings);
       
+      // Reset the definition list
+      cpp.clear();
+      
+      // Define all of the definitions that are supposed to be predefined
+      cpp.define_multiple(statics.predefined);
+
       // Reset the list of files to include
       statics.includedFiles = [];
       
