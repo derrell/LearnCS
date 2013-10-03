@@ -100,6 +100,14 @@ qx.Class.define("playground.c.builtin.Stdlib",
             }
           },
           {
+            name : "labs",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.builtin.Stdlib.labs.apply(null, args);
+            }
+          },
+          {
             name : "malloc",
             func : function()
             {
@@ -504,6 +512,8 @@ qx.Class.define("playground.c.builtin.Stdlib",
       success();
     },
     
+    labs : null,                // initialized in defer to use abs
+
     malloc : function(success, failure, numBytes)
     {
       var             i;
@@ -639,5 +649,11 @@ qx.Class.define("playground.c.builtin.Stdlib",
                 "  srand(seedVal);\n" +
                 "#endif"));
     }
+  },
+  
+  defer : function(statics)
+  {
+    // use abs() on any call to labs()
+    statics.labs = statics.abs;
   }
 });
