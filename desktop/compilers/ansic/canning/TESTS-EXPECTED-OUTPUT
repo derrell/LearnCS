@@ -687,8 +687,7 @@ Error near line 1: #include must be followed by a file name enclosed in angle br
 
 % ../dcc t032-include-with-quotes.c --rootdir=/home/derrell/ME
 ERROR: Error: Command failed: 
-STDOUT: >>> Preprocessor encountered an error:
-Error near line 1: #include for local files (with quotes) is not yet supported: "defs.h"
+STDOUT: >>> Error near line 1: #include for local files (with quotes) is not yet supported: "defs.h"
 If it's a system include file, you should use angle brackets instead: <defs.h>
 
 % ../dcc t033-include-missing-right-quote.c --rootdir=/home/derrell/ME

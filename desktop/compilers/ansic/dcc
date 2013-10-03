@@ -54,9 +54,17 @@ cat > /tmp/dcc$$ <<EOF
         }
         else
         {
-          var ansic = require("ansic.js");
-          playground.c.Main.main(ansic.parser);
-          ansic.parse(preprocessedCode);
+          try
+          {
+            var ansic = require("ansic.js");
+            playground.c.Main.main(ansic.parser);
+            ansic.parse(preprocessedCode);
+          }
+          catch(e)
+          {
+            console.log(">>> " + e.toString());
+            process.exit(1);
+          }
         }
       });
   }
