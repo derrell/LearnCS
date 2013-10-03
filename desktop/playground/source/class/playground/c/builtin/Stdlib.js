@@ -26,15 +26,24 @@ qx.Class.define("playground.c.builtin.Stdlib",
   
   statics :
   {
+    // The maximum random number returned by rand(). Allow adding 1 without
+    // overflow, so that the return value from rand() can be [0, _RandMax]
+    // (inclusive).
+    _RandMax : 0x7ffffffe,
+
     __freeBlocks : [],
     __usedBlocks : [],
 
     include : function(name, line)
     {
+      var             mem;
       var             rootSymtab;
       
       try
       {
+        // Get the memory singleton instance
+        mem = playground.c.machine.Memory.getInstance();
+
         // Get the root symbol table
         rootSymtab = playground.c.lib.Symtab.getByName("*");
 
@@ -112,6 +121,22 @@ qx.Class.define("playground.c.builtin.Stdlib",
               // Initially, there's nothing on the used block list
               playground.c.builtin.Stdlib.__usedBlocks = [];
             }
+          },
+          {
+            name : "rand",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.builtin.Stdlib.rand.apply(null, args);
+            }
+          },
+          {
+            name : "srand",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.builtin.Stdlib.srand.apply(null, args);
+            }
           }
         ].forEach(
           function(info)
@@ -160,6 +185,65 @@ qx.Class.define("playground.c.builtin.Stdlib",
             entry.setSpecAndDecl( [ declarator ]);
           },
           this);
+
+        // Define constants
+        [
+          {
+            name : "RAND_MAX",
+            func : function()
+            {
+              return (
+                {
+                  type  : "int",
+                  value : playground.c.builtin.Stdlib._RandMax
+                });
+            }
+          }
+        ].forEach(
+          function(info)
+          {
+            var             entry;
+            var             node;
+            var             def;
+            var             specifier;
+
+            // Simulate a node, for the specifiers and declarators
+            node =
+              {
+                line : line,
+                toString : function()
+                {
+                  return info.name;
+                }
+              };
+
+            // Create the symbol table entry for this defined constant
+            entry = rootSymtab.add(info.name, 0, false, false, true);
+            if (! entry)
+            {
+              throw new playground.c.lib.RuntimeError(
+                node,
+                info.name + " being redefined. " +
+                  "Is stdlib.h included multiple times?");
+            }
+
+            // Get the type and value for the constant
+            def = info.func();
+
+            // Create a specifier for this constant
+            specifier = new playground.c.lib.Specifier(node, def.type);
+            specifier.setConstant("constant");
+
+            // Add the specifier/declarator list to the symtab entry
+            entry.setSpecAndDecl(
+              [
+                specifier
+              ]);
+            entry.calculateOffset();
+            
+            // Save the constant's value
+            mem.set(entry.getAddr(), def.type, def.value);
+          });
       }
       catch(e)
       {
@@ -187,34 +271,61 @@ qx.Class.define("playground.c.builtin.Stdlib",
     },
 
     /**
-     * Determine the absolute value of a number
+     * Utility function for use when the result can be calculated within a
+     * provided function
      */
-    abs : function(success, failure, value)
+    _commonFunction : function(success, failure, fConvert, errorStr, retType)
     {
       var             converted;
       var             specOrDecl;
       
-      converted = Math.abs(value);
+      // Call the provided conversion function
+      converted = fConvert();
 
       if (isNaN(converted))
       {
-        failure(new playground.c.lib.RuntimeError(
-                  playground.c.lib.Node._currentNode,
-                  "abs() called with something other than a number"));
+        // If stdlib debugging is enabled...
+        if (playground.c.lib.Preprocessor.pragma.debugFlags.stdlib)
+        {
+          // Could not do the specified conversion with the provided arguments.
+          failure(new playground.c.lib.RuntimeError(
+                    playground.c.lib.Node._currentNode,
+                    errorStr));
+          return;
+        }
+        
+        // Debugging is not enabled. Just ignore the error.
       }
-      else
-      {
-        // Create a specifier for the return value
-        specOrDecl = new playground.c.lib.Specifier(
-          playground.c.lib.Node._currentNode,
-          "int");
 
-        success(
-          {
-            value       : converted,
-            specAndDecl : [ specOrDecl ]
-          });
-      }
+      // If no return type was provided, use "double"
+      retType = retType || "double";
+
+      // Create a specifier for the return value
+      specOrDecl = new playground.c.lib.Specifier(
+        playground.c.lib.Node._currentNode,
+        retType);
+
+      // We were successful!
+      success(
+        {
+          value       : converted,
+          specAndDecl : [ specOrDecl ]
+        });
+    },
+
+    /**
+     * Determine the absolute value of a number
+     */
+    abs : function(success, failure, value)
+    {
+      playground.c.builtin.Stdlib._commonFunction(
+        success,
+        failure,
+        function()
+        {
+          return Math.abs(value);
+        },
+        "Internal error: abs() failed");
     },
 
     /**
@@ -247,29 +358,15 @@ qx.Class.define("playground.c.builtin.Stdlib",
         jStr.push(memBytes[i]);
       }
       
-      // Convert the string into an integer
-      converted = parseFloat(String.fromCharCode.apply(null, jStr));
-
-      if (isNaN(converted))
-      {
-        failure(new playground.c.lib.RuntimeError(
-                  playground.c.lib.Node._currentNode,
-                  "atof() called with something other than " +
-                    "a string containing a number"));
-      }
-      else
-      {
-        // Create a specifier for the return value
-        specOrDecl = new playground.c.lib.Specifier(
-          playground.c.lib.Node._currentNode,
-          "double");
-
-        success(
-          {
-            value       : converted,
-            specAndDecl : [ specOrDecl ]
-          });
-      }
+      playground.c.builtin.Stdlib._commonFunction(
+        success,
+        failure,
+        function()
+        {
+          return parseFloat(String.fromCharCode.apply(null, jStr));
+        },
+        "atof() called with something other than " +
+        "a string containing a number");
     },
 
 
@@ -303,29 +400,108 @@ qx.Class.define("playground.c.builtin.Stdlib",
         jStr.push(memBytes[i]);
       }
       
-      // Convert the string into an integer
-      converted = parseInt(String.fromCharCode.apply(null, jStr), 10);
+      playground.c.builtin.Stdlib._commonFunction(
+        success,
+        failure,
+        function()
+        {
+          return parseInt(String.fromCharCode.apply(null, jStr), 10);
+        },
+        "atoi() called with something other than " +
+        "a string containing a number");
+    },
+    
+    calloc : function(success, failure, numElem, elemSize)
+    {
+      var             numBytes = numElem * elemSize;
 
-      if (isNaN(converted))
+      // First, allocate the requested number of bytes
+      playground.c.builtin.Stdlib.malloc(
+        function(value)
+        {
+          var             i;
+          var             addr = value.value;
+
+          // Get memory as an array
+          if (! this._mem)
+          {
+            this._mem = playground.c.machine.Memory.getInstance();
+          }
+
+          // Fill each byte with null
+          for (i = 0; i < numBytes; i++)
+          {
+            this._mem.set(addr++, "char", 0);
+          }
+          
+          // Return the value provided by malloc()
+          success(value);
+        },
+        failure,
+        numBytes);
+    },
+
+    exit : function(success, failure, exitCode)
+    {
+      failure(new playground.c.lib.Exit(exitCode));
+    },
+
+    free : function(success, failure, addr)
+    {
+      var             j;
+      var             usedlist = playground.c.builtin.Stdlib.__usedBlocks;
+
+      // Find the address to be freed in the used block list
+      for (j = 0; j < usedlist.length; j++)
       {
+        // Did we find the block being freed?
+        if (usedlist[j].start === addr)
+        {
+          // No need to search further
+          break;
+        }
+      }
+      
+      // Did we find the block being freed?
+      if (j == usedlist.length)
+      {
+        // Nope. Fail the request.
         failure(new playground.c.lib.RuntimeError(
                   playground.c.lib.Node._currentNode,
-                  "atoi() called with something other than " +
-                    "a string containing a number"));
+                  "Attempting to free() address " + 
+                    (playground.view.c.MemoryWord.addrBase == 16 ? "0x" : "") +
+                    addr.toString(playground.view.c.MemoryWord.addrBase) +
+                    " which is not currently malloced."));
+        return;
       }
-      else
+      
+      // Get the memory singleton
+      if (! this._mem)
       {
-        // Create a specifier for the return value
-        specOrDecl = new playground.c.lib.Specifier(
-          playground.c.lib.Node._currentNode,
-          "int");
-
-        success(
-          {
-            value       : converted,
-            specAndDecl : [ specOrDecl ]
-          });
+        this._mem = playground.c.machine.Memory.getInstance();
       }
+
+      // Remove the symbol info from the memory template view
+      this._mem.setSymbolInfo(
+        addr,
+        {
+          getName         : function() 
+          {
+            return "free at line " + playground.c.lib.Node._currentNode.line;
+          },
+          getType         : function() { return "char"; },
+          getUnsigned     : function() { return true; },
+          getSize         : function() { return 1; },
+          getPointerCount : function() { return 0; },
+          getArraySizes   : function() { return [ usedlist[j].origNumBytes ]; },
+          getIsParameter  : function() { return false; }
+        });
+
+      // Remove this block from the used list
+      usedlist.splice(j, 1);
+          
+      // We successfully freed the block
+      success();
     },
     
     malloc : function(success, failure, numBytes)
@@ -438,97 +614,30 @@ qx.Class.define("playground.c.builtin.Stdlib",
         });
     },
     
-    exit : function(success, failure, exitCode)
+    rand : function(success, failure)
     {
-      failure(new playground.c.lib.Exit(exitCode));
-    },
-
-    free : function(success, failure, addr)
-    {
-      var             j;
-      var             usedlist = playground.c.builtin.Stdlib.__usedBlocks;
-
-      // Find the address to be freed in the used block list
-      for (j = 0; j < usedlist.length; j++)
-      {
-        // Did we find the block being freed?
-        if (usedlist[j].start === addr)
-        {
-          // No need to search further
-          break;
-        }
-      }
-      
-      // Did we find the block being freed?
-      if (j == usedlist.length)
-      {
-        // Nope. Fail the request.
-        failure(new playground.c.lib.RuntimeError(
-                  playground.c.lib.Node._currentNode,
-                  "Attempting to free() address " + 
-                    (playground.view.c.MemoryWord.addrBase == 16 ? "0x" : "") +
-                    addr.toString(playground.view.c.MemoryWord.addrBase) +
-                    " which is not currently malloced."));
-        return;
-      }
-      
-      // Get the memory singleton
-      if (! this._mem)
-      {
-        this._mem = playground.c.machine.Memory.getInstance();
-      }
-
-      // Remove the symbol info from the memory template view
-      this._mem.setSymbolInfo(
-        addr,
-        {
-          getName         : function() 
-          {
-            return "free at line " + playground.c.lib.Node._currentNode.line;
-          },
-          getType         : function() { return "char"; },
-          getUnsigned     : function() { return true; },
-          getSize         : function() { return 1; },
-          getPointerCount : function() { return 0; },
-          getArraySizes   : function() { return [ usedlist[j].origNumBytes ]; },
-          getIsParameter  : function() { return false; }
-        });
-
-      // Remove this block from the used list
-      usedlist.splice(j, 1);
-          
-      // We successfully freed the block
-      success();
-    },
-    
-    calloc : function(success, failure, numElem, elemSize)
-    {
-      var             numBytes = numElem * elemSize;
-
-      // First, allocate the requested number of bytes
-      playground.c.builtin.Stdlib.malloc(
-        function(value)
-        {
-          var             i;
-          var             addr = value.value;
-
-          // Get memory as an array
-          if (! this._mem)
-          {
-            this._mem = playground.c.machine.Memory.getInstance();
-          }
-
-          // Fill each byte with null
-          for (i = 0; i < numBytes; i++)
-          {
-            this._mem.set(addr++, "char", 0);
-          }
-          
-          // Return the value provided by malloc()
-          success(value);
-        },
+      playground.c.builtin.Stdlib._commonFunction(
+        success,
         failure,
-        numBytes);
+        function()
+        {
+          return Math.floor(
+            Math.random() * (playground.c.builtin.Stdlib._RandMax + 1));
+        },
+        "Internal error: rand() failed");
+    },
+
+    srand : function(success, failure, x)
+    {
+      failure(new playground.c.lib.RuntimeError(
+                playground.c.lib.Node._currentNode,
+                "srand() is not supported in LearnCS! since the random " +
+                "number generator is pre-seeded. If you would like to " +
+                "make your program portable by retaining the call to " +
+                "srand(), use it like this:\n" +
+                "#ifndef LEARNCS\n" +
+                "  srand(seedVal);\n" +
+                "#endif"));
     }
   }
 });
