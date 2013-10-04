@@ -223,6 +223,28 @@ qx.Class.define("playground.view.Editor",
           // Enable special behaviors, e.g., auto-paring of characters
           editor.setBehavioursEnabled(true);
           editor.setDisplayIndentGuides(true);
+          editor.setHighlightActiveLine(false);
+
+          // When the Run button is disabled (meaning the program is running),
+          // set the editor to read-only. When the Run button is re-enabled,
+          // set the editor back to read-write.
+          var butRun = qx.core.Init.getApplication().getUserData("runButton");
+          
+          var setShowReadOnly = function(bReadOnly)
+          {
+            editor.setReadOnly(bReadOnly);
+            this.setBackgroundColor(bReadOnly ? "#ffdddd" : "white");
+          }.bind(this);
+
+          butRun.addListener(
+            "changeEnabled", 
+            function(e)
+            {
+              setShowReadOnly(! e.getData());
+            });
+          
+          // The program may already be running. Set read-only accordingly
+          setShowReadOnly(! butRun.getEnabled());
 
           // djl: Keep breakpoints with their line even when other lines are
           // inserted or deleted.

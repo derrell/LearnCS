@@ -198,7 +198,7 @@ qx.Class.define("playground.view.Toolbar",
               "that character, with the backslash removed."
 */
              ));
-    qx.core.Init.getApplication().setUserData("cmdLine", cmdLine);
+    application.setUserData("cmdLine", cmdLine);
 
     // run button
     var runButton = new qx.ui.toolbar.Button(
@@ -206,7 +206,7 @@ qx.Class.define("playground.view.Toolbar",
     );
     this.add(runButton);
     runButton.setToolTipText(this.tr("Run the source code"));
-    qx.core.Init.getApplication().setUserData("runButton", runButton);
+    application.setUserData("runButton", runButton);
     runButton.addListener("execute", function() {
       // Generate a status report showing that they've pressed Run
       playground.ServerOp.statusReport(
@@ -218,7 +218,7 @@ qx.Class.define("playground.view.Toolbar",
       // Run the program
       this.fireEvent("run");
     }, this);
-
+    
     // step button
     var stepButton = new qx.ui.toolbar.Button(
       this.tr("Step"), "icon/22/actions/go-next.png");
@@ -226,7 +226,7 @@ qx.Class.define("playground.view.Toolbar",
     stepButton.setToolTipText(
       this.tr("Run current line of the program, then stop in called " +
               "function, or at next line"));
-    qx.core.Init.getApplication().setUserData("stepButton", stepButton);
+    application.setUserData("stepButton", stepButton);
 
     // continue button
     var continueButton = new qx.ui.toolbar.Button(
@@ -235,7 +235,7 @@ qx.Class.define("playground.view.Toolbar",
     continueButton.setToolTipText(
       this.tr("Continue running the program until the next breakpoint " +
               "or the program ends"));
-    qx.core.Init.getApplication().setUserData("continueButton", continueButton);
+    application.setUserData("continueButton", continueButton);
 
     // stop button
     var stopButton = new qx.ui.toolbar.Button(
@@ -243,7 +243,7 @@ qx.Class.define("playground.view.Toolbar",
     this.add(stopButton);
     stopButton.setToolTipText(
       this.tr("Stop running the program"));
-    qx.core.Init.getApplication().setUserData("stopButton", stopButton);
+    application.setUserData("stopButton", stopButton);
     stopButton.setEnabled(false);
     stopButton.addListener("execute", playground.view.Toolbar.programStopped);
 
@@ -305,11 +305,11 @@ qx.Class.define("playground.view.Toolbar",
         // Show or hide the Memory Template view
         if (bOn)
         {
-          qx.core.Init.getApplication().memTemplateBox.show();
+          application.memTemplateBox.show();
         }
         else
         {
-          qx.core.Init.getApplication().memTemplateBox.exclude();
+          application.memTemplateBox.exclude();
         }
     }, this);
 // ...djl
