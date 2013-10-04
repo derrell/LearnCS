@@ -60,6 +60,14 @@ qx.Class.define("playground.c.builtin.Stdlib",
             }
           },
           {
+            name : "atof",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.builtin.Stdlib.atof.apply(null, args);
+            }
+          },
+          {
             name : "atoi",
             func : function()
             {
@@ -68,11 +76,11 @@ qx.Class.define("playground.c.builtin.Stdlib",
             }
           },
           {
-            name : "atof",
+            name : "atol",
             func : function()
             {
               var args = Array.prototype.slice.call(arguments);
-              playground.c.builtin.Stdlib.atof.apply(null, args);
+              playground.c.builtin.Stdlib.atoi.apply(null, args);
             }
           },
           {
@@ -377,7 +385,6 @@ qx.Class.define("playground.c.builtin.Stdlib",
         "a string containing a number");
     },
 
-
     /**
      * Convert a number in a character string to an integer
      * 
@@ -416,6 +423,47 @@ qx.Class.define("playground.c.builtin.Stdlib",
           return parseInt(String.fromCharCode.apply(null, jStr), 10);
         },
         "atoi() called with something other than " +
+        "a string containing a number");
+    },
+    
+    /**
+     * Convert a number in a character string to a long
+     * 
+     * @param str {String}
+     *   The string to be convered to a long
+     */
+    atol : function(success, failure, str)
+    {
+      var             i;
+      var             memBytes;
+      var             jStr = [];
+      var             converted;
+      var             specOrDecl;
+
+      // Get memory as an array
+      if (! this._mem)
+      {
+        this._mem = playground.c.machine.Memory.getInstance();
+      }
+
+      memBytes = this._mem.toArray(0);
+
+      // Copy the null-terminated format string (which is represented as the
+      // ASCII character codes of each character) from the given address, one
+      // character at a time, into an array.
+      for (i = str; memBytes[i] != 0 && i < memBytes.length; i++)
+      {
+        jStr.push(memBytes[i]);
+      }
+      
+      playground.c.builtin.Stdlib._commonFunction(
+        success,
+        failure,
+        function()
+        {
+          return parseInt(String.fromCharCode.apply(null, jStr), 10);
+        },
+        "atol() called with something other than " +
         "a string containing a number");
     },
     
