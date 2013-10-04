@@ -373,6 +373,9 @@ var tests =
     },
     {
       name   : "t044-enum-value-lvalue.c"
+    },
+    {
+      name   : "t045-math.c"
     }
   ];
 
