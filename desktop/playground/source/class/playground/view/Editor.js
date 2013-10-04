@@ -211,6 +211,9 @@ qx.Class.define("playground.view.Editor",
           session.setUseSoftTabs(true);
           session.setTabSize(4);
 
+          // Use \n as the line ending in the editor
+          session.setNewLineMode("unix");
+
           // set C mode
           session.setMode("ace/mode/c_cpp");
 
