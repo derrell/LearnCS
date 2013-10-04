@@ -472,7 +472,9 @@ qx.Class.define("playground.view.Toolbar",
       // Set EOF on the terminal
       terminal = qx.core.Init.getApplication().getUserData("terminal");
       terminal.addOutput(
-        ">>> Program stopped " + (typeof e == "string" ? e : "") + "\n");
+        ">>> Program stopped " +
+          (typeof e == "string" ? e : "by user") + 
+          "\n");
       terminal.setEof(true);
 
       // Simulate stdin data available, in case it's blocked awaiting input
