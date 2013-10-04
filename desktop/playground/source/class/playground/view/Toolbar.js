@@ -249,7 +249,18 @@ qx.Class.define("playground.view.Toolbar",
       "execute",
       function(e)
       {
+        var             terminal;
+
+        // Set the stop flag
         playground.c.lib.Node._bStop = true;
+
+        // Set EOF on the terminal
+        terminal = qx.core.Init.getApplication().getUserData("terminal");
+        terminal.addOutput(">>> Program stopped\n");
+        terminal.setEof(true);
+
+        // Simulate stdin data available, in case it's blocked awaiting input
+        playground.c.stdio.Stdin.getInstance().fireEvent("inputdata");
       });
 
     // highlighting button
