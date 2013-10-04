@@ -503,6 +503,9 @@ qx.Class.define("playground.c.lib.Preprocessor",
             error('input empty or null');
           }
 
+          // Replace \r\n line endings with \n
+          text = text.replace(/\r\n/g, '\n');
+
           text = settings.comment_stripper(text);
           var blocks = text.split(block_re);
           var out = new Array(Math.floor(blocks.length / 3) + 2),

@@ -149,14 +149,21 @@ NL                      [\n]
 "|"			{ return('|'); }
 "?"			{ return('?'); }
 
-[ \t\v\n\f]		{ }
+[ \t\v\r\n\f]		{ }
 .			{ /* ignore bad characters */ }
 
 
 <inc>\"(\\.|[^\\"])*\"  {
     //
     // NOTE: This error isn't caught here. See Main.js where the included
-    // files are handled. (FIXME: This code is never hit. Find out why.)
+    // files are handled.
+
+    // (FIXME: This code is never hit. Find out why.)
+    //
+    // (It's probably not hit because we now have a preprocessor, so once
+    // the preprocessor has run, we never get into the <inc> state. That would
+    // apply to all of the code from here onwards in this file, and it can
+    // probably all be deleted now. Confirm this hypothesis.)
     //
     playground.c.lib.Node.getError().parseError(
         "#include for local files (with quotes) " +
