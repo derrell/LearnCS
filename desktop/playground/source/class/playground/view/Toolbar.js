@@ -245,23 +245,7 @@ qx.Class.define("playground.view.Toolbar",
       this.tr("Stop running the program"));
     qx.core.Init.getApplication().setUserData("stopButton", stopButton);
     stopButton.setEnabled(false);
-    stopButton.addListener(
-      "execute",
-      function(e)
-      {
-        var             terminal;
-
-        // Set the stop flag
-        playground.c.lib.Node._bStop = true;
-
-        // Set EOF on the terminal
-        terminal = qx.core.Init.getApplication().getUserData("terminal");
-        terminal.addOutput(">>> Program stopped\n");
-        terminal.setEof(true);
-
-        // Simulate stdin data available, in case it's blocked awaiting input
-        playground.c.stdio.Stdin.getInstance().fireEvent("inputdata");
-      });
+    stopButton.addListener("execute", playground.view.Toolbar.programStopped);
 
     // highlighting button
     this.__highlightButton = new qx.ui.form.ToggleButton(
@@ -468,6 +452,34 @@ qx.Class.define("playground.view.Toolbar",
   },
 
 
+  statics :
+  {
+    /**
+     * Called when program is stopped
+     * 
+     * @param e {qx.event.type.Event||String}
+     *   If this function called with a String argument, e.g., as a result of
+     *   editing in the code editor, the "Program Stopped" message is appended
+     *   with the provided string.
+     */
+    programStopped : function(e)
+    {
+      var             terminal;
+
+      // Set the stop flag
+      playground.c.lib.Node._bStop = true;
+
+      // Set EOF on the terminal
+      terminal = qx.core.Init.getApplication().getUserData("terminal");
+      terminal.addOutput(
+        ">>> Program stopped " + (typeof e == "string" ? e : "") + "\n");
+      terminal.setEof(true);
+
+      // Simulate stdin data available, in case it's blocked awaiting input
+      playground.c.stdio.Stdin.getInstance().fireEvent("inputdata");
+    }
+  },
+
   members :
   {
     __menuItemStore         : null,
@@ -476,7 +488,6 @@ qx.Class.define("playground.view.Toolbar",
     __logCheckButton        : null,
     __samplesCheckButton    : null,
     __showMemTemplateButton : null,
-
 
     /**
      * Controlls the presed state of the log button.
