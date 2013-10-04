@@ -43,7 +43,7 @@ qx.Class.define("playground.c.stdio.Stdin",
           Array.prototype.push.apply(this._inBuf, e.getData().split(""));
           
           // Notify our superclass that data is available
-          this.fireDataEvent("inputdata");
+          this.fireEvent("inputdata");
         },
         this);
     }
@@ -58,7 +58,7 @@ qx.Class.define("playground.c.stdio.Stdin",
           Array.prototype.push.apply(this._inBuf, chunk.toString().split(""));
           
           // Notify our superclass that data is available
-          this.fireDataEvent("inputdata");
+          this.fireEvent("inputdata");
         }.bind(this));
       process.stdin.on(
         "close",
