@@ -121,6 +121,14 @@ qx.Class.define("playground.c.stdio.Stdio",
             }
           },
           {
+            name : "fgets",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.stdio.Stdio.fgets.apply(null, args);
+            }
+          },
+          {
             name : "getc",
             func : function()
             {
@@ -633,6 +641,133 @@ qx.Class.define("playground.c.stdio.Stdio",
             });
         },
         failure);
+    },
+
+    /**
+     * Get a string from an open file. The string ends upon newline, or when
+     * filling one less than the given array size. The string is always
+     * null-terminated.
+     * 
+     * @param destAddr {Number}
+     *   The memory address of the array at which to place the read characters
+     * 
+     * @param size {Number}
+     *   The size of the array
+     *
+     * @param handle {playground.c.stdio.AbstractFile}
+     *   The handle to which output should be written
+     * 
+     * @return {Number}
+     *   The array address passed in as destAddr
+     */
+    fgets : function(success, failure, destAddr, size, handle)
+    {
+      var             stream;
+      var             specOrDecl;
+      var             specAndDecl = [];
+      var             mem;
+      var             memBytes;
+      var             bytes = [];
+      var             remaining;
+      var             prevCh = ' ';
+      
+      // Create a specifier/declarator list for the return value
+      specOrDecl = new playground.c.lib.Declarator("function");
+      specAndDecl.push(specOrDecl);
+      
+      specOrDecl = new playground.c.lib.Declarator("pointer");
+      specAndDecl.push(specOrDecl);
+
+      specOrDecl = new playground.c.lib.Specifier(
+        playground.c.lib.Node._currentNode,
+        "int");
+      specOrDecl.setSize("char");
+      specAndDecl.push(specOrDecl);
+
+      // If we don't already have an AbstractFile object...
+      if (! (handle instanceof playground.c.stdio.AbstractFile))
+      {
+        // ... retrieve it from the specified handle
+        stream = playground.c.stdio.Stdio._openFileHandles[handle];
+
+        // Did we find one?
+        if (typeof stream == "undefined")
+        {
+          if (handle === 0)
+          {
+            failure(new playground.c.lib.RuntimeError(
+                      playground.c.lib.Node._currentNode,
+                      "Maybe you forgot to test for a NULL return value " +
+                      "from fopen()? Invalid file handle."));
+          }
+          else
+          {
+            failure(new playground.c.lib.RuntimeError(
+                      playground.c.lib.Node._currentNode,
+                      "Invalid file handle, causing an attempt to access " +
+                      "an uninitialized or illegal memory address. " +
+                      "(This is sometimes called a 'Segmentation Fault'.)"));
+          }
+          return;
+        }
+      }
+      else
+      {
+        stream = handle;
+      }
+      
+      // Number of characters remaining to read
+      remaining = size - 1; // leave room for null terminator
+
+      // Read characters until EOF or newline or maximum number of chars read
+      (function readchars()
+       {
+         var             i;
+         
+         if (remaining-- > 0 &&
+             prevCh != '\n' &&
+             prevCh != playground.c.stdio.AbstractFile.EOF)
+         {
+           // Read a character from the designated stream
+           stream.getc(
+             function(ch)
+             {
+               // If we've not reached end of file, ...
+               if (ch != playground.c.stdio.AbstractFile.EOF)
+               {
+                 // ... then save this character
+                 bytes.push(ch.charCodeAt(0));
+               }
+               
+               // Record the just-retrieved character
+               prevCh = ch;
+               
+               // Call recursively
+               readchars();
+             },
+             failure);
+         }
+         else
+         {
+           // Get the memory singleton instance and access to memory bytes
+           mem = playground.c.machine.Memory.getInstance();
+           
+           // Convert the characters into their ASCII values in memory
+           for (i = 0; i < bytes.length; i++)
+           {
+             mem.set(destAddr + i, "char", bytes[i]);
+           }
+           
+           // Null terminate
+           mem.set(destAddr + i, "char", 0);
+
+           success(
+             {
+               value       : destAddr,
+               specAndDecl : specAndDecl
+             });
+         }
+       })();
     },
 
     /**

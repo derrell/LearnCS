@@ -50,6 +50,14 @@ qx.Class.define("playground.c.builtin.Learncs",
               var args = Array.prototype.slice.call(arguments);
               playground.c.builtin.Learncs.getInteger.apply(null, args);
             }
+          },
+          {
+            name : "getString",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.builtin.Learncs.getString.apply(null, args);
+            }
           }
         ].forEach(
           function(info)
@@ -224,6 +232,18 @@ qx.Class.define("playground.c.builtin.Learncs",
            failure,
            playground.c.Main.stdin);
        })();
+    },
+    
+    /**
+     * Reads a line of text from standard input. This function is exactly
+     * equivalent to calling fgets() with stdin as the handle.
+     */
+    getString : function(success, failure, destAddr, size)
+    {
+      var             stdin;
+      
+      stdin = playground.c.stdio.Stdio._stdinFileHandle;
+      playground.c.stdio.Stdio.fgets(success, failure, destAddr, size, stdin);
     }
   }
 });
