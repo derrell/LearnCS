@@ -313,8 +313,10 @@ qx.Class.define("playground.c.builtin.Stdlib",
         // Debugging is not enabled. Just ignore the error.
       }
 
-      // If no return type was provided, use "double"
-      retType = retType || "double";
+      if (! retType)
+      {
+        throw new Error("Internal error: return type not provided");
+      }
 
       // Create a specifier for the return value
       specOrDecl = new playground.c.lib.Specifier(
@@ -341,7 +343,8 @@ qx.Class.define("playground.c.builtin.Stdlib",
         {
           return Math.abs(value);
         },
-        "Internal error: abs() failed");
+        "Internal error: abs() failed",
+        "int");
     },
 
     /**
@@ -382,7 +385,8 @@ qx.Class.define("playground.c.builtin.Stdlib",
           return parseFloat(String.fromCharCode.apply(null, jStr));
         },
         "atof() called with something other than " +
-        "a string containing a number");
+          "a string containing a number",
+        "float");
     },
 
     /**
@@ -423,7 +427,8 @@ qx.Class.define("playground.c.builtin.Stdlib",
           return parseInt(String.fromCharCode.apply(null, jStr), 10);
         },
         "atoi() called with something other than " +
-        "a string containing a number");
+          "a string containing a number",
+        "int");
     },
     
     /**
@@ -464,7 +469,8 @@ qx.Class.define("playground.c.builtin.Stdlib",
           return parseInt(String.fromCharCode.apply(null, jStr), 10);
         },
         "atol() called with something other than " +
-        "a string containing a number");
+          "a string containing a number",
+        "long");
     },
     
     calloc : function(success, failure, numElem, elemSize)
@@ -682,7 +688,8 @@ qx.Class.define("playground.c.builtin.Stdlib",
           return Math.floor(
             Math.random() * (playground.c.builtin.Stdlib._RandMax + 1));
         },
-        "Internal error: rand() failed");
+        "Internal error: rand() failed",
+        "int");
     },
 
     srand : function(success, failure, x)
