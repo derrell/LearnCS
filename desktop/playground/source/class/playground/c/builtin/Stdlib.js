@@ -18,6 +18,7 @@
 if (typeof qx === "undefined" || qx.bConsole)
 {
   qx = require("qooxdoo");
+  require("./lib/SeedRandom");
 }
 
 qx.Class.define("playground.c.builtin.Stdlib",
@@ -685,24 +686,28 @@ qx.Class.define("playground.c.builtin.Stdlib",
         failure,
         function()
         {
+          var             random = playground.c.builtin.lib.SeedRandom.random;
+
           return Math.floor(
-            Math.random() * (playground.c.builtin.Stdlib._RandMax + 1));
+            random() * (playground.c.builtin.Stdlib._RandMax + 1));
         },
         "Internal error: rand() failed",
         "int");
     },
 
-    srand : function(success, failure, x)
+    srand : function(success, failure, seed)
     {
-      failure(new playground.c.lib.RuntimeError(
-                playground.c.lib.Node._currentNode,
-                "srand() is not supported in LearnCS! since the random " +
-                "number generator is pre-seeded. If you would like to " +
-                "make your program portable by retaining the call to " +
-                "srand(), use it like this:\n" +
-                "#ifndef LEARNCS\n" +
-                "  srand(seedVal);\n" +
-                "#endif"));
+      playground.c.builtin.Stdlib._commonFunction(
+        success,
+        failure,
+        function()
+        {
+          var     seedrandom = playground.c.builtin.lib.SeedRandom.seedrandom;
+
+          return seedrandom(seed.toString());
+        },
+        "Internal error: rand() failed",
+        "void");
     }
   },
   
