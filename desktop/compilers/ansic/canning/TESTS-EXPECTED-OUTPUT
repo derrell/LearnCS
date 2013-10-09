@@ -1053,3 +1053,9 @@ First char: h h
 Error near line 9: Can not alter an array address or constant pointer
 >>> Program had errors. It did not run to completion.
 
+% ../dcc t048-time.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+t1 = time(&t2): (t1 == t2): 1
+>>> Program exited with exit code 0
+

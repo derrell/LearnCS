@@ -48,6 +48,7 @@ if (typeof qx === "undefined")
   require("./builtin/Stdlib.js");
   require("./builtin/Ctype.js");
   require("./builtin/Math.js");
+  require("./builtin/Time.js");
 }
 
 qx.Class.define("playground.c.Main",
@@ -387,6 +388,13 @@ qx.Class.define("playground.c.Main",
             finalize = function()
             {
               playground.c.builtin.Stdlib.finalize();
+            };
+            break;
+
+          case "time.h" :
+            include = function()
+            {
+              return (playground.c.builtin.Time.include(file, line));
             };
             break;
 

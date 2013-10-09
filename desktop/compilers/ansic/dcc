@@ -38,6 +38,7 @@ cat > /tmp/dcc$$ <<EOF
   require("builtin/Stdlib.js");
   require("builtin/Ctype.js");
   require("builtin/Math.js");
+  require("builtin/Time.js");
 
   var code = require('fs').readFileSync(require('path').resolve(args[0]),
                                         "utf8");

@@ -382,6 +382,9 @@ var tests =
     },
     {
       name   : "t047-array-var-dereference.c"
+    },
+    {
+      name   : "t048-time.c"
     }
   ];
 
