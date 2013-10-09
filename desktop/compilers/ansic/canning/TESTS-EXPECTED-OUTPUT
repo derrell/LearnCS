@@ -1045,3 +1045,11 @@ First char: h h
 Error near line 8: Can not alter an array address or constant pointer
 >>> Program had errors. It did not run to completion.
 
+% ../dcc t047-array-var-dereference.c --rootdir=/home/derrell/ME
+ERROR: Error: Command failed: 
+STDOUT: 
+>>> Running program
+First char: h h
+Error near line 9: Can not alter an array address or constant pointer
+>>> Program had errors. It did not run to completion.
+

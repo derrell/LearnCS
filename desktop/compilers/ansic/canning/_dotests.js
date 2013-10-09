@@ -379,6 +379,9 @@ var tests =
     },
     {
       name   : "t046-array-parameter.c"
+    },
+    {
+      name   : "t047-array-var-dereference.c"
     }
   ];
 
