@@ -43,6 +43,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /*
 #require(playground.c.Main)
+#ignore(global)
 */
 
 qx.Class.define("playground.c.lib.Preprocessor",
