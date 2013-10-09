@@ -194,6 +194,28 @@ qx.Class.define("playground.c.machine.Memory",
 
 
     /**
+     * Obtain the base to display addresses in. In non-gui environment, use 10.
+     */
+    __getBase : function()
+    {
+      var             base;
+      
+      try
+      {
+        // If gui environment, obtain base from memory view
+        base = playground.view.c.MemoryWord.addrBase;
+      }
+      catch(e)
+      {
+        // Otherwise, assume base 10
+        base = 10;
+      }
+      
+      return base;
+    },
+
+
+    /**
      * Initialize the memory module.
      *
      * @lint ignoreUndefined(ArrayBuffer)
@@ -269,6 +291,8 @@ qx.Class.define("playground.c.machine.Memory",
      */
     _getByType : function(type, addr, numElem)
     {
+      var             base = 
+
       // If the number of elements was not specified, retrieve one element.
       numElem = numElem || 1;
 
@@ -355,8 +379,8 @@ qx.Class.define("playground.c.machine.Memory",
           throw new playground.c.lib.RuntimeError(
             playground.c.lib.Node._currentNode,
             "Invalid memory access at " +
-              (playground.view.c.MemoryWord.addrBase == 16 ? "0x" : "") +
-              addr.toString(playground.view.c.MemoryWord.addrBase) + 
+              (this.__getBase() == 16 ? "0x" : "") +
+              addr.toString(this.__getBase()) + 
               ": " +
               "Can not access type '" + type + "' at this address. " +
               "(This is sometimes called a 'Bus Error'.)");
@@ -408,8 +432,8 @@ qx.Class.define("playground.c.machine.Memory",
         throw new playground.c.lib.RuntimeError(
           playground.c.lib.Node._currentNode,
           "Invalid memory access at " + 
-            (playground.view.c.MemoryWord.addrBase == 16 ? "0x" : "") +
-            addr.toString(playground.view.c.MemoryWord.addrBase) + ": " +
+            (this.__getBase() == 16 ? "0x" : "") +
+            addr.toString(this.__getBase()) + ": " +
             "Address to read from is not within the " +
             "'globals and statics', 'heap', or " +
             "'run time stack' regions of memory. " +
@@ -436,8 +460,8 @@ qx.Class.define("playground.c.machine.Memory",
         throw new playground.c.lib.RuntimeError(
           playground.c.lib.Node._currentNode,
           "Invalid memory access at " + 
-            (playground.view.c.MemoryWord.addrBase == 16 ? "0x" : "") +
-            addr.toString(playground.view.c.MemoryWord.addrBase) + ": " +
+            (this.__getBase() == 16 ? "0x" : "") +
+            addr.toString(this.__getBase()) + ": " +
             "Size of object being assigned causes a " +
             "read beyond the " +
             "bounds of its 'globals and statics', 'heap', or " +
@@ -455,8 +479,8 @@ qx.Class.define("playground.c.machine.Memory",
             throw new playground.c.lib.RuntimeError(
               playground.c.lib.Node._currentNode,
               "Reading an uninitialized value from address " +
-              (playground.view.c.MemoryWord.addrBase == 16 ? "0x" : "") +
-              (addr + i).toString(playground.view.c.MemoryWord.addrBase));
+              (this.__getBase() == 16 ? "0x" : "") +
+              (addr + i).toString(this.__getBase()));
           }
         }
       }
@@ -501,8 +525,8 @@ qx.Class.define("playground.c.machine.Memory",
         throw new playground.c.lib.RuntimeError(
           playground.c.lib.Node._currentNode,
           "Invalid memory access at " + 
-            (playground.view.c.MemoryWord.addrBase == 16 ? "0x" : "") +
-            addr.toString(playground.view.c.MemoryWord.addrBase) + ": " +
+            (this.__getBase() == 16 ? "0x" : "") +
+            addr.toString(this.__getBase()) + ": " +
             "Address to write to is not within the " +
             "'globals and statics', 'heap', or " +
             "'run time stack' regions of memory. " +
@@ -529,8 +553,8 @@ qx.Class.define("playground.c.machine.Memory",
         throw new playground.c.lib.RuntimeError(
           playground.c.lib.Node._currentNode,
           "Invalid memory access at " + 
-            (playground.view.c.MemoryWord.addrBase == 16 ? "0x" : "") +
-            addr.toString(playground.view.c.MemoryWord.addrBase) + ": " +
+            (this.__getBase() == 16 ? "0x" : "") +
+            addr.toString(this.__getBase()) + ": " +
             "Size of object being assigned causes a " +
             "write beyond the " +
             "bounds of its 'globals and statics', 'heap', or " +
@@ -677,8 +701,8 @@ qx.Class.define("playground.c.machine.Memory",
         {
           throw new Error(
             "Invalid memory access at " + 
-              (playground.view.c.MemoryWord.addrBase == 16 ? "0x" : "") +
-              addrDest.toString(playground.view.c.MemoryWord.addrBase) + ": " +
+              (this.__getBase() == 16 ? "0x" : "") +
+              addrDest.toString(this.__getBase()) + ": " +
               "ASSIGN TO address is not within the " +
               "'globals and statics', 'heap', or " +
               "'run time stack' regions of memory.");
@@ -707,8 +731,8 @@ qx.Class.define("playground.c.machine.Memory",
         {
           throw new Error(
             "Invalid memory access at " + 
-              (playground.view.c.MemoryWord.addrBase == 16 ? "0x" : "") +
-              addrSrc.toString(playground.view.c.MemoryWord.addrBase) + ": " +
+              (this.__getBase() == 16 ? "0x" : "") +
+              addrSrc.toString(this.__getBase()) + ": " +
               "Size of object being assigned causes a " +
               "read beyond the " +
               "bounds of its 'globals and statics', 'heap', or " +
@@ -738,8 +762,8 @@ qx.Class.define("playground.c.machine.Memory",
         {
           throw new Error(
             "Invalid memory access at " + 
-              (playground.view.c.MemoryWord.addrBase == 16 ? "0x" : "") +
-              addrDest.toString(playground.view.c.MemoryWord.addrBase) + ": " +
+              (this.__getBase() == 16 ? "0x" : "") +
+              addrDest.toString(this.__getBase()) + ": " +
               "Size of object being assigned to causes a " +
               "write beyond " +
               "the bounds of its 'globals and statics', " +
@@ -752,8 +776,8 @@ qx.Class.define("playground.c.machine.Memory",
       {
         throw new Error(
           "Invalid memory access at " +
-            (playground.view.c.MemoryWord.addrBase == 16 ? "0x" : "") +
-            addrSrc.toString(playground.view.c.MemoryWord.addrBase) + ": " +
+            (this.__getBase() == 16 ? "0x" : "") +
+            addrSrc.toString(this.__getBase()) + ": " +
             "only char or unsigned char can be read from " +
             "an odd address.");
       }
@@ -765,8 +789,8 @@ qx.Class.define("playground.c.machine.Memory",
       {
         throw new Error(
           "Invalid memory access at " + 
-            (playground.view.c.MemoryWord.addrBase == 16 ? "0x" : "") +
-            addrDest.toString(playground.view.c.MemoryWord.addrBase) + ": " +
+            (this.__getBase() == 16 ? "0x" : "") +
+            addrDest.toString(this.__getBase()) + ": " +
             "only char or unsigned char can be written to " +
             "an odd address.");
       }
@@ -1304,11 +1328,11 @@ qx.Class.define("playground.c.machine.Memory",
           {
             console.log(
               "undefined group name at address " +
-                (playground.view.c.MemoryWord.addrBase == 16 ? "0x" : "") +
-                datum.addr.toString(playground.view.c.MemoryWord.addrBase) +
+                (this.__getBase() == 16 ? "0x" : "") +
+                datum.addr.toString(this.__getBase()) +
                 ": " + JSON.stringify(datum));
           }
-        });
+        }.bind(this));
 
       return model;
     },
