@@ -1195,8 +1195,11 @@ qx.Class.define("playground.c.lib.Node",
             {
               value1 = v;
               
-              // We got the array size. Add it.
+              // We got the array size. Add it. (This also sets type to array.)
               declarator.setArrayCount(value1.value);
+
+              // Array variables can not be altered
+              declarator.setConstant("constant");
 
               // Add this array declarator to the specifier/declarator list
               data.specAndDecl.push(declarator);
@@ -1211,6 +1214,9 @@ qx.Class.define("playground.c.lib.Node",
         {
           // Otherwise just note that this is an array
           declarator.setType("array");
+          
+          // Array variables can not be altered
+          declarator.setConstant("constant");
 
           // Add this array declarator to the specifier/declarator list
           data.specAndDecl.push(declarator);
