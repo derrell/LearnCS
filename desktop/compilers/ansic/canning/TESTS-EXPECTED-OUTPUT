@@ -1037,3 +1037,11 @@ tan(PI / 3)    = 1.732051
 
 >>> Program exited with exit code 0
 
+% ../dcc t046-array-parameter.c --rootdir=/home/derrell/ME
+ERROR: Error: Command failed: 
+STDOUT: 
+>>> Running program
+First char: h h
+Error near line 8: Can not alter an array address or constant pointer
+>>> Program had errors. It did not run to completion.
+

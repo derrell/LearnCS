@@ -1170,10 +1170,24 @@ qx.Class.define("playground.c.lib.Node",
         // Disallow variable access. Array sizes must be constant.
         data.constantOnly = "array_decl";
 
-        // Is an array size specified?
-        if (this.children.length > 0 && this.children[0].type != "_null_")
+        // If this is a parameter...
+        if (data.bIsParameter)
         {
-          // Yup. Determine it and add to the declarator
+          // ... then treat it as a constant pointer instead
+          declarator.setType("pointer");
+          declarator.setConstant("constant");
+          
+          // Add this pointer declarator to the specifier/declarator list
+          data.specAndDecl.push(declarator);
+
+          // Finished with possible array size. Re-allow variable access.
+          delete data.constantOnly;
+
+          success();
+        }
+        else if (this.children.length > 0 && this.children[0].type != "_null_")
+        {
+          // An array size is specified. Determine it and add to the declarator.
           this.children[0].process(
             data,
             bExecuting,
@@ -3071,6 +3085,9 @@ qx.Class.define("playground.c.lib.Node",
             // Process the remaining children
             if (this.children.length > 0)
             {
+              // Save the function entry to restore it after parameters
+              entry = data.entry;
+
               i = 1;
               this.children[i].process(
                 data,
@@ -3104,6 +3121,10 @@ qx.Class.define("playground.c.lib.Node",
                       // compare parameters. At present, there is nothing that
                       // saves the forward declaration's specAndDecl.
                     }
+                    
+                    // Restore the function symtab entry
+                    data.entry = entry;
+
                     success();
                   }
                 }.bind(this),
@@ -6068,24 +6089,34 @@ qx.Class.define("playground.c.lib.Node",
           {
             // Ensure they're not writing to a constant
             if (! data.bIsInitializer && 
-                value1.specAndDecl[0] instanceof playground.c.lib.Specifier &&
                 [
                   "constant",
                   "enum_value"
                 ].indexOf(value1.specAndDecl[0].getConstant()) != -1)
             {
               // They are! Bad programmer! Bad!
-              if (value1.specAndDecl[0].getConstant() == "constant")
+              if (value1.specAndDecl[0] instanceof playground.c.lib.Specifier)
               {
-                failure(new playground.c.lib.RuntimeError(
-                          this,
-                          "Can not alter a const variable."));
+                if (value1.specAndDecl[0].getConstant() == "constant")
+                {
+                  failure(new playground.c.lib.RuntimeError(
+                            this,
+                            "Can not alter a const variable."));
+                }
+                else
+                {
+                  failure(new playground.c.lib.RuntimeError(
+                            this,
+                            "Can not alter an enum value."));
+                }
               }
               else
               {
+                // They're trying to modify a constant pointer
                 failure(new playground.c.lib.RuntimeError(
                           this,
-                          "Can not alter an enum value."));
+                          "Can not alter an array address " +
+                            "or constant pointer"));
               }
 
               return;

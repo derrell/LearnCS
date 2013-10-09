@@ -376,6 +376,9 @@ var tests =
     },
     {
       name   : "t045-math.c"
+    },
+    {
+      name   : "t046-array-parameter.c"
     }
   ];
 

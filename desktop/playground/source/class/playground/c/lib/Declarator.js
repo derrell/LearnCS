@@ -53,6 +53,7 @@ qx.Class.define("playground.c.lib.Declarator",
     __numElem      : null,
     __functionNode : null,
     __builtIn      : null,
+    __constant     : null,
     
     /**
      * Set the type of this declarator
@@ -171,6 +172,34 @@ qx.Class.define("playground.c.lib.Declarator",
       return this.__builtIn;
     },
 
+    /**
+     * Set the constantness. This is for array parameters (which may not
+     * be altered), and later for constant pointers, e.g., int * const p;
+     * 
+     * @param value {String}
+     *   "constant" (only)
+     */
+    setConstant : function(value)
+    {
+      // Ensure we have a valid value
+      if (value != "constant")
+      {
+        throw new Error(
+          "Internal error: Unexpected constant: " + value);
+      }
+
+      // Save the new value
+      this.__constant = value;
+    },
+    
+    /**
+     * Retrieve the constantness
+     */
+    getConstant : function()
+    {
+      return this.__constant;
+    },
+    
     /**
      * Get the byte account of this declarator.
      * 
