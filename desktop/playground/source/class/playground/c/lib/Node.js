@@ -2886,9 +2886,24 @@ qx.Class.define("playground.c.lib.Node",
                 return;
               }
               
+              // Adjust the stack pointer to take automatic local variables
+              // into account. First, get the current symbol table
+              symtab = playground.c.lib.Symtab.getCurrent();
+
+              // Get the stack pointer's current value
+              sp = playground.c.lib.Node.__mem.getReg("SP", "unsigned int");
+
+              // Subtract the symbol table's size from the stack pointer, so
+              // that subsequent function calls don't overwrite the automatic
+              // local variables
+              sp -= symtab.getSize();
+
+              // Write the new stack pointer value
+              playground.c.lib.Node.__mem.setReg("SP", "unsigned int", sp);
+
               // This is a real function (not built-in). Begin the activation
               // record
-              mem.beginActivationRecord(origSp);
+              mem.beginActivationRecord(sp);
 
               // Name this activation record
               declarator = value2.children[1];

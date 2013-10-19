@@ -1059,3 +1059,9 @@ STDOUT:
 t1 = time(&t2): (t1 == t2): 1
 >>> Program exited with exit code 0
 
+% ../dcc t049-initializer-is-function.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+aa=10 bb=23
+>>> Program exited with exit code 0
+

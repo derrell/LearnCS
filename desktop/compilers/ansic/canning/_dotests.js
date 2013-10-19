@@ -385,6 +385,9 @@ var tests =
     },
     {
       name   : "t048-time.c"
+    },
+    {
+      name   : "t049-initializer-is-function.c"
     }
   ];
 
