@@ -425,6 +425,9 @@ qx.Class.define("playground.c.lib.Symtab",
     {
       var             value;
       var             entry;
+      var             thisSymtabParts;
+      var             parentSymtabParts;
+      var             errorMessage;
 
       // See if this symbol already exists in the symbol table
       value = this.__symbols[symName];
@@ -433,6 +436,51 @@ qx.Class.define("playground.c.lib.Symtab",
         // The symbol was already in the symbol table
         return null;
       }
+
+      // If this is a compound statement symbol table, and its parent is a
+      // function symbol table, ensure that this symbol isn't shadowing a
+      // parameter. (This does not check for shadowing in blocks that have
+      // local variable declarations but are not the top-level block in a
+      // function. I'd really prefer to discourage variable declarations in
+      // non-top-level blocks anyway, for beginning students.)
+      if (this.__parent != null)
+      {
+        // Split our own name and our parent name into slash-separated parts
+        thisSymtabParts = this.__name.split("/");
+        parentSymtabParts = this.__parent.__name.split("/");
+        
+        // Does our own name's last component begin with "compound" and our
+        // parent's name's last component not begin with "compound"?
+        if (thisSymtabParts[thisSymtabParts.length - 1].match(
+                /^compound/) &&
+            ! parentSymtabParts[parentSymtabParts.length - 1].match(
+                /^compound/))
+        {
+          // Yes, we need to check for this symbol shadowing a parameter
+          if (this.__parent.__symbols[symName])
+          {
+            errorMessage =
+              "The declaration of local variable '" + symName + 
+                "' shadows the parameter of the same name. " +
+                "This makes the parameter inaccessible.";
+
+            try
+            {
+              playground.c.Main.output(
+                "Warning near line " + 
+                  playground.c.lib.Node._currentNode.line + 
+                  ": " +
+                  errorMessage +
+                  "\n");
+            }
+            catch(e)
+            {
+              console.log(text);
+            }
+          }
+        }
+      }
+      
 
       // Get a new, initialized symbol table entry
       entry = new playground.c.lib.SymtabEntry(symName,

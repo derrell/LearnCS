@@ -388,6 +388,9 @@ var tests =
     },
     {
       name   : "t049-initializer-is-function.c"
+    },
+    {
+      name   : "t050-shadowed-parameter.c"
     }
   ];
 

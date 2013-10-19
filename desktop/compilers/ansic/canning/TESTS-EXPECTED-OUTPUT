@@ -1065,3 +1065,9 @@ STDOUT:
 aa=10 bb=23
 >>> Program exited with exit code 0
 
+% ../dcc t050-shadowed-parameter.c --rootdir=/home/derrell/ME
+STDOUT: Warning near line 3: The declaration of local variable 'a' shadows the parameter of the same name. This makes the parameter inaccessible.
+
+>>> Running program
+>>> Program exited with exit code 0
+

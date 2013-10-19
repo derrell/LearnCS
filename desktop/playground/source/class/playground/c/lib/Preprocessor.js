@@ -69,7 +69,13 @@ qx.Class.define("playground.c.lib.Preprocessor",
     {
       debugFlags :
       {
+        // Enable math function debugging
         math : true
+      },
+      
+      warnAsError :
+      {
+        shadow : true
       }
     },
 
