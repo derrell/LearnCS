@@ -52,7 +52,7 @@ qx.Class.define("playground.view.Header",
     qx.core.Init.getApplication().setUserData("whoAmI", whoAmI);
 
     var version = 
-      new qxc.ui.versionlabel.VersionLabel("Playground", "0.042");
+      new qxc.ui.versionlabel.VersionLabel("Playground", "0.043");
     version.set(
       {
         font : "default",
