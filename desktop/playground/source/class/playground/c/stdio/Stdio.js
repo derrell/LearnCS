@@ -747,6 +747,16 @@ qx.Class.define("playground.c.stdio.Stdio",
              },
              failure);
          }
+         else if (prevCh == playground.c.stdio.AbstractFile.EOF &&
+                  bytes.length == 0)
+         {
+           // We're at end of file and there are no characters to return
+           success(
+             {
+               value       : 0,
+               specAndDecl : specAndDecl
+             });
+         }
          else
          {
            // Get the memory singleton instance and access to memory bytes
