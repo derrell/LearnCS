@@ -475,7 +475,7 @@ qx.Class.define("playground.c.lib.Symtab",
             }
             catch(e)
             {
-              console.log(text);
+              console.log(errorMessage);
             }
           }
         }
