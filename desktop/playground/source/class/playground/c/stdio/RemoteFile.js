@@ -90,6 +90,21 @@ qx.Class.define("playground.c.stdio.RemoteFile",
       // Convert each character code into its actual character
       path = String.fromCharCode.apply(null, path);
 
+      // If this is an absolute path...
+      if (path[0] == '/')
+      {
+        // Remove leading slashes from the path
+        path = path.replace(/^\/+/, "");
+
+        // Prepend the prefix that causes the search in the correct place
+        path = "/stdio_files/" + path;
+      }
+      else
+      {
+        // Prepend prefix for private files
+        path = "/stdio_files/private/" + path;
+      }
+
       try
       {
         // We'll retrieve this file from a remote store
