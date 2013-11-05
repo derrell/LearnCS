@@ -394,6 +394,9 @@ var tests =
     },
     {
       name   : "t051-cast.c"
+    },
+    {
+      name   : "t052-error-dereference.c"
     }
   ];
 
