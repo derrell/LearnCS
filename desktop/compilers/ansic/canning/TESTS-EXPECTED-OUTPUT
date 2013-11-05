@@ -1071,3 +1071,11 @@ STDOUT: Warning near line 3: The declaration of local variable 'a' shadows the p
 >>> Running program
 >>> Program exited with exit code 0
 
+% ../dcc t051-cast.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+Converting 1.230000 yields 1.000000
+Converting 0x112233 yields 0x33 0x33 0x33
+Converting 0xaabbccdd yields 0xffffffdd 0xdd 0xffffffdd
+>>> Program exited with exit code 0
+

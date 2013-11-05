@@ -1744,6 +1744,12 @@ qx.Class.define("playground.c.lib.Node",
                                                                     newType);
                 }
                 
+                // Save the value as its new type, then retrieve it, to do the
+                // actual conversion (if necessary)
+                playground.c.lib.Node.__mem.setReg("R1", newType, value1.value);
+                value1.value = playground.c.lib.Node.__mem.getReg("R1",
+                                                                  newType);
+                
                 // Assign the cast's specifier/declarator list to the value
                 value1.specAndDecl = castData.specAndDecl;
                 

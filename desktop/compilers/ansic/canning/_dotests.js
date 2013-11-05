@@ -391,6 +391,9 @@ var tests =
     },
     {
       name   : "t050-shadowed-parameter.c"
+    },
+    {
+      name   : "t051-cast.c"
     }
   ];
 
