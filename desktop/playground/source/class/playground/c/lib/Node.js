@@ -2125,6 +2125,8 @@ qx.Class.define("playground.c.lib.Node",
           bExecuting,
           function(v)
           {
+            var             typeDescription;
+
             value = v;
 
             // If we found a symbol, get its address and type
@@ -2151,6 +2153,16 @@ qx.Class.define("playground.c.lib.Node",
               specAndDecl = value.specAndDecl.slice(0);
             }
 
+            if (false)
+            {
+              specAndDecl.forEach(
+                function(specOrDecl)
+                {
+                  specOrDecl.display();
+                });
+              console.log("\n");
+            }
+
             // Pull the first specifier/declarator off of the list
             specOrDecl = specAndDecl.shift();
             type = specOrDecl.getType();
@@ -2158,14 +2170,29 @@ qx.Class.define("playground.c.lib.Node",
             // Ensure that we can dereference this thing. To be able to, it
             // must be either a pointer whose value must be retrieved, or
             // already an adderess.
-            if (type != "pointer" && type != "address" && type != "array")
+            //
+            // Also, if it's an address, it must be the address of a pointer
+            // if we are to dereference it.
+            if ((type != "pointer" && type != "address" && type != "array") ||
+                (type == "address" && specAndDecl[0].getType() != "pointer"))
             {
-              this._throwIt(new playground.c.lib.RuntimeError(
-                              this,
-                              "Can not dereference " + value.getName() + 
-                                " because it is not an address type."),
-                            success,
-                            failure);
+              // If it's not an address type...
+              if (type != "address")
+              {
+                // ... then get the full specifier/declarator list back
+                specAndDecl.unshift(specOrDecl);
+              }
+
+              // Get a description of the type they're trying to dereference
+              typeDescription = 
+                playground.c.lib.SymtabEntry.getInfo(specAndDecl).description;
+
+              failure(
+                new playground.c.lib.RuntimeError(
+                  this,
+                  "You have attempted to dereference a value whose " +
+                    "type does not indicate that it is an address. " +
+                    "Its type is '" + typeDescription + "'"));
               return;
             }
             
@@ -6190,9 +6217,9 @@ qx.Class.define("playground.c.lib.Node",
             // If this is a unary operator on a pointer...
             if (bUnary && value1.specAndDecl[0].getType() == "pointer")
             {
-              // ... then prepend an "address" declarator
+              // ... then prepend an "pointer" declarator
               specAndDecl.unshift(
-                new playground.c.lib.Declarator(this, "address"));
+                new playground.c.lib.Declarator(this, "pointer"));
             }
 
             // Increment the address by the size of this element, in case
