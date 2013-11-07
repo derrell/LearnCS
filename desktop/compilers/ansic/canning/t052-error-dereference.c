@@ -16,6 +16,6 @@ int main(int argc, char * argv[])
         printf("array[%d] = %d\n", i, arr[i]);
     }
 
-    printf("THAT SHOULD HAVE CAUSE A SEGMENTATION FAULT!\n\n");
+    printf("THAT SHOULD HAVE CAUSED A SEGMENTATION FAULT!\n\n");
     return 0;
 }
