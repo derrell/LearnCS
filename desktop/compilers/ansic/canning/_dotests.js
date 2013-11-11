@@ -397,6 +397,9 @@ var tests =
     },
     {
       name   : "t052-error-dereference.c"
+    },
+    {
+      name   : "t053-multiple-initializers.c"
     }
   ];
 

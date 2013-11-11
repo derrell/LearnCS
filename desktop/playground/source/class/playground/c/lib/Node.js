@@ -555,6 +555,7 @@ qx.Class.define("playground.c.lib.Node",
       var             oldSpecAndDecl;
       var             oldIsUnion;
       var             oldIsDefine;
+      var             oldInitializers;
       var             mem;
       var             memTemplate;
       var             args;
@@ -1796,6 +1797,10 @@ qx.Class.define("playground.c.lib.Node",
           symtab.setFramePointer(
             playground.c.lib.Node.__mem.getReg("SP", "unsigned int") -
             symtab.getSize());
+          
+          // Prepare to enqueue initializers
+          oldInitializers = data.initializers;
+          data.initializers = [];
         }
         else
         {
@@ -1817,18 +1822,71 @@ qx.Class.define("playground.c.lib.Node",
           success();
         };
 
-        // Process the declaration list
+        // Function to process all initializers after completion of reserving
+        // memory for variables. Doing this as a post-processing step prevents
+        // function calls in initializers from messing up the stack while the
+        // activation record is still being established.
+        function processInitializers(data, bGlobals, success, failure)
+        {
+          var             f;
+            
+          // Retrieve the first remaining initializer function
+          f = data.initializers.shift();
+
+          // Was there anything there?
+          if (typeof f != "function")
+          {
+            // Nope. Restore the old initializer list
+            data.initializers = oldInitializers;
+
+            // If we're not handling global declarations, process the
+            // statement list
+            if (! bGlobals)
+            {
+              this.children[1].process(
+                data,
+                bExecuting,
+                compound_statement_finalize.bind(this),
+                failure);
+            }
+            else
+            {
+              success();
+            }
+            return;
+          }
+
+          // Call the initializer function.
+          f(function()
+            {
+              // Look for additional initializer functions to call
+              processInitializers.call(this, data, bGlobals, success, failure);
+            }.bind(this),
+            failure);
+        }
+
+        // Process the declaration list first.
         this.children[0].process(
           data,
           bExecuting,
           function()
           {
-            // Process the statement list
-            this.children[1].process(
-              data,
-              bExecuting,
-              compound_statement_finalize.bind(this),
-              failure);
+            if (bExecuting)
+            {
+              // After fully processing the declaration list, so the
+              // activation record is complete, we can now process each
+              // initializer.
+              processInitializers.call(this, data, false, success, failure);
+            }
+            else
+            {
+              // Process the statement list
+              this.children[1].process(
+                data,
+                bExecuting,
+                compound_statement_finalize.bind(this),
+                failure);
+            }
           }.bind(this),
           failure);
         break;
@@ -3696,15 +3754,21 @@ qx.Class.define("playground.c.lib.Node",
               if (data.entry.getSymtab().getParent() === null &&
                   data.entry.getSpecAndDecl()[0].getType() != "function")
               {
-                // ... then initialize it.
-                init_declarator_initialize(
-                  function()
+                // ... then cause it to be initialized just before this
+                // block's statement list.
+                data.initializers.push(
+                  function(success, failure)
                   {
-                    // Restore data members
-                    data.specAndDecl = oldSpecAndDecl;
-                    success();
-                  },
-                  failure);
+                    init_declarator_initialize(
+                      function()
+                      {
+                        // Restore data members
+                        data.specAndDecl = oldSpecAndDecl;
+                        success();
+                      },
+                      failure);
+                  }.bind(this));
+                success();
               }
               else
               {
@@ -3718,7 +3782,12 @@ qx.Class.define("playground.c.lib.Node",
         }
         else
         {
-          init_declarator_initialize(success, failure);
+          data.initializers.push(
+            function(success, failure)
+            {
+              init_declarator_initialize(success, failure);
+            }.bind(this));
+          success();
         }
         break;
 
@@ -5538,8 +5607,38 @@ qx.Class.define("playground.c.lib.Node",
          *   ...
          */
         
+        // Prepare to enqueue initializers
+        oldInitializers = data.initializers;
+        data.initializers = [];
+
         // Process all subnodes
-        this.__processSubnodes(data, bExecuting, success, failure);
+        this.__processSubnodes(
+          data,
+          bExecuting,
+          function()
+          {
+            if (! bExecuting)
+            {
+              // Initializers were enqueued until after all declarations were
+              // completed. We can now process each of the initializers.
+              processInitializers.call(
+                this,
+                data,
+                true,
+                function()
+                {
+                  data.initializers = oldInitializers;
+                  success();
+                },
+                failure);
+            }
+            else
+            {
+              data.initializers = oldInitializers;
+              success();
+            }
+          }.bind(this),
+          failure);
         break;
 
       case "trinary" :

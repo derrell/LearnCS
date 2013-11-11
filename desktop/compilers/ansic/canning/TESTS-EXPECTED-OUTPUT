@@ -1086,3 +1086,9 @@ STDOUT:
 Error near line 5: You have attempted to dereference a value whose type does not indicate that it is an address. Its type is 'int'
 >>> Program had errors. It did not run to completion.
 
+% ../dcc t053-multiple-initializers.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+a=1 b=2 c=3 d=10 e=11 f=12
+>>> Program exited with exit code 0
+
