@@ -1092,3 +1092,9 @@ STDOUT:
 a=1 b=2 c=3 d=10 e=11 f=12
 >>> Program exited with exit code 0
 
+% ../dcc t054-post-increment-pointer.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+pInt=0x108 pShort=0x204
+>>> Program exited with exit code 0
+

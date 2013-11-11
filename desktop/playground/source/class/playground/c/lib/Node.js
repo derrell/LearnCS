@@ -6035,6 +6035,9 @@ qx.Class.define("playground.c.lib.Node",
           // value. Otherwise, get the value from the rhs of the expression.
           if (bUnary)
           {
+            // Assume amount to increment by is 1
+            size = 1;
+
             // If the value being assigned to is a pointer...
             if (value1.specAndDecl[0].getType() == "pointer")
             {
@@ -6045,7 +6048,7 @@ qx.Class.define("playground.c.lib.Node",
 
             value3 = 
               { 
-                value       : 1, 
+                value       : size,
                 specAndDecl : [ new playground.c.lib.Specifier("int") ]
               };
             

@@ -400,6 +400,9 @@ var tests =
     },
     {
       name   : "t053-multiple-initializers.c"
+    },
+    {
+      name   : "t054-post-increment-pointer.c"
     }
   ];
 
