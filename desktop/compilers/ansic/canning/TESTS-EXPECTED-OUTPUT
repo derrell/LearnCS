@@ -1095,6 +1095,8 @@ a=1 b=2 c=3 d=10 e=11 f=12
 % ../dcc t054-post-increment-pointer.c --rootdir=/home/derrell/ME
 STDOUT: 
 >>> Running program
-pInt=0x108 pShort=0x204
+Size of struct X is 8
+pInt=0x104 pShort=0x202 pX=308
+pInt=0x108 pShort=0x204 pX=310
 >>> Program exited with exit code 0
 
