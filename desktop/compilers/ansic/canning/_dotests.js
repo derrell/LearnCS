@@ -403,6 +403,9 @@ var tests =
     },
     {
       name   : "t054-post-increment-pointer.c"
+    },
+    {
+      name   : "t055-short-circuit.c"
     }
   ];
 

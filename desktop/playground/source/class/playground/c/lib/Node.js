@@ -1057,15 +1057,27 @@ qx.Class.define("playground.c.lib.Node",
           {
             value1 = this.getExpressionValue(v, data);
 
+            // Create a specifier for the value
+            specOrDecl = new playground.c.lib.Specifier(this, "int");
+
+            // Short circuit. No need to check RHS if LHS is false
+            if (! value1.value)
+            {
+              success(
+                {
+                  value       : 0,
+                  specAndDecl : [ specOrDecl ]
+                });
+
+              return;
+            }
+            
             this.children[1].process(
               data,
               bExecuting,
               function(v)
               {
                 value2 = this.getExpressionValue(v, data);
-
-                // Create a specifier for the value
-                specOrDecl = new playground.c.lib.Specifier(this, "int");
 
                 success(
                   { 
@@ -4389,15 +4401,27 @@ qx.Class.define("playground.c.lib.Node",
           {
             value1 = this.getExpressionValue(v, data);
 
+            // Create a specifier for the value
+            specOrDecl = new playground.c.lib.Specifier(this, "int");
+
+            // Short circuit. No need to check RHS if LHS is true
+            if (value1.value)
+            {
+              success(
+                {
+                  value       : 1,
+                  specAndDecl : [ specOrDecl ]
+                });
+
+              return;
+            }
+            
             this.children[1].process(
               data,
               bExecuting,
               function(v)
               {
                 value2 = this.getExpressionValue(v, data);
-
-                // Create a specifier for the value
-                specOrDecl = new playground.c.lib.Specifier(this, "int");
 
                 success(
                   { 
