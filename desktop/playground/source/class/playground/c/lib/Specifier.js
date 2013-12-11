@@ -528,6 +528,39 @@ qx.Class.define("playground.c.lib.Specifier",
       line.push("\t    volatile : " + JSON.stringify(this.__volatile));
       
       console.log(line.join("\n"));
+    },
+    
+    /**
+     * Compare with a provided specifier to determine if types are
+     * compatible. This is used to ensure that arguments passed to a function
+     * are compatible with the formal parameters.
+     * 
+     * @param other
+     *   The (other) specifier to compare to this one
+     * 
+     * @return
+     *   true if the specifiers are compatible; false otherwise
+     */
+    isCompatible : function(other, bAllowPromote)
+    {
+      var             thisSpecifier;
+      var             otherSpecifier;
+      
+      // If there's no specifier to compare...
+      if (! other)
+      {
+        // ... then they certainly don't match.
+        return false;
+      }
+
+      // Promote the specifiers
+      thisSpecifier = bAllowPromote ? this.promote() : this;
+      otherSpecifier = bAllowPromote ? other.promote() : other;
+      
+      // The type, signedness, and size must all match for compatibility.
+      return (thisSpecifier.__type == otherSpecifier.__type &&
+              thisSpecifier.__sign == otherSpecifier.__sign &&
+              thisSpecifier.__size == otherSpecifier.__size);
     }
   }
 });

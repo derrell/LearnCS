@@ -749,6 +749,14 @@ qx.Class.define("playground.c.lib.Symtab",
     getNumSymbols : function()
     {
       return this.__symbolOrder.length;
+    },
+    
+    /**
+     * Retrieve the list of symbol table entries for this symbol table
+     */
+    getSymbols : function()
+    {
+      return this.__symbolOrder;
     }
   }
 });

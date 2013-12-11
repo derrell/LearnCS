@@ -285,6 +285,46 @@ qx.Class.define("playground.c.lib.Declarator",
       }
       
       console.log(line.join("\n"));
+    },
+    
+    /**
+     * Compare with a provided declarator to determine if types are
+     * compatible. This is used to ensure that arguments passed to a function
+     * are compatible with the formal parameters.
+     * 
+     * @param other
+     *   The (other) declarator to compare to this one
+     * 
+     * @return
+     *   true if the declarators are compatible; false otherwise
+     */
+    isCompatible : function(other)
+    {
+      var             thisType;
+      var             otherType;
+      
+      // normalize various pointer types for this specifier
+      if ([ "pointer", "address", "array" ].indexOf(this.__type) != -1)
+      {
+        thisType = "pointer";
+      }
+      else
+      {
+        thisType = this.__type;
+      }
+
+      // Similarly, normalize the other specifier
+      if ([ "pointer", "address", "array" ].indexOf(other.__type) != -1)
+      {
+        otherType = "pointer";
+      }
+      else
+      {
+        otherType = other.__type;
+      }
+
+      // The type must match for compatibility.
+      return thisType == otherType;
     }
   }
 });
