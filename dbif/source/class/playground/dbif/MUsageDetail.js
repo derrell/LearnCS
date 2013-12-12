@@ -30,8 +30,7 @@ qx.Mixin.define("playground.dbif.MUsageDetail",
      */
     usageDetail : function(dataList, error)
     {
-      var             detailObj;
-      var             detailData;
+      var             _this = this;
 
       return liberated.dbif.Entity.asTransaction(
         function()
@@ -39,6 +38,16 @@ qx.Mixin.define("playground.dbif.MUsageDetail",
           dataList.forEach(
             function(data)
             {
+              var             hash;
+              var             snapshot;
+              var             detailObj;
+              var             detailData;
+
+              // Store any snapshot data, and then delete it from the
+              // object. We'll save it separately.
+              snapshot = data.snapshot;
+              delete data.snapshot;
+
               // Create the usage detail object
               detailObj = new playground.dbif.ObjUsageDetail();
 
@@ -50,6 +59,19 @@ qx.Mixin.define("playground.dbif.MUsageDetail",
 
               // Re-add (or overwrite, if the user was nasty), the user name
               detailData.user = playground.dbif.MDbifCommon.getCurrentUserId();
+
+              // Is there a snapshot to be saved?
+              if (snapshot)
+              {
+                // Yup. Save it.
+                hash = _this.saveProgram(
+                  detailData.filename || "HARDCODED.c", 
+                  qx.lang.Json.stringify(detailData, null, "  "),
+                  snapshot);
+              }
+              
+              // The hash becomes the snapshot field in the detail object
+              data.snapshot = hash;
 
               // Write it to the database
               detailObj.put();

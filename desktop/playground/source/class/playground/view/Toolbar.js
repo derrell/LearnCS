@@ -212,7 +212,8 @@ qx.Class.define("playground.view.Toolbar",
       playground.ServerOp.statusReport(
         {
           type         : "button_press",
-          button_press : "Run"
+          button_press : "Run",
+          snapshot     : qx.core.Init.getApplication().editor.getCode()
         });
 
       // Run the program
@@ -246,6 +247,40 @@ qx.Class.define("playground.view.Toolbar",
     application.setUserData("stopButton", stopButton);
     stopButton.setEnabled(false);
     stopButton.addListener("execute", playground.view.Toolbar.programStopped);
+
+// TEMPORARY
+    var xxx = new qx.ui.toolbar.Button("SAVE");
+    this.add(xxx);
+    xxx.addListener(
+      "execute", 
+      function(e)
+      {
+        playground.ServerOp.rpc(
+          // success handler
+          function(result, id)
+          {
+            // Success. Display the result values.
+            alert("Got result 0 from SAVE");
+          },
+
+          // failure handler
+          function(ex, id)
+          {
+            alert("Got FAILED from SAVE: " + ex);
+          },
+
+          // function to call
+          "saveProgram",
+          [ 
+            "prog2.c",
+            "save button",
+            application.editor.getCode()
+          ]
+        );
+      },
+      this);
+// END TEMPORARY
+
 
     // highlighting button
     this.__highlightButton = new qx.ui.form.ToggleButton(

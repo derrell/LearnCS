@@ -3024,6 +3024,7 @@ qx.Class.define("playground.c.lib.Node",
               bExecuting,
               function()
               {
+                var             terminal;
                 var             error;
                 var             symbols;
                 var             functionName;
@@ -3093,7 +3094,6 @@ qx.Class.define("playground.c.lib.Node",
                     incompatible = symbols.filter(
                       function(entry, i)
                       {
-                        var             terminal;
                         var             incompatible = [];
                         var             thisSpecAndDecl;
                         var             otherSpecAndDecl;
