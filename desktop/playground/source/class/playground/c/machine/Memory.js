@@ -135,10 +135,13 @@ qx.Class.define("playground.c.machine.Memory",
         virgin : null           // initialized in defer()
       },
 
+      // Keep the size of the run-time stack reasonably small. If larger than
+      // about 0x1000, an infinitely-recursive program crashes the browser
+      // before the LearnCS! trap for out of swap space can recover.
       "rts" :                   // Run-time Stack
       {
         start  : 0x8000,
-        length : 0x7000,
+        length : 0x1000,
         virgin : null           // initialized in defer()
       }
 
@@ -593,6 +596,15 @@ qx.Class.define("playground.c.machine.Memory",
       // Decrement the stack pointer so it's pointing to the first unused
       // location on the stack
       sp -= playground.c.machine.Memory.WORDSIZE;
+
+      // If the new stack pointer is out of bounds of stack space...
+      if (sp < rts.start)
+      {
+        // ... then abort the program.
+        throw new playground.c.lib.RuntimeError(
+          playground.c.lib.Node._currentNode,
+          "Out of stack space. Too much recursion?");
+      }
 
       // Is this new stack pointer inside the untouched, virgin area?
       if (sp < rts.virgin + playground.c.machine.Memory.virgin.rts)
