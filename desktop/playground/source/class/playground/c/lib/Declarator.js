@@ -206,7 +206,7 @@ qx.Class.define("playground.c.lib.Declarator",
      * @param multiplier {Number}
      *   Number of elements of this type to account for in the byte count
      * 
-     * @return
+     * @return {Number}
      *   The calculated byte count of this declarator type
      */
     calculateByteCount : function(multiplier, specAndDecl, i)
@@ -292,10 +292,10 @@ qx.Class.define("playground.c.lib.Declarator",
      * compatible. This is used to ensure that arguments passed to a function
      * are compatible with the formal parameters.
      * 
-     * @param other
+     * @param other {playground.c.lib.Declarator}
      *   The (other) declarator to compare to this one
      * 
-     * @return
+     * @return {Boolean}
      *   true if the declarators are compatible; false otherwise
      */
     isCompatible : function(other)
