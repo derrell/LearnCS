@@ -16,6 +16,3 @@
 [submodule "desktop/compilers/narwhal.git"]
 	path = desktop/compilers/narwhal.git
 	url = https://github.com/tlrobinson/narwhal.git
-[submodule "liberated.git"]
-	path = liberated.git
-	url = git@github.com:liberated/liberated.git
