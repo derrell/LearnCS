@@ -1,18 +1,9 @@
 [submodule "lib/ScriptListLoader"]
 	path = lib/ScriptListLoader
 	url = git@github.com:qooxdoo-contrib/ScriptListLoader.git
-[submodule "lib/qxblockly"]
-	path = lib/qxblockly
-	url = git@github.com:qooxdoo-contrib/qxblockly.git
 [submodule "lib/Blockly"]
 	path = lib/Blockly
 	url = git@github.com:derrell/Blockly.git
-[submodule "lib/CollapsablePanel"]
-	path = lib/CollapsablePanel
-	url = git@github.com:qooxdoo-contrib/collapsablepanel.git
 [submodule "desktop/compilers/jison.git"]
 	path = desktop/compilers/jison.git
 	url = https://github.com/zaach/jison.git
-[submodule "desktop/compilers/narwhal.git"]
-	path = desktop/compilers/narwhal.git
-	url = https://github.com/tlrobinson/narwhal.git
