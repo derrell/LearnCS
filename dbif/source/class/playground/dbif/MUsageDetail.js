@@ -24,7 +24,7 @@ qx.Mixin.define("playground.dbif.MUsageDetail",
     /**
      * A usage detail status report
      *
-     * @param dataList {Array of Map}
+     * @param dataList {Array}
      *   Array of usage detail maps. Fields are as in "User-provided" section of
      *   ObjUsageDetail
      */

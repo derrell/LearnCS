@@ -285,7 +285,7 @@ qx.Class.define("playground.c.lib.Symtab",
     /**
      * Get the symbol table at the top of the stack
      *
-     * @return
+     * @return {playground.c.lib.Symtab}
      *   The symbol table at the top of the stack, if there is one;
      *   NULL if not.
      */
@@ -400,19 +400,19 @@ qx.Class.define("playground.c.lib.Symtab",
     /**
      * Add an entry to a symbol table.
      *
-     * @param symName
+     * @param symName {String}
      *   The symbol name
      *
-     * @param line
+     * @param line {Number}
      *   The line number at which this symbol is defined
      *
-     * @param bIsType
+     * @param bIsType {Boolean}
      *   Whether this is a type (via typedef) or a variable
      *
-     * @param bIsParameter
+     * @param bIsParameter {Boolean}
      *   Whether this is a parameter to a function
      * 
-     * @param bIsDefine
+     * @param bIsDefine {Boolean}
      *   Whether this is a #define constant
      *
      * @return {Map|null}
@@ -530,9 +530,9 @@ qx.Class.define("playground.c.lib.Symtab",
      *   True if only the current symbol table is to be searched;
      *   False if the whole change of symbol tables is to be searched
      *
-     * @return
-     *   A pointer to the symbol table entry for the specified symbol, if found;
-     *   NULL otherwise.
+     * @return {playground.c.lib.SymtabEntry}
+     *   The symbol table entry for the specified symbol, if found;
+     *   null otherwise.
      */
     get : function(symName, bCurrentOnly)
     {

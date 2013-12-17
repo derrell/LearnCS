@@ -535,10 +535,10 @@ qx.Class.define("playground.c.lib.Specifier",
      * compatible. This is used to ensure that arguments passed to a function
      * are compatible with the formal parameters.
      * 
-     * @param other
+     * @param other {playground.c.lib.Specifier}
      *   The (other) specifier to compare to this one
      * 
-     * @return
+     * @return {Boolean}
      *   true if the specifiers are compatible; false otherwise
      */
     isCompatible : function(other, bAllowPromote)

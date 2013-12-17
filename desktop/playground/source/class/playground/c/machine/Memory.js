@@ -1352,10 +1352,10 @@ qx.Class.define("playground.c.machine.Memory",
     /**
      * Display a region of memory in a pretty format
      *
-     * @param startAddr
+     * @param startAddr {Number}
      *   The starting address to display
      *
-     * @param length
+     * @param length {Number}
      *   The number of bytes of data to display
      */
     prettyPrint : function(message, startAddr, length)

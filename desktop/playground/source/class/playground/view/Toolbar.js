@@ -458,8 +458,8 @@ qx.Class.define("playground.view.Toolbar",
     /**
      * Called when program is stopped
      * 
-     * @param e {qx.event.type.Event||String}
-     *   If this function called with a String argument, e.g., as a result of
+     * @param e {qx.event.type.Event|String}
+     *   If this function is called with a String argument, e.g., as a result of
      *   editing in the code editor, the "Program Stopped" message is appended
      *   with the provided string.
      */

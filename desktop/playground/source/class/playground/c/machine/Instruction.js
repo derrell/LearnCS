@@ -586,7 +586,7 @@ qx.Class.define("playground.c.machine.Instruction",
     /**
      * Memory operations (including stack)
      *
-     * @param instruction
+     * @param instruction {Number}
      *   Bits 29-31 contain the opcode.
      *
      *   Bits 24-28 have the subcode indicating the specific memory operation 
