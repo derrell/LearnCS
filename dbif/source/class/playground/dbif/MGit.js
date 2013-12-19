@@ -25,10 +25,18 @@ qx.Mixin.define("playground.dbif.MGit",
      * Save a program via git.
      *
      * @return {Integer}
-     *   0 upon success
+     *   0 upon success; 1 if not in the correct backend environment
      */
     saveProgram : function(programName, detail, code)
     {
+      // This functionality is only supported under jetty at present. It is
+      // highly dependent upon java.
+      if (liberated.dbif.Entity.getCurrentDatabaseProvider() != "jettysqlite")
+      {
+        console.log("saveProgram: not in jetty backend environment; ignoring.");
+        return 1;
+      }
+
       var             user;
       var             ret;
       var             runtime;
