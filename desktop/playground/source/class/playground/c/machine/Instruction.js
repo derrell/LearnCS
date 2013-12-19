@@ -15,8 +15,8 @@
 /**
  * Code used during testing with Node; ignored when in playground
  * 
- * @lint ignoreUndefined(require)
- * @lint ignoreUndefined(qx.bConsole)
+ * @ignore(require)
+ * @ignore(qx.bConsole)
  */
 if (typeof qx === "undefined" || qx.bConsole)
 {
@@ -972,7 +972,7 @@ qx.Class.define("playground.c.machine.Instruction",
      * @param line {Number}
      *   The source code line number from which this instruction derives
      *
-     * @lint ignoreDeprecated(eval)
+     * @ignore(eval)
      */
     write : function(instruction, addrInfo, line)
     {

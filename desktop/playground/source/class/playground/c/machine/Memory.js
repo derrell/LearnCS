@@ -24,8 +24,8 @@
 /**
  * Code used during testing with Node; ignored when in playground
  * 
- * @lint ignoreUndefined(require)
- * @lint ignoreUndefined(qx.bConsole)
+ * @ignore(require)
+ * @ignore(qx.bConsole)
  */
 if (typeof qx === "undefined" || qx.bConsole)
 {
@@ -221,8 +221,8 @@ qx.Class.define("playground.c.machine.Memory",
     /**
      * Initialize the memory module.
      *
-     * @lint ignoreUndefined(ArrayBuffer)
-     * @lint ignoreUndefined(Uint8Array)
+     * @ignore(ArrayBuffer)
+     * @ignore(Uint8Array)
      */
     initAll : function()
     {
@@ -282,15 +282,15 @@ qx.Class.define("playground.c.machine.Memory",
      * @return {Number}
      *   The typed value retrieved from memory
      *
-     * @lint ignoreUndefined(ArrayBuffer)
-     * @lint ignoreUndefined(Int8Array)
-     * @lint ignoreUndefined(Int16Array)
-     * @lint ignoreUndefined(Int32Array)
-     * @lint ignoreUndefined(Uint8Array)
-     * @lint ignoreUndefined(Uint16Array)
-     * @lint ignoreUndefined(Uint32Array)
-     * @lint ignoreUndefined(Uint8Array)
-     * @lint ignoreUndefined(Float32Array)
+     * @ignore(ArrayBuffer)
+     * @ignore(Int8Array)
+     * @ignore(Int16Array)
+     * @ignore(Int32Array)
+     * @ignore(Uint8Array)
+     * @ignore(Uint16Array)
+     * @ignore(Uint32Array)
+     * @ignore(Uint8Array)
+     * @ignore(Float32Array)
      */
     _getByType : function(type, addr, numElem)
     {
@@ -861,7 +861,7 @@ qx.Class.define("playground.c.machine.Memory",
      * @return {Array}
      *   An array of bytes copied from the simulated machine's memory
      *
-     * @lint ignoreUndefined(Uint8Array)
+     * @ignore(Uint8Array)
      */
     toArray : function(startAddr, length)
     {
@@ -1078,8 +1078,8 @@ qx.Class.define("playground.c.machine.Memory",
      * @return {qx.data.Array}
      *   The data model
      *
-     * @lint ignoreUndefined(Uint8Array)
-     * @lint ignoreUndefined(Uint32Array)
+     * @ignore(Uint8Array)
+     * @ignore(Uint32Array)
      */
     getDataModel : function(start, length)
     {

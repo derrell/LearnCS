@@ -16,17 +16,11 @@
      * Martin Wittemann (martinwittemann)
 
 ************************************************************************ */
-/* ************************************************************************
-
-#asset(playground/images/*)
-
-************************************************************************ */
 
 /**
  * The playground toolbar containing all buttons and menus.
  *
- * @lint ignoreUndefined(Blob)
- * @lint ignoreUndefined(uploadwidget.UploadButton)
+ * @asset(playground/images/*)
  */
 qx.Class.define("playground.view.Toolbar",
 {

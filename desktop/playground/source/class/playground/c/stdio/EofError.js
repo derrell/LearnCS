@@ -12,7 +12,7 @@
  */
 
 /**
- * @lint ignoreUndefined(require)
+ * @ignore(require)
  */
 if (typeof qx === "undefined" && typeof window === "undefined")
 {

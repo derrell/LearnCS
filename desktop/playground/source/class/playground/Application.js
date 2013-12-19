@@ -5,16 +5,11 @@
  *   GPL Version 2: http://www.gnu.org/licenses/gpl-2.0.html 
  */
 
-/* ************************************************************************
-
-#asset(qx/icon/${qx.icontheme}/*)
-#ignore(require)
-
-************************************************************************ */
-
 /**
  * Playground application, which allows for source code editing and live
  * previews of a simple custom application.
+ * 
+ * @asset (qx/icon/${qx.icontheme}/*)
  */
 qx.Class.define("playground.Application",
 {
@@ -101,12 +96,15 @@ qx.Class.define("playground.Application",
      * This method contains the initial application code and gets called
      * during startup of the application.
      *
-     * @lint ignoreUndefined(qxc)
+     * @ignore(qxc)
      */
     main : function()
     {
       // Call super class
       this.base(arguments);
+
+      // register error handler
+      qx.event.GlobalError.setErrorHandler(this.__onGlobalError, this);
 
       // Enable logging in debug variant
       if (qx.core.Environment.get("qx.debug"))
@@ -283,7 +281,7 @@ qx.Class.define("playground.Application",
                   this.__cppOutput.setValue(lines.join("\n"));
                 }.bind(this));
             }
-            catch(e)
+            catch(e2)
             {
               this.__cppOutput.setValue("Errors encountered. See 'Terminal'");
             }
@@ -688,7 +686,7 @@ qx.Class.define("playground.Application",
     /**
      * Helper to write the current code to the model and with that to the
      * offline store.
-     * @lint ignoreDeprecated(confirm)
+     * @ignore(confirm)
      */
     __onSaveAs : function() {
       // ask the user for a new name for the property
@@ -979,7 +977,7 @@ qx.Class.define("playground.Application",
     /**
      * Adds the given code to the history.
      * @param code {String} the code to add.
-     * @lint ignoreDeprecated(confirm)
+     * @ignore(confirm)
      */
     addCodeToHistory : function(code) {
       var codeJson =
@@ -1004,7 +1002,7 @@ qx.Class.define("playground.Application",
      * Checcks if the code is changed. If that is the case, the user will be
      * prompted to discard the changes.
      *
-     * @lint ignoreDeprecated(confirm)
+     * @ignore(confirm)
      * @return {Boolean} <code>true</code> if the code has been modified
      */
     __discardChanges : function() {
@@ -1130,7 +1128,7 @@ qx.Class.define("playground.Application",
      *
      * @param e {qx.event.type.Event} A possible events (unused)
      *
-     * @lint ignoreUndefined(require)
+     * @ignore(require)
      */
     run : function(e)
     {
@@ -1164,19 +1162,28 @@ qx.Class.define("playground.Application",
                         playground.c.Main.main(ansic);
                         ansic.parse(preprocessedCode);
                       }
-                      catch (e)
+                      catch (e2)
                       {
-                        playground.c.Main.output(e);
+                        playground.c.Main.output(e2);
                       }
                     });
           }.bind(this));
       }
-      catch(e)
+      catch(e2)
       {
 
       }
     },
 
+
+    /**
+     * Handler for global errors.
+     * 
+     * @param e {Event} The global error event
+     */
+    __onGlobalError : function(e) {
+      this.error(e);
+    },
 
     // ***************************************************
     // STANDALONE SUPPORT
@@ -1235,7 +1242,6 @@ qx.Class.define("playground.Application",
       }
     }
   },
-
 
 
   /*

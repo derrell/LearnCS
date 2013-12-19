@@ -16,8 +16,8 @@
  */
 
 /**
- * @lint ignoreUndefined(require)
- * @lint ignoreUndefined(qx.bConsole)
+ * @ignore(require)
+ * @ignore(qx.bConsole)
  */
 if (typeof qx === "undefined" || qx.bConsole)
 {

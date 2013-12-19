@@ -13,7 +13,7 @@
   "let" :
   {
     "APPLICATION"  : "playground",
-    "QOOXDOO_PATH" : "../../../../../ME/qooxdoo.git",
+    "QOOXDOO_PATH" : "../../lib/qooxdoo.git",
     "QXTHEME"      : "playground.theme.Theme",
     "LOCALES"      : [ "en", "de", "ro", "sv", "cs"],
     "OPTIMIZE"     : [ "basecalls", "comments", "privates", "strings", "variables", "variants", "whitespace" ],
