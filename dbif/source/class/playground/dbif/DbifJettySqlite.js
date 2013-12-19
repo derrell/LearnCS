@@ -112,7 +112,7 @@ qx.Class.define("playground.dbif.DbifJettySqlite",
       liberated.jetty.SqliteDbif.removeBlob,
       liberated.jetty.SqliteDbif.beginTransaction,
       { 
-        dbif        : "jetty"
+        dbif        : "jettysqlite"
       });
     
     // Initialize the database
