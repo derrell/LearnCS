@@ -54,16 +54,16 @@
           "manifest" : "${QOOXDOO_PATH}/component/library/versionlabel/Manifest.json"
         },
         { 
-         "manifest" : "/home/derrell/ME/aig/lib/liberated/Manifest.json"
+          "manifest" : "../../dbif/Manifest.json"
         },
         { 
-         "manifest" : "../../dbif/Manifest.json"
+          "manifest" : "../../lib/liberated.git/Manifest.json"
         },
         {
           "manifest" : "../../lib/dialog/Manifest.json"
         },
         { 
-         "manifest" : "../../lib/uploadwidget/Manifest.json"
+          "manifest" : "../../lib/uploadwidget/Manifest.json"
         }
       ],
 /* djl
