@@ -8,15 +8,17 @@
  */
 
 /*
-#ignore(require)
-#ignore(qx.bConsole)
- */
+@ignore(require)
+@ignore(qx.bConsole)
+@ignore(eval)
+*/
 
 /**
  * Code used during testing with Node; ignored when in playground
- * 
+ *
  * @ignore(require)
  * @ignore(qx.bConsole)
+ * @lint ignoreDeprecated(eval) 
  */
 if (typeof qx === "undefined" || qx.bConsole)
 {
@@ -971,8 +973,6 @@ qx.Class.define("playground.c.machine.Instruction",
      *
      * @param line {Number}
      *   The source code line number from which this instruction derives
-     *
-     * @ignore(eval)
      */
     write : function(instruction, addrInfo, line)
     {

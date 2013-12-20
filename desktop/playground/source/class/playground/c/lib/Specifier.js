@@ -8,8 +8,8 @@
  */
 
 /*
-#ignore(require)
-#ignore(qx.bConsole)
+@ignore(require)
+@ignore(qx.bConsole)
  */
 
 /**

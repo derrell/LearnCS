@@ -8,7 +8,7 @@
  */
 
 /*
-#ignore(require)
+@ignore(require)
  */
 
 /**

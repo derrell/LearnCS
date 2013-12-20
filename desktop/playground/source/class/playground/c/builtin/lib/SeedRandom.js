@@ -8,9 +8,9 @@
  */
 
 /*
-#ignore(require)
-#ignore(global)
-#ignore(Uint8Array)
+@ignore(require)
+@ignore(global)
+@ignore(Uint8Array)
  */
 
 /**
@@ -294,7 +294,11 @@ qx.Class.define("playground.c.builtin.lib.SeedRandom",
     // autoseed()
     // Returns an object for autoseeding, using window.crypto if available.
     //
-    /** @param seed {Uint8Array} */
+    /**
+     * @param seed {Uint8Array}
+     * 
+     * @ignore(Uint8Array)
+     */
     function autoseed(seed) {
       try {
         global.crypto.getRandomValues(seed = new Uint8Array(width));

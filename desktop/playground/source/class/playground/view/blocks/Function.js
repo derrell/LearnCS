@@ -12,9 +12,9 @@
  */
 
 /*
-#asset(playground/*)
-#ignore(require)
-#ignore(Blockly)
+@asset(playground/*)
+@ignore(require)
+@ignore(Blockly)
 */
 
 qx.Class.define("playground.view.blocks.Function",
@@ -23,6 +23,9 @@ qx.Class.define("playground.view.blocks.Function",
 
   statics :
   {
+    /**
+     * @ignore(Blockly.*)
+     */
     "function" :
     {
       helpUrl: 'http://www.example.com/',
@@ -127,6 +130,9 @@ qx.Class.define("playground.view.blocks.Function",
       }
     },
 
+    /**
+     * @ignore(Blockly.*)
+     */
     "function_editor" :
     {
       helpUrl: 'http://www.example.com/',
@@ -155,6 +161,9 @@ qx.Class.define("playground.view.blocks.Function",
       }
     },
 
+    /**
+     * @ignore(Blockly.*)
+     */
     "return_with_result" :
     {
       helpUrl: 'http://www.example.com/',
@@ -172,6 +181,9 @@ qx.Class.define("playground.view.blocks.Function",
       }
     },
 
+    /**
+     * @ignore(Blockly.*)
+     */
     "return_no_result" :
     {
       helpUrl: 'http://www.example.com/',

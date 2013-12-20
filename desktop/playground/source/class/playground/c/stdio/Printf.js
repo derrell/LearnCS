@@ -35,7 +35,7 @@ This version has been modified by Derrell Lipman:
 */
 
 /*
-#ignore(require)
+@ignore(require)
  */
 
 /**

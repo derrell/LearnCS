@@ -8,17 +8,17 @@
  */
 
 /*
-#ignore(require)
-#ignore(ArrayBuffer)
-#ignore(Int8Array)
-#ignore(Int16Array)
-#ignore(Int32Array)
-#ignore(Uint8Array)
-#ignore(Uint16Array)
-#ignore(Uint32Array)
-#ignore(Uint8Array)
-#ignore(Float32Array)
-#ignore(qx.bConsole)
+@ignore(require)
+@ignore(ArrayBuffer)
+@ignore(Int8Array)
+@ignore(Int16Array)
+@ignore(Int32Array)
+@ignore(Uint8Array)
+@ignore(Uint16Array)
+@ignore(Uint32Array)
+@ignore(Uint8Array)
+@ignore(Float32Array)
+@ignore(qx.bConsole)
  */
 
 /**

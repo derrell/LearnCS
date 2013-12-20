@@ -12,9 +12,9 @@
  */
 
 /*
-#asset(playground/*)
-#ignore(require)
-#ignore(Blockly)
+@asset(playground/*)
+@ignore(require)
+@ignore(Blockly)
 */
 
 qx.Class.define("playground.view.blocks.Type",
@@ -23,6 +23,9 @@ qx.Class.define("playground.view.blocks.Type",
 
   statics :
   {
+    /**
+     * @ignore(Blockly.*)
+     */
     "declare" :
     {
       helpUrl: 'http://www.example.com/',
@@ -48,6 +51,9 @@ qx.Class.define("playground.view.blocks.Type",
       }
     },
     
+    /**
+     * @ignore(Blockly.*)
+     */
     "type" :
     {
       helpUrl: 'http://www.example.com/',
@@ -202,7 +208,10 @@ qx.Class.define("playground.view.blocks.Type",
       }
     },
 
-          // Used in mutator for "type" block
+    // Used in mutator for "type" block
+    /**
+     * @ignore(Blockly.*)
+     */
     "type_editor" :
     {
       helpUrl: 'http://www.example.com/',
@@ -242,6 +251,9 @@ qx.Class.define("playground.view.blocks.Type",
     },
     
     // Used in mutator for "type" block
+    /**
+     * @ignore(Blockly.*)
+     */
     "pointer_to" :
     {
       helpUrl: 'http://www.example.com/',
@@ -259,6 +271,9 @@ qx.Class.define("playground.view.blocks.Type",
 
     // Used in mutator for "type" block
     "array_of" :
+    /**
+     * @ignore(Blockly.*)
+     */
     {
       helpUrl: 'http://www.example.com/',
 

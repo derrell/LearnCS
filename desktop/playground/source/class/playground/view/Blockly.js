@@ -12,18 +12,20 @@
  */
 
 /*
-#asset(playground/*)
-#ignore(require)
-#ignore(Blockly)
-#ignore(Blockly.Css.CONTENT)
-#ignore(Blockly.Css.CONTENT.map)
-#ignore(Blockly.Connection.prototype.checkType_)
+@asset(playground/*)
+@ignore(require)
+@ignore(Blockly.*)
+@ignore(Blockly.Css.CONTENT)
+@ignore(Blockly.Css.CONTENT.map)
+@ignore(Blockly.Connection.prototype.checkType_)
 */
 
 
 
 /**
  * Container for the Blockly code editor.
+ *
+ * @ignore(Blockly.*)
  */
 qx.Class.define("playground.view.Blockly",
 {
@@ -265,7 +267,8 @@ qx.Class.define("playground.view.Blockly",
     /**
      * Inject Blockly into the editor container
      *
-     * @ignore(Blockly,require)
+     * @ignore(require)
+     * @ignore(Blockly.*)
      */
     __onEditorAppear : function() 
     {

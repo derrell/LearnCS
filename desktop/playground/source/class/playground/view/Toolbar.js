@@ -21,6 +21,8 @@
  * The playground toolbar containing all buttons and menus.
  *
  * @asset(playground/images/*)
+ * 
+ * @ignore(Blob)
  */
 qx.Class.define("playground.view.Toolbar",
 {

@@ -42,8 +42,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /*
-#require(playground.c.Main)
-#ignore(global)
+@require(playground.c.Main)
+@ignore(global)
 */
 
 qx.Class.define("playground.c.lib.Preprocessor",
@@ -79,6 +79,9 @@ qx.Class.define("playground.c.lib.Preprocessor",
       }
     },
 
+    /**
+     * @ignore(global)
+     */
     preprocess : function(text, callback)
     {
       var             cpp;
@@ -1589,6 +1592,9 @@ var __PRE__ = "";
         // code that we preprocess. However, it would not be desirable if the
         // JS environment could be accidentially altered from within 
         // #if's, so let's try to hide eval()'s power as good as we can.
+        /**
+         * @ignore(global)
+         */
         _masked_eval: function(scr)
         {
           // based on http://stackoverflow.com/questions/543533/restricting-eval-to-a-narrow-scope
@@ -1625,7 +1631,7 @@ var __PRE__ = "";
                   }
                 ];
               }
-              catch (e)
+              catch (e2)
               {}
             }
 

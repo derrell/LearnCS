@@ -12,9 +12,9 @@
  */
 
 /*
-#asset(playground/*)
-#ignore(require)
-#ignore(Blockly)
+@asset(playground/*)
+@ignore(require)
+@ignore(Blockly)
 */
 
 qx.Class.define("playground.view.blocks.If",
@@ -23,6 +23,9 @@ qx.Class.define("playground.view.blocks.If",
 
   statics :
   {
+    /**
+     * @ignore(Blockly.*)
+     */
     "if" :
     {
       // If/elseif/else condition.
@@ -258,6 +261,9 @@ qx.Class.define("playground.view.blocks.If",
     },
 
     // used in "if" mutator
+    /**
+     * @ignore(Blockly.*)
+     */
     "if_if" :
     {
       // If condition.
@@ -273,6 +279,9 @@ qx.Class.define("playground.view.blocks.If",
     },
 
     // used in "if" mutator
+    /**
+     * @ignore(Blockly.*)
+     */
     "if_elseif" :
     {
       // Else-If condition.
@@ -289,6 +298,9 @@ qx.Class.define("playground.view.blocks.If",
     },
 
     // used in "if" mutator
+    /**
+     * @ignore(Blockly.*)
+     */
     "if_else" :
     {
       // Else condition.

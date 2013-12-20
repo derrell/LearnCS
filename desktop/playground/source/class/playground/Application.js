@@ -5,11 +5,14 @@
  *   GPL Version 2: http://www.gnu.org/licenses/gpl-2.0.html 
  */
 
+/*
+@asset (qx/icon/${qx.icontheme}/*)
+*/
+
 /**
  * Playground application, which allows for source code editing and live
  * previews of a simple custom application.
  * 
- * @asset (qx/icon/${qx.icontheme}/*)
  */
 qx.Class.define("playground.Application",
 {
@@ -321,13 +324,14 @@ qx.Class.define("playground.Application",
       this.__mainsplit.add(this.__editorsplit, 6);
       this.__mainsplit.add(infosplit, 3);
 
-      if (false)                // djl
+/* djl removed...
       {
         this.__playArea = new playground.view.PlayArea();
         this.__playArea.addListener("toggleMaximize",
                                     this._onToggleMaximize, this);
         infosplit.add(this.__playArea, 2);
       }
+... djl removed */
 
       // djl...
       // Create a composite container for the memory template
@@ -686,7 +690,8 @@ qx.Class.define("playground.Application",
     /**
      * Helper to write the current code to the model and with that to the
      * offline store.
-     * @ignore(confirm)
+     *
+     * @lint ignoreDeprecated(confirm)
      */
     __onSaveAs : function() {
       // ask the user for a new name for the property
@@ -977,7 +982,8 @@ qx.Class.define("playground.Application",
     /**
      * Adds the given code to the history.
      * @param code {String} the code to add.
-     * @ignore(confirm)
+     *
+     * @lint ignoreDeprecated(confirm)
      */
     addCodeToHistory : function(code) {
       var codeJson =
@@ -1002,8 +1008,9 @@ qx.Class.define("playground.Application",
      * Checcks if the code is changed. If that is the case, the user will be
      * prompted to discard the changes.
      *
-     * @ignore(confirm)
      * @return {Boolean} <code>true</code> if the code has been modified
+     *
+     * @lint ignoreDeprecated(confirm)
      */
     __discardChanges : function() {
       var userCode = this.editor.getCode();

@@ -8,21 +8,21 @@
  */
 
 /*
-#ignore(require)
-#ignore(process)
-#ignore(bTest)
+@ignore(require)
+@ignore(process)
+@ignore(bTest)
 
-#require(playground.c.builtin.Ctype)
-#require(playground.c.builtin.Math)
-#require(playground.c.builtin.Stdlib)
-#require(playground.c.stdio.Stdio)
+@require(playground.c.builtin.Ctype)
+@require(playground.c.builtin.Math)
+@require(playground.c.builtin.Stdlib)
+@require(playground.c.stdio.Stdio)
  */
 
 /**
  * Code used during testing with Node; ignored when in playground
  * 
  * @ignore(require)
- * @ignore(process)
+ * @ignore(process.*)
  */
 if (typeof qx === "undefined")
 {
@@ -73,6 +73,7 @@ qx.Class.define("playground.c.Main",
 
     /**
      * @ignore(process.exit)
+     * @ignore(bTest)
      */
     main : function(parser)
     {

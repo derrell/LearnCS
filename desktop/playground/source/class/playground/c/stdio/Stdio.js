@@ -8,11 +8,11 @@
  */
 
 /*
-#ignore(require)
+@ignore(require)
 
-#require(playground.c.stdio.Stdin)
-#require(playground.c.stdio.Stdout)
-#require(playground.c.stdio.Stderr)
+@require(playground.c.stdio.Stdin)
+@require(playground.c.stdio.Stdout)
+@require(playground.c.stdio.Stderr)
  */
 
 /**

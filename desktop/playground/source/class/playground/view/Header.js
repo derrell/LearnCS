@@ -20,6 +20,8 @@
 ************************************************************************ */
 /**
  * Application header widget.
+ *
+ * @lint ignoreDeprecated(alert)
  */
 qx.Class.define("playground.view.Header",
 {
@@ -27,6 +29,7 @@ qx.Class.define("playground.view.Header",
 
   /**
    * @ignore(qxc)
+   * @lint ignoreDeprecated(confirm) 
    */
   construct : function()
   {

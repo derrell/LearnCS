@@ -12,9 +12,9 @@
  */
 
 /*
-#asset(playground/*)
-#ignore(require)
-#ignore(Blockly)
+@asset(playground/*)
+@ignore(require)
+@ignore(Blockly)
 */
 
 qx.Class.define("playground.view.blocks.Loop",
@@ -23,6 +23,9 @@ qx.Class.define("playground.view.blocks.Loop",
 
   statics :
   {
+    /**
+     * @ignore(Blockly.*)
+     */
     "for_loop" :
     {
       helpUrl: 'http://www.example.com/',
@@ -131,6 +134,9 @@ qx.Class.define("playground.view.blocks.Loop",
       }
     },
 
+    /**
+     * @ignore(Blockly.*)
+     */
     "for_loop_editor" :
     {
       helpUrl: 'http://www.example.com/',
@@ -159,6 +165,9 @@ qx.Class.define("playground.view.blocks.Loop",
       }
     },
 
+    /**
+     * @ignore(Blockly.*)
+     */
     "do_while_loop" :
     {
       helpUrl: 'http://www.example.com/',
