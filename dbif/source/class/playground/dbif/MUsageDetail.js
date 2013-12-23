@@ -42,6 +42,7 @@ qx.Mixin.define("playground.dbif.MUsageDetail",
               var             snapshot;
               var             detailObj;
               var             detailData;
+              var             messageData;
 
               // Store any snapshot data, and then delete it from the
               // object. We'll save it separately.
@@ -60,13 +61,24 @@ qx.Mixin.define("playground.dbif.MUsageDetail",
               // Re-add (or overwrite, if the user was nasty), the user name
               detailData.user = playground.dbif.MDbifCommon.getCurrentUserId();
 
+              // Copy non-null fields into a new map
+              messageData = {};
+              Object.keys(detailData).forEach(
+                function(key)
+                {
+                  if (detailData[key] !== null)
+                  {
+                    messageData[key] = detailData[key];
+                  }
+                });
+
               // Is there a snapshot to be saved?
               if (snapshot)
               {
                 // Yup. Save it.
                 hash = _this.saveProgram(
-                  detailData.filename || "HARDCODED.c", 
-                  qx.lang.Json.stringify(detailData, null, "  "),
+                  messageData.filename || "HARDCODED.c", 
+                  qx.lang.Json.stringify(messageData, null, "  "),
                   snapshot);
               }
               
