@@ -41,77 +41,103 @@ qx.Mixin.define("playground.dbif.MGit",
       var             ret;
       var             runtime;
       var             process;
+      var             exitValue;
       var             reader;
       var             writer;
       var             line;
       var             cmd;
       var             hash;
-      var             baseName;
       var             userCodeDir = "USERCODE";
-      var             userCodeDirFile;
+      var             gitDir;
+      var             exec;
       var             Runtime = java.lang.Runtime;
       var             File = java.io.File;
       var             BufferedReader = java.io.BufferedReader;
       var             InputStreamReader = java.io.InputStreamReader;
       var             PrintWriter = java.io.PrintWriter;
       
+      // Prepare to exec processes
+      runtime = Runtime.getRuntime();
+
+      exec = function(cmd, directory)
+      {
+        var             dirFile;
+        var             process;
+        var             stderrHeader = "STDERR:\n";
+        var             stdoutHeader = "STDOUT:\n";
+        
+        // Get a handle to the specified directory
+        if (directory)
+        {
+          dirFile = new File(directory);
+        }
+        else
+        {
+          dirFile = null;
+        }
+        
+        console.log("exec: [" + cmd.join(",") + "]");
+        process = runtime.exec(cmd, null, dirFile);
+        process.waitFor();
+        console.log("exit code: " + process.exitValue());
+
+        reader =
+          new BufferedReader(new InputStreamReader(process.getErrorStream()));
+        while ((line = reader.readLine()) != null) 
+        {
+          console.log(stderrHeader + line);
+          stderrHeader = "";
+        }
+
+        if (stderrHeader == "" || stdoutHeader == "")
+        {
+          console.log("\n\n");
+        }
+        
+        // In case the caller needs to get the exit code or 
+        return process;
+      };
+
       // Retrieve the current user id
       user = playground.dbif.MDbifCommon.getCurrentUserId();
       
-      // Be sure the user's directory has been created
-      runtime = Runtime.getRuntime();
-      process = runtime.exec("mkdir -p " + userCodeDir + "/" + user);
-      process.waitFor();
+      // Remove dangerous ..
+      programName = programName.replace("..", "DOTDOT");
+      
+      // Replace backslashes with forward slashes
+      programName = programName.replace("\\", "/");
 
-      // Prepend the directory path to the program name
-      baseName = programName;
-      programName = user + "/" + programName.replace("..", "DOTDOT");
+      // Strip any double slashes; replace with single slashes
+      programName = programName.replace("//", "/");
+
+      // Create the git directory name
+      gitDir = userCodeDir + "/" + user + "/" + programName + ".git";
+
+      // Be sure the file's git directory has been created
+      exec( [ "mkdir", "-p", gitDir ] );
 
       // Write the code to a file with the given name
       try
       {
-        writer = new PrintWriter(userCodeDir + "/" + programName, "UTF-8");
+        writer = new PrintWriter(gitDir + "/" + programName, "UTF-8");
         writer.print(code);
         writer.close();
       }
       catch (e)
       {
-        console.log("\n\nFailed to create user code at " + programName + 
+        console.log("\n\nFailed to create user code at " + 
+                    gitDir + "/" + programName + 
                     ": " + e + "\n\n");
       }
 
-      // Get a File reference for the user code directory
-      userCodeDirFile = new File(userCodeDir);
-
-
-
-      cmd = [ "git", "add", programName ];
-      console.log("exec: [" + cmd.join(",") + "]");
-      process = runtime.exec(cmd, null, userCodeDirFile);
-      process.waitFor();
-      console.log("exit code: " + process.exitValue());
-
-      console.log("STDERR:");
-      reader =
-        new BufferedReader(new InputStreamReader(process.getErrorStream()));
-      while ((line = reader.readLine()) != null) 
-      {
-        console.log(line);
-      }
-
-      console.log("STDOUT:");
-      reader =
-        new BufferedReader(new InputStreamReader(process.getInputStream()));
-      while ((line = reader.readLine()) != null) 
-      {
-        console.log(line);
-      }
+      // Create the git repository
+      exec( [ "git", "init" ], gitDir);
       
-      console.log("\n\n");
+      // Add the file to this git repository
+      exec( [ "git", "add", programName ], gitDir);
 
-
-
-      cmd =
+      // Commit the file
+      process = exec(
         [
           "git",
           "commit",
@@ -119,34 +145,23 @@ qx.Mixin.define("playground.dbif.MGit",
           detail,
           "--",
           programName
-        ];
-      console.log("exec: [" + cmd.join(",") + "]");
-      process = runtime.exec(cmd, null, userCodeDirFile);
-      process.waitFor();
-      console.log("exit code: " + process.exitValue());
-
-      console.log("STDERR:");
-      reader =
-        new BufferedReader(new InputStreamReader(process.getErrorStream()));
-      
-      while ((line = reader.readLine()) != null) 
-      {
-        console.log(line);
-      }
-
-      console.log("STDOUT:");
-      reader =
-        new BufferedReader(new InputStreamReader(process.getInputStream()));
+        ],
+        gitDir);
 
       // Did the commit succeed?
       if (process.exitValue() == 0)
       {
         // Yup. Retrieve the abbreviated commit hash. It's on the first line,
-        // which looks like this:
+        // which looks like this normally:
         // [master 83cd8db] save button: 1/prog1.c
+        // and like this on the first commit:
+        // [master (root-commit) 83cd8db] save button: 1/prog1.c
+        reader =
+          new BufferedReader(new InputStreamReader(process.getInputStream()));
         line = reader.readLine();
         console.log("Got hash line: " + line);
-        hash = String(line).split("]")[0].split(" ")[1];
+        hash = String(line).split("]")[0].split(" ");
+        hash = hash[hash.length - 1];
         console.log("hash=" + hash);
       }
       else
