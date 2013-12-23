@@ -18,6 +18,9 @@
 /**
  * @ignore(require)
  * @ignore(qx.bConsole)
+ * @require(playground.c.stdio.Stdin)
+ * @require(playground.c.stdio.Stdout)
+ * @require(playground.c.stdio.Stderr)
  */
 if (typeof qx === "undefined" || qx.bConsole)
 {

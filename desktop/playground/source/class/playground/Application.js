@@ -5,14 +5,11 @@
  *   GPL Version 2: http://www.gnu.org/licenses/gpl-2.0.html 
  */
 
-/*
-@asset (qx/icon/${qx.icontheme}/*)
-*/
-
 /**
  * Playground application, which allows for source code editing and live
  * previews of a simple custom application.
  * 
+ * @asset(qx/icon/${qx.icontheme}/*)
  */
 qx.Class.define("playground.Application",
 {
