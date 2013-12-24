@@ -11,7 +11,7 @@ qx.Mixin.define("playground.dbif.MDbifCommon",
   [
     playground.dbif.MUser,
     playground.dbif.MUsageDetail,
-    playground.dbif.MGit
+    playground.dbif.MFiles
   ],
 
   construct : function()
@@ -127,6 +127,9 @@ qx.Mixin.define("playground.dbif.MDbifCommon",
         return ! bAnonymous;    // Access is allowed if they're logged in
 
       case "learncs.usageDetail":
+        return ! bAnonymous;    // Access is allowed if they're logged in
+
+      case "learncs.getDirectoryListing":
         return ! bAnonymous;    // Access is allowed if they're logged in
 
       case "learncs.saveProgram":
