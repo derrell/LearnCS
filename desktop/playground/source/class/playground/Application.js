@@ -141,7 +141,7 @@ qx.Class.define("playground.Application",
       // qooxdoo header
       this.__header = new playground.view.Header();
       mainContainer.add(this.__header, { flex : 0 });
-      this.__header.addListener("changeMode", this._onChangeMode, this);
+//      this.__header.addListener("changeMode", this._onChangeMode, this);
 
       // toolbar
       this.__toolbar = new playground.view.Toolbar();
@@ -186,6 +186,7 @@ qx.Class.define("playground.Application",
       }, this);
 
       // initialize custom samples
+/* djl
       this.__store = new qx.data.store.Offline("qooxdoo-playground-samples");
       // if the local storage is not empty
       if (this.__store.getModel() != null) {
@@ -197,6 +198,39 @@ qx.Class.define("playground.Application",
         this.__store.setModel(this.__samples.getModel());
       }
       this.__store.bind("model", this.__samplesPane, "model");
+else... */
+      this.__samples = new playground.Samples();
+
+      // Issue a request for the user's directory listing.
+      playground.ServerOp.rpc(
+        // success handler
+        function(result, id)
+        {
+console.log("got directory listing: " + JSON.stringify(result, null, "  "));
+
+          // Success. Display the result values.
+          var marshaler = new qx.data.marshal.Json();
+          marshaler.toClass(result, true);
+
+          var model = marshaler.toModel(result, true);
+          if (typeof model == "undefined") 
+          {
+            model = null;
+          }
+          this.__samples.setModel(model);
+        }.bind(this),
+
+        // failure handler
+        function(ex, id)
+        {
+          // Ignore the failure. Should not ever occur.
+console.log("FAILED to get directory listing: " + ex);
+        }.bind(this),
+
+        // function to call
+        "getDirectoryListing"
+      );
+// ...djl
 
       // Create a split for the tabview and the terminal
       this.__terminalsplit = new qx.ui.splitpane.Pane("vertical");
@@ -313,7 +347,7 @@ qx.Class.define("playground.Application",
 
       this.__editorsplit.add(this.__samplesPane, 1);
 // djl...
-      this.__samplesPane.exclude();
+//      this.__samplesPane.exclude();
 // ...djl
       this.__terminalsplit.add(tabview, 4);
       this.__terminalsplit.add(terminal, 2);
@@ -471,6 +505,7 @@ qx.Class.define("playground.Application",
         return;
       }
 
+/*
       // check if mobile chould be used
       if (this.__supportsMode("mobile")) {
         // check for the mode cookie
@@ -483,6 +518,7 @@ qx.Class.define("playground.Application",
         this.setMode("ria");
         this.__header.setEnabledMode("mobile", false);
       }
+*/
 
       // Back button and bookmark support
       this.__initBookmarkSupport();
@@ -523,7 +559,7 @@ qx.Class.define("playground.Application",
         return;
       }
 
-      this.setMode(newSample.getMode());
+//      this.setMode(newSample.getMode());
 
       // need to get the code from the editor in case he changes something
       // in the code
@@ -863,6 +899,7 @@ qx.Class.define("playground.Application",
      */
     __initBookmarkSupport : function()
     {
+/* djl...
       this.__history = qx.bom.History.getInstance();
       this.__history.addListener("changeState", this.__onHistoryChanged, this);
 
@@ -918,6 +955,7 @@ qx.Class.define("playground.Application",
         this.setCurrentSample(sample);
         return;
       }
+*/
     },
 
 
