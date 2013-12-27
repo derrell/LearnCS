@@ -155,7 +155,7 @@ qx.Class.define("playground.view.Toolbar",
       this.fireDataEvent("changeSample", e.getData(), e.getOldData());
     }, this);
 // djl...
-    this.__samplesCheckButton.exclude();
+  //    this.__samplesCheckButton.exclude();
 // ...djl
 
     // Create an input area for command line arguments

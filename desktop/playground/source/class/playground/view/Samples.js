@@ -162,17 +162,23 @@ qx.Class.define("playground.view.Samples",
 
       // set the delegate
       this.__list.setDelegate({
-        // filder: only show samples for the current mode
+/* djl
+        // filter: only show samples for the current mode
         filter : function(data) {
           return data.getMode() == self.getMode();
         },
+*/
         // group the samples by category
         group : function(data) {
+/* djl
           if (data.getCategory() == "static") {
             return qx.locale.Manager.tr("Static");
           } else {
             return qx.locale.Manager.tr("User");
           }
+else... */
+          return data.getCategory();
+// ...djl
         }
       });
 
