@@ -58,7 +58,7 @@ qx.Mixin.define("playground.dbif.MFiles",
 
       var             dir;
       var             user;
-      var             dirList = {};
+      var             dirList = [];
       var             userFilesDir = playground.dbif.MFiles.UserFilesDir;
       var             dataDir = playground.dbif.MFiles.DataDir;
       var             progDir = playground.dbif.MFiles.ProgDir;
@@ -69,11 +69,11 @@ qx.Mixin.define("playground.dbif.MFiles",
       
       [
         {
-          field : "programs",
+          field : "Programs",
           name  : userFilesDir + "/" + user + "/" + progDir
         },
         {
-          field : "data",
+          field : "Data",
           name  : userFilesDir + "/" + user + "/" + dataDir
         }
       ].forEach(
@@ -92,10 +92,7 @@ qx.Mixin.define("playground.dbif.MFiles",
           // Was it a directory?
           if (files != null)
           {
-            // Yup. Create an entry in the return map for this directory
-            dirList[dirData.field] = [];
-            
-            // Enumerate any files within.
+            // Yup. Enumerate any files within.
             for (i = 0; i < files.length; i++)
             {
               // Retrieve the file name
@@ -103,13 +100,17 @@ qx.Mixin.define("playground.dbif.MFiles",
               
               // If we're in the program directory, the name ends with ".git",
               // and we must strip that off.
-              if (dirData.field == "programs")
+              if (dirData.field == "Programs")
               {
                 name = name.replace(/\.git$/, "");
               }
 
               // Add this file's name to the map to be returned
-              dirList[dirData.field].push(name);
+              dirList.push(
+                {
+                  name     : name,
+                  category : dirData.field
+                });
             }
           }
         });
