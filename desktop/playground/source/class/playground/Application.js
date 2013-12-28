@@ -899,8 +899,8 @@ console.log("FAILED to get directory listing: " + ex);
      */
     __initBookmarkSupport : function()
     {
-/* djl...
       this.__history = qx.bom.History.getInstance();
+/* djl...
       this.__history.addListener("changeState", this.__onHistoryChanged, this);
 
       // Handle bookmarks
