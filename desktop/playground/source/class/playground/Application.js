@@ -217,7 +217,7 @@ console.log("got directory listing: " + JSON.stringify(result, null, "  "));
           {
             model = null;
           }
-          this.__samples.setModel(model);
+          this.__samplesPane.setModel(model);
         }.bind(this),
 
         // failure handler
