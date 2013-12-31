@@ -27,13 +27,19 @@ qx.Mixin.define("playground.dbif.MFiles",
   statics :
   {
     /** The top-level directory on the server which contains users' code */
-    UserFilesDir : "USERCODE",
+    UserFilesDir       : "USERCODE",
     
-    /** Subdirectory of UserFilesDir where data files are stored */
-    DataDir      : "DATA",
+    /** Default user directory: DataDir and TemplateDir available to all */
+    DefaultUser        : "DEFAULT_USER",
+
+    /** Subdirectory where data files are stored */
+    DataDir            : "DATA",
     
-    /** Subdirectory of UserFilesDir where program files are stored */
-    ProgDir      : "PROGRAMS"
+    /** Subdirectory where program files are stored */
+    ProgDir            : "PROGRAMS",
+    
+    /** Subdirectory where template programs are stored */
+    TemplateDir        : "TEMPLATES"
   },
 
   members :
@@ -48,74 +54,150 @@ qx.Mixin.define("playground.dbif.MFiles",
      */
     getDirectoryListing : function()
     {
+      // Assume no files are available, initially.
+      var defaultDirList =
+        [
+          {
+            name     : "",
+            category : "No files available"
+          }
+        ];
+
       // This functionality is only supported under jetty at present. It is
       // highly dependent upon java.
       if (liberated.dbif.Entity.getCurrentDatabaseProvider() != "jettysqlite")
       {
         console.log("saveProgram: not in jetty backend environment; ignoring.");
-        return {};
+        return defaultDirList;
       }
 
+      var             dirList = [];
       var             dir;
       var             user;
-      var             dirList = [];
+      var             userData;
       var             userFilesDir = playground.dbif.MFiles.UserFilesDir;
       var             dataDir = playground.dbif.MFiles.DataDir;
       var             progDir = playground.dbif.MFiles.ProgDir;
+      var             templateDir = playground.dbif.MFiles.TemplateDir;
+      var             defaultUser = playground.dbif.MFiles.DefaultUser;
       var             File = java.io.File;
+
+      function addFiles(dirData)
+      {
+        var             i;
+        var             files;
+        var             name;
+
+console.log("Looking for files in [" + dirData.name + "]");
+        // Open the directory
+        dir = new File(dirData.name);
+
+        // Obtain its files (if any).
+        files = dir.listFiles();
+
+        // Was it a directory?
+        if (files != null)
+        {
+          // Yup. Enumerate any files within.
+          for (i = 0; i < files.length; i++)
+          {
+            // Retrieve the file name
+            name = String(files[i].getName());
+console.log("Found file name [" + name + "]");
+
+            // If we're in the program directory, the name ends with ".git",
+            // and we must strip that off.
+            if (dirData.category == "My Programs")
+            {
+              name = name.replace(/\.git$/, "");
+            }
+
+            // Add this file's name to the map to be returned
+            dirList.push(
+              {
+                name     : name,
+                category : dirData.category
+              });
+          }
+        }
+      }
 
       // Retrieve the current user id
       user = playground.dbif.MDbifCommon.getCurrentUserId();
       
+      // Add the user's own programs and files, and standard templates
       [
         {
-          field : "Programs",
-          name  : userFilesDir + "/" + user + "/" + progDir
+          category : "My Programs",
+          name     : userFilesDir + "/" + user + "/" + progDir
         },
         {
-          field : "Data",
-          name  : userFilesDir + "/" + user + "/" + dataDir
-        }
-      ].forEach(
-        function(dirData)
+          category : "My Files",
+          name     : userFilesDir + "/" + user + "/" + dataDir
+        },
         {
-          var             i;
-          var             files;
-          var             name;
-
-          // Open the directory
-          dir = new File(dirData.name);
-          
-          // Obtain its files (if any).
-          files = dir.listFiles();
-          
-          // Was it a directory?
-          if (files != null)
-          {
-            // Yup. Enumerate any files within.
-            for (i = 0; i < files.length; i++)
-            {
-              // Retrieve the file name
-              name = String(files[i].getName());
-              
-              // If we're in the program directory, the name ends with ".git",
-              // and we must strip that off.
-              if (dirData.field == "Programs")
-              {
-                name = name.replace(/\.git$/, "");
-              }
-
-              // Add this file's name to the map to be returned
-              dirList.push(
-                {
-                  name     : name,
-                  category : dirData.field
-                });
-            }
-          }
-        });
+          category : "Standard Templates",
+          name     : userFilesDir + "/" + defaultUser + "/" + templateDir
+        }
+      ].forEach(addFiles);
       
-      console.log(qx.lang.Json.stringify(dirList, null, "  "));
+      // Get this user's object data, to get the template users
+      userData = liberated.dbif.Entity.query(
+        "playground.dbif.ObjUser",
+        {
+          type  : "element",
+          field : "id",
+          value : user
+        })[0];
+      
+      // If there's no templates array...
+      if (! userData.templatesFrom)
+      {
+        // ... then use an empty array
+        userData.templatesFrom = [];
+      }
+      
+      // Now add templates from any registered template users.
+      userData.templatesFrom.forEach(
+        function(userId)
+        {
+          var             templateUserData;
+
+          // Get the template user name
+          templateUserData = liberated.dbif.Entity.query(
+            "playground.dbif.ObjUser",
+            {
+              type  : "element",
+              field : "id",
+              value : userId
+            });
+          
+console.log("Got user " + userId + " data: " + qx.lang.Json.stringify(templateUserData));
+
+          // If the user no longer exists...
+          if (! templateUserData || templateUserData.length === 0)
+          {
+            // ... then we have nothing to do.
+            return;
+          }
+
+          // Add this user's templates to the list
+          addFiles(
+            {
+              category : "Templates from " + templateUserData[0].displayName,
+              name     : userFilesDir + "/" + userId + "/" + templateDir
+            });
+        });
+
+      // If we haven't added anything to the directory listing...
+      if (dirList.length === 0)
+      {
+        // ... then use the default directory list
+        dirList = defaultDirList;
+      }
+
+      console.log("getDirectoryListing:\n" +
+                  qx.lang.Json.stringify(dirList, null, "  "));
       return dirList;
     },
 
