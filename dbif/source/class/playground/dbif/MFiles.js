@@ -21,7 +21,12 @@ qx.Mixin.define("playground.dbif.MFiles",
     // Save a program
     this.registerService("learncs.saveProgram",
                          this.saveProgram,
-                         [ ]);
+                         [ "programName", "detail", "code" ]);
+
+    // Get a program
+    this.registerService("learncs.getProgram",
+                         this.getProgram,
+                         [ "programName", "category", "userId" ]);
   },
 
   statics :
@@ -116,7 +121,8 @@ console.log("Found file name [" + name + "]");
             dirList.push(
               {
                 name     : name,
-                category : dirData.category
+                category : dirData.category,
+                user     : dirData.user
               });
           }
         }
@@ -129,15 +135,18 @@ console.log("Found file name [" + name + "]");
       [
         {
           category : "My Programs",
-          name     : userFilesDir + "/" + user + "/" + progDir
+          name     : userFilesDir + "/" + user + "/" + progDir,
+          user     : user
         },
         {
           category : "My Files",
-          name     : userFilesDir + "/" + user + "/" + dataDir
+          name     : userFilesDir + "/" + user + "/" + dataDir,
+          user     : user
         },
         {
           category : "Standard Templates",
-          name     : userFilesDir + "/" + defaultUser + "/" + templateDir
+          name     : userFilesDir + "/" + defaultUser + "/" + templateDir,
+          user     : defaultUser
         }
       ].forEach(addFiles);
       
@@ -185,7 +194,8 @@ console.log("Got user " + userId + " data: " + qx.lang.Json.stringify(templateUs
           addFiles(
             {
               category : "Templates from " + templateUserData[0].displayName,
-              name     : userFilesDir + "/" + userId + "/" + templateDir
+              name     : userFilesDir + "/" + userId + "/" + templateDir,
+              user     : userId
             });
         });
 
@@ -366,6 +376,156 @@ console.log("Got user " + userId + " data: " + qx.lang.Json.stringify(templateUs
       console.log("\n");
 
       return hash;
+    },
+
+    /**
+     * Retrieve the current version of a program
+     * 
+     * @param programName {String}
+     *   The name of the program being saved
+     *
+     * @param category {String}
+     *   The category in which this program is contained. If "My Programs"
+     *   then we find the program in its git directory; otherwise, not.
+     * 
+     * @param user {Integer}
+     *   The user id of the file's owner.
+     *
+     * @return {Map}
+     *   The map contains the following members:
+     *     name - the file name
+     *     code - the entire source code of the program
+     */
+    getProgram : function(programName, category, userId)
+    {
+      // This functionality is only supported under jetty at present. It is
+      // highly dependent upon java.
+      if (liberated.dbif.Entity.getCurrentDatabaseProvider() != "jettysqlite")
+      {
+        console.log("saveProgram: not in jetty backend environment; ignoring.");
+        return { name : programName, code : "" };
+      }
+
+      var             user;
+      var             userData;
+      var             line;
+      var             reader;
+      var             encoded;
+      var             decoded;
+      var             dir;
+      var             ascii;
+      var             stringBuilder;
+      var             userFilesDir = playground.dbif.MFiles.UserFilesDir;
+      var             progDir = playground.dbif.MFiles.ProgDir;
+      var             templatesDir = playground.dbif.MFiles.TemplateDir;
+      var             defaultUser = playground.dbif.MFiles.DefaultUser;
+      var             FileReader = java.io.FileReader;
+      var             BufferedReader = java.io.BufferedReader;
+      var             StringBuilder = java.lang.StringBuilder;
+      
+      // Retrieve the current user id
+      user = playground.dbif.MDbifCommon.getCurrentUserId();
+      
+      try
+      {
+        // Remove dangerous ..
+        programName = programName.replace("..", "DOTDOT");
+
+        // Replace backslashes with forward slashes
+        programName = programName.replace("\\", "/");
+
+        // Strip any double slashes; replace with single slashes
+        programName = programName.replace("//", "/");
+
+        // Get this user's object data, to get the template users
+        userData = liberated.dbif.Entity.query(
+          "playground.dbif.ObjUser",
+          {
+            type  : "element",
+            field : "id",
+            value : user
+          })[0];
+
+        // If there's no templates array...
+        if (! userData.templatesFrom)
+        {
+          // ... then use an empty array
+          userData.templatesFrom = [];
+        }
+
+        // Ensure that there's no funny business going on here. The file's
+        // user id must either be this user's own id, or one in his
+        // templatesFrom list.
+        if (userId !=  defaultUser &&
+            userId != user &&
+            userData.templatesFrom.indexOf(userId) == -1)
+        {
+          userData.templatesFrom.unshift(user);
+          throw new Error("File user id " + userId +
+                          " is not an allowable id: " +
+                          qx.lang.Json.stringify(userData.templatesFrom));
+        }
+
+        // Create the directory name
+        if (userId === user)
+        {
+          if (category == "My Programs")
+          {
+            dir = 
+              userFilesDir + "/" + 
+              userId + "/" + 
+              progDir + "/" +
+              programName + ".git";
+          }
+          else
+          {
+            dir = 
+              userFilesDir + "/" + 
+              userId + "/" + 
+              templatesDir;
+          }
+        }
+        else
+        {
+          dir = 
+            userFilesDir + "/" + 
+            userId + "/" + 
+            templatesDir;
+        }
+
+        // Prepare to read the file
+        reader = new BufferedReader(new FileReader(dir + "/" + programName));
+        stringBuilder = new StringBuilder();
+        
+        // Read the first line
+        if ((line = reader.readLine()) != null)
+        {
+          stringBuilder.append(line);
+        }
+        
+        // Read subsequent lines, prepending a newline to each
+        while ((line = reader.readLine()) != null)
+        {
+          stringBuilder.append("\n");
+          stringBuilder.append(line);
+        }
+
+        console.log("Got file data:\n" + stringBuilder.toString());
+        return (
+          {
+            name : programName,
+            code : String(stringBuilder.toString())
+          });
+      }
+      catch (e)
+      {
+        console.log("\ngetProgram() exception: " + e + "\n");
+        return (
+          {
+            name : programName,
+            code : "// Could not retrieve program " + programName
+          });
+      }
     }
   }
 });
