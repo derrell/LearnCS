@@ -39,7 +39,7 @@ qx.Class.define("playground.view.Samples",
     this.setDecorator("main");
 
     // caption
-    var caption = new qx.ui.basic.Label(this.tr("Samples")).set({
+    var caption = new qx.ui.basic.Label(this.tr("Files")).set({
       font       : "bold",
       padding    : 5,
       allowGrowX : true,
