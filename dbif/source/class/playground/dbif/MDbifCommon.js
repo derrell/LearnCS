@@ -135,6 +135,9 @@ qx.Mixin.define("playground.dbif.MDbifCommon",
       case "learncs.saveProgram":
         return ! bAnonymous;    // Access is allowed if they're logged in
 
+      case "learncs.getProgram":
+        return ! bAnonymous;    // Access is allowed if they're logged in
+
 
 /*
       case "learncs.somePrivateMethod":
