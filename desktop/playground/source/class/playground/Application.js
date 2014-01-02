@@ -559,8 +559,30 @@ console.log("FAILED to get directory listing: " + ex);
         return;
       }
 
-//      this.setMode(newSample.getMode());
+      // Issue a request for the user's directory listing.
+      playground.ServerOp.rpc(
+        // success handler
+        function(result, id)
+        {
+          this.editor.setCode(result.code);
+          this.setOriginCode(result.code);
+          this.addCodeToHistory(result.code);
+          this.setName(result.name);
+        }.bind(this),
 
+        // failure handler
+        function(ex, id)
+        {
+          // Ignore the failure. Should not ever occur.
+console.log("FAILED to retrieve file " + newSample.getName() + ": " + ex);
+        }.bind(this),
+
+        // function to call
+        "getProgram",
+        [ newSample.getName(), newSample.getCategory(), newSample.getUser() ]
+      );
+
+/*
       // need to get the code from the editor in case he changes something
       // in the code
       this.editor.setCode(newSample.getCode());
@@ -576,6 +598,7 @@ console.log("FAILED to get directory listing: " + ex);
       this.setName(newSample.getName());
       // run the new sample
       this.run();
+*/
     },
 
 
