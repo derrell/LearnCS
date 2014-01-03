@@ -93,15 +93,12 @@ qx.Class.define("playground.dbif.ObjUsageDetail",
         /** Displayed compiler or run-time error error */
         "displayError"       : "String",
 
-        // put 'error' and 'snapshot' last, since their data can be long. This
-        // allows viewing the data without a mutli-line elements in the middle
-        // of the output.
+        //
+        // put 'error' last, since its data can be long.
+        //
 
         /** Compiler or run-time error, as JSON depiction of hash map */
-        "error"              : "LongString",
-        
-        /** User's code (in editor) at this time */
-        "snapshot"           : "LongString"
+        "error"              : "LongString"
       };
 
     // Register our property types.

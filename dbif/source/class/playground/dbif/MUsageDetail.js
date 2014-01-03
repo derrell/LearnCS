@@ -27,10 +27,15 @@ qx.Mixin.define("playground.dbif.MUsageDetail",
      * @param dataList {Array}
      *   Array of usage detail maps. Fields are as in "User-provided" section of
      *   ObjUsageDetail
+     * 
+     * @return {Map|null}
+     *   If any element of the dataList contains a snapshot, then a directory
+     *   listing is returned; otherwise null.
      */
     usageDetail : function(dataList, error)
     {
       var             _this = this;
+      var             bNeedDirectoryListing = false;
 
       return liberated.dbif.Entity.asTransaction(
         function()
@@ -38,16 +43,18 @@ qx.Mixin.define("playground.dbif.MUsageDetail",
           dataList.forEach(
             function(data)
             {
-              var             hash;
               var             snapshot;
               var             detailObj;
               var             detailData;
               var             messageData;
 
               // Store any snapshot data, and then delete it from the
-              // object. We'll save it separately.
+              // object. It's saved in git, not in the database.
               snapshot = data.snapshot;
               delete data.snapshot;
+
+              // Keep track of any snapshots we found
+              bNeedDirectoryListing = bNeedDirectoryListing || !! snapshot;
 
               // Create the usage detail object
               detailObj = new playground.dbif.ObjUsageDetail();
@@ -76,20 +83,19 @@ qx.Mixin.define("playground.dbif.MUsageDetail",
               if (snapshot)
               {
                 // Yup. Save it.
-                hash = _this.saveProgram(
+                _this.saveProgram(
                   messageData.filename || "HARDCODED.c", 
                   qx.lang.Json.stringify(messageData, null, "  "),
                   snapshot);
               }
               
-              // The hash becomes the snapshot field in the detail object
-              data.snapshot = hash;
-
-              // Write it to the database
+              // Write the usage detail to the database
               detailObj.put();
             });
 
-          return 0;
+          // If there was any snapshot data, return a new directory listing
+          return bNeedDirectoryListing ? this.getDirectoryListing() : null;
+
         }.bind(this));
     }
   }

@@ -27,6 +27,16 @@ qx.Mixin.define("playground.dbif.MFiles",
     this.registerService("learncs.getProgram",
                          this.getProgram,
                          [ "programName", "category", "userId" ]);
+
+    // Rename a program
+    this.registerService("learncs.renameProgram",
+                         this.renameProgram,
+                         [ "oldName", "newName", "code" ]);
+
+    // Remove a program
+    this.registerService("learncs.removeProgram",
+                         this.removeProgram,
+                         [ "name" ]);
   },
 
   statics :
@@ -72,7 +82,8 @@ qx.Mixin.define("playground.dbif.MFiles",
       // highly dependent upon java.
       if (liberated.dbif.Entity.getCurrentDatabaseProvider() != "jettysqlite")
       {
-        console.log("saveProgram: not in jetty backend environment; ignoring.");
+        console.log(
+          "getDirectoryListing: not in jetty backend environment; ignoring.");
         return defaultDirList;
       }
 
@@ -114,6 +125,14 @@ console.log("Found file name [" + name + "]");
             // and we must strip that off.
             if (dirData.category == "My Programs")
             {
+              // Exclude any "removed" files (they end with .git.<timestamp>)
+              if (name.match(/\.git\.[0-9]+$/))
+              {
+console.log("Skipping 'deleted' file " + name);
+                continue;
+              }
+
+              // Strip off the git suffix, for display
               name = name.replace(/\.git$/, "");
             }
 
@@ -206,6 +225,26 @@ console.log("Got user " + userId + " data: " + qx.lang.Json.stringify(templateUs
         dirList = defaultDirList;
       }
 
+      // Sort the directory listing by name category then name
+      dirList.sort(
+        function(a, b)
+        {
+          if (a.category != b.category)
+          {
+            return (a.category < b.category 
+                    ? -1 
+                    : (a.category > b.category
+                       ? 1
+                       : 0));
+          }
+          
+          return (a.name < b.name
+                  ? -1
+                  : (a.name > b.name
+                     ? 1
+                     : 0));
+        });
+
       console.log("getDirectoryListing:\n" +
                   qx.lang.Json.stringify(dirList, null, "  "));
       return dirList;
@@ -213,18 +252,18 @@ console.log("Got user " + userId + " data: " + qx.lang.Json.stringify(templateUs
 
     /**
      * Save a program via git.
-     * 
+     *
      * @param programName {String}
      *   The name of the program being saved
-     * 
+     *
      * @param detail {String}
      *   Detail information saved with this version of the file
-     * 
+     *
      * @param code {String}
      *   The program's code to be saved
      *
-     * @return {String}
-     *   The hash of the new file.
+     * @return {Array|null}
+     *   Upon success, the results of getDirectoryListing(); null otherwise
      */
     saveProgram : function(programName, detail, code)
     {
@@ -233,7 +272,7 @@ console.log("Got user " + userId + " data: " + qx.lang.Json.stringify(templateUs
       if (liberated.dbif.Entity.getCurrentDatabaseProvider() != "jettysqlite")
       {
         console.log("saveProgram: not in jetty backend environment; ignoring.");
-        return null;
+        return -1;
       }
 
       var             user;
@@ -302,13 +341,16 @@ console.log("Got user " + userId + " data: " + qx.lang.Json.stringify(templateUs
       user = playground.dbif.MDbifCommon.getCurrentUserId();
       
       // Remove dangerous ..
-      programName = programName.replace("..", "DOTDOT");
+      programName = programName.replace(/\.\./g, "DOTDOT");
       
       // Replace backslashes with forward slashes
-      programName = programName.replace("\\", "/");
+      programName = programName.replace(/\\/g, "/");
 
       // Strip any double slashes; replace with single slashes
-      programName = programName.replace("//", "/");
+      programName = programName.replace(/\/+/g, "/");
+
+      // Replace dangerous slashes
+      programName = programName.replace(/\//g, "SLASH");
 
       // Create the git directory name
       gitDir = 
@@ -336,6 +378,11 @@ console.log("Got user " + userId + " data: " + qx.lang.Json.stringify(templateUs
       
       // Add the file to this git repository
       exec( [ "git", "add", programName ], gitDir);
+
+      if (typeof detail == "Object")
+      {
+        detail = qx.lang.Json.stringify(detail);
+      }
 
       // Commit the file
       process = exec(
@@ -371,11 +418,19 @@ console.log("Got user " + userId + " data: " + qx.lang.Json.stringify(templateUs
         {
           console.log(line);
         }
+        
+        // Check out the most recent version
+        process = exec(
+          [
+            "git",
+            "checkout",
+            programName
+          ],
+          gitDir);
       }
       
       console.log("\n");
-
-      return hash;
+      return 0;
     },
 
     /**
@@ -393,16 +448,21 @@ console.log("Got user " + userId + " data: " + qx.lang.Json.stringify(templateUs
      *
      * @return {Map}
      *   The map contains the following members:
-     *     name - the file name
-     *     code - the entire source code of the program
+     *     name    - the file name
+     *     code    - the entire source code of the program
+     *     dirList - a new directory listing, a la getDirectoryListing()
      */
-    getProgram : function(programName, category, userId)
+    getProgram : function(programName,
+                          category,
+                          userId,
+                          oldProgramName,
+                          oldCode)
     {
       // This functionality is only supported under jetty at present. It is
       // highly dependent upon java.
       if (liberated.dbif.Entity.getCurrentDatabaseProvider() != "jettysqlite")
       {
-        console.log("saveProgram: not in jetty backend environment; ignoring.");
+        console.log("getProgram: not in jetty backend environment; ignoring.");
         return { name : programName, code : "" };
       }
 
@@ -428,14 +488,40 @@ console.log("Got user " + userId + " data: " + qx.lang.Json.stringify(templateUs
       
       try
       {
+        //
+        // First, if provided, save the code being replaced in the editor
+        //
+        
+        // If an old program name and old code are provided...
+        if (oldProgramName && oldCode)
+        {
+          // ... then save that code by the specified name.
+          this.saveProgram(oldProgramName,
+                           {
+                             type   : "autosave",
+                             reason : ("loaded new file: " + 
+                                       "name: " + programName + ", " +
+                                       "user: " + userId + ", " +
+                                       "category: " + category)
+                           },
+                           oldCode);
+        }
+
+        //
+        // Now retrieve the new code
+        //
+
         // Remove dangerous ..
-        programName = programName.replace("..", "DOTDOT");
+        programName = programName.replace(/\.\./g, "DOTDOT");
 
         // Replace backslashes with forward slashes
-        programName = programName.replace("\\", "/");
+        programName = programName.replace(/\\/g, "/");
 
         // Strip any double slashes; replace with single slashes
-        programName = programName.replace("//", "/");
+        programName = programName.replace(/\/+/g, "/");
+
+        // Replace dangerous slashes
+        programName = programName.replace(/\//g, "SLASH");
 
         // Get this user's object data, to get the template users
         userData = liberated.dbif.Entity.query(
@@ -523,9 +609,231 @@ console.log("Got user " + userId + " data: " + qx.lang.Json.stringify(templateUs
         return (
           {
             name : programName,
-            code : "// Could not retrieve program " + programName
+            code : "// Could not retrieve program " + programName,
+            dirList : this.getDirectoryListing()
           });
       }
+    },
+    
+    /**
+     * Rename a program
+     * 
+     * @param oldName {String}
+     *   The original name of the program being renamed
+     * 
+     * @param newName {String}
+     *   The new name of the program being renamed
+     *
+     * @param code {String}
+     *   The current version of the code, to be saved
+     * 
+     * @return {Map}
+     *   status  - 0 = success
+     *            -1 = wrong backend
+     *             1 = new name already exists
+     *             2 = rename failed
+     *   name    - upon success only, the new file name
+     *   dirList - upon success only, a new directory listing
+     */
+    renameProgram : function(oldName, newName, code)
+    {
+      // This functionality is only supported under jetty at present. It is
+      // highly dependent upon java.
+      if (liberated.dbif.Entity.getCurrentDatabaseProvider() != "jettysqlite")
+      {
+        console.log("renameProgram: " +
+                    "not in jetty backend environment; ignoring.");
+        return { status : -1 };
+      }
+      
+      var             dir;
+      var             user;
+      var             fileOld;
+      var             fileNew;
+      var             File = java.io.File;
+      var             userFilesDir = playground.dbif.MFiles.UserFilesDir;
+      var             progDir = playground.dbif.MFiles.ProgDir;
+      
+      // Retrieve the current user id
+      user = playground.dbif.MDbifCommon.getCurrentUserId();
+      
+      // Build the directory path to the user's program directory
+      dir = userFilesDir + "/" + user + "/" + progDir;
+
+
+      //
+      // Proect from malicious use of the old file name
+      //
+
+      // Remove dangerous ..
+      oldName = oldName.replace(/\.\./g, "DOTDOT");
+
+      // Replace backslashes with forward slashes
+      oldName = oldName.replace(/\\/g, "/");
+
+      // Strip any double slashes; replace with single slashes
+      oldName = oldName.replace(/\/+/g, "/");
+
+      // Replace dangerous slashes
+      oldName = oldName.replace(/\//g, "SLASH");
+
+
+      //
+      // Proect from malicious use of the new file name
+      //
+
+      // Remove dangerous ..
+      newName = newName.replace(/\.\./g, "DOTDOT");
+
+      // Replace backslashes with forward slashes
+      newName = newName.replace(/\\/g, "/");
+
+      // Strip any double slashes; replace with single slashes
+      newName = newName.replace(/\/+/g, "/");
+
+      // Replace dangerous slashes
+      newName = newName.replace(/\//g, "SLASH");
+
+      // Check for an existing file of the new name
+      fileNew = new File(dir + "/" + newName + ".git");
+      if (fileNew.exists())
+      {
+        console.log("File " + 
+                    dir + "/" + newName + ".git already exists.");
+        return { status : 1 };
+      }
+
+      // Get a reference to the existing file
+      fileOld = new File(dir + "/" + oldName + ".git");
+      if (! fileOld.renameTo(fileNew))
+      {
+        // Couldn't rename it for some reason.
+        console.log("Could not rename file " + 
+                    dir + "/" + oldName + ".git" + " to " +
+                    dir + "/" + newName + ".git");
+        return { status : 2 };
+      }
+
+      // Save the program
+      this.saveProgram(
+        newName,
+        {
+          type   : "autosave",
+          reason : "renamed from " + oldName + " to " + newName
+        },
+        code);
+      
+      // Remove the old source file
+      fileNew = new File(dir + "/" + newName + ".git" + "/" + oldName);
+      if (! fileNew["delete"]())
+      {
+        console.log("Renamed directory, but could not delete old source file");
+      }
+
+      // Give 'em a new directory listing
+      return (
+        {
+          status  : 0,
+          name    : newName,
+          dirList : this.getDirectoryListing()
+        });
+    },
+    
+    /**
+     * Remove a program
+     * 
+     * @param name {String}
+     *   The name of the program being removed
+     * 
+     * @return {Map}
+     *   status  - 0 = success
+     *            -1 = wrong backend
+     *             1 = failed to find a timestamped name to move the git dir to
+     *             2 = failed to rename the git dir
+     *   dirList - upon success only, a new directory listing
+     */
+    removeProgram : function(name, error)
+    {
+      // This functionality is only supported under jetty at present. It is
+      // highly dependent upon java.
+      if (liberated.dbif.Entity.getCurrentDatabaseProvider() != "jettysqlite")
+      {
+        console.log("removeProgram: " +
+                    "not in jetty backend environment; ignoring.");
+        return { status : -1 };
+      }
+      
+      var             dir;
+      var             user;
+      var             newName;
+      var             fileOld;
+      var             fileNew;
+      var             attempt;
+      var             maxAttempts = 10;
+      var             File = java.io.File;
+      var             userFilesDir = playground.dbif.MFiles.UserFilesDir;
+      var             progDir = playground.dbif.MFiles.ProgDir;
+      
+      // Retrieve the current user id
+      user = playground.dbif.MDbifCommon.getCurrentUserId();
+      
+      // Build the directory path to the user's program directory
+      dir = userFilesDir + "/" + user + "/" + progDir;
+
+
+      //
+      // Protect from malicious use of the file name
+      //
+
+      // Remove dangerous ..
+      name = name.replace(/\.\./g, "DOTDOT");
+
+      // Replace backslashes with forward slashes
+      name = name.replace(/\\/g, "/");
+
+      // Strip any double slashes; replace with single slashes
+      name = name.replace(/\/+/g, "/");
+
+      // Replace dangerous slashes
+      name = name.replace(/\//g, "SLASH");
+
+      do
+      {
+        // Track the number of attempts
+        ++attempt;
+        
+        // Have we reached the maximum number of attempts?
+        if (attempt >= maxAttempts)
+        {
+          console.log("Could not find a timestamped name to delete file " +
+                      name);
+          return { status : 1 };
+        }
+
+        // Append the current timestamp to the git directory name
+        newName = name + ".git." + (new Date()).getTime();
+
+        // Check for an existing file of the new name
+        fileNew = new File(dir + "/" + newName);
+      } while (fileNew.exists());
+
+      // Get a reference to the existing file's git directory
+      fileOld = new File(dir + "/" + name + ".git");
+      if (! fileOld.renameTo(fileNew))
+      {
+        // Couldn't rename it for some reason.
+        console.log("Could not rename file " + 
+                    dir + "/" + name + ".git" + " to " +
+                    dir + "/" + newName);
+        return { status : 2 };
+      }
+
+      // Give 'em a new directory listing
+      return (
+        {
+          status  : 0,
+          dirList : this.getDirectoryListing()
+        });
     }
   }
 });

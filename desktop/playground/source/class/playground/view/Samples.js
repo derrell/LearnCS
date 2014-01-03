@@ -203,6 +203,7 @@ else... */
       toolbar.setDecorator("separator-vertical");
       toolbar.setBackgroundColor("white");
 
+/* djl...
       // save button
       var saveButton = new qx.ui.toolbar.Button(
         null, "icon/16/actions/document-save.png"
@@ -212,6 +213,7 @@ else... */
       saveButton.addListener("execute", function() {
         this.fireEvent("save");
       }, this);
+*/
 
       // save as button
       var saveAsButton = new qx.ui.toolbar.Button(
@@ -250,12 +252,17 @@ else... */
     // property apply
     _applyCurrentSample : function(value) {
       this.select(value);
-      // only change the state of the buttons of they are available
-      if (this.__deleteButton && this.__renameButton) {
-        if (value && value.getCategory() != "static") {
+      // only change the state of the buttons if they are available
+      if (this.__deleteButton && this.__renameButton) 
+      {
+        // only change the state of the buttons for non-Template categories
+        if (value && ! value.getCategory().match(/Templates/))
+        {
           this.__deleteButton.setEnabled(true);
           this.__renameButton.setEnabled(true);
-        } else {
+        }
+        else
+        {
           this.__deleteButton.setEnabled(false);
           this.__renameButton.setEnabled(false);
         }

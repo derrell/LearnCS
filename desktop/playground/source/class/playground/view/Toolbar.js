@@ -209,7 +209,8 @@ qx.Class.define("playground.view.Toolbar",
         {
           type         : "button_press",
           button_press : "Run",
-          snapshot     : qx.core.Init.getApplication().editor.getCode()
+          snapshot     : qx.core.Init.getApplication().editor.getCode(),
+          filename     : qx.core.Init.getApplication().getName()
         });
 
       // Run the program
