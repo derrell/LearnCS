@@ -37,6 +37,7 @@ qx.Class.define("playground.view.Toolbar",
 
     var application = qx.core.Init.getApplication();
 
+/* djl: no longer needed...
     // Load button
     var loadButton = 
       new uploadwidget.UploadButton("loadfile",
@@ -142,14 +143,15 @@ qx.Class.define("playground.view.Toolbar",
           new Blob([ application.editor.getCode() ]), "code.c");
       },
       this);
+*/
 
     // sample button
     this.__samplesCheckButton = new qx.ui.form.ToggleButton(
-      this.tr("Samples"), "icon/22/actions/edit-copy.png"
+      this.tr("Files"), "icon/22/actions/edit-find.png"
     );
     this.__samplesCheckButton.setValue(true);
     this.add(this.__samplesCheckButton);
-    this.__samplesCheckButton.setToolTipText(this.tr("Show samples"));
+    this.__samplesCheckButton.setToolTipText(this.tr("Show files"));
     this.__samplesCheckButton.setAppearance("toolbar-button");
     this.__samplesCheckButton.addListener("changeValue", function(e) {
       this.fireDataEvent("changeSample", e.getData(), e.getOldData());
