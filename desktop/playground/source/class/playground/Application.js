@@ -1260,6 +1260,11 @@ console.log("FAILED to copy file " + oldName + " to " + newName + ": " + ex);
      * @lint ignoreDeprecated(confirm)
      */
     __discardChanges : function() {
+      var             model;
+      
+      // Get the current set of files
+      model = this.__samplesPane.getModel();
+
       return false;
 
 /*
