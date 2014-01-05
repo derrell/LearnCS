@@ -51,6 +51,9 @@ qx.Class.define("playground.ServerOp",
     {
       var             id;
 
+      // Ensure there are no prior pending requests
+      playground.ServerOp.flushQueue();
+
       // If there were no arguments provided, create an empty argument list;
       // otherwise clone the argument list.
       args = args ? args.slice(0) : [];
@@ -75,6 +78,16 @@ qx.Class.define("playground.ServerOp",
           {
             // Something went wrong. Let the user know.
             typeof console != "undefined" && console.log(ex);
+            
+            // If we received no data...
+            if (ex.code == qx.io.remote.Rpc.localError.nodata)
+            {
+              location.reload(true);
+              
+              // not reached
+              return;
+            }
+
             cbFailure && cbFailure(ex, id);
           }
         });
@@ -157,6 +170,12 @@ qx.Class.define("playground.ServerOp",
         });
 */
 
+      // The queue is being processed. We have a copy of it. Reset it.
+      playground.ServerOp.__queue = [];
+
+      // There's no longer a timer running.
+      playground.ServerOp.__timer = null;
+
       playground.ServerOp.rpc(
         function(result, id)              // success callback
         {
@@ -165,12 +184,6 @@ qx.Class.define("playground.ServerOp",
         null,                             // failure callback
         "usageDetail",                    // function to be called
         [ queue ]);                       // arguments to function
-
-      // The queue has been processed. Reset it.
-      playground.ServerOp.__queue = [];
-
-      // There's no longer a timer running.
-      playground.ServerOp.__timer = null;
     }
   },
   
