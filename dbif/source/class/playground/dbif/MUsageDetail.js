@@ -43,6 +43,7 @@ qx.Mixin.define("playground.dbif.MUsageDetail",
           dataList.forEach(
             function(data)
             {
+              var             message;
               var             snapshot;
               var             detailObj;
               var             detailData;
@@ -83,9 +84,24 @@ qx.Mixin.define("playground.dbif.MUsageDetail",
               if (snapshot)
               {
                 // Yup. Save it.
-                _this.saveProgram(
-                  messageData.filename || "HARDCODED.c", 
-                  qx.lang.Json.stringify(messageData, null, "  "),
+                if (messageData.type == "button_press" && 
+                    messageData.buttonPress == "Run")
+                {
+                  message = "run";
+                }
+                else if (messageData.type == "autosave")
+                {
+                  message = "autosave";
+                }
+                else
+                {
+                  message = qx.lang.Json.stringify(messageData, null, "  ");
+                  console.log("Got unexpected usageDetail message: " + message);
+                }
+
+                _this._saveProgram(
+                  messageData.filename || "code.c", 
+                  message,
                   snapshot);
               }
               

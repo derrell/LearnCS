@@ -74,6 +74,9 @@ qx.Class.define("playground.view.Samples",
     /** Event triggered by the rename button. */
     "rename" : "qx.event.type.Event",
 
+    /** Event triggered by the copy button. */
+    "copy"   : "qx.event.type.Event",
+
     /** Cancelable event fired before the selection changes. */
     "beforeSelectSample" : "qx.event.type.Event"
   },
@@ -107,6 +110,7 @@ qx.Class.define("playground.view.Samples",
     __list : null,
     __deleteButton : null,
     __renameButton : null,
+    __copyButton   : null,
 
 
     /**
@@ -215,14 +219,15 @@ else... */
       }, this);
 */
 
-      // save as button
-      var saveAsButton = new qx.ui.toolbar.Button(
+      // copy button
+      this.__copyButton = new qx.ui.toolbar.Button(
         null, "icon/16/actions/document-save-as.png"
       );
-      toolbar.add(saveAsButton);
-      saveAsButton.setToolTipText(this.tr("Save As"));
-      saveAsButton.addListener("execute", function() {
-        this.fireEvent("saveAs");
+      toolbar.add(this.__copyButton);
+      this.__copyButton.setToolTipText(
+        this.tr("Copy to new name in My Programs"));
+      this.__copyButton.addListener("execute", function() {
+        this.fireEvent("copy");
       }, this);
 
       // delete button
@@ -245,6 +250,19 @@ else... */
         this.fireEvent("rename");
       }, this);
 
+      // Separate the primary buttons from the download button
+      toolbar.add(new qx.ui.toolbar.Separator());
+
+      // save button
+      this.__saveAsButton = new qx.ui.toolbar.Button(
+        null, "icon/16/actions/document-save.png"
+      );
+      toolbar.add(this.__saveAsButton);
+      this.__saveAsButton.setToolTipText(this.tr("Download"));
+      this.__saveAsButton.addListener("execute", function() {
+        this.fireEvent("saveAs");
+      }, this);
+
       return toolbar;
     },
 
@@ -253,8 +271,14 @@ else... */
     _applyCurrentSample : function(value) {
       this.select(value);
       // only change the state of the buttons if they are available
-      if (this.__deleteButton && this.__renameButton) 
+      if (this.__deleteButton && this.__renameButton && this.__copyButton)
       {
+        if (value)
+        {
+          this.__copyButton.setEnabled(true);
+          this.__saveAsButton.setEnabled(true);
+        }
+
         // only change the state of the buttons for non-Template categories
         if (value && ! value.getCategory().match(/Templates/))
         {
@@ -265,6 +289,8 @@ else... */
         {
           this.__deleteButton.setEnabled(false);
           this.__renameButton.setEnabled(false);
+          this.__copyButton.setEnabled(false);
+          this.__saveAsButton.setEnabled(false);
         }
       }
     },

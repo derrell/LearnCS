@@ -18,25 +18,40 @@ qx.Mixin.define("playground.dbif.MFiles",
                          this.getDirectoryListing,
                          [ ]);
 
-    // Save a program
-    this.registerService("learncs.saveProgram",
-                         this.saveProgram,
-                         [ "programName", "detail", "code" ]);
-
     // Get a program
     this.registerService("learncs.getProgram",
                          this.getProgram,
-                         [ "programName", "category", "userId" ]);
+                         [
+                           "programName", 
+                           "category",
+                           "userId" 
+                         ]);
 
     // Rename a program
     this.registerService("learncs.renameProgram",
                          this.renameProgram,
-                         [ "oldName", "newName", "code" ]);
+                         [
+                           "oldName",
+                           "newName",
+                           "code"
+                         ]);
 
     // Remove a program
     this.registerService("learncs.removeProgram",
                          this.removeProgram,
-                         [ "name" ]);
+                         [
+                           "name"
+                         ]);
+
+    // Copy a program
+    this.registerService("learncs.copyProgram",
+                         this.copyProgram,
+                         [
+                           "fromName",
+                           "fromCategory",
+                           "fromUserId",
+                           "toName"
+                         ]);
   },
 
   statics :
@@ -59,6 +74,236 @@ qx.Mixin.define("playground.dbif.MFiles",
 
   members :
   {
+    /**
+     * Save a program via git.
+     *
+     * @param programName {String}
+     *   The name of the program being saved
+     *
+     * @param detail {String}
+     *   Detail information saved with this version of the file
+     *
+     * @param code {String}
+     *   The program's code to be saved
+     * 
+     * @param notes {String?}
+     *   If provided, the message to add as git notes for this commit
+     *
+     * @return {Number}
+     *   Zero upon success; non-zero otherwise
+     */
+    _saveProgram : function(programName, detail, code, notes)
+    {
+      // This functionality is only supported under jetty at present. It is
+      // highly dependent upon java.
+      if (liberated.dbif.Entity.getCurrentDatabaseProvider() != "jettysqlite")
+      {
+        console.log("saveProgram: not in jetty backend environment; ignoring.");
+        return -1;
+      }
+
+      var             user;
+      var             ret;
+      var             process;
+      var             exitValue;
+      var             reader;
+      var             writer;
+      var             line;
+      var             cmd;
+      var             hash;
+      var             userFilesDir = playground.dbif.MFiles.UserFilesDir;
+      var             progDir = playground.dbif.MFiles.ProgDir;
+      var             gitDir;
+      var             File = java.io.File;
+      var             BufferedReader = java.io.BufferedReader;
+      var             InputStreamReader = java.io.InputStreamReader;
+      var             PrintWriter = java.io.PrintWriter;
+      
+
+      // Retrieve the current user id
+      user = playground.dbif.MDbifCommon.getCurrentUserId();
+      
+      // Sanitize the name
+      programName = this.__sanitizeFilename(programName);
+
+      // Create the git directory name
+      gitDir = 
+        userFilesDir + "/" + user + "/" + progDir + "/" + programName + ".git";
+
+      // Be sure the file's git directory has been created
+      this.__exec( [ "mkdir", "-p", gitDir ] );
+
+      // Write the code to a file with the given name
+      try
+      {
+        writer = new PrintWriter(gitDir + "/" + programName, "UTF-8");
+        writer.print(code);
+        writer.close();
+      }
+      catch (e)
+      {
+        console.log("\n\nFailed to create user code at " + 
+                    gitDir + "/" + programName + 
+                    ": " + e + "\n\n");
+      }
+
+      // Create the git repository
+      this.__exec( [ "git", "init" ], gitDir);
+      
+      // Add the file to this git repository
+      this.__exec( [ "git", "add", programName ], gitDir);
+
+      if (typeof detail == "object")
+      {
+        detail = qx.lang.Json.stringify(detail);
+      }
+
+      // Commit the file
+      process = this.__exec(
+        [
+          "git",
+          "commit",
+          "-m",
+          detail,
+          "--",
+          programName
+        ],
+        gitDir);
+
+      // Did the commit succeed?
+      if (process.exitValue() == 0)
+      {
+        // Yup. Were notes specified?
+        if (notes)
+        {
+          // Yup. Add a Notes entry to show that it was copied
+          this.__exec(
+            [ 
+              "git",
+              "notes",
+              "append",
+              "-m", 
+              notes
+            ],
+            gitDir);
+        }
+      }
+      else
+      {
+        // Get a handle to STDERR
+        reader =
+          new BufferedReader(new InputStreamReader(process.getErrorStream()));
+
+        // The commit failed. Show the output.
+        while ((line = reader.readLine()) != null) 
+        {
+          console.log(line);
+        }
+        
+        // Check out the most recent version
+        process = this.__exec(
+          [
+            "git",
+            "checkout",
+            programName
+          ],
+          gitDir);
+      }
+      
+      console.log("\n");
+      return 0;
+    },
+
+    /**
+     * Sanitize a file name by replacing ".." with "DOTDOT", backslash with
+     * slash, multiple adjacent slashes with a single slash, and any remaining
+     * slash with "SLASH".
+     * 
+     * @param name {String}
+     *   The file name to be sanitized
+     * 
+     * @return {String}
+     *   The sanitized file name
+     */
+    __sanitizeFilename : function(name)
+    {
+      // Remove dangerous ..
+      name = name.replace(/\.\./g, "DOTDOT");
+      
+      // Replace backslashes with forward slashes
+      name = name.replace(/\\/g, "/");
+
+      // Strip any double slashes; replace with single slashes
+      name = name.replace(/\/+/g, "/");
+
+      // Replace dangerous slashes
+      name = name.replace(/\//g, "SLASH");
+
+      return name;
+    },
+
+    /**
+     * Execute an external process
+     * 
+     * @param cmd {Array}
+     *   The command arguments, one per array element. The first is the
+     *   command name.
+     * 
+     * @param directory {String?}
+     *   The directory in which the command should be executed
+     * 
+     * @return {Process}
+     *   The process object for the just-executed command
+     */
+    __exec : function(cmd, directory)
+    {
+      var             line;
+      var             reader;
+      var             dirFile;
+      var             process;
+      var             runtime;
+      var             stderrHeader = "STDERR:\n";
+      var             stdoutHeader = "STDOUT:\n";
+      var             File = java.io.File;
+      var             BufferedReader = java.io.BufferedReader;
+      var             InputStreamReader = java.io.InputStreamReader;
+      var             Runtime = java.lang.Runtime;
+
+      // Prepare to exec processes
+      runtime = Runtime.getRuntime();
+
+      // Get a handle to the specified directory
+      if (directory)
+      {
+        dirFile = new File(directory);
+      }
+      else
+      {
+        dirFile = null;
+      }
+
+      console.log("exec: [" + cmd.join(",") + "]");
+      process = runtime.exec(cmd, null, dirFile);
+      process.waitFor();
+      console.log("exit code: " + process.exitValue());
+
+      reader =
+        new BufferedReader(new InputStreamReader(process.getErrorStream()));
+      while ((line = reader.readLine()) != null) 
+      {
+        console.log(stderrHeader + line);
+        stderrHeader = "";
+      }
+
+      if (stderrHeader == "" || stdoutHeader == "")
+      {
+        console.log("\n\n");
+      }
+
+      // In case the caller needs to get the exit code or 
+      return process;
+    },
+
     /**
      * Obtain a directory listing.
      * 
@@ -104,7 +349,6 @@ qx.Mixin.define("playground.dbif.MFiles",
         var             files;
         var             name;
 
-console.log("Looking for files in [" + dirData.name + "]");
         // Open the directory
         dir = new File(dirData.name);
 
@@ -119,7 +363,6 @@ console.log("Looking for files in [" + dirData.name + "]");
           {
             // Retrieve the file name
             name = String(files[i].getName());
-console.log("Found file name [" + name + "]");
 
             // If we're in the program directory, the name ends with ".git",
             // and we must strip that off.
@@ -128,7 +371,6 @@ console.log("Found file name [" + name + "]");
               // Exclude any "removed" files (they end with .git.<timestamp>)
               if (name.match(/\.git\.[0-9]+$/))
               {
-console.log("Skipping 'deleted' file " + name);
                 continue;
               }
 
@@ -200,8 +442,6 @@ console.log("Skipping 'deleted' file " + name);
               value : userId
             });
           
-console.log("Got user " + userId + " data: " + qx.lang.Json.stringify(templateUserData));
-
           // If the user no longer exists...
           if (! templateUserData || templateUserData.length === 0)
           {
@@ -245,192 +485,7 @@ console.log("Got user " + userId + " data: " + qx.lang.Json.stringify(templateUs
                      : 0));
         });
 
-      console.log("getDirectoryListing:\n" +
-                  qx.lang.Json.stringify(dirList, null, "  "));
       return dirList;
-    },
-
-    /**
-     * Save a program via git.
-     *
-     * @param programName {String}
-     *   The name of the program being saved
-     *
-     * @param detail {String}
-     *   Detail information saved with this version of the file
-     *
-     * @param code {String}
-     *   The program's code to be saved
-     *
-     * @return {Array|null}
-     *   Upon success, the results of getDirectoryListing(); null otherwise
-     */
-    saveProgram : function(programName, detail, code)
-    {
-      // This functionality is only supported under jetty at present. It is
-      // highly dependent upon java.
-      if (liberated.dbif.Entity.getCurrentDatabaseProvider() != "jettysqlite")
-      {
-        console.log("saveProgram: not in jetty backend environment; ignoring.");
-        return -1;
-      }
-
-      var             user;
-      var             ret;
-      var             runtime;
-      var             process;
-      var             exitValue;
-      var             reader;
-      var             writer;
-      var             line;
-      var             cmd;
-      var             hash;
-      var             userFilesDir = playground.dbif.MFiles.UserFilesDir;
-      var             progDir = playground.dbif.MFiles.ProgDir;
-      var             gitDir;
-      var             exec;
-      var             Runtime = java.lang.Runtime;
-      var             File = java.io.File;
-      var             BufferedReader = java.io.BufferedReader;
-      var             InputStreamReader = java.io.InputStreamReader;
-      var             PrintWriter = java.io.PrintWriter;
-      
-      // Prepare to exec processes
-      runtime = Runtime.getRuntime();
-
-      exec = function(cmd, directory)
-      {
-        var             dirFile;
-        var             process;
-        var             stderrHeader = "STDERR:\n";
-        var             stdoutHeader = "STDOUT:\n";
-        
-        // Get a handle to the specified directory
-        if (directory)
-        {
-          dirFile = new File(directory);
-        }
-        else
-        {
-          dirFile = null;
-        }
-        
-        console.log("exec: [" + cmd.join(",") + "]");
-        process = runtime.exec(cmd, null, dirFile);
-        process.waitFor();
-        console.log("exit code: " + process.exitValue());
-
-        reader =
-          new BufferedReader(new InputStreamReader(process.getErrorStream()));
-        while ((line = reader.readLine()) != null) 
-        {
-          console.log(stderrHeader + line);
-          stderrHeader = "";
-        }
-
-        if (stderrHeader == "" || stdoutHeader == "")
-        {
-          console.log("\n\n");
-        }
-        
-        // In case the caller needs to get the exit code or 
-        return process;
-      };
-
-      // Retrieve the current user id
-      user = playground.dbif.MDbifCommon.getCurrentUserId();
-      
-      // Remove dangerous ..
-      programName = programName.replace(/\.\./g, "DOTDOT");
-      
-      // Replace backslashes with forward slashes
-      programName = programName.replace(/\\/g, "/");
-
-      // Strip any double slashes; replace with single slashes
-      programName = programName.replace(/\/+/g, "/");
-
-      // Replace dangerous slashes
-      programName = programName.replace(/\//g, "SLASH");
-
-      // Create the git directory name
-      gitDir = 
-        userFilesDir + "/" + user + "/" + progDir + "/" + programName + ".git";
-
-      // Be sure the file's git directory has been created
-      exec( [ "mkdir", "-p", gitDir ] );
-
-      // Write the code to a file with the given name
-      try
-      {
-        writer = new PrintWriter(gitDir + "/" + programName, "UTF-8");
-        writer.print(code);
-        writer.close();
-      }
-      catch (e)
-      {
-        console.log("\n\nFailed to create user code at " + 
-                    gitDir + "/" + programName + 
-                    ": " + e + "\n\n");
-      }
-
-      // Create the git repository
-      exec( [ "git", "init" ], gitDir);
-      
-      // Add the file to this git repository
-      exec( [ "git", "add", programName ], gitDir);
-
-      if (typeof detail == "Object")
-      {
-        detail = qx.lang.Json.stringify(detail);
-      }
-
-      // Commit the file
-      process = exec(
-        [
-          "git",
-          "commit",
-          "-m",
-          detail,
-          "--",
-          programName
-        ],
-        gitDir);
-
-      // Did the commit succeed?
-      if (process.exitValue() == 0)
-      {
-        // Yup. Retrieve the abbreviated commit hash. It's on the first line,
-        // which looks like this normally:
-        // [master 83cd8db] save button: 1/prog1.c
-        // and like this on the first commit:
-        // [master (root-commit) 83cd8db] save button: 1/prog1.c
-        reader =
-          new BufferedReader(new InputStreamReader(process.getInputStream()));
-        line = reader.readLine();
-        console.log("Got hash line: " + line);
-        hash = String(line).split("]")[0].split(" ");
-        hash = hash[hash.length - 1];
-        console.log("hash=" + hash);
-      }
-      else
-      {
-        while ((line = reader.readLine()) != null) 
-        {
-          console.log(line);
-        }
-        
-        // Check out the most recent version
-        process = exec(
-          [
-            "git",
-            "checkout",
-            programName
-          ],
-          gitDir);
-      }
-      
-      console.log("\n");
-      return 0;
     },
 
     /**
@@ -496,32 +551,22 @@ console.log("Got user " + userId + " data: " + qx.lang.Json.stringify(templateUs
         if (oldProgramName && oldCode)
         {
           // ... then save that code by the specified name.
-          this.saveProgram(oldProgramName,
-                           {
-                             type   : "autosave",
-                             reason : ("loaded new file: " + 
-                                       "name: " + programName + ", " +
-                                       "user: " + userId + ", " +
-                                       "category: " + category)
-                           },
-                           oldCode);
+          this._saveProgram(oldProgramName,
+                            "autosave",
+                            oldCode,
+                            ("loaded new file: " + 
+                             "name: " + programName + ", " +
+                             "user: " + userId + ", " +
+                             "category: " + category)
+                           );
         }
 
         //
         // Now retrieve the new code
         //
 
-        // Remove dangerous ..
-        programName = programName.replace(/\.\./g, "DOTDOT");
-
-        // Replace backslashes with forward slashes
-        programName = programName.replace(/\\/g, "/");
-
-        // Strip any double slashes; replace with single slashes
-        programName = programName.replace(/\/+/g, "/");
-
-        // Replace dangerous slashes
-        programName = programName.replace(/\//g, "SLASH");
+        // Sanitize the name
+        programName = this.__sanitizeFilename(programName);
 
         // Get this user's object data, to get the template users
         userData = liberated.dbif.Entity.query(
@@ -542,7 +587,7 @@ console.log("Got user " + userId + " data: " + qx.lang.Json.stringify(templateUs
         // Ensure that there's no funny business going on here. The file's
         // user id must either be this user's own id, or one in his
         // templatesFrom list.
-        if (userId !=  defaultUser &&
+        if (userId != defaultUser &&
             userId != user &&
             userData.templatesFrom.indexOf(userId) == -1)
         {
@@ -596,7 +641,6 @@ console.log("Got user " + userId + " data: " + qx.lang.Json.stringify(templateUs
           stringBuilder.append(line);
         }
 
-        console.log("Got file data:\n" + stringBuilder.toString());
         return (
           {
             name : programName,
@@ -661,38 +705,9 @@ console.log("Got user " + userId + " data: " + qx.lang.Json.stringify(templateUs
       dir = userFilesDir + "/" + user + "/" + progDir;
 
 
-      //
-      // Proect from malicious use of the old file name
-      //
-
-      // Remove dangerous ..
-      oldName = oldName.replace(/\.\./g, "DOTDOT");
-
-      // Replace backslashes with forward slashes
-      oldName = oldName.replace(/\\/g, "/");
-
-      // Strip any double slashes; replace with single slashes
-      oldName = oldName.replace(/\/+/g, "/");
-
-      // Replace dangerous slashes
-      oldName = oldName.replace(/\//g, "SLASH");
-
-
-      //
-      // Proect from malicious use of the new file name
-      //
-
-      // Remove dangerous ..
-      newName = newName.replace(/\.\./g, "DOTDOT");
-
-      // Replace backslashes with forward slashes
-      newName = newName.replace(/\\/g, "/");
-
-      // Strip any double slashes; replace with single slashes
-      newName = newName.replace(/\/+/g, "/");
-
-      // Replace dangerous slashes
-      newName = newName.replace(/\//g, "SLASH");
+      // Protect from malicious use of the old and new file names
+      oldName = this.__sanitizeFilename(oldName);
+      newName = this.__sanitizeFilename(newName);
 
       // Check for an existing file of the new name
       fileNew = new File(dir + "/" + newName + ".git");
@@ -714,22 +729,24 @@ console.log("Got user " + userId + " data: " + qx.lang.Json.stringify(templateUs
         return { status : 2 };
       }
 
-      // Save the program
-      this.saveProgram(
-        newName,
-        {
-          type   : "autosave",
-          reason : "renamed from " + oldName + " to " + newName
-        },
-        code);
-      
-      // Remove the old source file
-      fileNew = new File(dir + "/" + newName + ".git" + "/" + oldName);
-      if (! fileNew["delete"]())
-      {
-        console.log("Renamed directory, but could not delete old source file");
-      }
+      // Move the source file
+      this.__exec(
+        [ 
+          "git",
+          "mv",
+          oldName,
+          newName
+        ],
+        dir + "/" + newName + ".git");
 
+      // Save the program
+      this._saveProgram(
+        newName,
+        "autosave",
+        code,
+        "renamed from " + oldName + " to " + newName
+      );
+      
       // Give 'em a new directory listing
       return (
         {
@@ -752,7 +769,7 @@ console.log("Got user " + userId + " data: " + qx.lang.Json.stringify(templateUs
      *             2 = failed to rename the git dir
      *   dirList - upon success only, a new directory listing
      */
-    removeProgram : function(name, error)
+    removeProgram : function(name)
     {
       // This functionality is only supported under jetty at present. It is
       // highly dependent upon java.
@@ -781,21 +798,8 @@ console.log("Got user " + userId + " data: " + qx.lang.Json.stringify(templateUs
       dir = userFilesDir + "/" + user + "/" + progDir;
 
 
-      //
       // Protect from malicious use of the file name
-      //
-
-      // Remove dangerous ..
-      name = name.replace(/\.\./g, "DOTDOT");
-
-      // Replace backslashes with forward slashes
-      name = name.replace(/\\/g, "/");
-
-      // Strip any double slashes; replace with single slashes
-      name = name.replace(/\/+/g, "/");
-
-      // Replace dangerous slashes
-      name = name.replace(/\//g, "SLASH");
+      name = this.__sanitizeFilename(name);
 
       do
       {
@@ -832,6 +836,177 @@ console.log("Got user " + userId + " data: " + qx.lang.Json.stringify(templateUs
       return (
         {
           status  : 0,
+          dirList : this.getDirectoryListing()
+        });
+    },
+    
+    /**
+     * Copy a program to a new name
+     * 
+     * @param fromName {String}
+     *   The name of the program being copied
+     * 
+     * @param toName {String}
+     *   The name of the new copy of the program
+     * 
+     * @return {Map}
+     *   status  - 0 = success
+     *            -1 = wrong backend
+     *             1 = failed to copy the git dir to the new name
+     *   name    - the new program name
+     *   dirList - upon success only, a new directory listing
+     */
+    copyProgram : function(fromName, fromCategory, fromUserId, toName)
+    {
+      // This functionality is only supported under jetty at present. It is
+      // highly dependent upon java.
+      if (liberated.dbif.Entity.getCurrentDatabaseProvider() != "jettysqlite")
+      {
+        console.log("copyProgram: not in jetty backend environment; ignoring.");
+        return -1;
+      }
+
+      var             user;
+      var             ret;
+      var             exitValue;
+      var             reader;
+      var             writer;
+      var             line;
+      var             cmd;
+      var             hash;
+      var             toDir;
+      var             fromDir;
+      var             isGit;
+      var             fileNew;
+      var             stringBuilder;
+      var             userFilesDir = playground.dbif.MFiles.UserFilesDir;
+      var             progDir = playground.dbif.MFiles.ProgDir;
+      var             templatesDir = playground.dbif.MFiles.TemplateDir;
+      var             Runtime = java.lang.Runtime;
+      var             File = java.io.File;
+      var             BufferedReader = java.io.BufferedReader;
+      var             InputStreamReader = java.io.InputStreamReader;
+      var             PrintWriter = java.io.PrintWriter;
+      var             FileReader = java.io.FileReader;
+      var             StringBuilder = java.lang.StringBuilder;
+      
+      // Retrieve the current user id
+      user = playground.dbif.MDbifCommon.getCurrentUserId();
+      
+      // Protect from malicious use of the file names
+      fromName = this.__sanitizeFilename(fromName);
+      toName = this.__sanitizeFilename(toName);
+
+      // Create the destination git directory name
+      toDir = 
+        userFilesDir + "/" + user + "/" + progDir + "/" + toName + ".git";
+
+      // Check for an existing directory of the new name
+      fileNew = new File(toDir);
+      if (fileNew.exists())
+      {
+        console.log("Directory " + toDir + " already exists.");
+        return { status : 1 };
+      }
+
+      // Create the source directory name, and determine if we're copying from
+      // a git directory (My Programs) or not (some Template).
+      if (fromUserId === user)
+      {
+        if (fromCategory == "My Programs")
+        {
+          fromDir = 
+            userFilesDir + "/" + 
+            fromUserId + "/" + 
+            progDir + "/" +
+            fromName + ".git";
+          isGit = true;
+        }
+        else
+        {
+          fromDir = 
+            userFilesDir + "/" + 
+            fromUserId + "/" + 
+            templatesDir;
+          isGit = false;
+        }
+      }
+      else
+      {
+        fromDir = 
+          userFilesDir + "/" + 
+          fromUserId + "/" + 
+          templatesDir;
+        isGit = false;
+      }
+
+      // Is the source is already a git repository
+      if (! isGit)
+      {
+        // No. Read the existing file and treat it as a brand new file for
+        // this user.
+        try
+        {
+          // ... then read the source file
+          reader = new BufferedReader(new FileReader(fromDir + "/" + fromName));
+          stringBuilder = new StringBuilder();
+
+          // Read the first line
+          if ((line = reader.readLine()) != null)
+          {
+            stringBuilder.append(line);
+          }
+
+          // Read subsequent lines, prepending a newline to each
+          while ((line = reader.readLine()) != null)
+          {
+            stringBuilder.append("\n");
+            stringBuilder.append(line);
+          }
+          
+          // Now we can treat this as a brand new file with no git history
+          this._saveProgram(
+            toName,
+            "copied",
+            String(stringBuilder.toString()));
+        }
+        catch (e)
+        {
+          console.log("\n\nFailed to copy user's code " +
+                      ": " + e + "\n\n");
+        }
+      }
+      else
+      {
+        // We're copying an existing git directory to a new one.
+        // Clone the original git directory to the new one.
+        this.__exec(
+          [ 
+            "git",
+            "clone",
+            fromDir,
+            toDir
+          ]);
+      }
+
+      // Add a Notes entry to show that it was copied
+      this.__exec(
+        [ 
+          "git",
+          "notes",
+          "append",
+          "-m", 
+          ("copied from file: " + 
+           "name: " + fromName + ", " +
+           "user: " + fromUserId + ", " +
+           "category: " + fromCategory)
+        ],
+        toDir);
+
+      return (
+        {
+          status  : 0,
+          name    : toName,
           dirList : this.getDirectoryListing()
         });
     }

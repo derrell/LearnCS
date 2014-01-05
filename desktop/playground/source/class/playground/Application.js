@@ -100,6 +100,8 @@ qx.Class.define("playground.Application",
      */
     main : function()
     {
+      var             timer;
+      
       // Call super class
       this.base(arguments);
 
@@ -175,6 +177,7 @@ qx.Class.define("playground.Application",
       this.__samplesPane.addListener("saveAs", this.__onSaveAs, this);
       this.__samplesPane.addListener("delete", this.__onDelete, this);
       this.__samplesPane.addListener("rename", this.__onRename, this);
+      this.__samplesPane.addListener("copy", this.__onCopy, this);
       this.bind("currentSample", this.__samplesPane, "currentSample");
       this.__samplesPane.addListener("beforeSelectSample", function(e) {
         if (this.__discardChanges()) {
@@ -230,7 +233,7 @@ console.log("FAILED to get directory listing: " + ex);
       var page;
         
       // Create the page for the Source editor
-      this.__sourcePage = page = new qx.ui.tabview.Page("C Source");
+      this.__sourcePage = page = new qx.ui.tabview.Page("");
       page.setLayout(new qx.ui.layout.VBox());
       this.editor = new playground.view.Editor();
       this.editor.addListener("disableHighlighting", function() {
@@ -464,6 +467,48 @@ console.log("FAILED to get directory listing: " + ex);
 
       infosplit.add(this.__log, 1);
       this.__log.exclude();
+
+      // Start a timer to autosave the program
+      timer = qx.util.TimerManager.getInstance();
+      timer.start(
+        function()
+        {
+          var             timeout;
+          var             oneMinute = 60 * 1000;
+          var             name = this.getName();
+          var             code = this.editor.getCode();
+          
+          // If they're editing some code...
+          if (name && name.length > 0 && code != this.getOriginCode())
+          {
+console.log("Sending autosave status report");
+            // ... then autosave it
+            playground.ServerOp.statusReport(
+              {
+                type         : "autosave",
+                snapshot     : code,
+                filename     : name
+              });
+            
+            // Save the autosaved code as the origin code, so we won't
+            // autosave again until it changes.
+            this.setOriginCode(code);
+          }
+else console.log("Not sending autosave status report");
+
+          // Restart the timer to expire in some random amount of time
+          // in a specified range
+          timeout = 
+            Math.floor(Math.random() * oneMinute * 2) + // 2 minute range
+            oneMinute;                                  // starting at 1 minute
+console.log("starting new timer for " + (timeout / 1000) + " seconds");
+          timer.start(arguments.callee, 0, this, null, timeout);
+        },
+        0,
+        this,
+        null,
+//        2 * 60 * 1000);
+        20 * 1000);
     },
 
 
@@ -566,9 +611,6 @@ console.log("got directory listing: " + JSON.stringify(result, null, "  "));
         return;
       }
 
-      // Flush any pending status reports
-      playground.ServerOp.flushQueue();
-      
       // Build the argument list for retrieving the requested program. First,
       // add the always-there arguments.
       args.push(newSample.getName());
@@ -890,6 +932,78 @@ console.log("FAILED to rename file " + oldName + " to " + newName + ": " + ex);
       );
     },
 
+    /**
+     * Helper to copy a sample.
+     *
+     * @lint ignoreDeprecated(alert)
+     */
+    __onCopy : function() 
+    {
+      var             oldName;
+      var             newName;
+      var             testName;
+
+      // Retrieve the current name of the program
+      oldName = this.getName();
+      
+      // We'll use the old name as the default new name for now
+      testName = oldName;
+
+      // ask the user for a new name
+      do
+      {
+        newName = prompt(this.tr("Copy to My Programs as: "), testName);
+        if (!newName) 
+        {
+          return;
+        }
+        
+        // Sanitize the name, for better chance of success at the backend
+        testName = newName.replace(/ /g, "-");
+        testName = testName.replace(/\.\./g, "DOTDOT");
+        testName = testName.replace();
+        testName = testName.replace(/\\/g, "/");
+        testName = testName.replace(/\/\//g, "/");
+        testName = testName.replace(/\//g, "SLASH");
+      } while (testName != newName);
+      
+      // Issue a request to rename the program
+      playground.ServerOp.rpc(
+        // success handler
+        function(result, id)
+        {
+          if (result.status === 0)
+          {
+            this.setName(result.name);
+            this._displayDirectoryListing(result.dirList);
+          }
+          else
+          {
+            alert(this.tr("Could not copy file. ") +
+                  this.tr("Maybe the name you requested already exists?"));
+          }
+        }.bind(this),
+
+        // failure handler
+        function(ex, id)
+        {
+          // Ignore the failure. Should not ever occur.
+console.log("FAILED to copy file " + oldName + " to " + newName + ": " + ex);
+        }.bind(this),
+
+        // function to call
+        "copyProgram",
+        
+        // arguments
+        [
+          oldName,
+          this.getCurrentSample().getCategory(),
+          this.getCurrentSample().getUser(),
+          newName
+        ]
+      );
+    },
+
 
     /**
      * Helper to toggle the editors split pane which means togglinge the
@@ -1146,6 +1260,9 @@ console.log("FAILED to rename file " + oldName + " to " + newName + ": " + ex);
      * @lint ignoreDeprecated(confirm)
      */
     __discardChanges : function() {
+      return false;
+
+/*
       var userCode = this.editor.getCode();
       if (userCode && this.isCodeNotEqual(userCode, this.getOriginCode()))
       {
@@ -1155,6 +1272,7 @@ console.log("FAILED to rename file " + oldName + " to " + newName + ": " + ex);
         }
       }
       return false;
+*/
     },
 
 
