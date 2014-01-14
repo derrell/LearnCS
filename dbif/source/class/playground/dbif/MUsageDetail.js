@@ -35,6 +35,7 @@ qx.Mixin.define("playground.dbif.MUsageDetail",
     usageDetail : function(dataList, error)
     {
       var             _this = this;
+      var             last = null;
       var             bNeedDirectoryListing = false;
 
       return liberated.dbif.Entity.asTransaction(
@@ -85,7 +86,7 @@ qx.Mixin.define("playground.dbif.MUsageDetail",
               {
                 // Yup. Save it.
                 if (messageData.type == "button_press" && 
-                    messageData.buttonPress == "Run")
+                    messageData.button_press == "Run")
                 {
                   message = "run";
                 }
@@ -99,10 +100,14 @@ qx.Mixin.define("playground.dbif.MUsageDetail",
                   console.log("Got unexpected usageDetail message: " + message);
                 }
 
+                // Save the program
                 _this._saveProgram(
                   messageData.filename || "code.c", 
                   message,
                   snapshot);
+                
+                // Keep track of this most recent message data
+                last = messageData;
               }
               
               // Write the usage detail to the database
@@ -110,7 +115,11 @@ qx.Mixin.define("playground.dbif.MUsageDetail",
             });
 
           // If there was any snapshot data, return a new directory listing
-          return bNeedDirectoryListing ? this.getDirectoryListing() : null;
+          return bNeedDirectoryListing 
+            ? this.getDirectoryListing(last && last.versions
+                                       ? last.filename
+                                       : null) 
+            : null;
 
         }.bind(this));
     }

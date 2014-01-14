@@ -38,6 +38,9 @@ qx.Class.define("playground.view.Samples",
     this.setLayout(layout);
     this.setDecorator("main");
 
+    // horizontal box to hold caption and versions toggle button
+    var hbox = new qx.ui.container.Composite(new qx.ui.layout.HBox());
+
     // caption
     var caption = new qx.ui.basic.Label(this.tr("Files")).set({
       font       : "bold",
@@ -45,7 +48,29 @@ qx.Class.define("playground.view.Samples",
       allowGrowX : true,
       allowGrowY : true
     });
-    this.add(caption);
+    hbox.add(caption, { flex : 1 });
+    
+    // versions toggle button
+    this._versions = new qx.ui.form.CheckBox(this.tr("Show Versions"));
+    this._versions.setToolTipText(
+      this.tr("Show versions of the selected program in My Programs"));
+    this._versions.addListener(
+      "changeValue", function(e) 
+      {
+        // Get the selected sample
+        var sample = this.__list.getSelection().getItem(0);
+
+        if (sample) 
+        {
+          this.fireDataEvent("updateDirectory", 
+                             e.getData() ? sample.getOrigName() : null);
+        }
+      },
+      this);
+    hbox.add(this._versions);
+
+    // Add the caption and versions toggle button to the top of list
+    this.add(hbox);
 
     // list
     this.add(this._createList(), {flex: 1});
@@ -78,7 +103,10 @@ qx.Class.define("playground.view.Samples",
     "copy"   : "qx.event.type.Event",
 
     /** Cancelable event fired before the selection changes. */
-    "beforeSelectSample" : "qx.event.type.Event"
+    "beforeSelectSample" : "qx.event.type.Event",
+    
+    /** Event triggered by Show Versions checkbox */
+    "updateDirectory" : "qx.event.type.Data"
   },
 
 
@@ -139,6 +167,23 @@ qx.Class.define("playground.view.Samples",
 
 
     /**
+     * Selects a sample by the given name.
+     * @param code {String} The name of the sample.
+     */
+    selectByName : function(name) {
+      var model = this.__list.getModel();
+      this.__internalSelect = true;
+      for (var i=0; i < model.length; i++) {
+        if (model.getItem(i).getName() == name) {
+          this.select(model.getItem(i));
+          break;
+        }
+      };
+      this.__internalSelect = false;
+    },
+
+
+    /**
      * Creating helper which is responsible for creating the list.
      */
     _createList : function() {
@@ -165,34 +210,83 @@ qx.Class.define("playground.view.Samples",
       // ////////////////////////////////////////////
 
       // set the delegate
-      this.__list.setDelegate({
+      this.__list.setDelegate(
+        {
 /* djl
-        // filter: only show samples for the current mode
-        filter : function(data) {
-          return data.getMode() == self.getMode();
-        },
+          // filter: only show samples for the current mode
+          filter : function(data) 
+          {
+            return data.getMode() == self.getMode();
+          },
 */
-        // group the samples by category
-        group : function(data) {
-/* djl
-          if (data.getCategory() == "static") {
-            return qx.locale.Manager.tr("Static");
-          } else {
-            return qx.locale.Manager.tr("User");
+          // group the samples by category
+          group : function(data) 
+          {
+            return data.getCategory();
+          },
+
+          sorter : function(a, b)
+          {
+            var             aName = a.getOrigName();
+            var             bName = b.getOrigName();
+            var             aCategory = a.getCategory();
+            var             bCategory = b.getCategory();
+            var             aVersionNum = a.getVersionNum();
+            var             bVersionNum = b.getVersionNum();
+
+            // Sort first by category, ...
+            if (aCategory != bCategory)
+            {
+              return (aCategory < bCategory 
+                      ? -1 
+                      : (aCategory > bCategory
+                         ? 1
+                         : 0));
+            }
+
+            // ... then by name, ...
+            if (aName != bName)
+            {
+              return (aName < bName
+                      ? -1
+                      : (aName > bName
+                         ? 1
+                         : 0));
+            }
+
+            // and finally by version number
+            return (aVersionNum < bVersionNum 
+                    ? -1 
+                    : (aVersionNum > bVersionNum
+                       ? 1
+                       : 0));
           }
-else... */
-          return data.getCategory();
-// ...djl
-        }
       });
 
       // selection change handler
-      this.__list.getSelection().addListener("change", function() {
-        var sample = this.__list.getSelection().getItem(0);
-        if (sample) {
-          this.fireDataEvent("selectSample", sample);
-        }
-      }, this);
+      this.__list.getSelection().addListener(
+        "change",
+        function() 
+        {
+          // Get the selected sample
+          var sample = this.__list.getSelection().getItem(0);
+          
+          if (sample) 
+          {
+            // Enable versions button only if selection is in My Programs, and
+            // is not an older version of a program.
+            this._versions.setEnabled(sample.getCategory() == "My Programs" &&
+                                      sample.getVersionNum() == 0);
+        
+            // If this isn't an internal selection (i.e., it's by user click)...
+            if (! this.__internalSelect)
+            {
+              // ... then handle a user selection
+              this.fireDataEvent("selectSample", sample);
+            }
+          }
+        }, 
+        this);
 
       return this.__list;
     },

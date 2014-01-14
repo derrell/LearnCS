@@ -147,7 +147,7 @@ qx.Class.define("playground.view.Toolbar",
 
     // sample button
     this.__samplesCheckButton = new qx.ui.form.ToggleButton(
-      this.tr("Files"), "icon/22/actions/edit-find.png"
+      this.tr("Show Files"), "icon/22/actions/edit-find.png"
     );
     this.__samplesCheckButton.setValue(true);
     this.add(this.__samplesCheckButton);
@@ -206,17 +206,17 @@ qx.Class.define("playground.view.Toolbar",
     runButton.setToolTipText(this.tr("Run the source code"));
     application.setUserData("runButton", runButton);
     runButton.addListener("execute", function() {
+      // Run the program
+      this.fireEvent("run");
+
       // Generate a status report showing that they've pressed Run
       playground.ServerOp.statusReport(
         {
           type         : "button_press",
           button_press : "Run",
-          snapshot     : qx.core.Init.getApplication().editor.getCode(),
-          filename     : qx.core.Init.getApplication().getName()
+          snapshot     : application.editor.getCode(),
+          filename     : application.getName()
         });
-
-      // Run the program
-      this.fireEvent("run");
     }, this);
     
     // step button

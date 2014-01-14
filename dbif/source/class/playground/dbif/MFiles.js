@@ -16,7 +16,7 @@ qx.Mixin.define("playground.dbif.MFiles",
     // Get a directory listing
     this.registerService("learncs.getDirectoryListing",
                          this.getDirectoryListing,
-                         [ ]);
+                         [ "versionsOfFilename" ]);
 
     // Get a program
     this.registerService("learncs.getProgram",
@@ -98,7 +98,7 @@ qx.Mixin.define("playground.dbif.MFiles",
       // highly dependent upon java.
       if (liberated.dbif.Entity.getCurrentDatabaseProvider() != "jettysqlite")
       {
-        console.log("saveProgram: not in jetty backend environment; ignoring.");
+        java.lang.System.out.println("saveProgram: not in jetty backend environment; ignoring.");
         return -1;
       }
 
@@ -142,7 +142,7 @@ qx.Mixin.define("playground.dbif.MFiles",
       }
       catch (e)
       {
-        console.log("\n\nFailed to create user code at " + 
+        java.lang.System.out.println("\n\nFailed to create user code at " + 
                     gitDir + "/" + programName + 
                     ": " + e + "\n\n");
       }
@@ -197,7 +197,7 @@ qx.Mixin.define("playground.dbif.MFiles",
         // The commit failed. Show the output.
         while ((line = reader.readLine()) != null) 
         {
-          console.log(line);
+          java.lang.System.out.println(line);
         }
         
         // Check out the most recent version
@@ -210,7 +210,7 @@ qx.Mixin.define("playground.dbif.MFiles",
           gitDir);
       }
       
-      console.log("\n");
+      java.lang.System.out.println("\n");
       return 0;
     },
 
@@ -282,22 +282,22 @@ qx.Mixin.define("playground.dbif.MFiles",
         dirFile = null;
       }
 
-      console.log("exec: [" + cmd.join(",") + "]");
+      java.lang.System.out.println("exec: [" + cmd.join(",") + "]");
       process = runtime.exec(cmd, null, dirFile);
       process.waitFor();
-      console.log("exit code: " + process.exitValue());
+      java.lang.System.out.println("exit code: " + process.exitValue());
 
       reader =
         new BufferedReader(new InputStreamReader(process.getErrorStream()));
       while ((line = reader.readLine()) != null) 
       {
-        console.log(stderrHeader + line);
+        java.lang.System.out.println(stderrHeader + line);
         stderrHeader = "";
       }
 
       if (stderrHeader == "" || stdoutHeader == "")
       {
-        console.log("\n\n");
+        java.lang.System.out.println("\n\n");
       }
 
       // In case the caller needs to get the exit code or 
@@ -306,13 +306,16 @@ qx.Mixin.define("playground.dbif.MFiles",
 
     /**
      * Obtain a directory listing.
-     * 
+     *
+     * @param versionsOfFilename {String?}
+     *   The name of the file, in My Programs, for which versions are requested
+     *
      * @return {Map}
      *   A map containing the elements programs, userFiles, and optionally,
      *   templates and instructorFiles. Each is an array of files in the
      *   specified category.
      */
-    getDirectoryListing : function()
+    getDirectoryListing : function(versionsOfFilename)
     {
       // Assume no files are available, initially.
       var defaultDirList =
@@ -327,7 +330,7 @@ qx.Mixin.define("playground.dbif.MFiles",
       // highly dependent upon java.
       if (liberated.dbif.Entity.getCurrentDatabaseProvider() != "jettysqlite")
       {
-        console.log(
+        java.lang.System.out.println(
           "getDirectoryListing: not in jetty backend environment; ignoring.");
         return defaultDirList;
       }
@@ -342,12 +345,21 @@ qx.Mixin.define("playground.dbif.MFiles",
       var             templateDir = playground.dbif.MFiles.TemplateDir;
       var             defaultUser = playground.dbif.MFiles.DefaultUser;
       var             File = java.io.File;
+      var             BufferedReader = java.io.BufferedReader;
+      var             InputStreamReader = java.io.InputStreamReader;
 
-      function addFiles(dirData)
+      var addFiles = function(dirData)
       {
         var             i;
         var             files;
         var             name;
+        var             gitDir;
+        var             process;
+        var             reader;
+        var             line;
+        var             hash;
+        var             versionDate;
+        var             versionNum;
 
         // Open the directory
         dir = new File(dirData.name);
@@ -378,16 +390,66 @@ qx.Mixin.define("playground.dbif.MFiles",
               name = name.replace(/\.git$/, "");
             }
 
-            // Add this file's name to the map to be returned
-            dirList.push(
+            // Are we getting versions of this file?
+            if (dirData.category == "My Programs" && name == versionsOfFilename)
+            {
+              // Yup. Build the full path for the git directory name
+              gitDir = dirData.name + "/" + name + ".git";
+
+              // Retrieve the timestamp and subject of every version. 
+              process = this.__exec(
+                [ 
+                  "git",
+                  "log",
+                  "--format=format:%h/%cr (%s)"
+                ],
+                gitDir);
+
+              // Get access to the program output
+              reader =
+                new BufferedReader(
+                  new InputStreamReader(process.getInputStream()));
+
+              // Read each line, and add an entry to the directory list
+              for (versionNum = 0;
+                   (line = reader.readLine()) != null;
+                   ++versionNum)
               {
-                name     : name,
-                category : dirData.category,
-                user     : dirData.user
-              });
+                // Extract the hash and version date portions
+                line = String(line).split("/");
+                hash = line[0];
+                versionDate = line[1];
+
+                dirList.push(
+                  {
+                    name       : (versionNum == 0 
+                                  ? name
+                                  : (name + " -" + versionNum +
+                                     ", " + versionDate)),
+                    origName   : name,
+                    hash       : (versionNum == 0 ? null : hash),
+                    versionNum : versionNum,
+                    category   : dirData.category,
+                    user       : dirData.user
+                  });
+              }
+            }
+            else
+            {
+              // Add this file's name to the map to be returned
+              dirList.push(
+                {
+                  name       : name,
+                  origName   : name,
+                  hash       : null,
+                  versionNum : 0,
+                  category   : dirData.category,
+                  user       : dirData.user
+                });
+            }
           }
         }
-      }
+      }.bind(this);
 
       // Retrieve the current user id
       user = playground.dbif.MDbifCommon.getCurrentUserId();
@@ -497,7 +559,10 @@ qx.Mixin.define("playground.dbif.MFiles",
      * @param category {String}
      *   The category in which this program is contained. If "My Programs"
      *   then we find the program in its git directory; otherwise, not.
-     * 
+     *
+     * @param hash {String|null}
+     *   The hash of a version of the program, or null to request most recent
+     *
      * @param user {Integer}
      *   The user id of the file's owner.
      *
@@ -508,8 +573,10 @@ qx.Mixin.define("playground.dbif.MFiles",
      *     dirList - a new directory listing, a la getDirectoryListing()
      */
     getProgram : function(programName,
+                          hash,
                           category,
                           userId,
+                          bRefreshDirectoryListing,
                           oldProgramName,
                           oldCode)
     {
@@ -517,10 +584,11 @@ qx.Mixin.define("playground.dbif.MFiles",
       // highly dependent upon java.
       if (liberated.dbif.Entity.getCurrentDatabaseProvider() != "jettysqlite")
       {
-        console.log("getProgram: not in jetty backend environment; ignoring.");
+        java.lang.System.out.println("getProgram: not in jetty backend environment; ignoring.");
         return { name : programName, code : "" };
       }
 
+      var             ret;
       var             user;
       var             userData;
       var             line;
@@ -597,7 +665,7 @@ qx.Mixin.define("playground.dbif.MFiles",
                           qx.lang.Json.stringify(userData.templatesFrom));
         }
 
-        // Create the directory name
+        // Generate the directory name
         if (userId === user)
         {
           if (category == "My Programs")
@@ -607,6 +675,21 @@ qx.Mixin.define("playground.dbif.MFiles",
               userId + "/" + 
               progDir + "/" +
               programName + ".git";
+
+            // Are they requesting an old (non-HEAD) version?
+            if (hash)
+            {
+              // Yup. Extract that version.
+              this.__exec(
+                [ 
+                  "git",
+                  "checkout",
+                  "-f",
+                  hash
+                ],
+                dir);
+            }
+
           }
           else
           {
@@ -641,15 +724,53 @@ qx.Mixin.define("playground.dbif.MFiles",
           stringBuilder.append(line);
         }
 
-        return (
+        // Do we need to revert to HEAD?
+        if (userId === user && category == "My Programs" && hash)
+        {
+          // Yup. Revert to HEAD
+          this.__exec(
+            [ 
+              "git",
+              "checkout",
+              "-f",
+              "master"
+            ],
+            dir);
+        }
+
+        ret =
           {
             name : programName,
             code : String(stringBuilder.toString())
-          });
+          };
+        
+        // ONly add the directory listing if specifically requested to
+        if (bRefreshDirectoryListing)
+        {
+          ret.dirList = this.getDirectoryListing();
+        }
+        
+        return ret;
       }
       catch (e)
       {
-        console.log("\ngetProgram() exception: " + e + "\n");
+        var             exception;
+
+        java.lang.System.out.println("\ngetProgram() exception: ");
+
+        if (e.rhinoException != null)
+        {
+          e.rhinoException.printStackTrace();
+        }
+        else if (e.javaException != null)
+        {
+          e.javaException.printStackTrace();
+        }
+        else
+        {
+          java.lang.System.out.println("Can't display stack trace");
+        }
+
         return (
           {
             name : programName,
@@ -685,7 +806,7 @@ qx.Mixin.define("playground.dbif.MFiles",
       // highly dependent upon java.
       if (liberated.dbif.Entity.getCurrentDatabaseProvider() != "jettysqlite")
       {
-        console.log("renameProgram: " +
+        java.lang.System.out.println("renameProgram: " +
                     "not in jetty backend environment; ignoring.");
         return { status : -1 };
       }
@@ -713,7 +834,7 @@ qx.Mixin.define("playground.dbif.MFiles",
       fileNew = new File(dir + "/" + newName + ".git");
       if (fileNew.exists())
       {
-        console.log("File " + 
+        java.lang.System.out.println("File " + 
                     dir + "/" + newName + ".git already exists.");
         return { status : 1 };
       }
@@ -723,7 +844,7 @@ qx.Mixin.define("playground.dbif.MFiles",
       if (! fileOld.renameTo(fileNew))
       {
         // Couldn't rename it for some reason.
-        console.log("Could not rename file " + 
+        java.lang.System.out.println("Could not rename file " + 
                     dir + "/" + oldName + ".git" + " to " +
                     dir + "/" + newName + ".git");
         return { status : 2 };
@@ -775,7 +896,7 @@ qx.Mixin.define("playground.dbif.MFiles",
       // highly dependent upon java.
       if (liberated.dbif.Entity.getCurrentDatabaseProvider() != "jettysqlite")
       {
-        console.log("removeProgram: " +
+        java.lang.System.out.println("removeProgram: " +
                     "not in jetty backend environment; ignoring.");
         return { status : -1 };
       }
@@ -809,7 +930,7 @@ qx.Mixin.define("playground.dbif.MFiles",
         // Have we reached the maximum number of attempts?
         if (attempt >= maxAttempts)
         {
-          console.log("Could not find a timestamped name to delete file " +
+          java.lang.System.out.println("Could not find a timestamped name to delete file " +
                       name);
           return { status : 1 };
         }
@@ -826,7 +947,7 @@ qx.Mixin.define("playground.dbif.MFiles",
       if (! fileOld.renameTo(fileNew))
       {
         // Couldn't rename it for some reason.
-        console.log("Could not rename file " + 
+        java.lang.System.out.println("Could not rename file " + 
                     dir + "/" + name + ".git" + " to " +
                     dir + "/" + newName);
         return { status : 2 };
@@ -862,7 +983,7 @@ qx.Mixin.define("playground.dbif.MFiles",
       // highly dependent upon java.
       if (liberated.dbif.Entity.getCurrentDatabaseProvider() != "jettysqlite")
       {
-        console.log("copyProgram: not in jetty backend environment; ignoring.");
+        java.lang.System.out.println("copyProgram: not in jetty backend environment; ignoring.");
         return -1;
       }
 
@@ -905,7 +1026,7 @@ qx.Mixin.define("playground.dbif.MFiles",
       fileNew = new File(toDir);
       if (fileNew.exists())
       {
-        console.log("Directory " + toDir + " already exists.");
+        java.lang.System.out.println("Directory " + toDir + " already exists.");
         return { status : 1 };
       }
 
@@ -972,7 +1093,7 @@ qx.Mixin.define("playground.dbif.MFiles",
         }
         catch (e)
         {
-          console.log("\n\nFailed to copy user's code " +
+          java.lang.System.out.println("\n\nFailed to copy user's code " +
                       ": " + e + "\n\n");
         }
       }

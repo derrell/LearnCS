@@ -178,6 +178,9 @@ qx.Class.define("playground.Application",
       this.__samplesPane.addListener("delete", this.__onDelete, this);
       this.__samplesPane.addListener("rename", this.__onRename, this);
       this.__samplesPane.addListener("copy", this.__onCopy, this);
+      this.__samplesPane.addListener("updateDirectory", 
+                                     this.__onUpdateDirectory, 
+                                     this);
       this.bind("currentSample", this.__samplesPane, "currentSample");
       this.__samplesPane.addListener("beforeSelectSample", function(e) {
         if (this.__discardChanges()) {
@@ -216,7 +219,7 @@ else... */
         function(ex, id)
         {
           // Ignore the failure. Should not ever occur.
-console.log("FAILED to get directory listing: " + ex);
+          console.log("FAILED to get directory listing: " + ex);
         }.bind(this),
 
         // function to call
@@ -487,7 +490,8 @@ console.log("Sending autosave status report");
               {
                 type         : "autosave",
                 snapshot     : code,
-                filename     : name
+                filename     : name,
+                versions     : this.__samplesPane._versions.getValue()
               });
             
             // Save the autosaved code as the origin code, so we won't
@@ -507,8 +511,7 @@ console.log("starting new timer for " + (timeout / 1000) + " seconds");
         0,
         this,
         null,
-//        2 * 60 * 1000);
-        20 * 1000);
+        2 * 60 * 1000);
     },
 
 
@@ -572,8 +575,6 @@ console.log("starting new timer for " + (timeout / 1000) + " seconds");
       var             model;
       var             marshaler;
 
-console.log("got directory listing: " + JSON.stringify(result, null, "  "));
-
       // Display the result values.
       marshaler = new qx.data.marshal.Json();
       marshaler.toClass(result, true);
@@ -584,6 +585,9 @@ console.log("got directory listing: " + JSON.stringify(result, null, "  "));
         model = null;
       }
       this.__samplesPane.setModel(model);
+      
+      // Select the currently-displayed program
+      this.__samplesPane.selectByName(this.getName());
     },
 
     // ***************************************************
@@ -605,6 +609,7 @@ console.log("got directory listing: " + JSON.stringify(result, null, "  "));
     // property apply
     _applyCurrentSample : function(newSample, old) {
       var             args = [];
+      var             bRefreshDirectoryListing;
 
       // ignore when the sample is set to null
       if (!newSample) {
@@ -613,9 +618,17 @@ console.log("got directory listing: " + JSON.stringify(result, null, "  "));
 
       // Build the argument list for retrieving the requested program. First,
       // add the always-there arguments.
-      args.push(newSample.getName());
+      args.push(newSample.getOrigName());
+      args.push(newSample.getHash());
       args.push(newSample.getCategory());
       args.push(newSample.getUser());
+      
+      // Request a new directory listing if the new selected file has the
+      // versions button enabled. That would mean that it's in My Programs,
+      // and is not itself a version. (This will clear out any versions of the
+      // prior program.)
+      bRefreshDirectoryListing = this.__samplesPane._versions.getEnabled();
+      args.push(bRefreshDirectoryListing);
       
       // If the code in the editor has changed from its original...
       if (this.editor.getCode() != this.getOriginCode())
@@ -634,13 +647,24 @@ console.log("got directory listing: " + JSON.stringify(result, null, "  "));
           this.setOriginCode(result.code);
           this.addCodeToHistory(result.code);
           this.setName(result.name);
+          
+          // Is there a directory listing?
+          if (result.dirList)
+          {
+            // Yup. Display it.
+            this._displayDirectoryListing(result.dirList);
+            
+            // This is a new file (with no versions), so turn off the checkbox
+            this.__samplesPane._versions.setValue(false);
+          }
         }.bind(this),
 
         // failure handler
         function(ex, id)
         {
           // Ignore the failure. Should not ever occur.
-console.log("FAILED to retrieve file " + newSample.getName() + ": " + ex);
+          console.log("FAILED to retrieve file " + newSample.getOrigName() + 
+                      ", hash " + newSample.getHash() + ": " + ex);
         }.bind(this),
 
         // function to call
@@ -849,7 +873,7 @@ console.log("FAILED to retrieve file " + newSample.getName() + ": " + ex);
         function(ex, id)
         {
           // Ignore the failure. Should not ever occur.
-console.log("FAILED to remove program " + name + ": " + ex);
+          console.log("FAILED to remove program " + name + ": " + ex);
         }.bind(this),
 
         // function to call
@@ -917,7 +941,8 @@ console.log("FAILED to remove program " + name + ": " + ex);
         function(ex, id)
         {
           // Ignore the failure. Should not ever occur.
-console.log("FAILED to rename file " + oldName + " to " + newName + ": " + ex);
+          console.log("FAILED to rename file " + oldName +
+                      " to " + newName + ": " + ex);
         }.bind(this),
 
         // function to call
@@ -988,7 +1013,8 @@ console.log("FAILED to rename file " + oldName + " to " + newName + ": " + ex);
         function(ex, id)
         {
           // Ignore the failure. Should not ever occur.
-console.log("FAILED to copy file " + oldName + " to " + newName + ": " + ex);
+          console.log("FAILED to copy file " + oldName +
+                      " to " + newName + ": " + ex);
         }.bind(this),
 
         // function to call
@@ -1001,6 +1027,35 @@ console.log("FAILED to copy file " + oldName + " to " + newName + ": " + ex);
           this.getCurrentSample().getUser(),
           newName
         ]
+      );
+    },
+
+
+    /**
+     * Helper to update the directory, e.g., when showing versions changes
+     */
+    __onUpdateDirectory : function(e) 
+    {
+      // Issue a request for the user's directory listing.
+      playground.ServerOp.rpc(
+        // success handler
+        function(result, id)
+        {
+          this._displayDirectoryListing(result);
+        }.bind(this),
+
+        // failure handler
+        function(ex, id)
+        {
+          // Ignore the failure. Should not ever occur.
+          console.log("FAILED to get directory listing: " + ex);
+        }.bind(this),
+
+        // function to call
+        "getDirectoryListing",
+        
+        // arguments
+        [ e.getData() ]         // filename for versions, or null
       );
     },
 
@@ -1395,12 +1450,17 @@ console.log("FAILED to copy file " + oldName + " to " + newName + ": " + ex);
      */
     run : function(e)
     {
+      // turn off versions
+      this.__samplesPane._versions.setValue(false);
+
       var code = this.editor.getCode();
       if (code && this.isCodeNotEqual(code, this.getOriginCode())) {
         this.addCodeToHistory(code);
+/* djl...
         if (!this.__modified) {
           this.setName(this.tr("%1 (modified)", this.getName()));
         }
+*/
         this.__modified = true;
       }
 
