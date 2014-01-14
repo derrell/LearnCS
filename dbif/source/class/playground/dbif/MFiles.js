@@ -467,7 +467,7 @@ qx.Mixin.define("playground.dbif.MFiles",
           user     : user
         },
         {
-          category : "Standard Templates",
+          category : "Templates: {generic}",
           name     : userFilesDir + "/" + defaultUser + "/" + templateDir,
           user     : defaultUser
         }
@@ -514,7 +514,7 @@ qx.Mixin.define("playground.dbif.MFiles",
           // Add this user's templates to the list
           addFiles(
             {
-              category : "Templates from " + templateUserData[0].displayName,
+              category : "Templates: " + templateUserData[0].displayName,
               name     : userFilesDir + "/" + userId + "/" + templateDir,
               user     : userId
             });
