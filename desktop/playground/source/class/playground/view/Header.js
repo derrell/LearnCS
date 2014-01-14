@@ -68,6 +68,8 @@ qx.Class.define("playground.view.Header",
       appearance: "modeButton",
       focusable : false
     });
+    
+    consoleButton.exclude(); // djl - only one mode right now
 
 /*
     var mobileButton = new qx.ui.form.RadioButton(this.tr("Phone App"));
