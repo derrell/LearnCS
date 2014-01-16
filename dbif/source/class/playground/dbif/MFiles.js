@@ -606,9 +606,6 @@ qx.Mixin.define("playground.dbif.MFiles",
       var             BufferedReader = java.io.BufferedReader;
       var             StringBuilder = java.lang.StringBuilder;
       
-      // Retrieve the current user id
-      user = playground.dbif.MDbifCommon.getCurrentUserId();
-      
       try
       {
         //
@@ -636,6 +633,9 @@ qx.Mixin.define("playground.dbif.MFiles",
         // Sanitize the name
         programName = this.__sanitizeFilename(programName);
 
+        // Retrieve the current user id
+        user = playground.dbif.MDbifCommon.getCurrentUserId();
+      
         // Get this user's object data, to get the template users
         userData = liberated.dbif.Entity.query(
           "playground.dbif.ObjUser",

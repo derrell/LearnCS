@@ -44,17 +44,51 @@ qx.Mixin.define("playground.dbif.MUser",
       var             userData;
       var             ret;
       
-      // Get the pre-calculated values for our return value
+      // Initialize our return value
       ret =
         {
-          whoAmI    : this.getWhoAmI(),
-          logoutUrl : this.getLogoutUrl()
+          whoAmI         : this.getWhoAmI(),
+          logoutUrl      : this.getLogoutUrl(),
+          courseList     : [],
+          enrolledCourse : null,
+          bResearchOk    : true
         };
 
       // Ensure that this user has an ObjUser object in the datastore
       liberated.dbif.Entity.asTransaction(
         function()
         {
+          var             otherUsers;
+          var             instructors;
+          var             labInstructors;
+
+          function getOtherUserName(otherUserId)
+          {
+            var             otherUserData;
+
+            otherUserData = liberated.dbif.Entity.query(
+              "playground.dbif.ObjUser",
+              {
+                type  : "element",
+                field : "id",
+                value : otherUserId
+              });
+
+            // Sanity check. Ensure he's found.
+            if (otherUserData.length < 1)
+            {
+              console.log("Could not find instructor: " + otherUserId);
+              return;
+            }
+            
+            // Get the one and only result
+            otherUserData = otherUserData[0];
+
+            otherUsers.push(otherUserData.displayName);
+          };
+          
+
+
           // See if this user is already registered
           userData = liberated.dbif.Entity.query(
             "playground.dbif.ObjUser",
@@ -93,7 +127,44 @@ qx.Mixin.define("playground.dbif.MUser",
             // User is already registered. Get the one and only query result.
             userData = userData[0];
           }
+          
           this.setMyUserId(userData.id);
+          
+          // Get the complete course list
+          ret.courseList = 
+            liberated.dbif.Entity.query("playground.dbif.ObjCourse");
+
+          ret.courseList.forEach(
+            function(courseData)
+            {
+              // Determine the instructor names
+              otherUsers = [];
+              courseData.instructors.forEach(getOtherUserName);
+              instructors = otherUsers;
+
+              // Determine the lab instructor names
+              otherUsers = [];
+              courseData.labInstructors.forEach(getOtherUserName);
+              labInstructors = otherUsers;
+
+              // Generate the fully-qualified course name
+              courseData.name = 
+                courseData.institution +
+                ", " + courseData.courseName +
+                ", Prof. " + instructors.join(", ");
+              if (labInstructors.length > 0)
+              {
+                courseData.name += 
+                  ", lab with " + labInstructors.join(", ");
+              }
+            });
+
+          // Give 'em the course that this user is enrolled in
+          // FIXME: For now, we only support being enrolled in one course
+          ret.enrolledCourse = userData.enrolledIn[0];
+          
+          // Give 'em the flag indicating whether research is allowed
+          ret.bResearchOk = !! userData.researchOk;
         }.bind(this));
 
       // This is also the beginning of a new session. Note that.

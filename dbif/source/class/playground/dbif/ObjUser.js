@@ -16,7 +16,10 @@ qx.Class.define("playground.dbif.ObjUser",
       {
         "id"            : null,
         "isInstructor"  : 0,
-        "templatesFrom" : []
+        "enrolledIn"    : [],
+        "templatesFrom" : [],
+        "courseAccess"  : [],
+        "researchOk"    : 1
       });
 
     // Call the superclass constructor
@@ -41,8 +44,17 @@ qx.Class.define("playground.dbif.ObjUser",
         /** Whether this user is an instructor (so can save templates) */
         "isInstructor"  : "Integer",                 // Boolean (0 or 1)
 
-        /** Where to locate templates */
-        "templatesFrom" : "KeyArray"                 // references ObjUser
+        /** Users whose templates this user has access to */
+        "templatesFrom" : "KeyArray",                // references ObjUser
+        
+        /** Enrolled courses */
+        "enrolledIn"    : "KeyArray",                // references ObjCourse
+
+        /** Courses to which this user has access to all users */
+        "courseAccess" : "KeyArray",                 // references ObjCourse
+        
+        /** Accepted research agreement */
+        "researchOk"   : "Integer"                   // Boolean (0 or 1)
       };
 
     // Register our property types.

@@ -103,6 +103,7 @@ qx.Class.define("playground.view.Header",
       function(e)
       {
         var             engine;
+        var             application = qx.core.Init.getApplication();
 
         // ... determine what browser engine they're using
         engine = qx.core.Environment.get("engine.name");
@@ -123,6 +124,38 @@ qx.Class.define("playground.view.Header",
             // Success. Display the result values.
             whoAmI.set(result.whoAmI);
             whoAmI.setLogoutUrl(result.logoutUrl);
+            application._settings.setCourseList(result.courseList,
+                                                result.enrolledCourse);
+            application._settings.setResearchOk(result.bResearchOk);
+
+            // Issue a request for the user's directory listing, if they're
+            // already enrolled.
+            if (result.enrolledCourse)
+            {
+              playground.ServerOp.rpc(
+                // success handler
+                function(result, id)
+                {
+                  application._displayDirectoryListing(result);
+                }.bind(this),
+
+                // failure handler
+                function(ex, id)
+                {
+                  // Ignore the failure. Should not ever occur.
+                  console.log("FAILED to get directory listing: " + ex);
+                }.bind(this),
+
+                // function to call
+                "getDirectoryListing"
+              );
+            }
+            else
+            {
+              // otherwise, hide the editing page and show the settings page
+              application._editingContainer.exclude();
+              application._settingsContainer.show();
+            }
           },
 
           // failure handler

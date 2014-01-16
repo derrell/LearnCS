@@ -140,14 +140,42 @@ qx.Class.define("playground.Application",
       var mainContainer = new qx.ui.container.Composite(layout);
       this.getRoot().add(mainContainer, { edge : 0 });
 
+      // editing container
+      this._editingContainer = new qx.ui.container.Composite(
+        new qx.ui.layout.VBox(), { flex : 1 });
+      
+      mainContainer.add(this._editingContainer, { flex : 1 });
+
       // qooxdoo header
       this.__header = new playground.view.Header();
-      mainContainer.add(this.__header, { flex : 0 });
+      this._editingContainer.add(this.__header, { flex : 0 });
 //      this.__header.addListener("changeMode", this._onChangeMode, this);
 
       // toolbar
       this.__toolbar = new playground.view.Toolbar();
-      mainContainer.add(this.__toolbar, { flex : 0 });
+      this._editingContainer.add(this.__toolbar, { flex : 0 });
+      
+      // settings container
+      this._settingsContainer = 
+        new qx.ui.container.Composite(new qx.ui.layout.VBox());
+      this._settingsContainer.exclude();
+      
+      this._settings = new playground.view.Settings();
+      this._settingsContainer.add(this._settings);
+      mainContainer.add(this._settingsContainer, { flex : 1 });
+      
+      // settings listener
+      this._settings.addListener(
+        "settingsSaved",
+        function(e)
+        {
+          // Hide settings container
+          this._settingsContainer.exclude();
+          
+          // Show the editing container
+          this._editingContainer.show();
+        },
+        this);
 
       // toolbar listener
       this.__toolbar.addListener("run", this.run, this);
@@ -161,7 +189,7 @@ qx.Class.define("playground.Application",
 
       // mainsplit, contains the editor splitpane and the info splitpane
       this.__mainsplit = new qx.ui.splitpane.Pane("horizontal");
-      mainContainer.add(this.__mainsplit, { flex : 1 });
+      this._editingContainer.add(this.__mainsplit, { flex : 1 });
       this.__mainsplit.setAppearance("app-splitpane");
 
       // editor split (left side of main split)
@@ -206,25 +234,6 @@ qx.Class.define("playground.Application",
       this.__store.bind("model", this.__samplesPane, "model");
 else... */
       this.__samples = new playground.Samples();
-
-      // Issue a request for the user's directory listing.
-      playground.ServerOp.rpc(
-        // success handler
-        function(result, id)
-        {
-          this._displayDirectoryListing(result);
-        }.bind(this),
-
-        // failure handler
-        function(ex, id)
-        {
-          // Ignore the failure. Should not ever occur.
-          console.log("FAILED to get directory listing: " + ex);
-        }.bind(this),
-
-        // function to call
-        "getDirectoryListing"
-      );
 // ...djl
 
       // Create a split for the tabview and the terminal
