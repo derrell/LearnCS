@@ -98,7 +98,10 @@ qx.Class.define("playground.dbif.ObjUsageDetail",
         //
 
         /** Compiler or run-time error, as JSON depiction of hash map */
-        "error"              : "LongString"
+        "error"              : "LongString",
+        
+        /** Retain snapshot, for now, for support of 0.047 and prior */
+        "snapshot"           : "LongString"
       };
 
     // Register our property types.
