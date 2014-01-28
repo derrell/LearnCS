@@ -55,7 +55,7 @@ qx.Class.define("playground.view.Header",
     qx.core.Init.getApplication().setUserData("whoAmI", whoAmI);
 
     var version = 
-      new qxc.ui.versionlabel.VersionLabel("Playground", "0.048");
+      new qxc.ui.versionlabel.VersionLabel("Playground", "0.050");
     version.set(
       {
         font : "default",
@@ -124,9 +124,10 @@ qx.Class.define("playground.view.Header",
             // Success. Display the result values.
             whoAmI.set(result.whoAmI);
             whoAmI.setLogoutUrl(result.logoutUrl);
+            whoAmI.setResearchOk(result.bResearchOk);
+            application._settings.setResearchOk(result.bResearchOk);
             application._settings.setCourseList(result.courseList,
                                                 result.enrolledCourse);
-            application._settings.setResearchOk(result.bResearchOk);
 
             // Issue a request for the user's directory listing, if they're
             // already enrolled.
