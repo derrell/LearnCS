@@ -57,7 +57,7 @@ qx.Mixin.define("playground.dbif.MFiles",
   statics :
   {
     /** The top-level directory on the server which contains users' code */
-    UserFilesDir       : "USERCODE",
+    UserFilesDir       : "../USERCODE",
     
     /** Default user directory: DataDir and TemplateDir available to all */
     DefaultUser        : "DEFAULT_USER",
@@ -98,7 +98,8 @@ qx.Mixin.define("playground.dbif.MFiles",
       // highly dependent upon java.
       if (liberated.dbif.Entity.getCurrentDatabaseProvider() != "jettysqlite")
       {
-        java.lang.System.out.println("saveProgram: not in jetty backend environment; ignoring.");
+        java.lang.System.out.println(
+          "saveProgram: not in jetty backend environment; ignoring.");
         return -1;
       }
 
@@ -485,8 +486,8 @@ qx.Mixin.define("playground.dbif.MFiles",
       // If there's no templates array...
       if (! userData.templatesFrom)
       {
-        // ... then use an empty array
-        userData.templatesFrom = [];
+        // ... then use an array containing only ourself
+        userData.templatesFrom = [ user ];
       }
       
       // Now add templates from any registered template users.
@@ -584,7 +585,8 @@ qx.Mixin.define("playground.dbif.MFiles",
       // highly dependent upon java.
       if (liberated.dbif.Entity.getCurrentDatabaseProvider() != "jettysqlite")
       {
-        java.lang.System.out.println("getProgram: not in jetty backend environment; ignoring.");
+        java.lang.System.out.println(
+          "getProgram: not in jetty backend environment; ignoring.");
         return { name : programName, code : "" };
       }
 
@@ -597,6 +599,7 @@ qx.Mixin.define("playground.dbif.MFiles",
       var             decoded;
       var             dir;
       var             ascii;
+      var             loc = 0;
       var             stringBuilder;
       var             userFilesDir = playground.dbif.MFiles.UserFilesDir;
       var             progDir = playground.dbif.MFiles.ProgDir;
@@ -613,9 +616,11 @@ qx.Mixin.define("playground.dbif.MFiles",
         //
         
         // If an old program name and old code are provided...
+loc = 1;
         if (oldProgramName && oldCode)
         {
           // ... then save that code by the specified name.
+loc = 2;
           this._saveProgram(oldProgramName,
                             "autosave",
                             oldCode,
@@ -631,12 +636,16 @@ qx.Mixin.define("playground.dbif.MFiles",
         //
 
         // Sanitize the name
+loc = 3;
         programName = this.__sanitizeFilename(programName);
 
         // Retrieve the current user id
+loc = 4;
         user = playground.dbif.MDbifCommon.getCurrentUserId();
       
         // Get this user's object data, to get the template users
+loc = 5;
+console.log("querying for user {" + user + "}");
         userData = liberated.dbif.Entity.query(
           "playground.dbif.ObjUser",
           {
@@ -646,19 +655,25 @@ qx.Mixin.define("playground.dbif.MFiles",
           })[0];
 
         // If there's no templates array...
+loc = 6;
         if (! userData.templatesFrom)
         {
-          // ... then use an empty array
-          userData.templatesFrom = [];
+          // ... then use an array containing only ourself
+loc = 7;
+          userData.templatesFrom = [ user ];
         }
 
         // Ensure that there's no funny business going on here. The file's
         // user id must either be this user's own id, or one in his
         // templatesFrom list.
+loc = 8;
         if (userId != defaultUser &&
             userId != user &&
             userData.templatesFrom.indexOf(userId) == -1)
         {
+loc = 9;
+console.log("loc 9: user=" + user + ": File user id " + userId + " is not an allowable id: " + qx.lang.Json.stringify(userData.templatesFrom));
+
           userData.templatesFrom.unshift(user);
           throw new Error("File user id " + userId +
                           " is not an allowable id: " +
@@ -666,10 +681,13 @@ qx.Mixin.define("playground.dbif.MFiles",
         }
 
         // Generate the directory name
+loc = 10;
         if (userId === user)
         {
+loc = 11;
           if (category == "My Programs")
           {
+loc = 12;
             dir = 
               userFilesDir + "/" + 
               userId + "/" + 
@@ -679,6 +697,7 @@ qx.Mixin.define("playground.dbif.MFiles",
             // Are they requesting an old (non-HEAD) version?
             if (hash)
             {
+loc = 13;
               // Yup. Extract that version.
               this.__exec(
                 [ 
@@ -689,10 +708,10 @@ qx.Mixin.define("playground.dbif.MFiles",
                 ],
                 dir);
             }
-
           }
           else
           {
+loc = 14;
             dir = 
               userFilesDir + "/" + 
               userId + "/" + 
@@ -701,6 +720,7 @@ qx.Mixin.define("playground.dbif.MFiles",
         }
         else
         {
+loc = 15;
           dir = 
             userFilesDir + "/" + 
             userId + "/" + 
@@ -708,26 +728,34 @@ qx.Mixin.define("playground.dbif.MFiles",
         }
 
         // Prepare to read the file
+loc = 16;
         reader = new BufferedReader(new FileReader(dir + "/" + programName));
+loc = 17;
         stringBuilder = new StringBuilder();
         
         // Read the first line
+loc = 18;
         if ((line = reader.readLine()) != null)
         {
+loc = 19;
           stringBuilder.append(line);
         }
         
         // Read subsequent lines, prepending a newline to each
+loc = 20;
         while ((line = reader.readLine()) != null)
         {
+loc = 21;
           stringBuilder.append("\n");
           stringBuilder.append(line);
         }
 
         // Do we need to revert to HEAD?
+loc = 22;
         if (userId === user && category == "My Programs" && hash)
         {
           // Yup. Revert to HEAD
+loc = 23;
           this.__exec(
             [ 
               "git",
@@ -738,25 +766,30 @@ qx.Mixin.define("playground.dbif.MFiles",
             dir);
         }
 
+loc = 24;
         ret =
           {
             name : programName,
             code : String(stringBuilder.toString())
           };
         
-        // ONly add the directory listing if specifically requested to
+        // Only add the directory listing if specifically requested to
+loc = 25;
         if (bRefreshDirectoryListing)
         {
+loc = 26;
           ret.dirList = this.getDirectoryListing();
         }
         
+loc = 27;
         return ret;
       }
       catch (e)
       {
         var             exception;
 
-        java.lang.System.out.println("\ngetProgram() exception: ");
+        java.lang.System.out.println(
+          "\ngetProgram() exception at location " + loc + ": ");
 
         if (e.rhinoException != null)
         {
@@ -930,8 +963,9 @@ qx.Mixin.define("playground.dbif.MFiles",
         // Have we reached the maximum number of attempts?
         if (attempt >= maxAttempts)
         {
-          java.lang.System.out.println("Could not find a timestamped name to delete file " +
-                      name);
+          java.lang.System.out.println(
+            "Could not find a timestamped name to delete file " +
+            name);
           return { status : 1 };
         }
 
@@ -983,7 +1017,8 @@ qx.Mixin.define("playground.dbif.MFiles",
       // highly dependent upon java.
       if (liberated.dbif.Entity.getCurrentDatabaseProvider() != "jettysqlite")
       {
-        java.lang.System.out.println("copyProgram: not in jetty backend environment; ignoring.");
+        java.lang.System.out.println(
+          "copyProgram: not in jetty backend environment; ignoring.");
         return -1;
       }
 
