@@ -11,6 +11,9 @@ qx.Class.define("playground.view.Settings",
 {
   extend : qx.ui.container.Composite,
 
+  /**
+   * @lint ignoreDeprecated(alert)
+   */
   construct : function()
   {
     var             text;
@@ -56,7 +59,8 @@ qx.Class.define("playground.view.Settings",
       function(e)
       {
         // Enable the save button once a selection has been made
-        saveButton.setEnabled(true);
+        saveButton.setEnabled(
+          this._courses.getSelection().getItem(0).getId() >= 0);
       },
       this);
     vBox.add(this._courses);
@@ -117,6 +121,11 @@ qx.Class.define("playground.view.Settings",
           function(result, id)
           {
             var             application = qx.core.Init.getApplication();
+            var             whoAmI;
+
+            // Keep track of the reseachOk flag
+            whoAmI = application.getUserData("whoAmI");
+            whoAmI.setResearchOk(_this._researchOk.getValue());
 
             // Allow rearranging displayed pages
             _this.fireEvent("settingsSaved");
@@ -145,7 +154,7 @@ qx.Class.define("playground.view.Settings",
           function(ex, id)
           {
             // Ignore the failure. Should not ever occur.
-            alert("saveSettings failed miserably: " + ex);
+            alert("Unable to save settings: " + ex);
           },
 
           // function to call
@@ -187,14 +196,31 @@ qx.Class.define("playground.view.Settings",
     {
       var             i;
 
+      // Add an initial entry to tell them what to do
+      model.unshift(
+        {
+          id               : -1,
+          institution      : "",
+          courseName       : "",
+          labDay           : "",
+          labStartTime     : "",
+          isEnrollmentOpen : 1,
+          instructors      : "[]",
+          labInstructors   : "[]",
+          name             : "<Select your lab section and course>"
+        });
+
       // Set the complete model
       model = qx.data.marshal.Json.createModel(model);
       this._courses.setModel(model);
 
+      // Select, by default, the initial entry we added
+      this._courses.getSelection().setItem(0, model.getItem(0));
+
       // If there's no enrolled course id provided...
       if (typeof enrolledCourseId != "number")
       {
-        // ... then there's no selection necessary.
+        // ... then there's no other selection necessary.
         return;
       }
 
