@@ -120,6 +120,13 @@ qx.Class.define("playground.ServerOp",
     {
       var             queue = playground.ServerOp.__queue;
 
+      // If this status report doesn't contain the filename already, ...
+      if (! data.filename)
+      {
+        // ... then add it.
+        data.filename = qx.core.Init.getApplication().getName();
+      }
+
       // Enqueue this new request
       queue.push(data);
       
