@@ -74,8 +74,12 @@ qx.Mixin.define("playground.dbif.MSettings",
               otherUserObj.put();
             }
 
-            // Add the other user to this user's template list
-            userData.templatesFrom.push(otherUserId);
+            // If the other user isn't already in this user's template list...
+            if (userData.templatesFrom.indexOf(otherUserId) == -1)
+            {
+              // ... then add him.
+              userData.templatesFrom.push(otherUserId);
+            }
           };
 
 
@@ -97,8 +101,8 @@ qx.Mixin.define("playground.dbif.MSettings",
           // Get this user's object data
           userData = userObj.getData();
 
-          // Flush the templates array
-          userData.templatesFrom = [];
+          // Flush the templates array, except for our own id
+          userData.templatesFrom = [ userId ];
 
           // Get the data for the selected course
           courseData = liberated.dbif.Entity.query(
