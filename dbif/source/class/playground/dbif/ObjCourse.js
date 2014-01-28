@@ -14,9 +14,10 @@ qx.Class.define("playground.dbif.ObjCourse",
     // Pre-initialize the data
     this.setData(
       {
-        "id"             : null,
-        "instructors"    : [],
-        "labInstructors" : []
+        "id"               : null,
+        "isEnrollmentOpen" : 1,
+        "instructors"      : [],
+        "labInstructors"   : []
       });
 
     // Call the superclass constructor
@@ -30,22 +31,28 @@ qx.Class.define("playground.dbif.ObjCourse",
     var databaseProperties =
       {
         /** Id of this course */
-        "id"             : "Key",
+        "id"               : "Key",
         
         /** Institution providing the course */
-        "institution"    : "String",
+        "institution"      : "String",
 
         /** Course name */
-        "courseName"     : "String",
+        "courseName"       : "String",
         
-        /** Starting date */
-        "startDate"      : "Date",
+        /** Lab day */
+        "labDay"           : "String",
+        
+        /** Lab start time */
+        "labStartTime"     : "String",
+
+        /** Whether enrollment is open or not */
+        "isEnrollmentOpen" : "Integer",         // boolean, 1 or 0
         
         /** Course Instructors */
-        "instructors"    : "KeyArray",          // references ObjUser
+        "instructors"      : "KeyArray",        // references ObjUser
         
         /** Lab instructors */
-        "labInstructors" : "KeyArray"           // references ObjUser
+        "labInstructors"   : "KeyArray"         // references ObjUser
       };
 
     // Register our property types.

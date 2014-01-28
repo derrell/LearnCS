@@ -121,6 +121,9 @@ qx.Mixin.define("playground.dbif.MUser",
                 field : "user",
                 value : ret.whoAmI.user
               })[0];
+            
+            // Save this user id as the default for templatesFrom
+            userData.templatesFrom = "[" + ret.whoAmI.user + "]";
           }
           else
           {
@@ -132,7 +135,13 @@ qx.Mixin.define("playground.dbif.MUser",
           
           // Get the complete course list
           ret.courseList = 
-            liberated.dbif.Entity.query("playground.dbif.ObjCourse");
+            liberated.dbif.Entity.query(
+              "playground.dbif.ObjCourse",
+              {
+                type  : "element",
+                field : "isEnrollmentOpen",
+                value : 1
+              });
 
           ret.courseList.forEach(
             function(courseData)
@@ -155,7 +164,9 @@ qx.Mixin.define("playground.dbif.MUser",
               if (labInstructors.length > 0)
               {
                 courseData.name += 
-                  ", lab with " + labInstructors.join(", ");
+                  ", lab on " + courseData.labDay +
+                  " at " + courseData.labStartTime +
+                  " with " + labInstructors.join(", ");
               }
             });
 
