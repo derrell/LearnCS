@@ -493,7 +493,6 @@ else... */
           // If they're editing some code...
           if (name && name.length > 0 && code != this.getOriginCode())
           {
-console.log("Sending autosave status report");
             // ... then autosave it
             playground.ServerOp.statusReport(
               {
@@ -507,14 +506,12 @@ console.log("Sending autosave status report");
             // autosave again until it changes.
             this.setOriginCode(code);
           }
-else console.log("Not sending autosave status report");
 
           // Restart the timer to expire in some random amount of time
           // in a specified range
           timeout = 
             Math.floor(Math.random() * oneMinute * 2) + // 2 minute range
             oneMinute;                                  // starting at 1 minute
-console.log("starting new timer for " + (timeout / 1000) + " seconds");
           timer.start(arguments.callee, 0, this, null, timeout);
         },
         0,
@@ -1480,6 +1477,21 @@ console.log("starting new timer for " + (timeout / 1000) + " seconds");
       
       playground.c.Main.output("", true);
 
+      // We need an initial attempt at requiring ansic.js, which fails much
+      // of the time. The next require of the same file will then succeed.
+      try
+      {
+        require(
+          ["resource/playground/script/ansic.js"],
+          function(ansi)
+          {
+          });
+      }
+      catch (e2)
+      {
+        console.log("Pre-load of ansic.js: " + e);
+      }
+
       try
       {
         playground.c.lib.Preprocessor.preprocess(
@@ -1503,7 +1515,7 @@ console.log("starting new timer for " + (timeout / 1000) + " seconds");
       }
       catch(e2)
       {
-
+        console.log("Preprocess attempt to load ansic.js: " + e);
       }
     },
 
