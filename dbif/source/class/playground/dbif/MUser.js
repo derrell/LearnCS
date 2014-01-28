@@ -99,7 +99,7 @@ qx.Mixin.define("playground.dbif.MUser",
             });
           
           // If not...
-         if (userData.length === 0)
+          if (userData.length === 0)
           {
             // ... then create the user object
             userObj = new playground.dbif.ObjUser();
@@ -130,8 +130,6 @@ qx.Mixin.define("playground.dbif.MUser",
             // User is already registered. Get the one and only query result.
             userData = userData[0];
           }
-          
-          this.setMyUserId(userData.id);
           
           // Get the complete course list
           ret.courseList = 

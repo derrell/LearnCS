@@ -60,9 +60,40 @@ qx.Mixin.define("playground.dbif.MDbifCommon",
   {
     _applyWhoAmI : function(value, old)
     {
+      var             userData;
+
       playground.dbif.MDbifCommon.__whoAmI = value;
+
+      // If there's no user name provided...
+      if (value === null)
+      {
+        // ... we have nothing more to do
+        return;
+      }
+
+      // Retrieve the data for this user
+      userData = liberated.dbif.Entity.query(
+        "playground.dbif.ObjUser",
+        {
+          type  : "element",
+          field : "user",
+          value : value.user
+        });
+
+      // If this user doesn't exist...
+      if (userData.length === 0)
+      {
+        // ... we have nothing more to do
+      }
+
+      // There should be exactly one returned entry. Get it.
+      userData = userData[0];
+
+      this.setMyUserId(userData.id);
     },
 
+    // TODO: the myUserId property is now only set by _applyWhoAmI. Remove it,
+    // and access getWhoAmI().id instead.
     _applyMyUserId : function(value, old)
     {
       playground.dbif.MDbifCommon.__myUserId = value;
