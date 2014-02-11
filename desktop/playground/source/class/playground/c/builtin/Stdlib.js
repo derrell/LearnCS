@@ -8,12 +8,12 @@
  */
 
 /*
-#ignore(require)
+@ignore(require)
  */
 
 /**
- * @lint ignoreUndefined(require)
- * @lint ignoreUndefined(qx.bConsole)
+ * @ignore(require)
+ * @ignore(qx.bConsole)
  */
 if (typeof qx === "undefined" || qx.bConsole)
 {
@@ -188,14 +188,7 @@ qx.Class.define("playground.c.builtin.Stdlib",
                 info.name + " being redefined. " +
                   "Is stdlib.h included multiple times?");
             }
-            declarator = new playground.c.lib.Declarator(
-              {
-                line : line,
-                toString : function()
-                {
-                  return info.name;
-                }
-              });
+            declarator = new playground.c.lib.Declarator(node);
             declarator.setBuiltIn(info.func);
 
             // Add the declarator to the symbol table entry

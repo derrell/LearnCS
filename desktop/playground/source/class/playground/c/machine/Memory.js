@@ -8,24 +8,24 @@
  */
 
 /*
-#ignore(require)
-#ignore(ArrayBuffer)
-#ignore(Int8Array)
-#ignore(Int16Array)
-#ignore(Int32Array)
-#ignore(Uint8Array)
-#ignore(Uint16Array)
-#ignore(Uint32Array)
-#ignore(Uint8Array)
-#ignore(Float32Array)
-#ignore(qx.bConsole)
+@ignore(require)
+@ignore(ArrayBuffer)
+@ignore(Int8Array)
+@ignore(Int16Array)
+@ignore(Int32Array)
+@ignore(Uint8Array)
+@ignore(Uint16Array)
+@ignore(Uint32Array)
+@ignore(Uint8Array)
+@ignore(Float32Array)
+@ignore(qx.bConsole)
  */
 
 /**
  * Code used during testing with Node; ignored when in playground
  * 
- * @lint ignoreUndefined(require)
- * @lint ignoreUndefined(qx.bConsole)
+ * @ignore(require)
+ * @ignore(qx.bConsole)
  */
 if (typeof qx === "undefined" || qx.bConsole)
 {
@@ -135,10 +135,13 @@ qx.Class.define("playground.c.machine.Memory",
         virgin : null           // initialized in defer()
       },
 
+      // Keep the size of the run-time stack reasonably small. If larger than
+      // about 0x1000, an infinitely-recursive program crashes the browser
+      // before the LearnCS! trap for out of swap space can recover.
       "rts" :                   // Run-time Stack
       {
         start  : 0x8000,
-        length : 0x7000,
+        length : 0x1000,
         virgin : null           // initialized in defer()
       }
 
@@ -218,8 +221,8 @@ qx.Class.define("playground.c.machine.Memory",
     /**
      * Initialize the memory module.
      *
-     * @lint ignoreUndefined(ArrayBuffer)
-     * @lint ignoreUndefined(Uint8Array)
+     * @ignore(ArrayBuffer)
+     * @ignore(Uint8Array)
      */
     initAll : function()
     {
@@ -279,15 +282,15 @@ qx.Class.define("playground.c.machine.Memory",
      * @return {Number}
      *   The typed value retrieved from memory
      *
-     * @lint ignoreUndefined(ArrayBuffer)
-     * @lint ignoreUndefined(Int8Array)
-     * @lint ignoreUndefined(Int16Array)
-     * @lint ignoreUndefined(Int32Array)
-     * @lint ignoreUndefined(Uint8Array)
-     * @lint ignoreUndefined(Uint16Array)
-     * @lint ignoreUndefined(Uint32Array)
-     * @lint ignoreUndefined(Uint8Array)
-     * @lint ignoreUndefined(Float32Array)
+     * @ignore(ArrayBuffer)
+     * @ignore(Int8Array)
+     * @ignore(Int16Array)
+     * @ignore(Int32Array)
+     * @ignore(Uint8Array)
+     * @ignore(Uint16Array)
+     * @ignore(Uint32Array)
+     * @ignore(Uint8Array)
+     * @ignore(Float32Array)
      */
     _getByType : function(type, addr, numElem)
     {
@@ -594,6 +597,15 @@ qx.Class.define("playground.c.machine.Memory",
       // location on the stack
       sp -= playground.c.machine.Memory.WORDSIZE;
 
+      // If the new stack pointer is out of bounds of stack space...
+      if (sp < rts.start)
+      {
+        // ... then abort the program.
+        throw new playground.c.lib.RuntimeError(
+          playground.c.lib.Node._currentNode,
+          "Out of stack space. Too much recursion?");
+      }
+
       // Is this new stack pointer inside the untouched, virgin area?
       if (sp < rts.virgin + playground.c.machine.Memory.virgin.rts)
       {
@@ -849,7 +861,7 @@ qx.Class.define("playground.c.machine.Memory",
      * @return {Array}
      *   An array of bytes copied from the simulated machine's memory
      *
-     * @lint ignoreUndefined(Uint8Array)
+     * @ignore(Uint8Array)
      */
     toArray : function(startAddr, length)
     {
@@ -1066,8 +1078,8 @@ qx.Class.define("playground.c.machine.Memory",
      * @return {qx.data.Array}
      *   The data model
      *
-     * @lint ignoreUndefined(Uint8Array)
-     * @lint ignoreUndefined(Uint32Array)
+     * @ignore(Uint8Array)
+     * @ignore(Uint32Array)
      */
     getDataModel : function(start, length)
     {
@@ -1340,10 +1352,10 @@ qx.Class.define("playground.c.machine.Memory",
     /**
      * Display a region of memory in a pretty format
      *
-     * @param startAddr
+     * @param startAddr {Number}
      *   The starting address to display
      *
-     * @param length
+     * @param length {Number}
      *   The number of bytes of data to display
      */
     prettyPrint : function(message, startAddr, length)

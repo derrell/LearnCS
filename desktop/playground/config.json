@@ -13,7 +13,7 @@
   "let" :
   {
     "APPLICATION"  : "playground",
-    "QOOXDOO_PATH" : "../../../../../ME/qooxdoo.git",
+    "QOOXDOO_PATH" : "../../lib/qooxdoo.git",
     "QXTHEME"      : "playground.theme.Theme",
     "LOCALES"      : [ "en", "de", "ro", "sv", "cs"],
     "OPTIMIZE"     : [ "basecalls", "comments", "privates", "strings", "variables", "variants", "whitespace" ],
@@ -54,16 +54,16 @@
           "manifest" : "${QOOXDOO_PATH}/component/library/versionlabel/Manifest.json"
         },
         { 
-         "manifest" : "/home/derrell/ME/aig/lib/liberated/Manifest.json"
+          "manifest" : "../../dbif/Manifest.json"
         },
         { 
-         "manifest" : "../../dbif/Manifest.json"
+          "manifest" : "../../lib/liberated.git/Manifest.json"
         },
         {
           "manifest" : "../../lib/dialog/Manifest.json"
         },
         { 
-         "manifest" : "../../lib/uploadwidget/Manifest.json"
+          "manifest" : "../../lib/uploadwidget/Manifest.json"
         }
       ],
 /* djl

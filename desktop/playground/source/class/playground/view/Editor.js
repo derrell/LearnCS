@@ -17,16 +17,10 @@
 
 ************************************************************************ */
 
-/* ************************************************************************
-
-#asset(playground/*)
-#ignore(require)
-#ignore(ace)
-
-************************************************************************ */
-
 /**
  * Container for the source code editor.
+ * 
+ * @asset(playground/*)
  */
 qx.Class.define("playground.view.Editor",
 {
@@ -93,18 +87,17 @@ qx.Class.define("playground.view.Editor",
     /**
      * The constructor was spit up to make the included mixin available during
      * the init process.
-     *
-     * @lint ignoreUndefined(require)
      */
     init: function()
     {
       this.setBackgroundColor("white");
 
-      // If widgets are added to the container, the zIndex of the editor blocker
-      // is set to 100. This makes possible to resize the splitpanes
-      this.addListener("addChildWidget", function() {
-        this.getBlocker().getContentBlockerElement().setStyles({ "zIndex" : 100 });
-        this.getBlocker().getBlockerElement().setStyles({ "zIndex" : 100 });
+      this.addListenerOnce("appear", function() {
+        // If widgets are added to the container, the zIndex of the editor
+        // blocker is set to 100. This makes possible to resize the splitpanes
+        this.addListener("addChildWidget", function() {
+          this.getBlocker().getBlockerElement().setStyles({ "zIndex" : 100 });
+        }, this);
       }, this);
 
       // layout stuff
@@ -113,11 +106,16 @@ qx.Class.define("playground.view.Editor",
       this.setDecorator("main");
 
       // caption
+      var dec = new qx.ui.decoration.Decorator().set({
+          widthBottom : 1,
+          colorBottom : "border-separator"
+        });
       var caption = new qx.ui.container.Composite().set({
         padding    : 5,
         allowGrowX : true,
         allowGrowY : true,
-        backgroundColor: "white"
+        backgroundColor: "white",
+        decorator  : dec
       });
       this.add(caption);
       // configure caption
@@ -132,14 +130,13 @@ qx.Class.define("playground.view.Editor",
       this.__textarea = new qx.ui.form.TextArea().set({
         wrap      : false,
         font      : qx.bom.Font.fromString("14px monospace"),
-        decorator : "separator-vertical",
         backgroundColor: "white",
-        padding   : [0,0,0,5]
+        padding   : [0,0,0,5],
+        decorator : null
       });
       this.add(this.__textarea, { flex : 1 });
 
       this.__editor = new qx.ui.core.Widget();
-      this.__editor.setDecorator("separator-vertical");
       var highlightDisabled = false;
       var badIE = qx.core.Environment.get("engine.name") == "mshtml";
       if (badIE) {
@@ -194,7 +191,7 @@ qx.Class.define("playground.view.Editor",
      * This code part uses the ajax.org code editor library to add a
      * syntax-highlighting editor as an textarea replacement
      *
-     * @lint ignoreUndefined(ace,require)
+     * @ignore(ace.edit, require)
      */
     __onEditorAppear : function() {
       // timout needed for chrome to not get the ACE layout wrong and show the

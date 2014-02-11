@@ -8,15 +8,15 @@
  */
 
 /*
-#ignore(require)
-#ignore(qx.bConsole)
+@ignore(require)
+@ignore(qx.bConsole)
  */
 
 /**
  * Code used during testing with Node; ignored when in playground
  * 
- * @lint ignoreUndefined(require)
- * @lint ignoreUndefined(qx.bConsole)
+ * @ignore(require)
+ * @ignore(qx.bConsole)
  */
 if (typeof qx === "undefined" || qx.bConsole)
 {

@@ -12,18 +12,20 @@
  */
 
 /*
-#asset(playground/*)
-#ignore(require)
-#ignore(Blockly)
-#ignore(Blockly.Css.CONTENT)
-#ignore(Blockly.Css.CONTENT.map)
-#ignore(Blockly.Connection.prototype.checkType_)
+@asset(playground/*)
+@ignore(require)
+@ignore(Blockly.*)
+@ignore(Blockly.Css.CONTENT)
+@ignore(Blockly.Css.CONTENT.map)
+@ignore(Blockly.Connection.prototype.checkType_)
 */
 
 
 
 /**
  * Container for the Blockly code editor.
+ *
+ * @ignore(Blockly.*)
  */
 qx.Class.define("playground.view.Blockly",
 {
@@ -185,11 +187,11 @@ qx.Class.define("playground.view.Blockly",
      * The constructor was split up to make the included mixin available
      * during the init process.
      *
-     * @lint ignoreUndefined(require)
-     * @lint ignoreUndefined(Blockly)
-     * @lint ignoreUndefined(Blockly.Css.CONTENT)
-     * @lint ignoreUndefined(Blockly.Css.CONTENT.map)
-     * @lint ignoreUndefined(Blockly.Connection.prototype.checkType_)
+     * @ignore(require)
+     * @ignore(Blockly)
+     * @ignore(Blockly.Css.CONTENT)
+     * @ignore(Blockly.Css.CONTENT.map)
+     * @ignore(Blockly.Connection.prototype.checkType_)
      */
     init: function()
     {
@@ -207,7 +209,7 @@ qx.Class.define("playground.view.Blockly",
       this.addListener(
         "addChildWidget", function() 
         {
-          this.getBlocker().getContentBlockerElement().setStyles(
+          this.getBlocker().getBlockerElement().setStyles(
             {
               "zIndex" : 100 
             });
@@ -265,7 +267,8 @@ qx.Class.define("playground.view.Blockly",
     /**
      * Inject Blockly into the editor container
      *
-     * @lint ignoreUndefined(Blockly,require)
+     * @ignore(require)
+     * @ignore(Blockly.*)
      */
     __onEditorAppear : function() 
     {
@@ -542,12 +545,12 @@ qx.Class.define("playground.view.Blockly",
      * @return {String} 
      *   The current set text.
      *
-     * @lint ignoreUndefined(Blockly)
-     * @lint ignoreUndefined(Blockly.Xml)
-     * @lint ignoreUndefined(Blockly.Xml.domToText)
-     * @lint ignoreUndefined(Blockly.Xml.workspaceToDom)
-     * @lint ignoreUndefined(Blockly.Generator)
-     * @lint ignoreUndefined(Blockly.Generator.workspaceToCode)
+     * @ignore(Blockly)
+     * @ignore(Blockly.Xml)
+     * @ignore(Blockly.Xml.domToText)
+     * @ignore(Blockly.Xml.workspaceToDom)
+     * @ignore(Blockly.Generator)
+     * @ignore(Blockly.Generator.workspaceToCode)
      */
     getCode : function(language) 
     {
@@ -576,10 +579,10 @@ qx.Class.define("playground.view.Blockly",
      * @param code {String} 
      *   XML text representing the blocks to be displayed
      *
-     * @lint ignoreUndefined(Blockly)
-     * @lint ignoreUndefined(Blockly.Xml)
-     * @lint ignoreUndefined(Blockly.Xml.domToWorkspace)
-     * @lint ignoreUndefined(Blockly.Xml.textToDom)
+     * @ignore(Blockly)
+     * @ignore(Blockly.Xml)
+     * @ignore(Blockly.Xml.domToWorkspace)
+     * @ignore(Blockly.Xml.textToDom)
      */
     setCode : function(code) 
     {

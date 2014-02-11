@@ -20,13 +20,16 @@
 ************************************************************************ */
 /**
  * Application header widget.
+ *
+ * @lint ignoreDeprecated(alert)
  */
 qx.Class.define("playground.view.Header",
 {
   extend : qx.ui.container.Composite,
 
   /**
-   * @lint ignoreUndefined(qxc)
+   * @ignore(qxc)
+   * @lint ignoreDeprecated(confirm) 
    */
   construct : function()
   {
@@ -62,7 +65,8 @@ qx.Class.define("playground.view.Header",
     var consoleButton = new qx.ui.form.RadioButton(this.tr("Console Mode"));
     consoleButton.set({
       model: "ria",
-      appearance: "modeButton"
+      appearance: "modeButton",
+      focusable : false
     });
 
 /*

@@ -24,14 +24,13 @@ qx.Mixin.define("playground.dbif.MUsageDetail",
     /**
      * A usage detail status report
      *
-     * @param dataList {Array of Map}
+     * @param dataList {Array}
      *   Array of usage detail maps. Fields are as in "User-provided" section of
      *   ObjUsageDetail
      */
     usageDetail : function(dataList, error)
     {
-      var             detailObj;
-      var             detailData;
+      var             _this = this;
 
       return liberated.dbif.Entity.asTransaction(
         function()
@@ -39,6 +38,17 @@ qx.Mixin.define("playground.dbif.MUsageDetail",
           dataList.forEach(
             function(data)
             {
+              var             hash;
+              var             snapshot;
+              var             detailObj;
+              var             detailData;
+              var             messageData;
+
+              // Store any snapshot data, and then delete it from the
+              // object. We'll save it separately.
+              snapshot = data.snapshot;
+              delete data.snapshot;
+
               // Create the usage detail object
               detailObj = new playground.dbif.ObjUsageDetail();
 
@@ -50,6 +60,30 @@ qx.Mixin.define("playground.dbif.MUsageDetail",
 
               // Re-add (or overwrite, if the user was nasty), the user name
               detailData.user = playground.dbif.MDbifCommon.getCurrentUserId();
+
+              // Copy non-null fields into a new map
+              messageData = {};
+              Object.keys(detailData).forEach(
+                function(key)
+                {
+                  if (detailData[key] !== null)
+                  {
+                    messageData[key] = detailData[key];
+                  }
+                });
+
+              // Is there a snapshot to be saved?
+              if (snapshot)
+              {
+                // Yup. Save it.
+                hash = _this.saveProgram(
+                  messageData.filename || "HARDCODED.c", 
+                  qx.lang.Json.stringify(messageData, null, "  "),
+                  snapshot);
+              }
+              
+              // The hash becomes the snapshot field in the detail object
+              data.snapshot = hash;
 
               // Write it to the database
               detailObj.put();

@@ -12,9 +12,9 @@
  */
 
 /*
-#asset(playground/*)
-#ignore(require)
-#ignore(Blockly)
+@asset(playground/*)
+@ignore(require)
+@ignore(Blockly)
 */
 
 qx.Class.define("playground.view.blocks.Blocks",

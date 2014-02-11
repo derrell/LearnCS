@@ -35,13 +35,13 @@ This version has been modified by Derrell Lipman:
 */
 
 /*
-#ignore(require)
+@ignore(require)
  */
 
 /**
  * Code used during testing with Node; ignored when in playground
  * 
- * @lint ignoreUndefined(require)
+ * @ignore(require)
  */
 if (typeof qx === "undefined")
 {

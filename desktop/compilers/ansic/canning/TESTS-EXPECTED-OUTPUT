@@ -445,8 +445,8 @@ Error near line 7: Function 'doit' has not been defined.
 STDOUT: 
 >>> Running program
 i=23 d=2.000000 e=4.200000 j=42
-&i=0xefd4 &d=0xefd8 &e=0xefdc &j=0xefe0
-&x.k=0xefd8
+&i=0x8fd4 &d=0x8fd8 &e=0x8fdc &j=0x8fe0
+&x.k=0x8fd8
 >>> Program exited with exit code 0
 
 % ../dcc t007-struct-pointer-deref.c --rootdir=/home/derrell/ME
@@ -454,14 +454,14 @@ STDOUT:
 >>> Running program
 Via structure access:
 i=23 d=2.000000 e=4.200000 j=42
-&i=0xefd0 &d=0xefd4 &e=0xefd8 &j=0xefdc
-&x.k=0xefd4
+&i=0x8fd0 &d=0x8fd4 &e=0x8fd8 &j=0x8fdc
+&x.k=0x8fd4
 
 Via pointer dereference:
-pX=0xefd0
+pX=0x8fd0
 i=23 d=2.000000 e=4.200000 j=42
-&i=0xefd0 &d=0xefd4 &e=0xefd8 &j=0xefdc
-&pX->k=0xefd4
+&i=0x8fd0 &d=0x8fd4 &e=0x8fd8 &j=0x8fdc
+&pX->k=0x8fd4
 >>> Program exited with exit code 0
 
 % ../dcc t008-struct-redeclaration.c --rootdir=/home/derrell/ME
@@ -1098,5 +1098,43 @@ STDOUT:
 Size of struct X is 8
 pInt=0x104 pShort=0x202 pX=308
 pInt=0x108 pShort=0x204 pX=310
+>>> Program exited with exit code 0
+
+% ../dcc t055-short-circuit.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+
+false OR false
+expected func(instance=1, retval=0)
+expected func(instance=2, retval=0)
+
+false OR true
+expected func(instance=1, retval=0)
+expected func(instance=2, retval=1)
+Reached body of if statement (good)
+
+true OR false
+expected func(instance=1, retval=1)
+Reached body of if statement (good)
+
+true OR true
+expected func(instance=1, retval=1)
+Reached body of if statement (good)
+
+false AND false
+expected func(instance=1, retval=0)
+
+false AND true
+expected func(instance=1, retval=0)
+
+true AND false
+expected func(instance=1, retval=1)
+expected func(instance=2, retval=0)
+
+true AND true
+expected func(instance=1, retval=1)
+expected func(instance=2, retval=1)
+Reached body of if statement (good)
+
 >>> Program exited with exit code 0
 

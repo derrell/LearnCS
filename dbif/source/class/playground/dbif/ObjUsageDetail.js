@@ -11,30 +11,11 @@ qx.Class.define("playground.dbif.ObjUsageDetail",
   
   construct : function(id)
   {
-    // Pre-initialize the data
+    // Pre-initialize a bit of data
     this.setData(
       {
-        "id"                 : null,
         "user"               : playground.dbif.MDbifCommon.getCurrentUserId(),
-        "timestamp"          : playground.dbif.MDbifCommon.currentTimestamp(),
-        "type"               : null,
-        "session_change"     : null,
-        "breakpoint_row"     : 0,
-        "breakpoint_value"   : null,
-        "breakpoints"        : null,
-        "breakpoint_stop_at" : 0,
-        "exit_code"          : -1,
-        "exit_crash"         : null,
-        "change_action"      : null,
-        "change_start"       : null,
-        "change_end"         : null,
-        "change_text"        : null,
-        "show_memory_view"   : null,
-        "button_press"       : null,
-        "filename"           : null,
-        "displayError"       : null,
-        "error"              : null,
-        "snapshot"           : null
+        "timestamp"          : playground.dbif.MDbifCommon.currentTimestamp()
       });
 
     // Call the superclass constructor

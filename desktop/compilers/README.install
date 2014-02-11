@@ -1,5 +1,12 @@
 git clone https://github.com/zaach/jison.git jison.git
 
+# LearnCS has not been updated to use the most recent jison yet. Check
+# out an older version.
+cd jison.git
+git checkout d071b1a04958f65883f3dc5ceb5b8eab484aa37f 
+
 sudo add-apt-repository ppa:chris-lea/node.js 
 sudo apt-get update
+
+# If the following fails due to nodejs/npm conflict, just exclude npm
 sudo apt-get install nodejs npm

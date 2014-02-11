@@ -13,10 +13,10 @@ qx.Class.define("playground.c.stdio.Stdin",
   extend : playground.c.stdio.AbstractFile,
   
   /**
-   * @lint ignoreUndefined(process.stdin)
-   * @lint ignoreUndefined(process.stdin.resume)
-   * @lint ignoreUndefined(process.stdin.on)
-   * @lint ignoreUndefined(process.stdin._bEof)
+   * @ignore(process.stdin)
+   * @ignore(process.stdin.resume)
+   * @ignore(process.stdin.on)
+   * @ignore(process.stdin._bEof)
    */
   construct : function()
   {
@@ -110,7 +110,7 @@ qx.Class.define("playground.c.stdio.Stdin",
       catch(e)
       {
         // No terminal. See if we've set the 'eof' flag.
-        /** @lint ignoreUndefined(process.stdin._bEof) */
+        /** @ignore(process.stdin._bEof) */
         return process.stdin._bEof;
       }
     },

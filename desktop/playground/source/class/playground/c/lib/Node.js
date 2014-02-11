@@ -8,13 +8,13 @@
  */
 
 /*
-#ignore(require)
-#ignore(qx.bConsole)
+@ignore(require)
+@ignore(qx.bConsole)
  */
 
 /**
- * @lint ignoreUndefined(require)
- * @lint ignoreUndefined(qx.bConsole)
+ * @ignore(require)
+ * @ignore(qx.bConsole)
  */
 if (typeof qx === "undefined" || qx.bConsole)
 {
@@ -548,6 +548,7 @@ qx.Class.define("playground.c.lib.Node",
       var             bOldIsInitializer;
       var             bNewEntry;
       var             oldArgs;
+      var             oldArgTypes;
       var             oldId;
       var             oldEntry;
       var             oldStructSymtab;
@@ -556,6 +557,7 @@ qx.Class.define("playground.c.lib.Node",
       var             oldIsUnion;
       var             oldIsDefine;
       var             oldInitializers;
+      var             oldIsBuiltin;
       var             mem;
       var             memTemplate;
       var             args;
@@ -1055,15 +1057,27 @@ qx.Class.define("playground.c.lib.Node",
           {
             value1 = this.getExpressionValue(v, data);
 
+            // Create a specifier for the value
+            specOrDecl = new playground.c.lib.Specifier(this, "int");
+
+            // Short circuit. No need to check RHS if LHS is false
+            if (! value1.value)
+            {
+              success(
+                {
+                  value       : 0,
+                  specAndDecl : [ specOrDecl ]
+                });
+
+              return;
+            }
+            
             this.children[1].process(
               data,
               bExecuting,
               function(v)
               {
                 value2 = this.getExpressionValue(v, data);
-
-                // Create a specifier for the value
-                specOrDecl = new playground.c.lib.Specifier(this, "int");
 
                 success(
                   { 
@@ -1100,7 +1114,12 @@ qx.Class.define("playground.c.lib.Node",
             bExecuting,
             function(v)
             {
+              var             origSpecAndDecl;
+
               value1 = this.getExpressionValue(v, data);
+
+              // Save the original specifier/declarator list
+              origSpecAndDecl = value1.specAndDecl.slice(0);
 
               // Pull the first specifier/declarator off of the list. We'll
               // replace it with one containing the (possibly unaltered)
@@ -1127,15 +1146,14 @@ qx.Class.define("playground.c.lib.Node",
               // list of specifiers/declarators
               value1.specAndDecl.unshift(specOrDecl);
 
-              // If we were given a JavaScript array in which to place args...
-              if (data.args)
+              // Save this argument
+              data.args.unshift(value1.value);
+              data.argTypes.unshift(origSpecAndDecl);
+
+              // If this is not a built-in function...
+              if (! data.isBuiltin)
               {
-                // ... then add this one.
-                data.args.unshift(value1.value);
-              }
-              else
-              {
-                // otherwise, push the arguments onto the stack
+                // ... then push the arguments onto the stack
                 playground.c.lib.Node.__mem.stackPush(type, value1.value);
               }
               
@@ -2935,17 +2953,24 @@ qx.Class.define("playground.c.lib.Node",
             // function, or the reference of a built-in function.
             value2 = value1.getAddr(); // THIS RETURNS A NODE
 
-            // Save any old argument array
+            // Save any old argument array and built-in indicator
             oldArgs = data.args;
+            oldArgTypes = data.argTypes;
+            oldIsBuiltin = data.isBuiltin;
 
-            // Get the type of this (supposed) funciton
+            // Get the type of this (supposed) function
             type = value1.getSpecAndDecl()[0].getType();
+
+            // Prepare to save function arguments, for type checking and use
+            // by builtins.
+            data.args = [];
+            data.argTypes = [];
 
             // Prepare to save arguments in a JS array as well as on the
             // stack, in case this is a built-in function being called.
             if (type == "builtIn")
             {
-              data.args = [];
+              data.isBuiltin = true;
             }
             else if (type != "function")
             {
@@ -2963,7 +2988,7 @@ qx.Class.define("playground.c.lib.Node",
             {
               // In case this is a non-builtIn embedded in a builtIn, remove
               // any arguments from the data objects.
-              delete data.args;
+              delete data.isBuiltin;
 
               // Ensure that this function has been defined, not just declared
               if (! value2 || value1.getLine() > this.line)
@@ -2994,13 +3019,17 @@ qx.Class.define("playground.c.lib.Node",
             }
             
             // Push the arguments onto the stack
-            //
-            // FIXME: validate that argument types match definition
             this.children[1].process(
               data,
               bExecuting,
               function()
               {
+                var             terminal;
+                var             error;
+                var             symbols;
+                var             functionName;
+                var             incompatible;
+
                 // Is this a built-in function, or a user-generated one?
                 if (value1.getSpecAndDecl()[0].getType() == "builtIn")
                 {
@@ -3012,8 +3041,11 @@ qx.Class.define("playground.c.lib.Node",
                       // Save the return value
                       value3 = ret;
 
-                      // Restore the old argument array, if there was one.
+                      // Restore the old argument array and built-in
+                      // indicator, if they existed
                       data.args = oldArgs;
+                      data.argTypes = oldArgTypes;
+                      data.isBuiltin = oldIsBuiltin;
 
                       // Restore the stack pointer
                       mem.setReg("SP", "unsigned int", origSp);
@@ -3025,6 +3057,109 @@ qx.Class.define("playground.c.lib.Node",
                 }
                 else
                 {
+                  // Confirm that argument types match the formal parameter
+                  // declarations. First, retrieve the function's symtab
+                  symtab = value2._symtab;
+                  
+                  // Get the function name, by stripping off the leading "path"
+                  functionName = symtab.getName().split("/");
+                  functionName = functionName[functionName.length - 1];
+                  
+                  // Get the list of symbols from this symtab
+                  symbols = symtab.getSymbols();
+                  
+                  // Ensure that the number of arguments matches the number of
+                  // declared parameters.
+                  if (symbols.length > data.argTypes.length)
+                  {
+                    error =
+                      "The function " + functionName + " expects " +
+                      symbols.length + 
+                      (symbols.length == 1 ? " argument" : " arguments") +
+                      ", but received only " +
+                      data.argTypes.length;
+                  }
+                  else if (symbols.length < data.argTypes.length)
+                  {
+                    error =
+                      "The function " + functionName + " expects only " +
+                      symbols.length + 
+                      (symbols.length == 1 ? " argument" : " arguments") +
+                      ", but received " +
+                      data.argTypes.length;
+                  }
+                  else
+                  {
+                    // Compare each argument's type agains each symbol's type
+                    incompatible = symbols.filter(
+                      function(entry, i)
+                      {
+                        var             incompatible = [];
+                        var             thisSpecAndDecl;
+                        var             otherSpecAndDecl;
+
+                        // Get this parameter's specifier/declarator list
+                        thisSpecAndDecl = entry.getSpecAndDecl();
+
+                        // Get the argument's specifier/declarator list
+                        otherSpecAndDecl = data.argTypes[i];
+
+                        // Compare each specifier/declarator. If any are not
+                        // compatible, then the list is incompatible.
+                        incompatible =
+                          thisSpecAndDecl.filter(
+                            function(specOrDecl, i)
+                            {
+                              var             incompatible;
+                              incompatible = 
+                                ! specOrDecl.isCompatible(
+                                  otherSpecAndDecl[i],
+                                  otherSpecAndDecl.length == 1);
+
+                              return incompatible;
+                            });
+
+                        if (incompatible.length > 0)
+                        {
+                          error =
+                            "The type of argument " + (i + 1) + 
+                            " to function " + functionName +
+                            " is " +
+                            "incompatible with the declaration " +
+                            "of parameter " + entry.getName() + 
+                            "\n" +
+                            "Argument type: " + 
+                            playground.c.lib.SymtabEntry.getInfo(
+                              otherSpecAndDecl).description +
+                            "\n" +
+                            "Expected type for " +  entry.getName() + ": " + 
+                            playground.c.lib.SymtabEntry.getInfo(
+                            thisSpecAndDecl).description;
+                        }
+                      }.bind(this));
+                  }
+
+                  // If not compatible, display a warning.
+                  // FIXME: this should be an error, not a warning. We'll
+                  // leave it as a warning until feeling sure that it doesn't
+                  // generate messages when it shouldn't.
+                  if (error)
+                  {
+                    error = "Line " + this.line + ": " + error + "\n";
+
+                    try
+                    {
+                      terminal = 
+                        qx.core.Init.getApplication().getUserData(
+                          "terminal");
+                      terminal.addOutput(error);
+                    }
+                    catch(e)
+                    {
+                      console.log(error);
+                    }
+                  }
+
                   // Push the return address (our current line number) onto
                   // the stack
                   sp = mem.stackPush("unsigned int", this.line);
@@ -3060,8 +3195,11 @@ qx.Class.define("playground.c.lib.Node",
                       // We've completed a level of function call. Reduce depth.
                       playground.c.lib.Node._depth--;
 
-                      // Restore the old argument array, if there was one.
+                      // Restore the old argument array and built-in
+                      // indicator, if they exist.
                       data.args = oldArgs;
+                      data.argTypes = oldArgTypes;
+                      data.isBuiltin = oldIsBuiltin;
 
                       // Restore the stack pointer
                       mem.setReg("SP", "unsigned int", origSp);
@@ -4263,15 +4401,27 @@ qx.Class.define("playground.c.lib.Node",
           {
             value1 = this.getExpressionValue(v, data);
 
+            // Create a specifier for the value
+            specOrDecl = new playground.c.lib.Specifier(this, "int");
+
+            // Short circuit. No need to check RHS if LHS is true
+            if (value1.value)
+            {
+              success(
+                {
+                  value       : 1,
+                  specAndDecl : [ specOrDecl ]
+                });
+
+              return;
+            }
+            
             this.children[1].process(
               data,
               bExecuting,
               function(v)
               {
                 value2 = this.getExpressionValue(v, data);
-
-                // Create a specifier for the value
-                specOrDecl = new playground.c.lib.Specifier(this, "int");
 
                 success(
                   { 

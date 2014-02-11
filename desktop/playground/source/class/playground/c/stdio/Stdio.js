@@ -8,16 +8,19 @@
  */
 
 /*
-#ignore(require)
+@ignore(require)
 
-#require(playground.c.stdio.Stdin)
-#require(playground.c.stdio.Stdout)
-#require(playground.c.stdio.Stderr)
+@require(playground.c.stdio.Stdin)
+@require(playground.c.stdio.Stdout)
+@require(playground.c.stdio.Stderr)
  */
 
 /**
- * @lint ignoreUndefined(require)
- * @lint ignoreUndefined(qx.bConsole)
+ * @ignore(require)
+ * @ignore(qx.bConsole)
+ * @require(playground.c.stdio.Stdin)
+ * @require(playground.c.stdio.Stdout)
+ * @require(playground.c.stdio.Stderr)
  */
 if (typeof qx === "undefined" || qx.bConsole)
 {

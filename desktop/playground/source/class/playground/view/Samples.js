@@ -17,16 +17,12 @@
 
 ************************************************************************ */
 
-/* ************************************************************************
-
-#asset(playground/*)
-#ignore(require)
-#ignore(ace)
-
-************************************************************************ */
-
 /**
  * Container for the examples.
+ * 
+ * @ignore(require)
+ * @ignore(ace)
+ * @asset(playground/*)
  */
 qx.Class.define("playground.view.Samples",
 {

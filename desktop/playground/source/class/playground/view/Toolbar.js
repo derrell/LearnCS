@@ -16,17 +16,13 @@
      * Martin Wittemann (martinwittemann)
 
 ************************************************************************ */
-/* ************************************************************************
-
-#asset(playground/images/*)
-
-************************************************************************ */
 
 /**
  * The playground toolbar containing all buttons and menus.
  *
- * @lint ignoreUndefined(Blob)
- * @lint ignoreUndefined(uploadwidget.UploadButton)
+ * @asset(playground/images/*)
+ * 
+ * @ignore(Blob)
  */
 qx.Class.define("playground.view.Toolbar",
 {
@@ -212,7 +208,8 @@ qx.Class.define("playground.view.Toolbar",
       playground.ServerOp.statusReport(
         {
           type         : "button_press",
-          button_press : "Run"
+          button_press : "Run",
+          snapshot     : qx.core.Init.getApplication().editor.getCode()
         });
 
       // Run the program
@@ -457,8 +454,8 @@ qx.Class.define("playground.view.Toolbar",
     /**
      * Called when program is stopped
      * 
-     * @param e {qx.event.type.Event||String}
-     *   If this function called with a String argument, e.g., as a result of
+     * @param e {qx.event.type.Event|String}
+     *   If this function is called with a String argument, e.g., as a result of
      *   editing in the code editor, the "Program Stopped" message is appended
      *   with the provided string.
      */

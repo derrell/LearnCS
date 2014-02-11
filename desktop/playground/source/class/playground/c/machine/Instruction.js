@@ -8,15 +8,17 @@
  */
 
 /*
-#ignore(require)
-#ignore(qx.bConsole)
- */
+@ignore(require)
+@ignore(qx.bConsole)
+@ignore(eval)
+*/
 
 /**
  * Code used during testing with Node; ignored when in playground
- * 
- * @lint ignoreUndefined(require)
- * @lint ignoreUndefined(qx.bConsole)
+ *
+ * @ignore(require)
+ * @ignore(qx.bConsole)
+ * @lint ignoreDeprecated(eval) 
  */
 if (typeof qx === "undefined" || qx.bConsole)
 {
@@ -586,7 +588,7 @@ qx.Class.define("playground.c.machine.Instruction",
     /**
      * Memory operations (including stack)
      *
-     * @param instruction
+     * @param instruction {Number}
      *   Bits 29-31 contain the opcode.
      *
      *   Bits 24-28 have the subcode indicating the specific memory operation 
@@ -971,8 +973,6 @@ qx.Class.define("playground.c.machine.Instruction",
      *
      * @param line {Number}
      *   The source code line number from which this instruction derives
-     *
-     * @lint ignoreDeprecated(eval)
      */
     write : function(instruction, addrInfo, line)
     {
