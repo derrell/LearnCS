@@ -443,7 +443,7 @@ var tests =
      [
        "../dcc",
        test.name,
-       "--rootdir=/home/derrell/ME"
+       "--rootdir=/data/jdw/projects/derrell"
      ];
 
    // If there is standard input...
