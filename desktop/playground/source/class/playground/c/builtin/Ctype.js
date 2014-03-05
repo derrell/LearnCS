@@ -35,6 +35,9 @@ qx.Class.define("playground.c.builtin.Ctype",
     /** upper can lower case letter's ascii values. Initialized in defer */
     _ALPHA : null,
 
+    /** control code ascii values. Initialized in defer */
+    _CONTROL : null,
+
     /** digits' ascii values. Initialized in defer */
     _DIGIT : null,
 
@@ -98,6 +101,14 @@ qx.Class.define("playground.c.builtin.Ctype",
             {
               var args = Array.prototype.slice.call(arguments);
               playground.c.builtin.Ctype.isalpha.apply(null, args);
+            }
+          },
+          {
+            name : "iscntrl",
+            func : function()
+            {
+              var args = Array.prototype.slice.call(arguments);
+              playground.c.builtin.Ctype.iscntrl.apply(null, args);
             }
           },
           {
@@ -278,6 +289,27 @@ qx.Class.define("playground.c.builtin.Ctype",
     },
 
     /**
+     * Determine if a character is a control code
+     */
+    iscntrl : function(success, failure, c)
+    {
+      var             specOrDecl;
+
+      // Create a specifier for the return value
+      specOrDecl = new playground.c.lib.Specifier(
+        playground.c.lib.Node._currentNode,
+        "int");
+
+      // Return true if the character is an upper case letter
+      success(
+        {
+          value       : (playground.c.builtin.Ctype._CONTROL.indexOf(c) != -1
+                         ? 1 : 0),
+          specAndDecl : [ specOrDecl ]
+        });
+    },
+
+    /**
      * Determine if a character is printable
      */
     isprint : function(success, failure, c)
@@ -376,6 +408,12 @@ qx.Class.define("playground.c.builtin.Ctype",
     // alphabetic: upper and lower case letters
     statics._ALPHA = statics._UPPER.slice(0);
     Array.prototype.push.apply(statics._ALPHA, statics._LOWER);
+
+    // control codes
+    statics._CONTROL = new Array(
+      0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+      21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 127
+    );
 
     // digit characters
     statics._DIGIT =
