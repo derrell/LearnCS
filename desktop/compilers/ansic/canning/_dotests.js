@@ -406,6 +406,9 @@ var tests =
     },
     {
       name   : "t055-short-circuit.c"
+    },
+    {
+      name   : "t056-printf-percent-g.c"
     }
   ];
 

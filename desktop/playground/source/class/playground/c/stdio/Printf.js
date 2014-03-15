@@ -594,7 +594,7 @@ qx.Class.define("playground.c.stdio.Printf",
         if (!token.alternative)
         { 
           //print('replacing trailing 0 in \'' + s + '\'');
-          token.arg = token.arg.replace(/(\..*[^0])0*/, '$1');
+          token.arg = token.arg.replace(/(\..*[^0])0*e/, '$1e');
 
           // if fractional part is entirely 0, remove it and decimal point
           token.arg = token.arg.replace(/\.0*e/, 'e').replace(/\.0$/,'');

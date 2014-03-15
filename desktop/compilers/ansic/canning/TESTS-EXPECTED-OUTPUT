@@ -1138,3 +1138,9 @@ Reached body of if statement (good)
 
 >>> Program exited with exit code 0
 
+% ../dcc t056-printf-percent-g.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+1.068e-10
+>>> Program exited with exit code 0
+
