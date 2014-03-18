@@ -59,7 +59,7 @@ qx.Mixin.define("playground.dbif.MUsageDetail",
               qx.lang.Object.mergeWith(detailData, data, true);
 
               // Re-add (or overwrite, if the user was nasty), the user name
-              detailData.user = playground.dbif.MDbifCommon.getCurrentUserId();
+              detailData.user = this.getWhoAmI().user;
 
               // Copy non-null fields into a new map
               messageData = {};
@@ -87,7 +87,9 @@ qx.Mixin.define("playground.dbif.MUsageDetail",
 
               // Write it to the database
               detailObj.put();
-            });
+            }.bind(this),
+            [],
+            this);
 
           return 0;
         }.bind(this));

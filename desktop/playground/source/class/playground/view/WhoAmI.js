@@ -93,6 +93,7 @@ qx.Class.define("playground.view.WhoAmI",
     // apply function
     _applyLogoutUrl : function(value, old)
     {
+console.log("Setting logoutUrl to '" + value + "'");
       var control = this.getChildControl("logoutUrl");
       if (control) 
       {

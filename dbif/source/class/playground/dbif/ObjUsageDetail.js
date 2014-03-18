@@ -14,7 +14,6 @@ qx.Class.define("playground.dbif.ObjUsageDetail",
     // Pre-initialize a bit of data
     this.setData(
       {
-        "user"               : playground.dbif.MDbifCommon.getCurrentUserId(),
         "timestamp"          : playground.dbif.MDbifCommon.currentTimestamp()
       });
 

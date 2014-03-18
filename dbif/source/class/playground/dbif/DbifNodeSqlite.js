@@ -1,14 +1,14 @@
 /**
- * Copyright (c) 2013 Derrell Lipman
+ * Copyright (c) 2014 Derrell Lipman
  * 
  * License:
- *   GPL Version 2: http://www.gnu.org/licenses/gpl-2.0.html 
+ *   LGPL: http://www.gnu.org/licenses/lgpl.html 
+ *   EPL : http://www.eclipse.org/org/documents/epl-v10.php
  */
 
-qx.Class.define("playground.dbif.DbifJettySqlite",
+qx.Class.define("playground.dbif.DbifNodeSqlite",
 {
-  extend  : liberated.jetty.SqliteDbif,
-  type    : "singleton",
+  extend  : liberated.node.SqliteDbif,
 
   include : 
   [
@@ -21,7 +21,7 @@ qx.Class.define("playground.dbif.DbifJettySqlite",
     this.base(arguments);
     
     // Prepare for remote procedure calls
-    this.__rpc = new liberated.jetty.Rpc("/rpc", this);
+    this.__rpc = new liberated.node.Rpc("/rpc", this);
   },
   
   members :
@@ -33,7 +33,7 @@ qx.Class.define("playground.dbif.DbifJettySqlite",
      * Register a service name and function.
      *
      * @param serviceName {String}
-     *   The name of this service within the <[rpcKey]> namespace.
+     *   The fully-qualified name of this service
      *
      * @param fService {Function}
      *   The function which implements the given service name.
@@ -61,19 +61,19 @@ qx.Class.define("playground.dbif.DbifJettySqlite",
     {
       return this.__rpc.processRequest(jsonData);
     },
+    
 
-    /**
-     * Identify the current user. Register him in the whoAmI property.
+    /*
+     * Identify the current user. 
      */
     identify : function(request)
     {
-      var             principal;
       var             user;
       var             bAdmin;
       
       // Find out who is logged in
-      principal = request.getUserPrincipal();
-      user = String(principal.getName());
+      user = request.user;
+      console.log("user=" + JSON.stringify(user));
       
       // If no one is logged in...
       if (! user)
@@ -85,32 +85,32 @@ qx.Class.define("playground.dbif.DbifJettySqlite",
       // Specify who we are
       this.setWhoAmI(
         {
-          user        : user,
-          displayName : "no name",
-          isAdmin     : false
+          user              : user.name,
+          userId            : user.id,
+          isAdmin           : false
         });
 
       // Provide the logout URL
-      this.setLogoutUrl("/login");
+      this.setLogoutUrl("/logout");
     }
   },
 
   defer : function()
   {
-    // Register our database driver functions and features
+    // Register the selected database interface entry points
     liberated.dbif.Entity.registerDatabaseProvider(
-      liberated.jetty.SqliteDbif.query,
-      liberated.jetty.SqliteDbif.put,
-      liberated.jetty.SqliteDbif.remove,
-      liberated.jetty.SqliteDbif.getBlob,
-      liberated.jetty.SqliteDbif.putBlob,
-      liberated.jetty.SqliteDbif.removeBlob,
-      liberated.jetty.SqliteDbif.beginTransaction,
+      liberated.node.SqliteDbif.query,
+      liberated.node.SqliteDbif.put,
+      liberated.node.SqliteDbif.remove,
+      liberated.node.SqliteDbif.getBlob,
+      liberated.node.SqliteDbif.putBlob,
+      liberated.node.SqliteDbif.removeBlob,
+      liberated.node.SqliteDbif.beginTransaction,
       { 
-        dbif        : "jettysqlite"
+        dbif        : "nodesqlite"
       });
     
     // Initialize the database
-    liberated.jetty.SqliteDbif.init("../learncs.db");
+    liberated.node.SqliteDbif.init("../learncs.db");
   }
 });

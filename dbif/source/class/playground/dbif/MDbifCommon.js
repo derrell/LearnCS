@@ -14,13 +14,6 @@ qx.Mixin.define("playground.dbif.MDbifCommon",
     playground.dbif.MFiles
   ],
 
-  construct : function()
-  {
-    // Use our authorization function
-    liberated.AbstractRpcHandler.authorizationFunction = 
-      playground.dbif.MDbifCommon.authorize;
-  },
-
   properties :
   {
     /**
@@ -31,19 +24,9 @@ qx.Mixin.define("playground.dbif.MDbifCommon",
     {
       nullable : true,
       init     : null,
-      check    : "Object",
-      apply    : "_applyWhoAmI"
+      check    : "Object"
     },
     
-    /**
-     * The database (ObjUser) ID of the current user
-     */
-    myUserId :
-    {
-      init     : null,
-      apply    : "_applyMyUserId"
-    },
-
     logoutUrl :
     {
       init     : "",
@@ -51,18 +34,6 @@ qx.Mixin.define("playground.dbif.MDbifCommon",
     }
   },
 
-  members :
-  {
-    _applyWhoAmI : function(value, old)
-    {
-      playground.dbif.MDbifCommon.__whoAmI = value;
-    },
-
-    _applyMyUserId : function(value, old)
-    {
-      playground.dbif.MDbifCommon.__myUserId = value;
-    }
-  },
 
   statics :
   {
@@ -75,19 +46,12 @@ qx.Mixin.define("playground.dbif.MDbifCommon",
     currentTimestamp : function()
     {
       return new Date().getTime();
-    },
+    }
+  },
 
-    /**
-     * Retrieve the id of the current user
-     * 
-     * @return {Number}
-     *   The id of the current user
-     */
-    getCurrentUserId : function()
-    {
-      return playground.dbif.MDbifCommon.__myUserId;
-    },
 
+  members :
+  {
     /**
      * Function to be called for authorization to run a service
      * method.
@@ -102,20 +66,23 @@ qx.Mixin.define("playground.dbif.MDbifCommon",
     authorize : function(methodName)
     {
       var             me;
+      var             whoAmI;
       var             bAnonymous;
 
-      // Are they logged in, or anonymous?
-      bAnonymous = (playground.dbif.MDbifCommon.__whoAmI === null);
-
-      // Get a shortcut to my user name
-      me = (bAnonymous ? null : playground.dbif.MDbifCommon.__whoAmI.user);
+      whoAmI = this.getWhoAmI();
 
       // If the user is an adminstrator, ...
-      if (! bAnonymous && playground.dbif.MDbifCommon.__whoAmI.isAdmin)
+      if (whoAmI && whoAmI.isAdmin)
       {
         // ... they implicitly have access.
         return true;
       }
+
+      // Are they logged in, or anonymous?
+      bAnonymous = (whoAmI === null);
+
+      // Get a shortcut to my user name
+      me = (bAnonymous ? null : whoAmI.user);
 
       //
       // Authorize individual methods. Use of a method may be authorized for

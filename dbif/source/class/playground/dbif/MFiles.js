@@ -65,7 +65,7 @@ qx.Mixin.define("playground.dbif.MFiles",
       var             File = java.io.File;
 
       // Retrieve the current user id
-      user = playground.dbif.MDbifCommon.getCurrentUserId();
+      user = this.getWhoAmI().user;
       
       [
         {
@@ -206,7 +206,7 @@ qx.Mixin.define("playground.dbif.MFiles",
       };
 
       // Retrieve the current user id
-      user = playground.dbif.MDbifCommon.getCurrentUserId();
+      user = this.getWhoAmI().user;
       
       // Remove dangerous ..
       programName = programName.replace("..", "DOTDOT");

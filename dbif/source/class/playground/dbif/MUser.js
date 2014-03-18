@@ -43,11 +43,16 @@ qx.Mixin.define("playground.dbif.MUser",
       var             userObj;
       var             userData;
       var             ret;
+      var             whoAmI = this.getWhoAmI();
       
       // Get the pre-calculated values for our return value
       ret =
         {
-          whoAmI    : this.getWhoAmI(),
+          whoAmI    : 
+          {
+            user    : whoAmI.user,
+            isAdmin : whoAmI.isAdmin
+          },
           logoutUrl : this.getLogoutUrl()
         };
 
@@ -93,7 +98,6 @@ qx.Mixin.define("playground.dbif.MUser",
             // User is already registered. Get the one and only query result.
             userData = userData[0];
           }
-          this.setMyUserId(userData.id);
         }.bind(this));
 
       // This is also the beginning of a new session. Note that.
