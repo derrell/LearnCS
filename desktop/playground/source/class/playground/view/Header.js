@@ -55,7 +55,7 @@ qx.Class.define("playground.view.Header",
     qx.core.Init.getApplication().setUserData("whoAmI", whoAmI);
 
     var version = 
-      new qxc.ui.versionlabel.VersionLabel("Playground", "0.047");
+      new qxc.ui.versionlabel.VersionLabel("Playground", "0.050");
     version.set(
       {
         font : "default",
@@ -68,6 +68,8 @@ qx.Class.define("playground.view.Header",
       appearance: "modeButton",
       focusable : false
     });
+    
+    consoleButton.exclude(); // djl - only one mode right now
 
 /*
     var mobileButton = new qx.ui.form.RadioButton(this.tr("Phone App"));
@@ -101,6 +103,7 @@ qx.Class.define("playground.view.Header",
       function(e)
       {
         var             engine;
+        var             application = qx.core.Init.getApplication();
 
         // ... determine what browser engine they're using
         engine = qx.core.Environment.get("engine.name");
@@ -122,6 +125,39 @@ console.log("got userInit response: " + JSON.stringify(result));
             // Success. Display the result values.
             whoAmI.set(result.whoAmI);
             whoAmI.setLogoutUrl(result.logoutUrl);
+            whoAmI.setResearchOk(result.bResearchOk);
+            application._settings.setResearchOk(result.bResearchOk);
+            application._settings.setCourseList(result.courseList,
+                                                result.enrolledCourse);
+
+            // Issue a request for the user's directory listing, if they're
+            // already enrolled.
+            if (result.enrolledCourse)
+            {
+              playground.ServerOp.rpc(
+                // success handler
+                function(result, id)
+                {
+                  application._displayDirectoryListing(result);
+                }.bind(this),
+
+                // failure handler
+                function(ex, id)
+                {
+                  // Ignore the failure. Should not ever occur.
+                  console.log("FAILED to get directory listing: " + ex);
+                }.bind(this),
+
+                // function to call
+                "getDirectoryListing"
+              );
+            }
+            else
+            {
+              // otherwise, hide the editing page and show the settings page
+              application._editingContainer.exclude();
+              application._settingsContainer.show();
+            }
           },
 
           // failure handler

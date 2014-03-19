@@ -60,6 +60,13 @@ qx.Class.define("playground.view.WhoAmI",
       apply : "_applyIsAdmin"
     },
     
+    /** Whether this user has allowed research */
+    researchOk :
+    {
+      check : "Boolean",
+      apply : "_applyResearchOk"
+    },
+
     /** The logout URL */
     logoutUrl :
     {
@@ -91,6 +98,16 @@ qx.Class.define("playground.view.WhoAmI",
     },
 
     // apply function
+    _applyResearchOk : function(value, old)
+    {
+      var control = this.getChildControl("researchOk");
+      if (control) 
+      {
+        control.setValue(value ? "." : "");
+      }
+    },
+
+    // apply function
     _applyLogoutUrl : function(value, old)
     {
 console.log("Setting logoutUrl to '" + value + "'");
@@ -118,7 +135,8 @@ console.log("Setting logoutUrl to '" + value + "'");
         break;
 
       case "user":
-        control = new qx.ui.basic.Label(this.getUser());
+        control = new qx.ui.basic.Label(this.getUser() + "    ");
+        control.setFont(new qx.bom.Font.fromString("sans-serif bold 20"));
         control.setAnonymous(true);
         this._add(control, { row : 0, column : 1 });
         break;
@@ -128,6 +146,12 @@ console.log("Setting logoutUrl to '" + value + "'");
         control.setRich(true);
         control.setAnonymous(true);
         this._add(control, { row : 0, column : 2 });
+        break;
+
+      case "researchOk" :
+        control = new qx.ui.basic.Label();
+        control.setAnonymous(true);
+        this._add(control, { row : 0, column : 3 });
         break;
       }
 

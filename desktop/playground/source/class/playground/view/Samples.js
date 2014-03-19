@@ -38,14 +38,39 @@ qx.Class.define("playground.view.Samples",
     this.setLayout(layout);
     this.setDecorator("main");
 
+    // horizontal box to hold caption and versions toggle button
+    var hbox = new qx.ui.container.Composite(new qx.ui.layout.HBox());
+
     // caption
-    var caption = new qx.ui.basic.Label(this.tr("Samples")).set({
+    var caption = new qx.ui.basic.Label(this.tr("Files")).set({
       font       : "bold",
       padding    : 5,
       allowGrowX : true,
       allowGrowY : true
     });
-    this.add(caption);
+    hbox.add(caption, { flex : 1 });
+    
+    // versions toggle button
+    this._versions = new qx.ui.form.CheckBox(this.tr("Show Versions"));
+    this._versions.setToolTipText(
+      this.tr("Show versions of the selected program in My Programs"));
+    this._versions.addListener(
+      "changeValue", function(e) 
+      {
+        // Get the selected sample
+        var sample = this.__list.getSelection().getItem(0);
+
+        if (sample) 
+        {
+          this.fireDataEvent("updateDirectory", 
+                             e.getData() ? sample.getOrigName() : null);
+        }
+      },
+      this);
+    hbox.add(this._versions);
+
+    // Add the caption and versions toggle button to the top of list
+    this.add(hbox);
 
     // list
     this.add(this._createList(), {flex: 1});
@@ -74,8 +99,14 @@ qx.Class.define("playground.view.Samples",
     /** Event triggered by the rename button. */
     "rename" : "qx.event.type.Event",
 
+    /** Event triggered by the copy button. */
+    "copy"   : "qx.event.type.Event",
+
     /** Cancelable event fired before the selection changes. */
-    "beforeSelectSample" : "qx.event.type.Event"
+    "beforeSelectSample" : "qx.event.type.Event",
+    
+    /** Event triggered by Show Versions checkbox */
+    "updateDirectory" : "qx.event.type.Data"
   },
 
 
@@ -107,6 +138,7 @@ qx.Class.define("playground.view.Samples",
     __list : null,
     __deleteButton : null,
     __renameButton : null,
+    __copyButton   : null,
 
 
     /**
@@ -131,6 +163,23 @@ qx.Class.define("playground.view.Samples",
           return;
         }
       };
+    },
+
+
+    /**
+     * Selects a sample by the given name.
+     * @param code {String} The name of the sample.
+     */
+    selectByName : function(name) {
+      var model = this.__list.getModel();
+      this.__internalSelect = true;
+      for (var i=0; i < model.length; i++) {
+        if (model.getItem(i).getName() == name) {
+          this.select(model.getItem(i));
+          break;
+        }
+      };
+      this.__internalSelect = false;
     },
 
 
@@ -161,28 +210,83 @@ qx.Class.define("playground.view.Samples",
       // ////////////////////////////////////////////
 
       // set the delegate
-      this.__list.setDelegate({
-        // filder: only show samples for the current mode
-        filter : function(data) {
-          return data.getMode() == self.getMode();
-        },
-        // group the samples by category
-        group : function(data) {
-          if (data.getCategory() == "static") {
-            return qx.locale.Manager.tr("Static");
-          } else {
-            return qx.locale.Manager.tr("User");
+      this.__list.setDelegate(
+        {
+/* djl
+          // filter: only show samples for the current mode
+          filter : function(data) 
+          {
+            return data.getMode() == self.getMode();
+          },
+*/
+          // group the samples by category
+          group : function(data) 
+          {
+            return data.getCategory();
+          },
+
+          sorter : function(a, b)
+          {
+            var             aName = a.getOrigName();
+            var             bName = b.getOrigName();
+            var             aCategory = a.getCategory();
+            var             bCategory = b.getCategory();
+            var             aVersionNum = a.getVersionNum();
+            var             bVersionNum = b.getVersionNum();
+
+            // Sort first by category, ...
+            if (aCategory != bCategory)
+            {
+              return (aCategory < bCategory 
+                      ? -1 
+                      : (aCategory > bCategory
+                         ? 1
+                         : 0));
+            }
+
+            // ... then by name, ...
+            if (aName != bName)
+            {
+              return (aName < bName
+                      ? -1
+                      : (aName > bName
+                         ? 1
+                         : 0));
+            }
+
+            // and finally by version number
+            return (aVersionNum < bVersionNum 
+                    ? -1 
+                    : (aVersionNum > bVersionNum
+                       ? 1
+                       : 0));
           }
-        }
       });
 
       // selection change handler
-      this.__list.getSelection().addListener("change", function() {
-        var sample = this.__list.getSelection().getItem(0);
-        if (sample) {
-          this.fireDataEvent("selectSample", sample);
-        }
-      }, this);
+      this.__list.getSelection().addListener(
+        "change",
+        function() 
+        {
+          // Get the selected sample
+          var sample = this.__list.getSelection().getItem(0);
+          
+          if (sample) 
+          {
+            // Enable versions button only if selection is in My Programs, and
+            // is not an older version of a program.
+            this._versions.setEnabled(sample.getCategory() == "My Programs" &&
+                                      sample.getVersionNum() == 0);
+        
+            // If this isn't an internal selection (i.e., it's by user click)...
+            if (! this.__internalSelect)
+            {
+              // ... then handle a user selection
+              this.fireDataEvent("selectSample", sample);
+            }
+          }
+        }, 
+        this);
 
       return this.__list;
     },
@@ -197,6 +301,7 @@ qx.Class.define("playground.view.Samples",
       toolbar.setDecorator("separator-vertical");
       toolbar.setBackgroundColor("white");
 
+/* djl...
       // save button
       var saveButton = new qx.ui.toolbar.Button(
         null, "icon/16/actions/document-save.png"
@@ -206,15 +311,17 @@ qx.Class.define("playground.view.Samples",
       saveButton.addListener("execute", function() {
         this.fireEvent("save");
       }, this);
+*/
 
-      // save as button
-      var saveAsButton = new qx.ui.toolbar.Button(
+      // copy button
+      this.__copyButton = new qx.ui.toolbar.Button(
         null, "icon/16/actions/document-save-as.png"
       );
-      toolbar.add(saveAsButton);
-      saveAsButton.setToolTipText(this.tr("Save As"));
-      saveAsButton.addListener("execute", function() {
-        this.fireEvent("saveAs");
+      toolbar.add(this.__copyButton);
+      this.__copyButton.setToolTipText(
+        this.tr("Copy to new name in My Programs"));
+      this.__copyButton.addListener("execute", function() {
+        this.fireEvent("copy");
       }, this);
 
       // delete button
@@ -237,6 +344,19 @@ qx.Class.define("playground.view.Samples",
         this.fireEvent("rename");
       }, this);
 
+      // Separate the primary buttons from the download button
+      toolbar.add(new qx.ui.toolbar.Separator());
+
+      // save button
+      this.__saveAsButton = new qx.ui.toolbar.Button(
+        null, "icon/16/actions/document-save.png"
+      );
+      toolbar.add(this.__saveAsButton);
+      this.__saveAsButton.setToolTipText(this.tr("Download"));
+      this.__saveAsButton.addListener("execute", function() {
+        this.fireEvent("saveAs");
+      }, this);
+
       return toolbar;
     },
 
@@ -244,14 +364,27 @@ qx.Class.define("playground.view.Samples",
     // property apply
     _applyCurrentSample : function(value) {
       this.select(value);
-      // only change the state of the buttons of they are available
-      if (this.__deleteButton && this.__renameButton) {
-        if (value && value.getCategory() != "static") {
+      // only change the state of the buttons if they are available
+      if (this.__deleteButton && this.__renameButton && this.__copyButton)
+      {
+        if (value)
+        {
+          this.__copyButton.setEnabled(true);
+          this.__saveAsButton.setEnabled(true);
+        }
+
+        // only change the state of the buttons for non-Template categories
+        if (value && ! value.getCategory().match(/Templates/))
+        {
           this.__deleteButton.setEnabled(true);
           this.__renameButton.setEnabled(true);
-        } else {
+        }
+        else
+        {
           this.__deleteButton.setEnabled(false);
           this.__renameButton.setEnabled(false);
+          this.__copyButton.setEnabled(false);
+          this.__saveAsButton.setEnabled(false);
         }
       }
     },

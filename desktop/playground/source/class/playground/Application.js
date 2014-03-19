@@ -100,6 +100,8 @@ qx.Class.define("playground.Application",
      */
     main : function()
     {
+      var             timer;
+      
       // Call super class
       this.base(arguments);
 
@@ -138,14 +140,42 @@ qx.Class.define("playground.Application",
       var mainContainer = new qx.ui.container.Composite(layout);
       this.getRoot().add(mainContainer, { edge : 0 });
 
+      // editing container
+      this._editingContainer = new qx.ui.container.Composite(
+        new qx.ui.layout.VBox(), { flex : 1 });
+      
+      mainContainer.add(this._editingContainer, { flex : 1 });
+
       // qooxdoo header
       this.__header = new playground.view.Header();
-      mainContainer.add(this.__header, { flex : 0 });
-      this.__header.addListener("changeMode", this._onChangeMode, this);
+      this._editingContainer.add(this.__header, { flex : 0 });
+//      this.__header.addListener("changeMode", this._onChangeMode, this);
 
       // toolbar
       this.__toolbar = new playground.view.Toolbar();
-      mainContainer.add(this.__toolbar, { flex : 0 });
+      this._editingContainer.add(this.__toolbar, { flex : 0 });
+      
+      // settings container
+      this._settingsContainer = 
+        new qx.ui.container.Composite(new qx.ui.layout.VBox());
+      this._settingsContainer.exclude();
+      
+      this._settings = new playground.view.Settings();
+      this._settingsContainer.add(this._settings);
+      mainContainer.add(this._settingsContainer, { flex : 1 });
+      
+      // settings listener
+      this._settings.addListener(
+        "settingsSaved",
+        function(e)
+        {
+          // Hide settings container
+          this._settingsContainer.exclude();
+          
+          // Show the editing container
+          this._editingContainer.show();
+        },
+        this);
 
       // toolbar listener
       this.__toolbar.addListener("run", this.run, this);
@@ -159,7 +189,7 @@ qx.Class.define("playground.Application",
 
       // mainsplit, contains the editor splitpane and the info splitpane
       this.__mainsplit = new qx.ui.splitpane.Pane("horizontal");
-      mainContainer.add(this.__mainsplit, { flex : 1 });
+      this._editingContainer.add(this.__mainsplit, { flex : 1 });
       this.__mainsplit.setAppearance("app-splitpane");
 
       // editor split (left side of main split)
@@ -171,10 +201,14 @@ qx.Class.define("playground.Application",
       
       // examples pane
       this.__samplesPane = new playground.view.Samples();
-      this.__samplesPane.addListener("save", this.__onSave, this);
+//      this.__samplesPane.addListener("save", this.__onSave, this);
       this.__samplesPane.addListener("saveAs", this.__onSaveAs, this);
       this.__samplesPane.addListener("delete", this.__onDelete, this);
       this.__samplesPane.addListener("rename", this.__onRename, this);
+      this.__samplesPane.addListener("copy", this.__onCopy, this);
+      this.__samplesPane.addListener("updateDirectory", 
+                                     this.__onUpdateDirectory, 
+                                     this);
       this.bind("currentSample", this.__samplesPane, "currentSample");
       this.__samplesPane.addListener("beforeSelectSample", function(e) {
         if (this.__discardChanges()) {
@@ -186,6 +220,7 @@ qx.Class.define("playground.Application",
       }, this);
 
       // initialize custom samples
+/* djl
       this.__store = new qx.data.store.Offline("qooxdoo-playground-samples");
       // if the local storage is not empty
       if (this.__store.getModel() != null) {
@@ -197,6 +232,9 @@ qx.Class.define("playground.Application",
         this.__store.setModel(this.__samples.getModel());
       }
       this.__store.bind("model", this.__samplesPane, "model");
+else... */
+      this.__samples = new playground.Samples();
+// ...djl
 
       // Create a split for the tabview and the terminal
       this.__terminalsplit = new qx.ui.splitpane.Pane("vertical");
@@ -207,7 +245,7 @@ qx.Class.define("playground.Application",
       var page;
         
       // Create the page for the Source editor
-      page = new qx.ui.tabview.Page("C Source");
+      this.__sourcePage = page = new qx.ui.tabview.Page("");
       page.setLayout(new qx.ui.layout.VBox());
       this.editor = new playground.view.Editor();
       this.editor.addListener("disableHighlighting", function() {
@@ -313,7 +351,7 @@ qx.Class.define("playground.Application",
 
       this.__editorsplit.add(this.__samplesPane, 1);
 // djl...
-      this.__samplesPane.exclude();
+//      this.__samplesPane.exclude();
 // ...djl
       this.__terminalsplit.add(tabview, 4);
       this.__terminalsplit.add(terminal, 2);
@@ -441,6 +479,45 @@ qx.Class.define("playground.Application",
 
       infosplit.add(this.__log, 1);
       this.__log.exclude();
+
+      // Start a timer to autosave the program
+      timer = qx.util.TimerManager.getInstance();
+      timer.start(
+        function()
+        {
+          var             timeout;
+          var             oneMinute = 60 * 1000;
+          var             name = this.getName();
+          var             code = this.editor.getCode();
+          
+          // If they're editing some code...
+          if (name && name.length > 0 && code != this.getOriginCode())
+          {
+            // ... then autosave it
+            playground.ServerOp.statusReport(
+              {
+                type         : "autosave",
+                snapshot     : code,
+                filename     : name,
+                versions     : this.__samplesPane._versions.getValue()
+              });
+            
+            // Save the autosaved code as the origin code, so we won't
+            // autosave again until it changes.
+            this.setOriginCode(code);
+          }
+
+          // Restart the timer to expire in some random amount of time
+          // in a specified range
+          timeout = 
+            Math.floor(Math.random() * oneMinute * 2) + // 2 minute range
+            oneMinute;                                  // starting at 1 minute
+          timer.start(arguments.callee, 0, this, null, timeout);
+        },
+        0,
+        this,
+        null,
+        2 * 60 * 1000);
     },
 
 
@@ -471,6 +548,7 @@ qx.Class.define("playground.Application",
         return;
       }
 
+/*
       // check if mobile chould be used
       if (this.__supportsMode("mobile")) {
         // check for the mode cookie
@@ -483,6 +561,7 @@ qx.Class.define("playground.Application",
         this.setMode("ria");
         this.__header.setEnabledMode("mobile", false);
       }
+*/
 
       // Back button and bookmark support
       this.__initBookmarkSupport();
@@ -497,16 +576,33 @@ qx.Class.define("playground.Application",
     },
 
 
+    _displayDirectoryListing : function(result)
+    {
+      var             model;
+      var             marshaler;
+
+      // Display the result values.
+      marshaler = new qx.data.marshal.Json();
+      marshaler.toClass(result, true);
+
+      model = marshaler.toModel(result, true);
+      if (typeof model == "undefined") 
+      {
+        model = null;
+      }
+      this.__samplesPane.setModel(model);
+      
+      // Select the currently-displayed program
+      this.__samplesPane.selectByName(this.getName());
+    },
+
     // ***************************************************
     // PROPERTY APPLY
     // ***************************************************
     // property apply
     _applyName : function(value, old) {
-      if (!this.__playArea) {
-        return;
-      }
-      this.__playArea.updateCaption(value);
       this.__updateTitle(value);
+      this.__sourcePage.setLabel(value);
     },
 
 
@@ -518,28 +614,71 @@ qx.Class.define("playground.Application",
 
     // property apply
     _applyCurrentSample : function(newSample, old) {
+      var             args = [];
+      var             bRefreshDirectoryListing;
+
       // ignore when the sample is set to null
       if (!newSample) {
         return;
       }
 
-      this.setMode(newSample.getMode());
-
-      // need to get the code from the editor in case he changes something
-      // in the code
-      this.editor.setCode(newSample.getCode());
-      this.setOriginCode(this.editor.getCode());
-
-      // only add static samples to the url as name
-      if (newSample.getCategory() == "static") {
-        this.__history.addToHistory(newSample.getName() + "-" + newSample.getMode());
-      } else {
-        this.addCodeToHistory(newSample.getCode());
+      // Build the argument list for retrieving the requested program. First,
+      // add the always-there arguments.
+      args.push(newSample.getOrigName());
+      args.push(newSample.getHash());
+      args.push(newSample.getCategory());
+      args.push(newSample.getUser());
+      
+      // Request a new directory listing if the new selected file has the
+      // versions button enabled. That would mean that it's in My Programs,
+      // and is not itself a version. (This will clear out any versions of the
+      // prior program.)
+      bRefreshDirectoryListing = this.__samplesPane._versions.getEnabled();
+      args.push(bRefreshDirectoryListing);
+      
+      // If the code in the editor has changed from its original...
+      if (this.editor.getCode() != this.getOriginCode())
+      {
+        // ... then also send it, to be saved.
+        args.push(this.getName());
+        args.push(this.editor.getCode());
       }
 
-      this.setName(newSample.getName());
-      // run the new sample
-      this.run();
+      // Issue a request to retrieve the requested program
+      playground.ServerOp.rpc(
+        // success handler
+        function(result, id)
+        {
+          this.editor.setCode(result.code);
+          this.setOriginCode(result.code);
+          this.addCodeToHistory(result.code);
+          this.setName(result.name);
+          
+          // Is there a directory listing?
+          if (result.dirList)
+          {
+            // Yup. Display it.
+            this._displayDirectoryListing(result.dirList);
+            
+            // This is a new file (with no versions), so turn off the checkbox
+            this.__samplesPane._versions.setValue(false);
+          }
+        }.bind(this),
+
+        // failure handler
+        function(ex, id)
+        {
+          // Ignore the failure. Should not ever occur.
+          console.log("FAILED to retrieve file " + newSample.getOrigName() + 
+                      ", hash " + newSample.getHash() + ": " + ex);
+        }.bind(this),
+
+        // function to call
+        "getProgram",
+        
+        // arguments
+        args
+      );
     },
 
 
@@ -667,6 +806,7 @@ qx.Class.define("playground.Application",
      * Helper to write the current code to the model and with that to the
      * offline store.
      */
+/* djl...
     __onSave : function() {
       var current = this.getCurrentSample();
 
@@ -682,78 +822,247 @@ qx.Class.define("playground.Application",
         this.setName(current.getName());
       }
     },
+*/
 
 
     /**
      * Helper to write the current code to the model and with that to the
      * offline store.
      *
-     * @lint ignoreDeprecated(confirm)
+     * @ignore(Blob)
      */
-    __onSaveAs : function() {
-      // ask the user for a new name for the property
-      var name = prompt(this.tr("Please enter a name"), ""); // empty value string of IE
-      if (!name) {
-        return;
-      }
-      // check for overriding sample names
-      var samples = this.__store.getModel();
-      for (var i = 0; i < samples.length; i++) {
-        if (samples.getItem(i).getName() == name) {
-          if (confirm(this.tr("Sample already exists. Do you want to overwrite?"))) {
-            this.__onSave();
-          }
-          return;
-        }
-      };
-      // create new sample
-      var data = {
-        name: name,
-        code: this.editor.getCode(),
-        mode: this.__mode,
-        category: "user"
-      };
-      var sample = qx.data.marshal.Json.createModel(data, true);
-      // push the data to the model (storest automatically)
-      this.__store.getModel().push(sample);
-      // store the origin code and select the new sample
-      this.setOriginCode(sample.getCode());
-      this.__samplesPane.select(sample);
+    __onSaveAs : function() 
+    {
+      playground.util.FileSaver.saveAs(
+        new Blob([ this.editor.getCode() ]), 
+        this.getName());
     },
 
 
     /**
      * Helper to delete the selected sample.
+     *
+     * @lint ignoreDeprecated(alert)
+     * @lint ignoreDeprecated(confirm)
      */
-    __onDelete : function() {
-      var current = this.getCurrentSample();
-      // if we have a sample selected and its not a static one
-      if (current || current.getCategory() != "static") {
-        // remove the selection
-        this.__samplesPane.select(null);
-        // delete the current sample
-        this.__store.getModel().remove(current);
-        // reset the current selected sample
-        this.setCurrentSample(null);
+    __onDelete : function() 
+    {
+      var             name;
+      
+      // Retrieve the name of the current program
+      name = this.getName();
+      
+      // Confirm that the user wants to remove the file
+      if (! confirm(this.tr("Really delete program ") + name))
+      {
+        return;
       }
+      
+      // Issue a request to remove the program
+      playground.ServerOp.rpc(
+        // success handler
+        function(result, id)
+        {
+          if (result.status === 0)
+          {
+            this.setName(null);
+            this.editor.setCode("");
+            this._displayDirectoryListing(result.dirList);
+          }
+          else
+          {
+            alert(this.tr("Internal error: Could not remove the program."));
+          }
+        }.bind(this),
+
+        // failure handler
+        function(ex, id)
+        {
+          // Ignore the failure. Should not ever occur.
+          console.log("FAILED to remove program " + name + ": " + ex);
+        }.bind(this),
+
+        // function to call
+        "removeProgram",
+        
+        // arguments
+        [ name ]
+      );
     },
 
 
     /**
      * Helper to rename a sample.
+     *
+     * @lint ignoreDeprecated(alert)
      */
-    __onRename : function() {
-      var current = this.getCurrentSample();
-      // if we have a sample and its not a static one
-      if (current || current.getCategory() != "static") {
-        // ask the user for a new name
-        var name = prompt(this.tr("Please enter a name"), current.getName());
-        if (!name) {
+    __onRename : function() 
+    {
+      var             oldName;
+      var             newName;
+      var             testName;
+
+      // Retrieve the current name of the program
+      oldName = this.getName();
+      
+      // We'll use the old name as the default new name for now
+      testName = oldName;
+
+      // ask the user for a new name
+      do
+      {
+        newName = prompt(this.tr("New name: "), testName);
+        if (!newName) 
+        {
           return;
         }
-        // just write the new name to the to the sample
-        current.setName(name);
-      }
+        
+        // Sanitize the name, for better chance of success at the backend
+        testName = newName.replace(/ /g, "-");
+        testName = testName.replace(/\.\./g, "DOTDOT");
+        testName = testName.replace();
+        testName = testName.replace(/\\/g, "/");
+        testName = testName.replace(/\/\//g, "/");
+        testName = testName.replace(/\//g, "SLASH");
+      } while (testName != newName);
+      
+      // Issue a request to rename the program
+      playground.ServerOp.rpc(
+        // success handler
+        function(result, id)
+        {
+          if (result.status === 0)
+          {
+            this.setName(result.name);
+            this._displayDirectoryListing(result.dirList);
+          }
+          else
+          {
+            alert(this.tr("Could not rename file. ") +
+                  this.tr("Maybe the name you requested already exists?"));
+          }
+        }.bind(this),
+
+        // failure handler
+        function(ex, id)
+        {
+          // Ignore the failure. Should not ever occur.
+          console.log("FAILED to rename file " + oldName +
+                      " to " + newName + ": " + ex);
+        }.bind(this),
+
+        // function to call
+        "renameProgram",
+        
+        // arguments
+        [
+          oldName,
+          newName,
+          this.editor.getCode()
+        ]
+      );
+    },
+
+    /**
+     * Helper to copy a sample.
+     *
+     * @lint ignoreDeprecated(alert)
+     */
+    __onCopy : function() 
+    {
+      var             oldName;
+      var             newName;
+      var             testName;
+
+      // Retrieve the current name of the program
+      oldName = this.getName();
+      
+      // We'll use the old name as the default new name for now
+      testName = oldName;
+
+      // ask the user for a new name
+      do
+      {
+        newName = prompt(this.tr("Copy to My Programs as: "), testName);
+        if (!newName) 
+        {
+          return;
+        }
+        
+        // Sanitize the name, for better chance of success at the backend
+        testName = newName.replace(/ /g, "-");
+        testName = testName.replace(/\.\./g, "DOTDOT");
+        testName = testName.replace();
+        testName = testName.replace(/\\/g, "/");
+        testName = testName.replace(/\/\//g, "/");
+        testName = testName.replace(/\//g, "SLASH");
+      } while (testName != newName);
+      
+      // Issue a request to rename the program
+      playground.ServerOp.rpc(
+        // success handler
+        function(result, id)
+        {
+          if (result.status === 0)
+          {
+            this.setName(result.name);
+            this._displayDirectoryListing(result.dirList);
+          }
+          else
+          {
+            alert(this.tr("Could not copy file. ") +
+                  this.tr("Maybe the name you requested already exists?"));
+          }
+        }.bind(this),
+
+        // failure handler
+        function(ex, id)
+        {
+          // Ignore the failure. Should not ever occur.
+          console.log("FAILED to copy file " + oldName +
+                      " to " + newName + ": " + ex);
+        }.bind(this),
+
+        // function to call
+        "copyProgram",
+        
+        // arguments
+        [
+          oldName,
+          this.getCurrentSample().getCategory(),
+          this.getCurrentSample().getUser(),
+          newName
+        ]
+      );
+    },
+
+
+    /**
+     * Helper to update the directory, e.g., when showing versions changes
+     */
+    __onUpdateDirectory : function(e) 
+    {
+      // Issue a request for the user's directory listing.
+      playground.ServerOp.rpc(
+        // success handler
+        function(result, id)
+        {
+          this._displayDirectoryListing(result);
+        }.bind(this),
+
+        // failure handler
+        function(ex, id)
+        {
+          // Ignore the failure. Should not ever occur.
+          console.log("FAILED to get directory listing: " + ex);
+        }.bind(this),
+
+        // function to call
+        "getDirectoryListing",
+        
+        // arguments
+        [ e.getData() ]         // filename for versions, or null
+      );
     },
 
 
@@ -864,6 +1173,7 @@ qx.Class.define("playground.Application",
     __initBookmarkSupport : function()
     {
       this.__history = qx.bom.History.getInstance();
+/* djl...
       this.__history.addListener("changeState", this.__onHistoryChanged, this);
 
       // Handle bookmarks
@@ -918,6 +1228,7 @@ qx.Class.define("playground.Application",
         this.setCurrentSample(sample);
         return;
       }
+*/
     },
 
 
@@ -1010,6 +1321,14 @@ qx.Class.define("playground.Application",
      * @lint ignoreDeprecated(confirm)
      */
     __discardChanges : function() {
+      var             model;
+      
+      // Get the current set of files
+      model = this.__samplesPane.getModel();
+
+      return false;
+
+/*
       var userCode = this.editor.getCode();
       if (userCode && this.isCodeNotEqual(userCode, this.getOriginCode()))
       {
@@ -1019,6 +1338,7 @@ qx.Class.define("playground.Application",
         }
       }
       return false;
+*/
     },
 
 
@@ -1136,12 +1456,17 @@ qx.Class.define("playground.Application",
      */
     run : function(e)
     {
+      // turn off versions
+      this.__samplesPane._versions.setValue(false);
+
       var code = this.editor.getCode();
       if (code && this.isCodeNotEqual(code, this.getOriginCode())) {
         this.addCodeToHistory(code);
+/* djl...
         if (!this.__modified) {
           this.setName(this.tr("%1 (modified)", this.getName()));
         }
+*/
         this.__modified = true;
       }
 
@@ -1151,6 +1476,21 @@ qx.Class.define("playground.Application",
       terminal.getGraphicsCanvas().exclude();
       
       playground.c.Main.output("", true);
+
+      // We need an initial attempt at requiring ansic.js, which fails much
+      // of the time. The next require of the same file will then succeed.
+      try
+      {
+        require(
+          ["resource/playground/script/ansic.js"],
+          function(ansi)
+          {
+          });
+      }
+      catch (e2)
+      {
+        console.log("Pre-load of ansic.js: " + e);
+      }
 
       try
       {
@@ -1175,7 +1515,7 @@ qx.Class.define("playground.Application",
       }
       catch(e2)
       {
-
+        console.log("Preprocess attempt to load ansic.js: " + e);
       }
     },
 

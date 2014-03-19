@@ -5,13 +5,18 @@
  *   GPL Version 2: http://www.gnu.org/licenses/gpl-2.0.html 
  */
 
+/**
+ * @use(playground.dbif.ObjCourse)
+ */
+
 qx.Mixin.define("playground.dbif.MDbifCommon",
 {
   include :
   [
     playground.dbif.MUser,
     playground.dbif.MUsageDetail,
-    playground.dbif.MFiles
+    playground.dbif.MFiles,
+    playground.dbif.MSettings
   ],
 
   properties :
@@ -99,7 +104,19 @@ qx.Mixin.define("playground.dbif.MDbifCommon",
       case "learncs.getDirectoryListing":
         return ! bAnonymous;    // Access is allowed if they're logged in
 
-      case "learncs.saveProgram":
+      case "learncs.getProgram":
+        return ! bAnonymous;    // Access is allowed if they're logged in
+
+      case "learncs.renameProgram":
+        return ! bAnonymous;    // Access is allowed if they're logged in
+
+      case "learncs.removeProgram":
+        return ! bAnonymous;    // Access is allowed if they're logged in
+
+      case "learncs.copyProgram":
+        return ! bAnonymous;    // Access is allowed if they're logged in
+
+      case "learncs.saveSettings":
         return ! bAnonymous;    // Access is allowed if they're logged in
 
 

@@ -51,6 +51,9 @@ qx.Class.define("playground.ServerOp",
     {
       var             id;
 
+      // Ensure there are no prior pending requests
+      playground.ServerOp.flushQueue();
+
       // If there were no arguments provided, create an empty argument list;
       // otherwise clone the argument list.
       args = args ? args.slice(0) : [];
@@ -75,12 +78,23 @@ qx.Class.define("playground.ServerOp",
           {
             // Something went wrong. Let the user know.
             typeof console != "undefined" && console.log(ex);
+            
+            // If we received no data...
+            if (ex.code == qx.io.remote.Rpc.localError.nodata)
+            {
+              location.reload(true);
+              
+              // not reached
+              return;
+            }
+
             cbFailure && cbFailure(ex, id);
           }
         });
       
       // Issue the RPC
-      id = this.__rpc.callAsync.apply(this.__rpc, args);
+      id = playground.ServerOp.__rpc.callAsync.apply(
+        playground.ServerOp.__rpc, args);
       
       // Increment the count of requests in progress
       ++playground.ServerOp.__inProgress;
@@ -99,12 +113,19 @@ qx.Class.define("playground.ServerOp",
     rpcCancel : function(id)
     {
       // Abort the request.
-      this.__rpc.abort(id);
+      playground.ServerOp.__rpc.abort(id);
     },
     
     statusReport : function(data)
     {
       var             queue = playground.ServerOp.__queue;
+
+      // If this status report doesn't contain the filename already, ...
+      if (! data.filename)
+      {
+        // ... then add it.
+        data.filename = qx.core.Init.getApplication().getName();
+      }
 
       // Enqueue this new request
       queue.push(data);
@@ -118,33 +139,58 @@ qx.Class.define("playground.ServerOp",
       
       // Start a timer to post the usage detail data
       playground.ServerOp.__timer = qx.util.TimerManager.getInstance().start(
-        function(userData, timerId)
-        {
-/*
-          // Add a snapshot immediately before sending this batch of reports
-          queue.push(
-            {
-              type          : "snapshot",
-              snapshot      : qx.core.Init.getApplication().editor.getCode()
-            });
-*/
-
-          playground.ServerOp.rpc(
-            null,                             // success callback
-            null,                             // failure callback
-            "usageDetail",                    // function to be called
-            [ queue ]);                       // arguments to function
-          
-          // The queue has been processed. Reset it.
-          playground.ServerOp.__queue = [];
-
-          // There's no longer a timer running.
-          playground.ServerOp.__timer = null;
-        },
+        playground.ServerOp.__sendQueue,
         0,
         this,
         null,
         5000);
+    },
+    
+    flushQueue : function()
+    {
+      var             queue = playground.ServerOp.__queue;
+
+      // If there is a pending timer, ...
+      if (playground.ServerOp.__timer)
+      {
+        // ... stop it.
+        qx.util.TimerManager.getInstance().stop(playground.ServerOp.__timer);
+        playground.ServerOp.__timer = null;
+      }
+      
+      // If there's anything on the queue...
+      if (queue.length > 0)
+      {
+        playground.ServerOp.__sendQueue();
+      }
+    },
+    
+    __sendQueue : function(userData, timerId)
+    {
+      var             queue = playground.ServerOp.__queue;
+/*
+      // Add a snapshot immediately before sending this batch of reports
+      queue.push(
+        {
+          type          : "snapshot",
+          snapshot      : qx.core.Init.getApplication().editor.getCode()
+        });
+*/
+
+      // The queue is being processed. We have a copy of it. Reset it.
+      playground.ServerOp.__queue = [];
+
+      // There's no longer a timer running.
+      playground.ServerOp.__timer = null;
+
+      playground.ServerOp.rpc(
+        function(result, id)              // success callback
+        {
+          qx.core.Init.getApplication()._displayDirectoryListing(result);
+        },
+        null,                             // failure callback
+        "usageDetail",                    // function to be called
+        [ queue ]);                       // arguments to function
     }
   },
   
