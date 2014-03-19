@@ -110,6 +110,9 @@ qx.Class.define("playground.dbif.DbifNodeSqlite",
         dbif        : "nodesqlite"
       });
     
+    // Register the system functions that will be used
+    liberated.dbif.System.registerSystemProvider(liberated.node.System);
+
     // Initialize the database
     liberated.node.SqliteDbif.init("../learncs.db");
   }
