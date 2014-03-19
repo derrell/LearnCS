@@ -180,16 +180,79 @@ qx.Class.define("nodesqlite.Application",
       // Prepare for authentication
       //
 
+      // Function to obtain the user id for an authenticated user
+      function getUserId(user)
+      {
+        var             userInfo;
+        var             userObj;
+
+        // See if this user is already registered
+        userInfo = liberated.dbif.Entity.query(
+          "playground.dbif.ObjUser",
+          {
+            type  : "element",
+            field : "user",
+            value : user
+          });
+
+        // If not...
+        if (userInfo.length === 0)
+        {
+          // ... then create the user object
+          userObj = new playground.dbif.ObjUser();
+
+          // Get the object's data
+          userInfo = userObj.getData();
+
+          // Assign the user name
+          userInfo.user = user;
+
+          // Write it back to the database
+          userObj.put();
+
+          // Retrieve the ID of the just-written entity
+          userInfo = liberated.dbif.Entity.query(
+            "playground.dbif.ObjUser",
+            {
+              type  : "element",
+              field : "user",
+              value : user
+            })[0];
+        }
+        else
+        {
+          // User is already registered. Get the one and only query result.
+          userInfo = userInfo[0];
+        }
+
+        return userInfo.id;
+      }
+
+
       // Our user list is hard-coded, here
       users =
           [
             {
-              id       : 80,
+              name     : "dlipman",
+              password : "dlipman"
+            },
+            {
+              name     : "dbadams",
+              password : "dbadams"
+            },
+            {
+              name     : "hxu1",
+              password : "hxu1"
+            },
+            {
+              name     : "rmarceau",
+              password : "rmarceau"
+            },
+            {
               name     : "joe",
               password : "joe"
             },
             {
-              id       : 443,
               name     : "mary",
               password : "mary"
             }
@@ -204,21 +267,38 @@ qx.Class.define("nodesqlite.Application",
           },
           function(username, password, done)
           {
-            var             i;
+            var             sync = require("synchronize");
 
-            console.log("Authenticating " + username);
-
-            // See if the user name is found
-            for (i = 0; i < users.length; i++)
-            {
-              if (users[i].name == username && users[i].password == password)
+            sync.fiber(
+              function()
               {
-                return done(null, users[i]);
-              }
-            }
-            
-            // User was not found
-            return done(null, false, { message : "Login failed" } );
+                var             i;
+                var             userInfo;
+
+                console.log("Attempting to authenticate " + username + "...");
+
+                // See if the user name is found
+                for (i = 0; i < users.length; i++)
+                {
+                  if (users[i].name == username &&
+                      users[i].password == password)
+                  {
+                    userInfo =
+                      {
+                        id   : getUserId(users[i].name),
+                        name : users[i].name
+                      };
+
+                    console.log("Authenticated user " + userInfo.name +
+                                ", user id " + userInfo.id);
+                    return done(null, userInfo);
+                  }
+                }
+
+                // User was not found
+                console.log("Authentication of user " + username + " FAILED");
+                return done(null, false, { message : "Login failed" } );
+              });
           }));
 
       // Serialize the user information so it can be stored in the session
@@ -229,10 +309,15 @@ qx.Class.define("nodesqlite.Application",
       passport.serializeUser(
         function(user, done)
         {
-          done(null, JSON.stringify({
-                                      id      : user.id,
-                                      name    : user.name
-                                    }));
+          var             userInfo;
+          
+          userInfo =
+            {
+              id      : user.id,
+              name    : user.name
+            };
+          
+          done(null, JSON.stringify(userInfo));
         });
       
       // Deserialize the JSON-encoded user back into its user object

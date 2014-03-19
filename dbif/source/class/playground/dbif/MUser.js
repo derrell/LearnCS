@@ -126,9 +126,6 @@ qx.Mixin.define("playground.dbif.MUser",
                 field : "user",
                 value : ret.whoAmI.user
               })[0];
-            
-            // Save this user id as the default for templatesFrom
-            userData.templatesFrom = "[" + ret.whoAmI.user + "]";
           }
           else
           {
@@ -136,6 +133,12 @@ qx.Mixin.define("playground.dbif.MUser",
             userData = userData[0];
           }
           
+          // Save this user id as the default for templatesFrom
+          if (userData.templatesFrom.length == 0)
+          {
+            userData.templatesFrom = [ userData.id ];
+          }
+
           // Get the complete course list
           ret.courseList = 
             liberated.dbif.Entity.query(

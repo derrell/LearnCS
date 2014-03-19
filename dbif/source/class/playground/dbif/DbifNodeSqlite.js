@@ -70,6 +70,9 @@ qx.Class.define("playground.dbif.DbifNodeSqlite",
     {
       var             user;
       var             bAdmin;
+
+      // Provide the logout URL
+      this.setLogoutUrl("/logout");
       
       // Find out who is logged in
       user = request.user;
@@ -89,9 +92,6 @@ qx.Class.define("playground.dbif.DbifNodeSqlite",
           userId            : user.id,
           isAdmin           : false
         });
-
-      // Provide the logout URL
-      this.setLogoutUrl("/logout");
     }
   },
 

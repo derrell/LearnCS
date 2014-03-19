@@ -110,7 +110,7 @@ qx.Mixin.define("playground.dbif.MFiles",
       
 
       // Retrieve the current user id
-      user = playground.dbif.MDbifCommon.getCurrentUserId();
+      user = this.getWhoAmI().userId;
       
       // Sanitize the name
       programName = this.__sanitizeFilename(programName);
@@ -495,6 +495,8 @@ qx.Mixin.define("playground.dbif.MFiles",
      *     name    - the file name
      *     code    - the entire source code of the program
      *     dirList - a new directory listing, a la getDirectoryListing()
+     * 
+     * @ignore(require)
      */
     getProgram : function(programName,
                           hash,
@@ -514,6 +516,7 @@ qx.Mixin.define("playground.dbif.MFiles",
       var             progDir = playground.dbif.MFiles.ProgDir;
       var             templatesDir = playground.dbif.MFiles.TemplateDir;
       var             defaultUser = playground.dbif.MFiles.DefaultUser;
+      var             System = liberated.dbif.System;
       
       try
       {
@@ -708,7 +711,7 @@ qx.Mixin.define("playground.dbif.MFiles",
       var             System = liberated.dbif.System;
       
       // Retrieve the current user id
-      user = playground.dbif.MDbifCommon.getCurrentUserId();
+      user = this.getWhoAmI().userId;
       
       // Build the directory path to the user's program directory
       dir = userFilesDir + "/" + user + "/" + progDir;
@@ -780,7 +783,7 @@ qx.Mixin.define("playground.dbif.MFiles",
       var             System = liberated.dbif.System;
       
       // Retrieve the current user id
-      user = playground.dbif.MDbifCommon.getCurrentUserId();
+      user = this.getWhoAmI().userId;
       
       // Build the directory path to the user's program directory
       dir = userFilesDir + "/" + user + "/" + progDir;
@@ -850,7 +853,7 @@ qx.Mixin.define("playground.dbif.MFiles",
       var             System = liberated.dbif.System;
       
       // Retrieve the current user id
-      user = playground.dbif.MDbifCommon.getCurrentUserId();
+      user = this.getWhoAmI().userId;
       
       // Protect from malicious use of the file names
       fromName = this.__sanitizeFilename(fromName);

@@ -85,7 +85,7 @@ qx.Mixin.define("playground.dbif.MSettings",
 
 
           // Retrieve the current user id
-          userId = playground.dbif.MDbifCommon.getCurrentUserId();
+          userId = this.getWhoAmI().userId;
 
           // Get this user's object from the database
           userObj = new playground.dbif.ObjUser(userId);
