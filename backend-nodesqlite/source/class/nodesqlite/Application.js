@@ -162,14 +162,14 @@ qx.Class.define("nodesqlite.Application",
       app.configure(
         function()
         {
-          app.use(express.logger());
+//          app.use(express.logger());
           app.use(express.cookieParser());
           app.use(express.cookieSession(
                     {
                       secret : "my secret test program",
                       cookie : 
                       {
-                        maxAge : 60 * 60 * 1000
+                        maxAge : 1000 * 60 * 60 * 24 * 7 // one week idle time
                       }
                     }));
           app.use(passport.initialize());
