@@ -68,7 +68,7 @@ qx.Mixin.define("playground.dbif.MUsageDetail",
               qx.lang.Object.mergeWith(detailData, data, true);
 
               // Re-add (or overwrite, if the user was nasty), the user name
-              detailData.user = this.getWhoAmI().user;
+              detailData.user = this.getWhoAmI().userId;
 
               // Copy non-null fields into a new map
               messageData = {};
