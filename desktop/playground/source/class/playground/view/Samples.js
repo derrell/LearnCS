@@ -370,7 +370,10 @@ qx.Class.define("playground.view.Samples",
         if (value)
         {
           this.__copyButton.setEnabled(true);
-          this.__saveAsButton.setEnabled(true);
+        }
+        else
+        {
+          this.__copyButton.setEnabled(false);
         }
 
         // only change the state of the buttons for non-Template categories
@@ -378,12 +381,12 @@ qx.Class.define("playground.view.Samples",
         {
           this.__deleteButton.setEnabled(true);
           this.__renameButton.setEnabled(true);
+          this.__saveAsButton.setEnabled(true);
         }
         else
         {
           this.__deleteButton.setEnabled(false);
           this.__renameButton.setEnabled(false);
-          this.__copyButton.setEnabled(false);
           this.__saveAsButton.setEnabled(false);
         }
       }
