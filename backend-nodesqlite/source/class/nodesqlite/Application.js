@@ -118,9 +118,13 @@ qx.Class.define("nodesqlite.Application",
       var             https = require("https");
       var             express = require("express");
       var             passport = require("passport");
+      var             cookieParser = require("cookie-parser");
+      var             cookieSession = require("cookie-session");
       var             LocalStrategy = require("passport-local").Strategy;
+      var             LdapStrategy = require("passport-ldapauth").Strategy;
       var             app = express();
       var             credentials;
+      var             credentialFiles;
       var             httpServer;
       var             httpsServer;
       var             httpPort = 80;
@@ -159,22 +163,18 @@ qx.Class.define("nodesqlite.Application",
       //
       // Generic configuration
       //
-      app.configure(
-        function()
-        {
-//          app.use(express.logger());
-          app.use(express.cookieParser());
-          app.use(express.cookieSession(
-                    {
-                      secret : "my secret test program",
-                      cookie : 
-                      {
-                        maxAge : 1000 * 60 * 60 * 24 * 7 // one week idle time
-                      }
-                    }));
-          app.use(passport.initialize());
-          app.use(passport.session());
-        });
+//      app.use(express.logger());
+      app.use(cookieParser());
+      app.use(cookieSession(
+                {
+                  secret : "my secret test program",
+                  cookie : 
+                  {
+                    maxAge : 1000 * 60 * 60 * 24 * 7 // one week idle time
+                  }
+                }));
+      app.use(passport.initialize());
+      app.use(passport.session());
 
       //
       // Prepare for authentication
@@ -233,22 +233,6 @@ qx.Class.define("nodesqlite.Application",
       users =
           [
             {
-              name     : "dlipman",
-              password : "dlipman"
-            },
-            {
-              name     : "dbadams",
-              password : "dbadams"
-            },
-            {
-              name     : "hxu1",
-              password : "hxu1"
-            },
-            {
-              name     : "rmarceau",
-              password : "rmarceau"
-            },
-            {
               name     : "joe",
               password : "joe"
             },
@@ -275,7 +259,8 @@ qx.Class.define("nodesqlite.Application",
                 var             i;
                 var             userInfo;
 
-                console.log("Attempting to authenticate " + username + "...");
+                console.log("Attempting local authorization for " +
+                            username + "...");
 
                 // See if the user name is found
                 for (i = 0; i < users.length; i++)
@@ -296,8 +281,64 @@ qx.Class.define("nodesqlite.Application",
                 }
 
                 // User was not found
-                console.log("Authentication of user " + username + " FAILED");
+                console.log("Local authentication of user " + 
+                            username + " failed");
                 return done(null, false, { message : "Login failed" } );
+              });
+          }));
+
+      // Authenticate against the LDAP server
+      passport.use(
+        new LdapStrategy(
+          {
+            server :
+            {
+              /*
+               * debug="true"
+               * useLdaps="true"
+               * contextFactory="com.sun.jndi.ldap.LdapCtxFactory"
+               * hostname="cs-ds"
+               * port="636"
+               * bindDn="cn=proxyuser,dc=cs,dc=uml,dc=edu"
+               * bindPassword="proxyuser"
+               * authenticationMethod="simple"
+               * userIdAttribute="uid"
+               * forceBindingLogin="true"
+               * userBaseDn="ou=People,dc=cs,dc=uml,dc=edu";
+               */
+
+              url             : "ldaps://cs-ds:636",
+              searchBase      : "ou=People,dc=cs,dc=uml,dc=edu",
+              searchFilter    : "(uid={{username}})",
+              tlsOptions      :
+                {
+                  ca :
+                  [
+                    fs.readFileSync("../../private/uml.cs-ldap-cert.pem")
+                  ]
+                },
+              bindDN          : "cn=proxyuser,dc=cs,dc=uml,dc=edu",
+              bindCredentials : "proxyuser"
+            }
+          },
+          function(user, done)
+          {
+            var             sync = require("synchronize");
+
+            sync.fiber(
+              function()
+              {
+                var             userInfo;
+
+                userInfo =
+                  {
+                    id   : getUserId(user.uid),
+                    name : user.uid
+                  };
+
+                console.log("LDAP authenticated user " + userInfo.name +
+                            ", user id " + userInfo.id);
+                return done(null, userInfo);
               });
           }));
 
@@ -437,7 +478,7 @@ qx.Class.define("nodesqlite.Application",
 
           // Authenticate
           passport.authenticate(
-            "local",
+            [ "local", "ldapauth" ],
             {
               failureRedirect: "/login",
               failureFlash: false
@@ -510,14 +551,22 @@ qx.Class.define("nodesqlite.Application",
       {
         console.log("Starting HTTPS server on port " + httpsPort);
 
+        // Set up the credential file names
+        credentialFiles =
+          {
+            key  : "../../private/self-signed/server.key",
+            cert : "../../private/self-signed/server.crt",
+            ca   : "../../private/self-signed/ca.crt"
+          };
+
         // Set up credentials
         credentials =
           {
-            key                : fs.readFileSync("server.pem", "utf8"),
-            cert               : fs.readFileSync("server.pem", "utf8"),
-//            ca                 : fs.readFileSync("ca.crt", "utf8"),
-            requestCert        : true,
-            passphrase         : "xxxx",
+            key                : fs.readFileSync(credentialFiles.key, "utf8"),
+            cert               : fs.readFileSync(credentialFiles.cert, "utf8"),
+            ca                 : fs.readFileSync(credentialFiles.ca, "utf8"),
+//            requestCert        : true,
+            passphrase         : "mypass",
             rejectUnauthorized : false
           };
 
