@@ -121,7 +121,6 @@ qx.Class.define("playground.view.Header",
           // success handler
           function(result, id)
           {
-console.log("got userInit response: " + JSON.stringify(result));
             // Success. Display the result values.
             whoAmI.set(result.whoAmI);
             whoAmI.setLogoutUrl(result.logoutUrl);
