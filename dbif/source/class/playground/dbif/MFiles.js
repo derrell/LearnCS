@@ -705,7 +705,6 @@ qx.Mixin.define("playground.dbif.MFiles",
       var             user;
       var             fileOld;
       var             fileNew;
-      var             File = java.io.File;
       var             userFilesDir = playground.dbif.MFiles.UserFilesDir;
       var             progDir = playground.dbif.MFiles.ProgDir;
       var             System = liberated.dbif.System;
@@ -722,7 +721,8 @@ qx.Mixin.define("playground.dbif.MFiles",
       newName = this.__sanitizeFilename(newName);
 
       // Rename the file
-      if (! System.rename(oldName, newName))
+      if (! System.rename(dir + "/" + oldName + ".git",
+                          dir + "/" + newName + ".git"))
       {
         return { status : 1 };
       }
@@ -734,6 +734,31 @@ qx.Mixin.define("playground.dbif.MFiles",
           "mv",
           oldName,
           newName
+        ],
+        {
+          cwd        : dir + "/" + newName + ".git",
+          showStdout : true
+        });
+
+      // Add the renamed file
+      System.system(
+        [ 
+          "git",
+          "add",
+          newName
+        ],
+        {
+          cwd        : dir + "/" + newName + ".git",
+          showStdout : true
+        });
+
+      // Commit the move
+      System.system(
+        [ 
+          "git",
+          "commit",
+          "-m",
+          "Renamed source file"
         ],
         {
           cwd        : dir + "/" + newName + ".git",
@@ -809,7 +834,8 @@ qx.Mixin.define("playground.dbif.MFiles",
         newName = name + ".git." + (new Date()).getTime();
         
         // Attempt to rename the file
-        bRenamed = System.rename(dir + "/" + name + ".git", newName);
+        bRenamed = System.rename(dir + "/" + name + ".git", 
+                                 dir + "/" + newName);
       } while (! bRenamed);
 
       // Give 'em a new directory listing
@@ -864,7 +890,7 @@ qx.Mixin.define("playground.dbif.MFiles",
         userFilesDir + "/" + user + "/" + progDir + "/" + toName + ".git";
 
       // Check for an existing directory of the new name
-      if (System.exists(toDir))
+      if (System.fileExists(toDir))
       {
         console.log("Directory " + toDir + " already exists.");
         return { status : 1 };
@@ -931,6 +957,44 @@ qx.Mixin.define("playground.dbif.MFiles",
             toDir
           ],
           {
+            showStdout : true
+          });
+
+        // Rename the file
+        System.system(
+          [ 
+            "git",
+            "mv",
+            fromName,
+            toName
+          ],
+          {
+            cwd        : toDir,
+            showStdout : true
+          });
+
+        // Add the renamed file
+        System.system(
+          [ 
+            "git",
+            "add",
+            toName
+          ],
+          {
+            cwd        : toDir,
+            showStdout : true
+          });
+
+        // Commit the move
+        System.system(
+          [ 
+            "git",
+            "commit",
+            "-m",
+            "Renamed source file"
+          ],
+          {
+            cwd        : toDir,
             showStdout : true
           });
       }
