@@ -101,6 +101,9 @@ qx.Mixin.define("playground.dbif.MSettings",
           // Get this user's object data
           userData = userObj.getData();
 
+          // Set the research ok flag according to user's preference
+          userData.researchOk = bResearchOk ? 1 : 0;
+
           // Flush the templates array, except for our own id
           userData.templatesFrom = [ userId ];
 

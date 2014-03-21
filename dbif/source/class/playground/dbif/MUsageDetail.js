@@ -67,7 +67,7 @@ qx.Mixin.define("playground.dbif.MUsageDetail",
               // Merge the provided members into the new object's data
               qx.lang.Object.mergeWith(detailData, data, true);
 
-              // Re-add (or overwrite, if the user was nasty), the user name
+              // Re-add (or overwrite, if the user was nasty), the user id
               detailData.user = this.getWhoAmI().userId;
 
               // Copy non-null fields into a new map
@@ -81,6 +81,9 @@ qx.Mixin.define("playground.dbif.MUsageDetail",
                   }
                 });
 
+              // Write the usage detail to the database
+              detailObj.put();
+
               // Is there a snapshot to be saved?
               if (snapshot)
               {
@@ -88,11 +91,11 @@ qx.Mixin.define("playground.dbif.MUsageDetail",
                 if (messageData.type == "button_press" && 
                     messageData.button_press == "Run")
                 {
-                  message = "run";
+                  message = "run (usageDetail=" + detailData.id + ")";
                 }
                 else if (messageData.type == "autosave")
                 {
-                  message = "autosave";
+                  message = "autosave (usageDetail=" + detailData.id + ")";
                 }
                 else
                 {
@@ -109,9 +112,6 @@ qx.Mixin.define("playground.dbif.MUsageDetail",
                 // Keep track of this most recent message data
                 last = messageData;
               }
-              
-              // Write the usage detail to the database
-              detailObj.put();
             }.bind(this),
             [],
             this);
