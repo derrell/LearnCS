@@ -96,6 +96,9 @@ qx.Class.define("playground.view.Settings",
       });
     hBox.add(label);
     
+// Hide the research question for now. We have paper consent forms
+hBox.hide();
+
     // Spacer between research approval and save/cancel buttons
     vBox.add(new qx.ui.core.Spacer(20, 20));
 
