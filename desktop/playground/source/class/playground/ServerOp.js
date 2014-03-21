@@ -79,9 +79,14 @@ qx.Class.define("playground.ServerOp",
             // Something went wrong. Let the user know.
             typeof console != "undefined" && console.log(ex);
             
-            // If we received no data...
-            if (ex.code == qx.io.remote.Rpc.localError.nodata)
+            // If we received no data (e.g. the server shut down), or we get
+            // back a Permission Denied error, which means our session has
+            // timed out...
+            if (ex.code == qx.io.remote.Rpc.localError.nodata ||
+                ex.code == qx.io.remote.RpcError.v2.error.PermissionDenied)
             {
+              // ... then reload so they'll be asked to sign in again without
+              // losing much data.
               location.reload(true);
               
               // not reached
