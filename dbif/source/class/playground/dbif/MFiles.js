@@ -213,7 +213,7 @@ qx.Mixin.define("playground.dbif.MFiles",
               "notes",
               "append",
               "-m", 
-              notes
+              notes + "\n-----\n"
             ],
             { 
               cwd        : gitDir,
@@ -236,6 +236,38 @@ qx.Mixin.define("playground.dbif.MFiles",
             cwd        : gitDir,
             showStdout : true
           });
+        
+        // Append the commit message as notes
+        System.system(
+          [ 
+            "git",
+            "notes",
+            "append",
+            "-m", 
+            detail + (notes ? "\n" : "\n-----\n")
+          ],
+          { 
+            cwd        : gitDir,
+            showStdout : true
+          } );
+
+          // Were notes specified too?
+          if (notes)
+          {
+            // Yup. Add a Notes entry to show that it was copied
+            System.system(
+              [ 
+                "git",
+                "notes",
+                "append",
+                "-m", 
+                notes + "\n-----\n"
+              ],
+              { 
+                cwd        : gitDir,
+                showStdout : true
+              } );
+          }
       }
       
       console.log("\n");
@@ -1037,7 +1069,7 @@ qx.Mixin.define("playground.dbif.MFiles",
           ("copied from file: " + 
            "name: " + fromName + ", " +
            "user: " + fromUserId + ", " +
-           "category: " + fromCategory)
+           "category: " + fromCategory) + "\n-----\n"
         ],
         {
           cwd        : toDir,

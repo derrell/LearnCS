@@ -132,6 +132,12 @@ qx.Class.define("playground.ServerOp",
         data.filename = qx.core.Init.getApplication().getName();
       }
 
+      // Add a snapshot if one wasn't provided
+      if (! data.snapshot)
+      {
+        data.snapshot = qx.core.Init.getApplication().editor.getCode();
+      }
+
       // Enqueue this new request
       queue.push(data);
       

@@ -44,6 +44,7 @@ qx.Mixin.define("playground.dbif.MUsageDetail",
           dataList.forEach(
             function(data)
             {
+              var             error;
               var             message;
               var             snapshot;
               var             detailObj;
@@ -84,6 +85,9 @@ qx.Mixin.define("playground.dbif.MUsageDetail",
               // Write the usage detail to the database
               detailObj.put();
 
+              // Save the key value
+              messageData.id = detailData.id;
+
               // Is there a snapshot to be saved?
               if (snapshot)
               {
@@ -91,23 +95,33 @@ qx.Mixin.define("playground.dbif.MUsageDetail",
                 if (messageData.type == "button_press" && 
                     messageData.button_press == "Run")
                 {
-                  message = "run (usageDetail=" + detailData.id + ")";
+                  message = "run";
                 }
-                else if (messageData.type == "autosave")
+                else if (messageData.type == "error")
                 {
-                  message = "autosave (usageDetail=" + detailData.id + ")";
+                  message = messageData.type;
+                  
+                  // We don't need the 'expected' internal error stuff in the
+                  // commit message or notes.
+                  error = qx.lang.Json.parse(messageData.error);
+                  delete error.expected;
+                  messageData.error = qx.lang.Json.stringify(error);
+                }
+                else if (messageData.type == "button_press")
+                {
+                  message = messageData.type + ": " + messageData.button_press;
                 }
                 else
                 {
-                  message = qx.lang.Json.stringify(messageData, null, "  ");
-                  console.log("Got unexpected usageDetail message: " + message);
+                  message = messageData.type;
                 }
 
                 // Save the program
                 _this._saveProgram(
                   messageData.filename || "code.c", 
                   message,
-                  snapshot);
+                  snapshot,
+                  qx.lang.Json.stringify(messageData));
                 
                 // Keep track of this most recent message data
                 last = messageData;
