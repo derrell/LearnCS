@@ -90,7 +90,9 @@ qx.Class.define("playground.dbif.DbifNodeSqlite",
         {
           user              : user.name,
           userId            : user.id,
-          isAdmin           : false
+          isAdmin           : false,
+          displayName       : user.displayName,
+          email             : user.email
         });
     }
   },

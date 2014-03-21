@@ -96,6 +96,7 @@ qx.Mixin.define("playground.dbif.MFiles",
     {
       var             user;
       var             ret;
+      var             whoAmI;
       var             process;
       var             exitValue;
       var             reader;
@@ -110,7 +111,8 @@ qx.Mixin.define("playground.dbif.MFiles",
       
 
       // Retrieve the current user id
-      user = this.getWhoAmI().userId;
+      whoAmI = this.getWhoAmI();
+      user = whoAmI.userId;
       
       // Sanitize the name
       programName = this.__sanitizeFilename(programName);
@@ -145,6 +147,32 @@ qx.Mixin.define("playground.dbif.MFiles",
                        showStdout : true
                      } );
       
+      // Identify the user
+      System.system( [ 
+                       "git",
+                       "config",
+                       "--global",
+                       "user.name",
+                       /* whoAmI.displayName || */ "user " + whoAmI.userId
+                     ],
+                     {
+                       cwd        : gitDir,
+                       showStdout : true
+                     } );
+      
+      // and his email address
+      System.system( [ 
+                       "git",
+                       "config",
+                       "--global",
+                       "user.email",
+                       /* whoAmI.email || */ "anonymous@noplace.at.all"
+                     ],
+                     {
+                       cwd        : gitDir,
+                       showStdout : true
+                     } );
+
       // Add the file to this git repository
       System.system( [ "git", "add", programName ],
                      {

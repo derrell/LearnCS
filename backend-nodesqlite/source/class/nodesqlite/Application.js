@@ -233,12 +233,16 @@ qx.Class.define("nodesqlite.Application",
       users =
           [
             {
-              name     : "joe",
-              password : "joe"
+              name        : "joe",
+              password    : "joe",
+              displayName : "Joe Blow",
+              email       : "joe@blow.com"
             },
             {
-              name     : "mary",
-              password : "mary"
+              name        : "mary",
+              password    : "mary",
+              displayName : "Mary Contrary",
+              email       : "mary@elsewhere.org"
             }
         ];
 
@@ -270,12 +274,16 @@ qx.Class.define("nodesqlite.Application",
                   {
                     userInfo =
                       {
-                        id   : getUserId(users[i].name),
-                        name : users[i].name
+                        id          : getUserId(users[i].name),
+                        displayName : users[i].displayName,
+                        email       : users[i].email,
+                        name        : users[i].name
                       };
 
-                    console.log("Authenticated user " + userInfo.name +
-                                ", user id " + userInfo.id);
+                    console.log("Local authenticated user " + userInfo.name +
+                                " (" + userInfo.displayName + 
+                                ", " + userInfo.email + ")" +
+                                ", id " + userInfo.id);
                     return done(null, userInfo);
                   }
                 }
@@ -324,7 +332,7 @@ qx.Class.define("nodesqlite.Application",
           function(user, done)
           {
             var             sync = require("synchronize");
-
+            
             sync.fiber(
               function()
               {
@@ -332,12 +340,14 @@ qx.Class.define("nodesqlite.Application",
 
                 userInfo =
                   {
-                    id   : getUserId(user.uid),
-                    name : user.uid
+                    id          : getUserId(user.uid),
+                    displayName : user.cn,
+                    email       : user.mail,
+                    name        : user.uid
                   };
 
                 console.log("LDAP authenticated user " + userInfo.name +
-                            ", user id " + userInfo.id);
+                            ", id " + userInfo.id);
                 return done(null, userInfo);
               });
           }));
@@ -354,8 +364,10 @@ qx.Class.define("nodesqlite.Application",
           
           userInfo =
             {
-              id      : user.id,
-              name    : user.name
+              id          : user.id,
+              name        : user.name,
+              displayName : user.displayName,
+              email       : user.email
             };
           
           done(null, JSON.stringify(userInfo));
