@@ -123,6 +123,8 @@ qx.Class.define("nodesqlite.Application",
       var             LocalStrategy = require("passport-local").Strategy;
       var             LdapStrategy = require("passport-ldapauth").Strategy;
       var             app = express();
+      var             strategies = [ "local" ];
+      var             ldapConfig;
       var             credentials;
       var             credentialFiles;
       var             httpServer;
@@ -295,62 +297,59 @@ qx.Class.define("nodesqlite.Application",
               });
           }));
 
-      // Authenticate against the LDAP server
-      passport.use(
-        new LdapStrategy(
-          {
-            server :
+      // See if we find LDAP configuration
+      try
+      {
+        ldapConfig = fs.readFileSync("../ldapconfig.json");
+        ldapConfig = JSON.parse(ldapConfig);
+        
+        // Authenticate against the LDAP server
+        passport.use(
+          new LdapStrategy(
             {
-              /*
-               * debug="true"
-               * useLdaps="true"
-               * contextFactory="com.sun.jndi.ldap.LdapCtxFactory"
-               * hostname="cs-ds"
-               * port="636"
-               * bindDn="cn=proxyuser,dc=cs,dc=uml,dc=edu"
-               * bindPassword="proxyuser"
-               * authenticationMethod="simple"
-               * userIdAttribute="uid"
-               * forceBindingLogin="true"
-               * userBaseDn="ou=People,dc=cs,dc=uml,dc=edu";
-               */
+              server : ldapConfig
+            },
+            function(user, done)
+            {
+              var             sync = require("synchronize");
 
-              url             : "ldaps://cs-ds:636",
-              searchBase      : "ou=People,dc=cs,dc=uml,dc=edu",
-              searchFilter    : "(uid={{username}})",
-              tlsOptions      :
+              sync.fiber(
+                function()
                 {
-                  ca :
-                  [
-                    fs.readFileSync("../../private/uml.cs-ldap-cert.pem")
-                  ]
-                },
-              bindDN          : "cn=proxyuser,dc=cs,dc=uml,dc=edu",
-              bindCredentials : "proxyuser"
-            }
-          },
-          function(user, done)
-          {
-            var             sync = require("synchronize");
-            
-            sync.fiber(
-              function()
-              {
-                var             userInfo;
+                  var             userInfo;
 
-                userInfo =
-                  {
-                    id          : getUserId(user.uid),
-                    displayName : user.cn,
-                    email       : user.mail,
-                    name        : user.uid
-                  };
+                  userInfo =
+                    {
+                      id          : getUserId(user.uid),
+                      displayName : user.cn,
+                      email       : user.mail,
+                      name        : user.uid
+                    };
 
-                console.log("LDAP authenticated user " + userInfo.name +
-                            ", id " + userInfo.id);
-                return done(null, userInfo);
-              });
-          }));
+                  console.log("LDAP authenticated user " + userInfo.name +
+                                " (" + userInfo.displayName + 
+                                ", " + userInfo.email + ")" +
+                              ", id " + userInfo.id);
+                  return done(null, userInfo);
+                });
+            }));
+        
+        // add ldap authentication to the list of stragies to try
+        strategies.push("ldapauth");
+        
+        // Finally, add the certificate authority certificate.
+        if (ldapConfig.tlsOptions && ldapConfig.tlsOptions.ca)
+        {
+          ldapConfig.tlsOptions.ca.push(
+            fs.readFileSync("../../private/uml.cs-ldap-cert.pem"));
+        }
+      }
+      catch(e)
+      {
+        // nothing to do. we simply won't use ldap.
+        console.log("LDAP not being used. " + e);
+      }
+
 
       // Serialize the user information so it can be stored in the session
       //
@@ -490,7 +489,7 @@ qx.Class.define("nodesqlite.Application",
 
           // Authenticate
           passport.authenticate(
-            [ "local", "ldapauth" ],
+            strategies,
             {
               failureRedirect: "/login",
               failureFlash: false

@@ -1,0 +1,13 @@
+{
+  "url"             : "ldaps://cs-ds:636",
+  "searchBase"      : "ou=People,dc=cs,dc=uml,dc=edu",
+  "searchFilter"    : "(uid={{username}})",
+  "tlsOptions"      :
+    {
+      "ca" :
+      [
+      ]
+    },
+  "bindDN"          : "cn=proxyuser,dc=cs,dc=uml,dc=edu",
+  "bindCredentials" : "proxyuser"
+}
