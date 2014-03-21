@@ -401,7 +401,10 @@ qx.Class.define("nodesqlite.Application",
       }
       
       // Call our redirecting middleware function before any others
-//      app.use(requireHTTPS);
+      if (httpsPort != 0)
+      {
+        app.use(requireHTTPS);
+      }
 
       //
       // Arrange to receive raw data
