@@ -245,6 +245,162 @@ qx.Class.define("nodesqlite.Application",
               password    : "mary",
               displayName : "Mary Contrary",
               email       : "mary@elsewhere.org"
+            },
+            {
+              name        : "mpenta",
+              password    : "ecg rules!",
+              displayName : "Michael Penta",
+              email       : "mpenta@cs.uml.edu"
+            },
+            {
+              name        : "necc-1",
+              password    : "naruto",
+              displayName : "NECC (Penta)",
+              email       : ""
+            },
+            {
+              name        : "necc-2",
+              password    : "batman",
+              displayName : "NECC (Penta)",
+              email       : ""
+            },
+            {
+              name        : "necc-3",
+              password    : "felix",
+              displayName : "NECC (Penta)",
+              email       : ""
+            },
+            {
+              name        : "necc-4",
+              password    : "tom+jerry",
+              displayName : "NECC (Penta)",
+              email       : ""
+            },
+            {
+              name        : "necc-5",
+              password    : "bullwinkle",
+              displayName : "NECC (Penta)",
+              email       : ""
+            },
+            {
+              name        : "necc-6",
+              password    : "gigantor",
+              displayName : "NECC (Penta)",
+              email       : ""
+            },
+            {
+              name        : "necc-7",
+              password    : "brady bunch",
+              displayName : "NECC (Penta)",
+              email       : ""
+            },
+            {
+              name        : "necc-8",
+              password    : "squad 51",
+              displayName : "NECC (Penta)",
+              email       : ""
+            },
+            {
+              name        : "necc-9",
+              password    : "dragnet",
+              displayName : "NECC (Penta)",
+              email       : ""
+            },
+            {
+              name        : "necc-10",
+              password    : "bugs bunny",
+              displayName : "NECC (Penta)",
+              email       : ""
+            },
+            {
+              name        : "necc-11",
+              password    : "elmer fudd",
+              displayName : "NECC (Penta)",
+              email       : ""
+            },
+            {
+              name        : "necc-12",
+              password    : "scooby-doo",
+              displayName : "NECC (Penta)",
+              email       : ""
+            },
+            {
+              name        : "necc-13",
+              password    : "fred flintstone",
+              displayName : "NECC (Penta)",
+              email       : ""
+            },
+            {
+              name        : "necc-14",
+              password    : "road runner",
+              displayName : "NECC (Penta)",
+              email       : ""
+            },
+            {
+              name        : "necc-15",
+              password    : "the jetsons",
+              displayName : "NECC (Penta)",
+              email       : ""
+            },
+            {
+              name        : "necc-16",
+              password    : "charlie brown",
+              displayName : "NECC (Penta)",
+              email       : ""
+            },
+            {
+              name        : "necc-17",
+              password    : "banana splits",
+              displayName : "NECC (Penta)",
+              email       : ""
+            },
+            {
+              name        : "necc-18",
+              password    : "pink panther",
+              displayName : "NECC (Penta)",
+              email       : ""
+            },
+            {
+              name        : "necc-19",
+              password    : "underdog",
+              displayName : "NECC (Penta)",
+              email       : ""
+            },
+            {
+              name        : "necc-20",
+              password    : "speed racer",
+              displayName : "NECC (Penta)",
+              email       : ""
+            },
+            {
+              name        : "necc-21",
+              password    : "gumby",
+              displayName : "NECC (Penta)",
+              email       : ""
+            },
+            {
+              name        : "necc-22",
+              password    : "woody woodpecker",
+              displayName : "NECC (Penta)",
+              email       : ""
+            },
+            {
+              name        : "necc-23",
+              password    : "spider-man",
+              displayName : "NECC (Penta)",
+              email       : ""
+            },
+            {
+              name        : "necc-24",
+              password    : "jonny quest",
+              displayName : "NECC (Penta)",
+              email       : ""
+            },
+            {
+              name        : "necc-25",
+              password    : "wile e. coyote",
+              displayName : "NECC (Penta)",
+              email       : ""
             }
         ];
 
