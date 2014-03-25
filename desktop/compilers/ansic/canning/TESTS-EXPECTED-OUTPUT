@@ -1144,3 +1144,11 @@ STDOUT:
 1.068e-10
 >>> Program exited with exit code 0
 
+% ../dcc t057-sizeof-as-argument.c --rootdir=/home/derrell/ME
+STDOUT: 
+>>> Running program
+x=32
+x=32
+x=2
+>>> Program exited with exit code 0
+
