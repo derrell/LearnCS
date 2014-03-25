@@ -497,14 +497,20 @@ qx.Class.define("playground.c.lib.Specifier",
       }
       
       // If our current specifier's type is "long" or "long long" then add
-      // those to the new specifier. (Nothing is done if the current
-      // specifier's size is "char" or "short", which keeps the new
-      // specifier's type at an assumed "int".)
+      // those to the new specifier. If the size is "char or "short" or int"
+      // (or null, which means "int"), make it explicitly "int".
       if (! this.__type || this.__type == "int")
       {
         if (this.__size == "long" || this.__size == "long long")
         {
           specifier.__size = this.__size;
+        }
+        else if (! this.__size || 
+                 this.__size == "char" || 
+                 this.__size == "short" ||
+                 this.__size == "int")
+        {
+          specifier.__size = "int";
         }
       }
       
