@@ -116,6 +116,7 @@ qx.Class.define("nodesqlite.Application",
       var             fs = require("fs");
       var             http = require("http");
       var             https = require("https");
+      var             logger = require("morgan");
       var             express = require("express");
       var             passport = require("passport");
       var             cookieParser = require("cookie-parser");
@@ -165,7 +166,7 @@ qx.Class.define("nodesqlite.Application",
       //
       // Generic configuration
       //
-//      app.use(express.logger());
+      app.use(logger("short"));
       app.use(cookieParser());
       app.use(cookieSession(
                 {
@@ -688,7 +689,10 @@ qx.Class.define("nodesqlite.Application",
       // For static files, ensure the user is authenticated
       app.use(ensureAuthenticated);
 
-      // Get static files from our build directory, for now
+      // Get files opened via stdio functions from a special directory
+      app.use("/stdio_files", express["static"](__dirname + "/stdio_files"));
+
+      // Get other static files from our build directory, for now
       app.use(express["static"](__dirname + "/frontend"));
       
       
