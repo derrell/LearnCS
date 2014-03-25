@@ -1,0 +1,41 @@
+# Draw a filled arc (left eye)
+begin
+setColor/green
+arc/100/100/50/180/315/false
+finish/true
+
+# Draw an unfilled arc (right eye)
+begin
+setColor/green
+arc/200/100/50/360/225/true
+finish/false
+
+# Draw a triangle (nose)
+begin
+setColor/red
+moveTo/100/100
+lineTo/200/200
+lineTo/200/100
+lineTo/100/100
+finish/true
+
+# Complete the nose by clearing part of the triangle
+clearRectangle/100/120/80/80
+
+# Draw an unfilled arc (mouth)
+begin
+setColor/black
+arc/148/148/100/30/140/false
+finish/false
+begin
+arc/150/150/100/30/140/false
+finish/false
+begin
+arc/152/152/100/30/140/false
+finish/false
+begin
+arc/154/154/100/30/140/false
+finish/false
+begin
+arc/156/156/100/30/140/false
+finish/false
