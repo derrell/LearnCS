@@ -409,6 +409,9 @@ var tests =
     },
     {
       name   : "t056-printf-percent-g.c"
+    },
+    {
+      name   : "t057-sizeof-as-argument.c"
     }
   ];
 

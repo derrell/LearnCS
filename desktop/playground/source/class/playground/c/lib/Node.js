@@ -3115,7 +3115,6 @@ qx.Class.define("playground.c.lib.Node",
                                 ! specOrDecl.isCompatible(
                                   otherSpecAndDecl[i],
                                   otherSpecAndDecl.length == 1);
-
                               return incompatible;
                             });
 
@@ -4881,13 +4880,16 @@ qx.Class.define("playground.c.lib.Node",
             }
 
             // The return value is an int
-            value3.specAndDecl = [ new playground.c.lib.Specifier("int") ];
+            value3.specAndDecl = 
+              [
+                new playground.c.lib.Specifier(this, "int") 
+              ]; 
             
             // Restore prior data member values
             data.entry = oldEntry;
             
             success(value3);
-          },
+          }.bind(this),
           failure);
         break;
 
@@ -6199,7 +6201,7 @@ qx.Class.define("playground.c.lib.Node",
             value3 = 
               { 
                 value       : size,
-                specAndDecl : [ new playground.c.lib.Specifier("int") ]
+                specAndDecl : [ new playground.c.lib.Specifier(this, "int") ]
               };
             
             saveAndReturn.bind(this)(success);
