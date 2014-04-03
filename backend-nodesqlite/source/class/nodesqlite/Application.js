@@ -549,7 +549,7 @@ qx.Class.define("nodesqlite.Application",
 
         if (! req.secure)
         {
-          redirectTo = "https://" + req.host + ":8443/" + req.url;
+          redirectTo = "https://" + req.host + req.url;
           return res.redirect(redirectTo);
         }
         
@@ -560,7 +560,7 @@ qx.Class.define("nodesqlite.Application",
       // Call our redirecting middleware function before any others
       if (httpsPort != 0)
       {
-//        app.use(requireHTTPS);
+        app.use(requireHTTPS);
       }
 
       //
