@@ -560,7 +560,7 @@ qx.Class.define("nodesqlite.Application",
       // Call our redirecting middleware function before any others
       if (httpsPort != 0)
       {
-        app.use(requireHTTPS);
+//        app.use(requireHTTPS);
       }
 
       //
@@ -725,24 +725,48 @@ qx.Class.define("nodesqlite.Application",
       {
         console.log("Starting HTTPS server on port " + httpsPort);
 
-        // Set up the credential file names
-        credentialFiles =
-          {
-            key  : "../../private/self-signed/server.key",
-            cert : "../../private/self-signed/server.crt",
-            ca   : "../../private/self-signed/ca.crt"
-          };
+        if (false)
+        {
+          // Set up the credential file names
+          credentialFiles =
+            {
+              key  : "../../private/self-signed/server.key",
+              cert : "../../private/self-signed/server.crt",
+              ca   : "../../private/self-signed/ca.crt"
+            };
 
-        // Set up credentials
-        credentials =
-          {
-            key                : fs.readFileSync(credentialFiles.key, "utf8"),
-            cert               : fs.readFileSync(credentialFiles.cert, "utf8"),
-            ca                 : fs.readFileSync(credentialFiles.ca, "utf8"),
+          // Set up credentials
+          credentials =
+            {
+              key                : fs.readFileSync(credentialFiles.key, "utf8"),
+              cert               : fs.readFileSync(credentialFiles.cert, "utf8"),
+              ca                 : fs.readFileSync(credentialFiles.ca, "utf8"),
+              //            requestCert        : true,
+              passphrase         : "mypass",
+              rejectUnauthorized : false
+            };
+        }
+        else
+        {
+          // Set up the credential file names
+          credentialFiles =
+            {
+              key  : "../../private/learn.key",
+              cert : "../../private/learn_cs_uml_edu_cert.cer"
+//              ca   : "../../private/incommonserverca.cer"
+            };
+
+          // Set up credentials
+          credentials =
+            {
+              key                : fs.readFileSync(credentialFiles.key, "utf8"),
+              cert               : fs.readFileSync(credentialFiles.cert, "utf8"),
+//              ca                 : fs.readFileSync(credentialFiles.ca, "utf8"),
 //            requestCert        : true,
-            passphrase         : "mypass",
-            rejectUnauthorized : false
-          };
+//            passphrase         : "mypass",
+              rejectUnauthorized : false
+            };
+        }
 
         // Create HTTPS servers
         httpsServer = https.createServer(credentials, app);
