@@ -102,6 +102,30 @@ hBox.hide();
     // Spacer between research approval and save/cancel buttons
     vBox.add(new qx.ui.core.Spacer(20, 20));
 
+    // Warning about ensuring they've selected the correct class.
+    label = new qx.ui.basic.Label();
+    label.set(
+      {
+        font  : "bold",
+        value : "CAUTION! Before clicking Save..."
+      });
+    vBox.add(label);
+    
+    label = new qx.ui.basic.Label("Be sure your lab selection is correct.");
+    vBox.add(label);
+    
+    label = new qx.ui.basic.Label("Verify you selected the correct lab day.");
+    vBox.add(label);
+
+    label = new qx.ui.basic.Label();
+    label.set(
+      {
+        value : ("You will not be able to change it later, yet " +
+                 "if it is incorrect, you may have the wrong labs provided " +
+                 "to you.")
+      });
+    vBox.add(label);
+
     // horizontally align the Save and Cancel buttons
     hBox = new qx.ui.container.Composite(new qx.ui.layout.HBox(10));
     vBox.add(hBox);
