@@ -260,6 +260,23 @@ qx.Class.define("playground.view.Toolbar",
     this.__highlightButton.setValue(initValue);
     this.__highlightButton.exclude(); // djl
 
+    // MOTD
+    label = new qx.ui.basic.Label();
+    label.set(
+      {
+        rich            : true,
+        width           : 200,
+        value           : (
+          "<b style='color:blue'>" +
+          "To work on old labs, retrieve new lab description handout from " +
+          "<a target='_blank' " +
+          "   href='http://www.cs.uml.edu/~dlipman/computing1-labs'>" +
+          "here" +
+          "</a>." +
+          "</b>")
+      });
+    this.add(label);
+
     // spacer
     this.addSpacer();
 
