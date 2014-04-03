@@ -19,7 +19,7 @@ qx.Class.define("playground.dbif.ObjUser",
         "enrolledIn"    : [],
         "templatesFrom" : [],
         "courseAccess"  : [],
-        "researchOk"    : 1
+        "researchOk"    : 0
       });
 
     // Call the superclass constructor
