@@ -705,134 +705,134 @@ Error near line 1: #include must be followed by a file name enclosed in angle br
 % ../dcc t035-ctype.c --rootdir=/home/derrell/ME
 STDOUT: 
 >>> Running program
-c: 0x00   digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 0 punct: 0
-c: 0x01   digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 0 punct: 0
-c: 0x02   digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 0 punct: 0
-c: 0x03   digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 0 punct: 0
-c: 0x04   digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 0 punct: 0
-c: 0x05   digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 0 punct: 0
-c: 0x06   digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 0 punct: 0
-c: 0x07   digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 0 punct: 0
-c: 0x08   digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 0 punct: 0
-c: 0x09   digit: 0 space: 1 upper: 0 lower: 0 alpha: 0 print: 0 punct: 0
-c: 0x0a   digit: 0 space: 1 upper: 0 lower: 0 alpha: 0 print: 0 punct: 0
-c: 0x0b   digit: 0 space: 1 upper: 0 lower: 0 alpha: 0 print: 0 punct: 0
-c: 0x0c   digit: 0 space: 1 upper: 0 lower: 0 alpha: 0 print: 0 punct: 0
-c: 0x0d   digit: 0 space: 1 upper: 0 lower: 0 alpha: 0 print: 0 punct: 0
-c: 0x0e   digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 0 punct: 0
-c: 0x0f   digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 0 punct: 0
-c: 0x10   digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 0 punct: 0
-c: 0x11   digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 0 punct: 0
-c: 0x12   digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 0 punct: 0
-c: 0x13   digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 0 punct: 0
-c: 0x14   digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 0 punct: 0
-c: 0x15   digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 0 punct: 0
-c: 0x16   digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 0 punct: 0
-c: 0x17   digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 0 punct: 0
-c: 0x18   digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 0 punct: 0
-c: 0x19   digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 0 punct: 0
-c: 0x1a   digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 0 punct: 0
-c: 0x1b   digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 0 punct: 0
-c: 0x1c   digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 0 punct: 0
-c: 0x1d   digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 0 punct: 0
-c: 0x1e   digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 0 punct: 0
-c: 0x1f   digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 0 punct: 0
-c: 0x20   digit: 0 space: 1 upper: 0 lower: 0 alpha: 0 print: 1 punct: 0
-c: 0x21 ! digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 1
-c: 0x22 " digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 1
-c: 0x23 # digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 1
-c: 0x24 $ digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 1
-c: 0x25 % digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 1
-c: 0x26 & digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 1
-c: 0x27 ' digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 1
-c: 0x28 ( digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 1
-c: 0x29 ) digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 1
-c: 0x2a * digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 1
-c: 0x2b + digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 1
-c: 0x2c , digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 1
-c: 0x2d - digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 1
-c: 0x2e . digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 1
-c: 0x2f / digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 1
-c: 0x30 0 digit: 1 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 0
-c: 0x31 1 digit: 1 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 0
-c: 0x32 2 digit: 1 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 0
-c: 0x33 3 digit: 1 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 0
-c: 0x34 4 digit: 1 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 0
-c: 0x35 5 digit: 1 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 0
-c: 0x36 6 digit: 1 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 0
-c: 0x37 7 digit: 1 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 0
-c: 0x38 8 digit: 1 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 0
-c: 0x39 9 digit: 1 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 0
-c: 0x3a : digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 1
-c: 0x3b ; digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 1
-c: 0x3c < digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 1
-c: 0x3d = digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 1
-c: 0x3e > digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 1
-c: 0x3f ? digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 1
-c: 0x40 @ digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 1
-c: 0x41 A digit: 0 space: 0 upper: 1 lower: 0 alpha: 1 print: 1 punct: 0
-c: 0x42 B digit: 0 space: 0 upper: 1 lower: 0 alpha: 1 print: 1 punct: 0
-c: 0x43 C digit: 0 space: 0 upper: 1 lower: 0 alpha: 1 print: 1 punct: 0
-c: 0x44 D digit: 0 space: 0 upper: 1 lower: 0 alpha: 1 print: 1 punct: 0
-c: 0x45 E digit: 0 space: 0 upper: 1 lower: 0 alpha: 1 print: 1 punct: 0
-c: 0x46 F digit: 0 space: 0 upper: 1 lower: 0 alpha: 1 print: 1 punct: 0
-c: 0x47 G digit: 0 space: 0 upper: 1 lower: 0 alpha: 1 print: 1 punct: 0
-c: 0x48 H digit: 0 space: 0 upper: 1 lower: 0 alpha: 1 print: 1 punct: 0
-c: 0x49 I digit: 0 space: 0 upper: 1 lower: 0 alpha: 1 print: 1 punct: 0
-c: 0x4a J digit: 0 space: 0 upper: 1 lower: 0 alpha: 1 print: 1 punct: 0
-c: 0x4b K digit: 0 space: 0 upper: 1 lower: 0 alpha: 1 print: 1 punct: 0
-c: 0x4c L digit: 0 space: 0 upper: 1 lower: 0 alpha: 1 print: 1 punct: 0
-c: 0x4d M digit: 0 space: 0 upper: 1 lower: 0 alpha: 1 print: 1 punct: 0
-c: 0x4e N digit: 0 space: 0 upper: 1 lower: 0 alpha: 1 print: 1 punct: 0
-c: 0x4f O digit: 0 space: 0 upper: 1 lower: 0 alpha: 1 print: 1 punct: 0
-c: 0x50 P digit: 0 space: 0 upper: 1 lower: 0 alpha: 1 print: 1 punct: 0
-c: 0x51 Q digit: 0 space: 0 upper: 1 lower: 0 alpha: 1 print: 1 punct: 0
-c: 0x52 R digit: 0 space: 0 upper: 1 lower: 0 alpha: 1 print: 1 punct: 0
-c: 0x53 S digit: 0 space: 0 upper: 1 lower: 0 alpha: 1 print: 1 punct: 0
-c: 0x54 T digit: 0 space: 0 upper: 1 lower: 0 alpha: 1 print: 1 punct: 0
-c: 0x55 U digit: 0 space: 0 upper: 1 lower: 0 alpha: 1 print: 1 punct: 0
-c: 0x56 V digit: 0 space: 0 upper: 1 lower: 0 alpha: 1 print: 1 punct: 0
-c: 0x57 W digit: 0 space: 0 upper: 1 lower: 0 alpha: 1 print: 1 punct: 0
-c: 0x58 X digit: 0 space: 0 upper: 1 lower: 0 alpha: 1 print: 1 punct: 0
-c: 0x59 Y digit: 0 space: 0 upper: 1 lower: 0 alpha: 1 print: 1 punct: 0
-c: 0x5a Z digit: 0 space: 0 upper: 1 lower: 0 alpha: 1 print: 1 punct: 0
-c: 0x5b [ digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 1
-c: 0x5c \ digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 1
-c: 0x5d ] digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 1
-c: 0x5e ^ digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 1
-c: 0x5f _ digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 1
-c: 0x60 ` digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 1
-c: 0x61 a digit: 0 space: 0 upper: 0 lower: 1 alpha: 1 print: 1 punct: 0
-c: 0x62 b digit: 0 space: 0 upper: 0 lower: 1 alpha: 1 print: 1 punct: 0
-c: 0x63 c digit: 0 space: 0 upper: 0 lower: 1 alpha: 1 print: 1 punct: 0
-c: 0x64 d digit: 0 space: 0 upper: 0 lower: 1 alpha: 1 print: 1 punct: 0
-c: 0x65 e digit: 0 space: 0 upper: 0 lower: 1 alpha: 1 print: 1 punct: 0
-c: 0x66 f digit: 0 space: 0 upper: 0 lower: 1 alpha: 1 print: 1 punct: 0
-c: 0x67 g digit: 0 space: 0 upper: 0 lower: 1 alpha: 1 print: 1 punct: 0
-c: 0x68 h digit: 0 space: 0 upper: 0 lower: 1 alpha: 1 print: 1 punct: 0
-c: 0x69 i digit: 0 space: 0 upper: 0 lower: 1 alpha: 1 print: 1 punct: 0
-c: 0x6a j digit: 0 space: 0 upper: 0 lower: 1 alpha: 1 print: 1 punct: 0
-c: 0x6b k digit: 0 space: 0 upper: 0 lower: 1 alpha: 1 print: 1 punct: 0
-c: 0x6c l digit: 0 space: 0 upper: 0 lower: 1 alpha: 1 print: 1 punct: 0
-c: 0x6d m digit: 0 space: 0 upper: 0 lower: 1 alpha: 1 print: 1 punct: 0
-c: 0x6e n digit: 0 space: 0 upper: 0 lower: 1 alpha: 1 print: 1 punct: 0
-c: 0x6f o digit: 0 space: 0 upper: 0 lower: 1 alpha: 1 print: 1 punct: 0
-c: 0x70 p digit: 0 space: 0 upper: 0 lower: 1 alpha: 1 print: 1 punct: 0
-c: 0x71 q digit: 0 space: 0 upper: 0 lower: 1 alpha: 1 print: 1 punct: 0
-c: 0x72 r digit: 0 space: 0 upper: 0 lower: 1 alpha: 1 print: 1 punct: 0
-c: 0x73 s digit: 0 space: 0 upper: 0 lower: 1 alpha: 1 print: 1 punct: 0
-c: 0x74 t digit: 0 space: 0 upper: 0 lower: 1 alpha: 1 print: 1 punct: 0
-c: 0x75 u digit: 0 space: 0 upper: 0 lower: 1 alpha: 1 print: 1 punct: 0
-c: 0x76 v digit: 0 space: 0 upper: 0 lower: 1 alpha: 1 print: 1 punct: 0
-c: 0x77 w digit: 0 space: 0 upper: 0 lower: 1 alpha: 1 print: 1 punct: 0
-c: 0x78 x digit: 0 space: 0 upper: 0 lower: 1 alpha: 1 print: 1 punct: 0
-c: 0x79 y digit: 0 space: 0 upper: 0 lower: 1 alpha: 1 print: 1 punct: 0
-c: 0x7a z digit: 0 space: 0 upper: 0 lower: 1 alpha: 1 print: 1 punct: 0
-c: 0x7b { digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 1
-c: 0x7c | digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 1
-c: 0x7d } digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 1
-c: 0x7e ~ digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 1 punct: 1
-c: 0x7f   digit: 0 space: 0 upper: 0 lower: 0 alpha: 0 print: 0 punct: 0
+0x00   digit:0 space:0 upper:0 lower:0 alpha:0 print:0 punct:0 cntrl:1
+0x01   digit:0 space:0 upper:0 lower:0 alpha:0 print:0 punct:0 cntrl:1
+0x02   digit:0 space:0 upper:0 lower:0 alpha:0 print:0 punct:0 cntrl:1
+0x03   digit:0 space:0 upper:0 lower:0 alpha:0 print:0 punct:0 cntrl:1
+0x04   digit:0 space:0 upper:0 lower:0 alpha:0 print:0 punct:0 cntrl:1
+0x05   digit:0 space:0 upper:0 lower:0 alpha:0 print:0 punct:0 cntrl:1
+0x06   digit:0 space:0 upper:0 lower:0 alpha:0 print:0 punct:0 cntrl:1
+0x07   digit:0 space:0 upper:0 lower:0 alpha:0 print:0 punct:0 cntrl:1
+0x08   digit:0 space:0 upper:0 lower:0 alpha:0 print:0 punct:0 cntrl:1
+0x09   digit:0 space:1 upper:0 lower:0 alpha:0 print:0 punct:0 cntrl:1
+0x0a   digit:0 space:1 upper:0 lower:0 alpha:0 print:0 punct:0 cntrl:1
+0x0b   digit:0 space:1 upper:0 lower:0 alpha:0 print:0 punct:0 cntrl:1
+0x0c   digit:0 space:1 upper:0 lower:0 alpha:0 print:0 punct:0 cntrl:1
+0x0d   digit:0 space:1 upper:0 lower:0 alpha:0 print:0 punct:0 cntrl:1
+0x0e   digit:0 space:0 upper:0 lower:0 alpha:0 print:0 punct:0 cntrl:1
+0x0f   digit:0 space:0 upper:0 lower:0 alpha:0 print:0 punct:0 cntrl:1
+0x10   digit:0 space:0 upper:0 lower:0 alpha:0 print:0 punct:0 cntrl:1
+0x11   digit:0 space:0 upper:0 lower:0 alpha:0 print:0 punct:0 cntrl:1
+0x12   digit:0 space:0 upper:0 lower:0 alpha:0 print:0 punct:0 cntrl:1
+0x13   digit:0 space:0 upper:0 lower:0 alpha:0 print:0 punct:0 cntrl:1
+0x14   digit:0 space:0 upper:0 lower:0 alpha:0 print:0 punct:0 cntrl:1
+0x15   digit:0 space:0 upper:0 lower:0 alpha:0 print:0 punct:0 cntrl:1
+0x16   digit:0 space:0 upper:0 lower:0 alpha:0 print:0 punct:0 cntrl:1
+0x17   digit:0 space:0 upper:0 lower:0 alpha:0 print:0 punct:0 cntrl:1
+0x18   digit:0 space:0 upper:0 lower:0 alpha:0 print:0 punct:0 cntrl:1
+0x19   digit:0 space:0 upper:0 lower:0 alpha:0 print:0 punct:0 cntrl:1
+0x1a   digit:0 space:0 upper:0 lower:0 alpha:0 print:0 punct:0 cntrl:1
+0x1b   digit:0 space:0 upper:0 lower:0 alpha:0 print:0 punct:0 cntrl:1
+0x1c   digit:0 space:0 upper:0 lower:0 alpha:0 print:0 punct:0 cntrl:1
+0x1d   digit:0 space:0 upper:0 lower:0 alpha:0 print:0 punct:0 cntrl:1
+0x1e   digit:0 space:0 upper:0 lower:0 alpha:0 print:0 punct:0 cntrl:1
+0x1f   digit:0 space:0 upper:0 lower:0 alpha:0 print:0 punct:0 cntrl:1
+0x20   digit:0 space:1 upper:0 lower:0 alpha:0 print:1 punct:0 cntrl:0
+0x21 ! digit:0 space:0 upper:0 lower:0 alpha:0 print:1 punct:1 cntrl:0
+0x22 " digit:0 space:0 upper:0 lower:0 alpha:0 print:1 punct:1 cntrl:0
+0x23 # digit:0 space:0 upper:0 lower:0 alpha:0 print:1 punct:1 cntrl:0
+0x24 $ digit:0 space:0 upper:0 lower:0 alpha:0 print:1 punct:1 cntrl:0
+0x25 % digit:0 space:0 upper:0 lower:0 alpha:0 print:1 punct:1 cntrl:0
+0x26 & digit:0 space:0 upper:0 lower:0 alpha:0 print:1 punct:1 cntrl:0
+0x27 ' digit:0 space:0 upper:0 lower:0 alpha:0 print:1 punct:1 cntrl:0
+0x28 ( digit:0 space:0 upper:0 lower:0 alpha:0 print:1 punct:1 cntrl:0
+0x29 ) digit:0 space:0 upper:0 lower:0 alpha:0 print:1 punct:1 cntrl:0
+0x2a * digit:0 space:0 upper:0 lower:0 alpha:0 print:1 punct:1 cntrl:0
+0x2b + digit:0 space:0 upper:0 lower:0 alpha:0 print:1 punct:1 cntrl:0
+0x2c , digit:0 space:0 upper:0 lower:0 alpha:0 print:1 punct:1 cntrl:0
+0x2d - digit:0 space:0 upper:0 lower:0 alpha:0 print:1 punct:1 cntrl:0
+0x2e . digit:0 space:0 upper:0 lower:0 alpha:0 print:1 punct:1 cntrl:0
+0x2f / digit:0 space:0 upper:0 lower:0 alpha:0 print:1 punct:1 cntrl:0
+0x30 0 digit:1 space:0 upper:0 lower:0 alpha:0 print:1 punct:0 cntrl:0
+0x31 1 digit:1 space:0 upper:0 lower:0 alpha:0 print:1 punct:0 cntrl:0
+0x32 2 digit:1 space:0 upper:0 lower:0 alpha:0 print:1 punct:0 cntrl:0
+0x33 3 digit:1 space:0 upper:0 lower:0 alpha:0 print:1 punct:0 cntrl:0
+0x34 4 digit:1 space:0 upper:0 lower:0 alpha:0 print:1 punct:0 cntrl:0
+0x35 5 digit:1 space:0 upper:0 lower:0 alpha:0 print:1 punct:0 cntrl:0
+0x36 6 digit:1 space:0 upper:0 lower:0 alpha:0 print:1 punct:0 cntrl:0
+0x37 7 digit:1 space:0 upper:0 lower:0 alpha:0 print:1 punct:0 cntrl:0
+0x38 8 digit:1 space:0 upper:0 lower:0 alpha:0 print:1 punct:0 cntrl:0
+0x39 9 digit:1 space:0 upper:0 lower:0 alpha:0 print:1 punct:0 cntrl:0
+0x3a : digit:0 space:0 upper:0 lower:0 alpha:0 print:1 punct:1 cntrl:0
+0x3b ; digit:0 space:0 upper:0 lower:0 alpha:0 print:1 punct:1 cntrl:0
+0x3c < digit:0 space:0 upper:0 lower:0 alpha:0 print:1 punct:1 cntrl:0
+0x3d = digit:0 space:0 upper:0 lower:0 alpha:0 print:1 punct:1 cntrl:0
+0x3e > digit:0 space:0 upper:0 lower:0 alpha:0 print:1 punct:1 cntrl:0
+0x3f ? digit:0 space:0 upper:0 lower:0 alpha:0 print:1 punct:1 cntrl:0
+0x40 @ digit:0 space:0 upper:0 lower:0 alpha:0 print:1 punct:1 cntrl:0
+0x41 A digit:0 space:0 upper:1 lower:0 alpha:1 print:1 punct:0 cntrl:0
+0x42 B digit:0 space:0 upper:1 lower:0 alpha:1 print:1 punct:0 cntrl:0
+0x43 C digit:0 space:0 upper:1 lower:0 alpha:1 print:1 punct:0 cntrl:0
+0x44 D digit:0 space:0 upper:1 lower:0 alpha:1 print:1 punct:0 cntrl:0
+0x45 E digit:0 space:0 upper:1 lower:0 alpha:1 print:1 punct:0 cntrl:0
+0x46 F digit:0 space:0 upper:1 lower:0 alpha:1 print:1 punct:0 cntrl:0
+0x47 G digit:0 space:0 upper:1 lower:0 alpha:1 print:1 punct:0 cntrl:0
+0x48 H digit:0 space:0 upper:1 lower:0 alpha:1 print:1 punct:0 cntrl:0
+0x49 I digit:0 space:0 upper:1 lower:0 alpha:1 print:1 punct:0 cntrl:0
+0x4a J digit:0 space:0 upper:1 lower:0 alpha:1 print:1 punct:0 cntrl:0
+0x4b K digit:0 space:0 upper:1 lower:0 alpha:1 print:1 punct:0 cntrl:0
+0x4c L digit:0 space:0 upper:1 lower:0 alpha:1 print:1 punct:0 cntrl:0
+0x4d M digit:0 space:0 upper:1 lower:0 alpha:1 print:1 punct:0 cntrl:0
+0x4e N digit:0 space:0 upper:1 lower:0 alpha:1 print:1 punct:0 cntrl:0
+0x4f O digit:0 space:0 upper:1 lower:0 alpha:1 print:1 punct:0 cntrl:0
+0x50 P digit:0 space:0 upper:1 lower:0 alpha:1 print:1 punct:0 cntrl:0
+0x51 Q digit:0 space:0 upper:1 lower:0 alpha:1 print:1 punct:0 cntrl:0
+0x52 R digit:0 space:0 upper:1 lower:0 alpha:1 print:1 punct:0 cntrl:0
+0x53 S digit:0 space:0 upper:1 lower:0 alpha:1 print:1 punct:0 cntrl:0
+0x54 T digit:0 space:0 upper:1 lower:0 alpha:1 print:1 punct:0 cntrl:0
+0x55 U digit:0 space:0 upper:1 lower:0 alpha:1 print:1 punct:0 cntrl:0
+0x56 V digit:0 space:0 upper:1 lower:0 alpha:1 print:1 punct:0 cntrl:0
+0x57 W digit:0 space:0 upper:1 lower:0 alpha:1 print:1 punct:0 cntrl:0
+0x58 X digit:0 space:0 upper:1 lower:0 alpha:1 print:1 punct:0 cntrl:0
+0x59 Y digit:0 space:0 upper:1 lower:0 alpha:1 print:1 punct:0 cntrl:0
+0x5a Z digit:0 space:0 upper:1 lower:0 alpha:1 print:1 punct:0 cntrl:0
+0x5b [ digit:0 space:0 upper:0 lower:0 alpha:0 print:1 punct:1 cntrl:0
+0x5c \ digit:0 space:0 upper:0 lower:0 alpha:0 print:1 punct:1 cntrl:0
+0x5d ] digit:0 space:0 upper:0 lower:0 alpha:0 print:1 punct:1 cntrl:0
+0x5e ^ digit:0 space:0 upper:0 lower:0 alpha:0 print:1 punct:1 cntrl:0
+0x5f _ digit:0 space:0 upper:0 lower:0 alpha:0 print:1 punct:1 cntrl:0
+0x60 ` digit:0 space:0 upper:0 lower:0 alpha:0 print:1 punct:1 cntrl:0
+0x61 a digit:0 space:0 upper:0 lower:1 alpha:1 print:1 punct:0 cntrl:0
+0x62 b digit:0 space:0 upper:0 lower:1 alpha:1 print:1 punct:0 cntrl:0
+0x63 c digit:0 space:0 upper:0 lower:1 alpha:1 print:1 punct:0 cntrl:0
+0x64 d digit:0 space:0 upper:0 lower:1 alpha:1 print:1 punct:0 cntrl:0
+0x65 e digit:0 space:0 upper:0 lower:1 alpha:1 print:1 punct:0 cntrl:0
+0x66 f digit:0 space:0 upper:0 lower:1 alpha:1 print:1 punct:0 cntrl:0
+0x67 g digit:0 space:0 upper:0 lower:1 alpha:1 print:1 punct:0 cntrl:0
+0x68 h digit:0 space:0 upper:0 lower:1 alpha:1 print:1 punct:0 cntrl:0
+0x69 i digit:0 space:0 upper:0 lower:1 alpha:1 print:1 punct:0 cntrl:0
+0x6a j digit:0 space:0 upper:0 lower:1 alpha:1 print:1 punct:0 cntrl:0
+0x6b k digit:0 space:0 upper:0 lower:1 alpha:1 print:1 punct:0 cntrl:0
+0x6c l digit:0 space:0 upper:0 lower:1 alpha:1 print:1 punct:0 cntrl:0
+0x6d m digit:0 space:0 upper:0 lower:1 alpha:1 print:1 punct:0 cntrl:0
+0x6e n digit:0 space:0 upper:0 lower:1 alpha:1 print:1 punct:0 cntrl:0
+0x6f o digit:0 space:0 upper:0 lower:1 alpha:1 print:1 punct:0 cntrl:0
+0x70 p digit:0 space:0 upper:0 lower:1 alpha:1 print:1 punct:0 cntrl:0
+0x71 q digit:0 space:0 upper:0 lower:1 alpha:1 print:1 punct:0 cntrl:0
+0x72 r digit:0 space:0 upper:0 lower:1 alpha:1 print:1 punct:0 cntrl:0
+0x73 s digit:0 space:0 upper:0 lower:1 alpha:1 print:1 punct:0 cntrl:0
+0x74 t digit:0 space:0 upper:0 lower:1 alpha:1 print:1 punct:0 cntrl:0
+0x75 u digit:0 space:0 upper:0 lower:1 alpha:1 print:1 punct:0 cntrl:0
+0x76 v digit:0 space:0 upper:0 lower:1 alpha:1 print:1 punct:0 cntrl:0
+0x77 w digit:0 space:0 upper:0 lower:1 alpha:1 print:1 punct:0 cntrl:0
+0x78 x digit:0 space:0 upper:0 lower:1 alpha:1 print:1 punct:0 cntrl:0
+0x79 y digit:0 space:0 upper:0 lower:1 alpha:1 print:1 punct:0 cntrl:0
+0x7a z digit:0 space:0 upper:0 lower:1 alpha:1 print:1 punct:0 cntrl:0
+0x7b { digit:0 space:0 upper:0 lower:0 alpha:0 print:1 punct:1 cntrl:0
+0x7c | digit:0 space:0 upper:0 lower:0 alpha:0 print:1 punct:1 cntrl:0
+0x7d } digit:0 space:0 upper:0 lower:0 alpha:0 print:1 punct:1 cntrl:0
+0x7e ~ digit:0 space:0 upper:0 lower:0 alpha:0 print:1 punct:1 cntrl:0
+0x7f   digit:0 space:0 upper:0 lower:0 alpha:0 print:0 punct:0 cntrl:1
 >>> Program exited with exit code 0
 
 % ../dcc t036-assignment-error-1.c --rootdir=/home/derrell/ME
