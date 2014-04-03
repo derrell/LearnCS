@@ -151,7 +151,6 @@ qx.Mixin.define("playground.dbif.MFiles",
       System.system( [ 
                        "git",
                        "config",
-                       "--global",
                        "user.name",
                        /* whoAmI.displayName || */ "user " + whoAmI.userId
                      ],
@@ -164,7 +163,6 @@ qx.Mixin.define("playground.dbif.MFiles",
       System.system( [ 
                        "git",
                        "config",
-                       "--global",
                        "user.email",
                        /* whoAmI.email || */ "anonymous@noplace.at.all"
                      ],
