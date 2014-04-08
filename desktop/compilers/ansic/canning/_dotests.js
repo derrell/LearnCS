@@ -412,6 +412,9 @@ var tests =
     },
     {
       name   : "t057-sizeof-as-argument.c"
+    },
+    {
+      name   : "t058-null-not-in-quotes.c"
     }
   ];
 

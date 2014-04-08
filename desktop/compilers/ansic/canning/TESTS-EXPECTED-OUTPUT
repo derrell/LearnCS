@@ -1152,3 +1152,14 @@ x=32
 x=2
 >>> Program exited with exit code 0
 
+% ../dcc t058-null-not-in-quotes.c --rootdir=/home/derrell/ME
+ERROR: Error: Command failed: 
+STDOUT: Error: See arrow pointing to position of error near line 2:
+...har * argv[]){    \0;}
+---------------------^
+	Unexpected character: \
+
+
+Errors encountered: 1
+
+

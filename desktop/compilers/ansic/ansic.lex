@@ -150,7 +150,12 @@ NL                      [\n]
 "?"			{ return('?'); }
 
 [ \t\v\r\n\f]		{ }
-.			{ /* ignore bad characters */ }
+.			{
+    /* bad character */
+    playground.c.lib.Node.getError().parseError(
+      "Unexpected character: " + yytext,
+      { line : yylineno });
+}
 
 
 <inc>\"(\\.|[^\\"])*\"  {
