@@ -183,6 +183,13 @@ qx.Class.define("playground.c.lib.SymtabEntry",
           ++pointerCount;
           break;
 
+        case "address" :
+          parts.push("address");
+          
+          // No need to loop further
+          bDone = true;
+          break;
+
         case "builtIn" :
           parts.push("builtIn");
 

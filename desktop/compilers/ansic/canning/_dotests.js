@@ -415,6 +415,9 @@ var tests =
     },
     {
       name   : "t058-null-not-in-quotes.c"
+    },
+    {
+      name   : "t059-address-of-array.c"
     }
   ];
 

@@ -1163,3 +1163,10 @@ STDOUT: Error: See arrow pointing to position of error near line 2:
 Errors encountered: 1
 
 
+% ../dcc t059-address-of-array.c --rootdir=/home/derrell/ME
+ERROR: Error: Command failed: 
+STDOUT: 
+>>> Running program
+Error near line 8: Operation [subtraction (-)] between 'address' and 'address' makes no sense
+>>> Program had errors. It did not run to completion.
+
