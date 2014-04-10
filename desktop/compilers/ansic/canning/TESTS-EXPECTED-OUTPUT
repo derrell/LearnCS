@@ -1175,3 +1175,10 @@ ERROR: Error: Command failed:
 STDOUT: Error near line 6: The size of an array must be a constant. It can not be a variable.
 >>> Program had errors. It did not run to completion.
 
+% ../dcc t061-return-value-from-void-function.c --rootdir=/home/derrell/ME
+ERROR: Error: Command failed: 
+STDOUT: 
+>>> Running program
+Error near line 11: It appears that you may be trying to access the return value of a 'void' function, or return a value from a 'void' function.
+>>> Program had errors. It did not run to completion.
+

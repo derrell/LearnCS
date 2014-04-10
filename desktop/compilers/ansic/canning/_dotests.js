@@ -421,6 +421,9 @@ var tests =
     },
     {
       name   : "t060-array-variable-length.c"
+    },
+    {
+      name   : "t061-return-value-from-void-function.c"
     }
   ];
 

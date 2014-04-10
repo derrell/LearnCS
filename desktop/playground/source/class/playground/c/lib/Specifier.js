@@ -446,6 +446,12 @@ qx.Class.define("playground.c.lib.Specifier",
       case "enum" :
         return this.__type;
         
+      case "void" :
+        throw new playground.c.lib.RuntimeError(
+          this.__node,
+          "It appears that you may be trying to access the return value of " +
+          "a 'void' function, or return a value from a 'void' function.");
+
       case "label" :
         throw new playground.c.lib.NotYetImplemented(this.__type +
                                                      " ( in Specifier)");
