@@ -418,6 +418,9 @@ var tests =
     },
     {
       name   : "t059-address-of-array.c"
+    },
+    {
+      name   : "t060-array-variable-length.c"
     }
   ];
 

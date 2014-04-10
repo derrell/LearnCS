@@ -1214,6 +1214,18 @@ qx.Class.define("playground.c.lib.Node",
             {
               value1 = v;
               
+              // Ensure we got a constant. If it wasn't a constant, there will
+              // be no value in the parameter.
+              if (typeof value1 == "undefined")
+              {
+                failure(
+                  new playground.c.lib.RuntimeError(
+                    this,
+                    "The size of an array must be a constant. It can not be " +
+                    "a variable."));
+                return;
+              }
+
               // We got the array size. Add it. (This also sets type to array.)
               declarator.setArrayCount(value1.value);
 

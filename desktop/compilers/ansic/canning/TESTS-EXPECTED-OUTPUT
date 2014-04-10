@@ -1170,3 +1170,8 @@ STDOUT:
 Error near line 8: Operation [subtraction (-)] between 'address' and 'address' makes no sense
 >>> Program had errors. It did not run to completion.
 
+% ../dcc t060-array-variable-length.c --rootdir=/home/derrell/ME
+ERROR: Error: Command failed: 
+STDOUT: Error near line 6: The size of an array must be a constant. It can not be a variable.
+>>> Program had errors. It did not run to completion.
+
