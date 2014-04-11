@@ -319,7 +319,9 @@ qx.Class.define("playground.c.lib.SymtabEntry",
           "Error: line " + this.__line + ": " + 
           "The address of symbol " + this.__name + " was requested, " +
           "but the address is not yet known.";
-        throw new playground.c.lib.RuntimeError(this, message);
+        throw new playground.c.lib.RuntimeError(
+          playground.c.lib.Node._currentNode,
+          message);
       }
       
       // Look at the first element of the specAndDecl list. 
