@@ -53,6 +53,8 @@ qx.Class.define("playground.c.lib.Symtab",
    */
   construct : function(parent, name, line)
   {
+    var             origName = name;
+
     this.base(arguments);
 
     // Was a name provided?
@@ -107,7 +109,11 @@ qx.Class.define("playground.c.lib.Symtab",
     // Allow finding a symbol table by its name
     if (playground.c.lib.Symtab._symtabs[name])
     {
-      throw new Error("Duplicate symbol table: " + name);
+      throw new playground.c.lib.RuntimeError(
+        playground.c.lib.Node._currentNode,
+        "The name '" + origName + "' is already defined. " +
+        "It was previously defined near line " + 
+        playground.c.lib.Symtab._symtabs[name].__line + ".");
     }
     playground.c.lib.Symtab._symtabs[name] = this;
 

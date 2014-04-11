@@ -1182,3 +1182,8 @@ STDOUT:
 Error near line 11: It appears that you may be trying to access the return value of a 'void' function, or return a value from a 'void' function.
 >>> Program had errors. It did not run to completion.
 
+% ../dcc t062-duplicate-function-forward-decl.c --rootdir=/home/derrell/ME
+ERROR: Error: Command failed: 
+STDOUT: Error near line 8: The name 'x' is already defined. It was previously defined near line 6.
+>>> Program had errors. It did not run to completion.
+

@@ -424,6 +424,9 @@ var tests =
     },
     {
       name   : "t061-return-value-from-void-function.c"
+    },
+    {
+      name   : "t062-duplicate-function-forward-decl.c"
     }
   ];
 
