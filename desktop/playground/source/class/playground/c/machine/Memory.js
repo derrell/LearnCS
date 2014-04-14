@@ -422,6 +422,19 @@ qx.Class.define("playground.c.machine.Memory",
       // Determine size to be accessed
       size = playground.c.machine.Memory.typeSize[type];
 
+      // See if they're trying to access a function address
+      if (addr instanceof playground.c.lib.Node)
+      {
+        throw new playground.c.lib.RuntimeError(
+          playground.c.lib.Node._currentNode,
+          "You are attempting to read or write a function address. " +
+          "Function pointers are an advanced feature of C which are not " +
+          "currently implemented in LearnCS!.");
+        
+        // not reached, but here to easily locate it later
+        throw new playground.c.lib.NotYetImplemented("function pointers");
+      }
+
       // Ensure we are accessing a valid region of memory
       if (! ((addr >= info.defs.start && 
               addr < info.defs.start + info.defs.length) ||
@@ -511,6 +524,19 @@ qx.Class.define("playground.c.machine.Memory",
       var             i;
       var             size;
       var             info = playground.c.machine.Memory.info;
+
+      // See if they're trying to access a function address
+      if (addr instanceof playground.c.lib.Node)
+      {
+        throw new playground.c.lib.RuntimeError(
+          playground.c.lib.Node._currentNode,
+          "You are attempting to read or write a function address. " +
+          "Function pointers are an advanced feature of C which are not " +
+          "currently implemented in LearnCS!.");
+        
+        // not reached, but here to easily locate it later
+        throw new playground.c.lib.NotYetImplemented("function pointers");
+      }
 
       // Determine size to be accessed
       size = playground.c.machine.Memory.typeSize[type];

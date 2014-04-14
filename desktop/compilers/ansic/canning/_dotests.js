@@ -427,6 +427,12 @@ var tests =
     },
     {
       name   : "t062-duplicate-function-forward-decl.c"
+    },
+    {
+      name   : "t063-function-name-as-lvalue.c"
+    },
+    {
+      name   : "t064-function-name-as-rvalue.c"
     }
   ];
 

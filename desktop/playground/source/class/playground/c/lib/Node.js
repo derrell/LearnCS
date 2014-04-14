@@ -6167,6 +6167,15 @@ qx.Class.define("playground.c.lib.Node",
               type = "pointer";
               break;
 
+            case "builtIn" :
+              failure(
+                new playground.c.lib.RuntimeError(
+                  this,
+                  "You are attempting to assign to an existing " +
+                  "function name, i.e., the left hand side of an assignment " +
+                  "can not be the name of a function."));
+              return;
+
             default :
               if (specOrDecl instanceof playground.c.lib.Specifier)
               {
