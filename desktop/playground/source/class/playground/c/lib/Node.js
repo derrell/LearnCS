@@ -2261,6 +2261,15 @@ qx.Class.define("playground.c.lib.Node",
             //
             // Also, if it's an address, it must be the address of a pointer
             // if we are to dereference it.
+            // FIXME: This means that we can't do something like the following:
+            //
+            //   int i;
+            //   *&i = 23;
+            //
+            // which should work, but breaks test t052 if we don't require 
+            // the address of a pointer. See test exclude test x066 which
+            // demonstrates the problem. See also Issue #42.
+            //
             if ((type != "pointer" && type != "address" && type != "array") ||
                 (type == "address" && specAndDecl[0].getType() != "pointer"))
             {
