@@ -3664,8 +3664,17 @@ qx.Class.define("playground.c.lib.Node",
 
               // If the entry was extern, allow a new symbol
               // definition. Otherwise, flag this as a duplicate declaration.
+              // (If it's a builtIn, we'll have a declarator, not a specifier.)
               specAndDecl = entry.getSpecAndDecl();
-              if (specAndDecl[specAndDecl.length - 1].getStorage() != "extern")
+              specOrDecl = specAndDecl[specAndDecl.length - 1];
+              if (specOrDecl instanceof playground.c.lib.Declarator)
+              {
+                this.error("Identifier '" + this.value + "' " +
+                           "was previously declared.");
+                // not reached
+                break;
+              }
+              else if (specOrDecl.getStorage() != "extern")
               {
                 this.error("Identifier '" + this.value + "' " +
                            "was previously declared near line " +

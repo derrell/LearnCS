@@ -1187,3 +1187,22 @@ ERROR: Error: Command failed:
 STDOUT: Error near line 8: The name 'x' is already defined. It was previously defined near line 6.
 >>> Program had errors. It did not run to completion.
 
+% ../dcc t063-function-name-as-lvalue.c --rootdir=/home/derrell/ME
+ERROR: Error: Command failed: 
+STDOUT: 
+>>> Running program
+Error near line 17: You are attempting to read or write a function address. Function pointers are an advanced feature of C which are not currently implemented in LearnCS!.
+>>> Program had errors. It did not run to completion.
+
+% ../dcc t064-function-name-as-rvalue.c --rootdir=/home/derrell/ME
+ERROR: Error: Command failed: 
+STDOUT: 
+>>> Running program
+Error near line 12: You are attempting to read or write a function address. Function pointers are an advanced feature of C which are not currently implemented in LearnCS!.
+>>> Program had errors. It did not run to completion.
+
+% ../dcc t065-redefine-builtin.c --rootdir=/home/derrell/ME
+ERROR: Error: Command failed: 
+STDOUT: Error near line 8: Error: line 8: Identifier 'fclose' was previously declared.
+>>> Program had errors. It did not run to completion.
+

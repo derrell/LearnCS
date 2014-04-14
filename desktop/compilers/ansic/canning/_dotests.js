@@ -433,6 +433,9 @@ var tests =
     },
     {
       name   : "t064-function-name-as-rvalue.c"
+    },
+    {
+      name   : "t065-redefine-builtin.c"
     }
   ];
 
