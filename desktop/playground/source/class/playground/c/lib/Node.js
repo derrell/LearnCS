@@ -2970,6 +2970,18 @@ qx.Class.define("playground.c.lib.Node",
 
             value1 = v;
             
+            // Ensure that we got a symbol table entry.
+            if (! (value1 instanceof playground.c.lib.SymtabEntry))
+            {
+                  failure(
+                    new playground.c.lib.RuntimeError(
+                      this,
+                      "This appears to be attempting to call a function, " +
+                      "but the identifier  being called is not defined as " +
+                      "a function."));
+                  return;
+            }
+
             // Get the address of that entry, which is the node for the called
             // function, or the reference of a built-in function.
             value2 = value1.getAddr(); // THIS RETURNS A NODE
