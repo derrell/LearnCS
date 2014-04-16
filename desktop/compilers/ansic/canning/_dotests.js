@@ -436,13 +436,15 @@ var tests =
     },
     {
       name   : "t065-redefine-builtin.c"
-    }
+    },
 /*
-    ,
     {
       name   : "x066-deref-address-of.c"
-    }
+    },
 */
+    {
+      name   : "t067-call-int-as-function.c"
+    }
   ];
 
 (function runTest(test)
