@@ -1206,3 +1206,10 @@ ERROR: Error: Command failed:
 STDOUT: Error near line 8: Error: line 8: Identifier 'fclose' was previously declared.
 >>> Program had errors. It did not run to completion.
 
+% ../dcc t067-call-int-as-function.c --rootdir=/home/derrell/ME
+ERROR: Error: Command failed: 
+STDOUT: 
+>>> Running program
+Error near line 8: This appears to be attempting to call a function, but the identifier  being called is not defined as a function.
+>>> Program had errors. It did not run to completion.
+
