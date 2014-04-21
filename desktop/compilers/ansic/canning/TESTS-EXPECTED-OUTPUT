@@ -1172,7 +1172,7 @@ Error near line 8: Operation [subtraction (-)] between 'address' and 'address' m
 
 % ../dcc t060-array-variable-length.c --rootdir=/home/derrell/ME
 ERROR: Error: Command failed: 
-STDOUT: Error near line 6: The size of an array must be a constant. It can not be a variable.
+STDOUT: Error near line 6: The length of an array must be a constant. It can not be a variable.
 >>> Program had errors. It did not run to completion.
 
 % ../dcc t061-return-value-from-void-function.c --rootdir=/home/derrell/ME

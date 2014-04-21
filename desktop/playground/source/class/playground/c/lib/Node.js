@@ -1221,8 +1221,8 @@ qx.Class.define("playground.c.lib.Node",
                 failure(
                   new playground.c.lib.RuntimeError(
                     this,
-                    "The size of an array must be a constant. It can not be " +
-                    "a variable."));
+                    "The length of an array must be a constant. " +
+                    "It can not be a variable."));
                 return;
               }
 
