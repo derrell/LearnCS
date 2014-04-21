@@ -1986,7 +1986,8 @@ constant
     // backslash, some character, and another single quote), then convert the
     // "some character" to its ASCII value.
     if (typeof value == "undefined" &&
-        yytext.length === 4)
+        yytext.length === 4 &&
+        yytext[1] == '\\')
     {
       value = yytext.charCodeAt(2);
     }
@@ -1997,6 +1998,14 @@ constant
       // Save the converted value
       $$.numberType = playground.c.lib.Node.NumberType.Int;
       $$.value = value;
+    }
+    else if (yytext.length > 3 &&
+             yytext[1] == '/')
+    {
+      playground.c.lib.Node.getError().parseError(
+        "Unrecognized single-quoted character (" + yytext + "). " +
+        "Maybe the forward slash (/) is supposed to be a backslash (\\)?",
+        { line : yylineno });
     }
     else
     {

@@ -444,6 +444,14 @@ var tests =
 */
     {
       name   : "t067-call-int-as-function.c"
+    },
+/* FIXME!!!
+    {
+      name   : "t068-pass-struct-to-function.c"
+    },
+*/
+    {
+      name   : "t069-multi-char-char-constant.c"
     }
   ];
 

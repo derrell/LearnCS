@@ -1213,3 +1213,14 @@ STDOUT:
 Error near line 8: This appears to be attempting to call a function, but the identifier  being called is not defined as a function.
 >>> Program had errors. It did not run to completion.
 
+% ../dcc t069-multi-char-char-constant.c --rootdir=/home/derrell/ME
+ERROR: Error: Command failed: 
+STDOUT: Error: See arrow pointing to position of error near line 6:
+...      if (c == '/0')    {        prin
+----------------------^
+	Unrecognized single-quoted character ('/0'). Maybe the forward slash (/) is supposed to be a backslash (\)?
+
+
+Errors encountered: 1
+
+
