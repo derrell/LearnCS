@@ -1470,9 +1470,11 @@ else... */
         this.__modified = true;
       }
 
-      // Exclude the graphics terminal each time the program is run. If it's
-      // needed, it'll get re-included by the #include that requires it
+      // Reset and exclude the graphics terminal each time the program is
+      // run. If it's needed, it'll get re-included by the #include that
+      // requires it
       var terminal = qx.core.Init.getApplication().getUserData("terminal");
+      terminal.resetGraphicsCanvas();
       terminal.getGraphicsCanvas().exclude();
       
       playground.c.Main.output("", true);

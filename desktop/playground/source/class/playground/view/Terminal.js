@@ -25,15 +25,9 @@ qx.Class.define("playground.view.Terminal",
     terminalVBox = new qx.ui.container.Composite(new qx.ui.layout.VBox(2));
     this.add(terminalVBox, { flex : 2 });
     
-    this._graphicsCanvas = 
-      new qx.ui.container.Composite(new qx.ui.layout.Canvas());
-    this._graphicsCanvas.setBackgroundColor("white");
-    this.add(this._graphicsCanvas, { flex : 1 });
+    // Create the graphics canvas.
+    this.resetGraphicsCanvas();
     
-    // Exclude the graphics canvas, by default
-    // (Also excluded in Application.js run() each time)
-    this._graphicsCanvas.exclude();
-
     // Create a horizontal box for the legend and EOF button
     hBox = new qx.ui.container.Composite(new qx.ui.layout.HBox());
 
@@ -88,6 +82,8 @@ qx.Class.define("playground.view.Terminal",
   {
     /** Line buffer, contains chars typed on one line. Flushed on Enter. */
     _linebuf : null,
+    
+    _graphicsCanvas : null,
 
     /**
      * Focus the text area
@@ -244,6 +240,30 @@ qx.Class.define("playground.view.Terminal",
       e.preventDefault();
     },
     
+    /** Reset (or create, initially) the graphics canvas) */
+    resetGraphicsCanvas : function()
+    {
+      try
+      {
+        if (this._graphicsCanvas)
+        {
+          this.remove(this._graphicsCanvas);
+        }
+      }
+      catch(e)
+      {
+      }
+
+      this._graphicsCanvas = 
+        new qx.ui.container.Composite(new qx.ui.layout.Canvas());
+      this._graphicsCanvas.setBackgroundColor("white");
+      this.add(this._graphicsCanvas, { flex : 1 });
+
+      // Exclude the graphics canvas, by default
+      // (Also excluded in Application.js run() each time)
+      this._graphicsCanvas.exclude();
+    },
+
     /** Retrieve the graphics canvas */
     getGraphicsCanvas : function()
     {
