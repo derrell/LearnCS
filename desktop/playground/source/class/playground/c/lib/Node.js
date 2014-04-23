@@ -3203,7 +3203,7 @@ qx.Class.define("playground.c.lib.Node",
                     {
                       getName         : function() 
                       {
-                        return "called from line #"; 
+                        return "return to line #"; 
                       },
                       getType         : function() { return "int"; },
                       getUnsigned     : function() { return false; },

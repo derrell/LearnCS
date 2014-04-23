@@ -1069,7 +1069,7 @@ qx.Class.define("playground.c.Main",
             mem.setSymbolInfo(
               sp,
               {
-                getName         : function() { return "called from line #"; },
+                getName         : function() { return "return to line #"; },
                 getType         : function() { return "int"; },
                 getUnsigned     : function() { return false; },
                 getSize         : function() { return intSize; },
