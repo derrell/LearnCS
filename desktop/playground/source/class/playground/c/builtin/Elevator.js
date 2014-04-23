@@ -241,17 +241,15 @@ qx.Class.define("playground.c.builtin.Elevator",
       // Initialize the event queue
       clazz._eventQueue = [];
 
-/* already removed by terminal.resetGraphicsCanvas()
       // If the elevator exists, dispose of it and the buttons
       if (clazz._elevator)
       {
-        clazz._graphicsCanvas.remove(clazz._elevator);
-        clazz._graphicsCanvas.remove(clazz._butUp);
-        clazz._graphicsCanvas.remove(clazz._butDown);
-        clazz._graphicsCanvas.remove(clazz._butOpen);
-        clazz._graphicsCanvas.remove(clazz._butClose);
+        try { clazz._graphicsCanvas.remove(clazz._elevator); } catch(e){}
+        try { clazz._graphicsCanvas.remove(clazz._butUp); } catch(e){}
+        try { clazz._graphicsCanvas.remove(clazz._butDown); } catch(e){}
+        try { clazz._graphicsCanvas.remove(clazz._butOpen); } catch(e){}
+        try { clazz._graphicsCanvas.remove(clazz._butClose); } catch(e){}
       }
-*/
 
       //
       // Add the elevator
