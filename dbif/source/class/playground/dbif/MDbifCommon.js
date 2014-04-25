@@ -7,6 +7,7 @@
 
 /**
  * @use(playground.dbif.ObjCourse)
+ * @use(playground.dbif.ObjAuthLocal)
  */
 
 qx.Mixin.define("playground.dbif.MDbifCommon",

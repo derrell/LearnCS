@@ -232,7 +232,84 @@ qx.Class.define("nodesqlite.Application",
       }
 
 
-      // Our user list is hard-coded, here
+      // Search for a user in the database
+      passport.use(
+        new LocalStrategy(
+          {
+            usernameField : "username",
+            passwordField : "password"
+          },
+          function(username, password, done)
+          {
+            var             sync = require("synchronize");
+
+            sync.fiber(
+              function()
+              {
+                var             authLocal;
+                var             userInfo;
+                var             passwordHash;
+                var             crypto = require('crypto');
+                var             shasum = crypto.createHash('sha1');
+
+                console.log("Attempting local database authorization for " +
+                            username + "...");
+
+                // See if this username is found in the database
+                authLocal = liberated.dbif.Entity.query(
+                  "playground.dbif.ObjAuthLocal",
+                  {
+                    type  : "element",
+                    field : "username",
+                    value : username
+                  });
+
+                // If not, or if the password hash doesn't match...
+                if (authLocal.length === 0)
+                {
+                  // User was not found
+                  console.log("Local database authentication of user " + 
+                              username + " failed (user not found)");
+                  return done(null, false, { message : "Login failed" } );
+                }
+
+                // Get the one and only entry
+                authLocal = authLocal[0];
+                
+
+                // Hash the entered password
+                shasum.update(password);
+                passwordHash = shasum.digest('hex');
+                
+                // Does the hash of the entered password match this user's?
+                if (passwordHash != authLocal.passwordHash)
+                {
+                  // Nope.
+                  console.log("Local database authentication of user " + 
+                              username + " failed (password mismatch)");
+                  return done(null, false, { message : "Login failed" } );
+                }
+
+                // Authentication has succeeded. Build a userInfo return value
+                userInfo =
+                  {
+                    id          : getUserId(authLocal.username),
+                    displayName : authLocal.displayName,
+                    email       : authLocal.email,
+                    name        : authLocal.username
+                  };
+
+                  console.log("Local authenticated user " + userInfo.name +
+                              " (" + userInfo.displayName + 
+                              ", " + userInfo.email + ")" +
+                              ", id " + userInfo.id);
+                  return done(null, userInfo);
+              });
+          }));
+
+
+/*
+      // Temporarily also support a hard-coded user list
       users =
           [
             {
@@ -303,6 +380,7 @@ qx.Class.define("nodesqlite.Application",
                 return done(null, false, { message : "Login failed" } );
               });
           }));
+*/
 
       // See if we find LDAP configuration
       try
