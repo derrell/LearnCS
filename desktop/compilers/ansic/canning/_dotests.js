@@ -453,6 +453,12 @@ var tests =
     {
       name   : "t069-multi-char-char-constant.c"
     }
+/*
+    ,
+    {
+      name   : "t070-missing-arg-to-builtin.c"
+    }
+*/
   ];
 
 (function runTest(test)
