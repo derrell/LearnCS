@@ -268,10 +268,10 @@ qx.Class.define("playground.view.Toolbar",
         width           : 200,
         value           : (
           "<b style='color:blue'>" +
-          "To work on old labs, retrieve new lab description handout from " +
+          "Get the UMass Lowell Computing 1 (CS1) " +
           "<a target='_blank' " +
           "   href='http://www.cs.uml.edu/~dlipman/computing1-labs'>" +
-          "here" +
+          "lab&nbsp;handouts" +
           "</a>." +
           "</b>")
       });
