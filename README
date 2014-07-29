@@ -1,5 +1,7 @@
 After cloning...
 
+$ git submodule init
+$ git submodule update
 $ apt-get install nodejs sqlite3
 $ cd desktop/compilers/ansic
 $ make
