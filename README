@@ -1,0 +1,13 @@
+After cloning...
+
+$ apt-get install nodejs sqlite3
+$ cd desktop/compilers/ansic
+$ make
+$ cd canning
+$ ./dotests.sh
+$ cd ../../../../backend-nodesqlite
+$ ./generate.py build
+$ cd deploy
+$ nodejs ./backend.js http.port=8080 https.port=0 &
+$ nodejs newuser.js <username> <password> "<full name>"
+
