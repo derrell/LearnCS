@@ -2,7 +2,7 @@
 
 // If you copy this script to a project, configure this to point to JISON's
 // lib/jison directory.
-var JISONLIB = '../jison.git/lib/jison';
+var JISONLIB = '../../../lib/jison.git/lib/jison';
 
 var JISON = require(JISONLIB),
     IO = require(JISONLIB + '/util/io'),

@@ -495,7 +495,7 @@ var tests =
      [
        "../dcc",
        test.name,
-       "--rootdir=/home/derrell/ME"
+       "--rootdir=../../../../backend-nodesqlite/deploy/stdio_files"
      ];
 
    // If there is standard input...

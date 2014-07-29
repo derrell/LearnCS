@@ -1,156 +1,156 @@
-% ../dcc p001-helloworld.c --rootdir=/home/derrell/ME
+% ../dcc p001-helloworld.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 Hello World
 >>> Program exited with exit code 0
 
-% ../dcc p002-value6.c --rootdir=/home/derrell/ME
+% ../dcc p002-value6.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 6
 >>> Program exited with exit code 0
 
-% ../dcc p003-charP.c --rootdir=/home/derrell/ME
+% ../dcc p003-charP.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 P
 >>> Program exited with exit code 0
 
-% echo '42' |  ../dcc p004-scanf.c --rootdir=/home/derrell/ME
+% echo '42' |  ../dcc p004-scanf.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 42
 STDOUT: 
 >>> Running program
 Please enter a number: You entered 42
 >>> Program exited with exit code 0
 
-% echo '23 42' |  ../dcc p005-sum-of-two-values.c --rootdir=/home/derrell/ME
+% echo '23 42' |  ../dcc p005-sum-of-two-values.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 23 42
 STDOUT: 
 >>> Running program
 Please enter two numbers, separated by whitespace: The sum of 23 and 42 is 65
 >>> Program exited with exit code 0
 
-% ../dcc p006-fscanf.c --rootdir=/home/derrell/ME
+% ../dcc p006-fscanf.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 Found value 23
 >>> Program exited with exit code 0
 
-% echo '99' |  ../dcc p007-bigger-than-100.c --rootdir=/home/derrell/ME
+% echo '99' |  ../dcc p007-bigger-than-100.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 99
 STDOUT: 
 >>> Running program
 Please enter a number: The number is not bigger than 100
 >>> Program exited with exit code 0
 
-% echo '100' |  ../dcc p007-bigger-than-100.c --rootdir=/home/derrell/ME
+% echo '100' |  ../dcc p007-bigger-than-100.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 100
 STDOUT: 
 >>> Running program
 Please enter a number: The number is not bigger than 100
 >>> Program exited with exit code 0
 
-% echo '101' |  ../dcc p007-bigger-than-100.c --rootdir=/home/derrell/ME
+% echo '101' |  ../dcc p007-bigger-than-100.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 101
 STDOUT: 
 >>> Running program
 Please enter a number: The number is bigger than 100
 >>> Program exited with exit code 0
 
-% ../dcc p008-horizontal-line.c --rootdir=/home/derrell/ME
+% ../dcc p008-horizontal-line.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 ***********************
 >>> Program exited with exit code 0
 
-% ../dcc p009-using-for-loop.c --rootdir=/home/derrell/ME
+% ../dcc p009-using-for-loop.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 2 4 6 8 10 
 >>> Program exited with exit code 0
 
-% ../dcc p010-sum-of-twenty.c --rootdir=/home/derrell/ME
+% ../dcc p010-sum-of-twenty.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 The sum is 210
 >>> Program exited with exit code 0
 
-% echo '-1' |  ../dcc p011-equal-to-zero.c --rootdir=/home/derrell/ME
+% echo '-1' |  ../dcc p011-equal-to-zero.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 -1
 STDOUT: 
 >>> Running program
 Please enter a number: The number is not equal to zero.
 >>> Program exited with exit code 0
 
-% echo '0' |  ../dcc p011-equal-to-zero.c --rootdir=/home/derrell/ME
+% echo '0' |  ../dcc p011-equal-to-zero.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 0
 STDOUT: 
 >>> Running program
 Please enter a number: The number is equal to zero.
 >>> Program exited with exit code 0
 
-% echo '1' |  ../dcc p011-equal-to-zero.c --rootdir=/home/derrell/ME
+% echo '1' |  ../dcc p011-equal-to-zero.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 1
 STDOUT: 
 >>> Running program
 Please enter a number: The number is not equal to zero.
 >>> Program exited with exit code 0
 
-% echo '-1' |  ../dcc p012-pos-neg-zero.c --rootdir=/home/derrell/ME
+% echo '-1' |  ../dcc p012-pos-neg-zero.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 -1
 STDOUT: 
 >>> Running program
 Please enter a number: The number is negative.
 >>> Program exited with exit code 0
 
-% echo '0' |  ../dcc p012-pos-neg-zero.c --rootdir=/home/derrell/ME
+% echo '0' |  ../dcc p012-pos-neg-zero.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 0
 STDOUT: 
 >>> Running program
 Please enter a number: The number is zero.
 >>> Program exited with exit code 0
 
-% echo '1' |  ../dcc p012-pos-neg-zero.c --rootdir=/home/derrell/ME
+% echo '1' |  ../dcc p012-pos-neg-zero.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 1
 STDOUT: 
 >>> Running program
 Please enter a number: The number is positive.
 >>> Program exited with exit code 0
 
-% echo '3' |  ../dcc p013-abs-function.c --rootdir=/home/derrell/ME
+% echo '3' |  ../dcc p013-abs-function.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 3
 STDOUT: 
 >>> Running program
 Please enter a number: The absolute value of 3 is 3
 >>> Program exited with exit code 0
 
-% echo '-4' |  ../dcc p013-abs-function.c --rootdir=/home/derrell/ME
+% echo '-4' |  ../dcc p013-abs-function.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 -4
 STDOUT: 
 >>> Running program
 Please enter a number: The absolute value of -4 is 4
 >>> Program exited with exit code 0
 
-% echo '2' |  ../dcc p015-sqrt-function.c --rootdir=/home/derrell/ME
+% echo '2' |  ../dcc p015-sqrt-function.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 2
 STDOUT: 
 >>> Running program
 Please enter a number: The square root of 2.000000 is 1.414214
 >>> Program exited with exit code 0
 
-% ../dcc p016-sine-atof.c --rootdir=/home/derrell/ME --cmdline='3.1415926'
+% ../dcc p016-sine-atof.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files --cmdline='3.1415926'
 STDOUT: 
 >>> Running program
 The sine of 3.141593 is 0.000000
 >>> Program exited with exit code 0
 
-% ../dcc p016-sine-atof.c --rootdir=/home/derrell/ME --cmdline='1.570796'
+% ../dcc p016-sine-atof.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files --cmdline='1.570796'
 STDOUT: 
 >>> Running program
 The sine of 1.570796 is 1.000000
 >>> Program exited with exit code 0
 
-% echo 'hello world.' |  ../dcc p017-count-characters.c --rootdir=/home/derrell/ME
+% echo 'hello world.' |  ../dcc p017-count-characters.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 hello world.
 STDOUT: 
 >>> Running program
@@ -158,7 +158,7 @@ Please enter characters, and then press EOF:
 Received 13 characters
 >>> Program exited with exit code 0
 
-% echo '8 5' |  ../dcc p018-solidbox.c --rootdir=/home/derrell/ME
+% echo '8 5' |  ../dcc p018-solidbox.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 8 5
 STDOUT: 
 >>> Running program
@@ -172,35 +172,35 @@ And there you have it, folks: a box!
 
 >>> Program exited with exit code 0
 
-% echo '5 8' |  ../dcc p019-area-of-rectangle.c --rootdir=/home/derrell/ME
+% echo '5 8' |  ../dcc p019-area-of-rectangle.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 5 8
 STDOUT: 
 >>> Running program
 Please enter the width: Please enter the height: The area of a 5.00 x 8.00 rectangle is 40.000000
 >>> Program exited with exit code 0
 
-% echo '2.3 8' |  ../dcc p019-area-of-rectangle.c --rootdir=/home/derrell/ME
+% echo '2.3 8' |  ../dcc p019-area-of-rectangle.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 2.3 8
 STDOUT: 
 >>> Running program
 Please enter the width: Please enter the height: The area of a 2.30 x 8.00 rectangle is 18.400000
 >>> Program exited with exit code 0
 
-% echo '1' |  ../dcc p020-area-of-circle.c --rootdir=/home/derrell/ME
+% echo '1' |  ../dcc p020-area-of-circle.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 1
 STDOUT: 
 >>> Running program
 Please enter the radius of the circle: The area of a circle of radius 1.00 is 3.14
 >>> Program exited with exit code 0
 
-% echo '2' |  ../dcc p020-area-of-circle.c --rootdir=/home/derrell/ME
+% echo '2' |  ../dcc p020-area-of-circle.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 2
 STDOUT: 
 >>> Running program
 Please enter the radius of the circle: The area of a circle of radius 2.00 is 12.57
 >>> Program exited with exit code 0
 
-% ../dcc p021-argv.c --rootdir=/home/derrell/ME --cmdline='hello world'
+% ../dcc p021-argv.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files --cmdline='hello world'
 STDOUT: 
 >>> Running program
 Argument 0: a.out
@@ -208,7 +208,7 @@ Argument 1: hello
 Argument 2: world
 >>> Program exited with exit code 0
 
-% ../dcc p022-reverse-command-line.c --rootdir=/home/derrell/ME --cmdline='hello world'
+% ../dcc p022-reverse-command-line.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files --cmdline='hello world'
 STDOUT: 
 >>> Running program
 Argument 2: world
@@ -216,7 +216,7 @@ Argument 1: hello
 Argument 0: a.out
 >>> Program exited with exit code 0
 
-% ../dcc p023-scanf-returns-what.c --rootdir=/home/derrell/ME
+% ../dcc p023-scanf-returns-what.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 5
@@ -227,19 +227,19 @@ STDOUT:
 End of input
 >>> Program exited with exit code 0
 
-% ../dcc p024-one-dim-array.c --rootdir=/home/derrell/ME
+% ../dcc p024-one-dim-array.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 
 >>> Program exited with exit code 0
 
-% ../dcc p025-sum-of-bunch.c --rootdir=/home/derrell/ME
+% ../dcc p025-sum-of-bunch.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 The sum is 75
 >>> Program exited with exit code 0
 
-% ../dcc p026-fgetc-and-toupper.c --rootdir=/home/derrell/ME
+% ../dcc p026-fgetc-and-toupper.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 THIS IS A TEST 23 42 !@#$
@@ -247,14 +247,14 @@ THIS IS A TEST 23 42 !@#$
 And that's all, folks.
 >>> Program exited with exit code 0
 
-% echo ' 2 3 4 5 6 7 8 9 10 11 12 13 ' |  ../dcc p027-reverse.c --rootdir=/home/derrell/ME
+% echo ' 2 3 4 5 6 7 8 9 10 11 12 13 ' |  ../dcc p027-reverse.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
  2 3 4 5 6 7 8 9 10 11 12 13 
 STDOUT: 
 >>> Running program
 Enter 10 numbers separated by spaces or newlines: 11 10 9 8 7 6 5 4 3 2 
 >>> Program exited with exit code 0
 
-% ../dcc p028-digit-sum.c --rootdir=/home/derrell/ME
+% ../dcc p028-digit-sum.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 The digit sum of 1233 is 9
@@ -263,13 +263,13 @@ The digit sum of 9 is 9
 The digit sum of 111111111 is 9
 >>> Program exited with exit code 0
 
-% ../dcc p029-average.c --rootdir=/home/derrell/ME
+% ../dcc p029-average.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 The average is 2.500000
 >>> Program exited with exit code 0
 
-% echo '8 5' |  ../dcc p030-unfilledbox.c --rootdir=/home/derrell/ME
+% echo '8 5' |  ../dcc p030-unfilledbox.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 8 5
 STDOUT: 
 >>> Running program
@@ -283,62 +283,62 @@ And there you have it, folks: an unfilled box!
 
 >>> Program exited with exit code 0
 
-% ../dcc p038-blank-removal.c --rootdir=/home/derrell/ME --cmdline='/canning/p038-input'
+% ../dcc p038-blank-removal.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files --cmdline='/canning/p038-input'
 STDOUT: 
 >>> Running program
 Let's go to the movies.
 >>> Program exited with exit code 0
 
-% echo '5' |  ../dcc p054-fibonacci-iterative.c --rootdir=/home/derrell/ME
+% echo '5' |  ../dcc p054-fibonacci-iterative.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 5
 STDOUT: 
 >>> Running program
 Which number in the Fibonacci sequence would you like? The Fibonacci numbered 5 is 5
 Which number in the Fibonacci sequence would you like? >>> Program exited with exit code 0
 
-% echo '8' |  ../dcc p054-fibonacci-iterative.c --rootdir=/home/derrell/ME
+% echo '8' |  ../dcc p054-fibonacci-iterative.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 8
 STDOUT: 
 >>> Running program
 Which number in the Fibonacci sequence would you like? The Fibonacci numbered 8 is 21
 Which number in the Fibonacci sequence would you like? >>> Program exited with exit code 0
 
-% echo '12' |  ../dcc p054-fibonacci-iterative.c --rootdir=/home/derrell/ME
+% echo '12' |  ../dcc p054-fibonacci-iterative.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 12
 STDOUT: 
 >>> Running program
 Which number in the Fibonacci sequence would you like? The Fibonacci numbered 12 is 144
 Which number in the Fibonacci sequence would you like? >>> Program exited with exit code 0
 
-% echo '5' |  ../dcc p055-fibonacci-recursive.c --rootdir=/home/derrell/ME
+% echo '5' |  ../dcc p055-fibonacci-recursive.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 5
 STDOUT: 
 >>> Running program
 Which number in the Fibonacci sequence would you like? The Fibonacci numbered 5 is 5
 Which number in the Fibonacci sequence would you like? >>> Program exited with exit code 0
 
-% echo '8' |  ../dcc p055-fibonacci-recursive.c --rootdir=/home/derrell/ME
+% echo '8' |  ../dcc p055-fibonacci-recursive.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 8
 STDOUT: 
 >>> Running program
 Which number in the Fibonacci sequence would you like? The Fibonacci numbered 8 is 21
 Which number in the Fibonacci sequence would you like? >>> Program exited with exit code 0
 
-% echo '12' |  ../dcc p055-fibonacci-recursive.c --rootdir=/home/derrell/ME
+% echo '12' |  ../dcc p055-fibonacci-recursive.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 12
 STDOUT: 
 >>> Running program
 Which number in the Fibonacci sequence would you like? The Fibonacci numbered 12 is 144
 Which number in the Fibonacci sequence would you like? >>> Program exited with exit code 0
 
-% ../dcc p202-string-copy.c --rootdir=/home/derrell/ME --cmdline='hello'
+% ../dcc p202-string-copy.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files --cmdline='hello'
 STDOUT: 
 >>> Running program
 stringCopyByIndex copied: 'hello'
 stringCopyByDereference copied: 'hello'
 >>> Program exited with exit code 0
 
-% ../dcc p203-malloc-array-of-structs.c --rootdir=/home/derrell/ME
+% ../dcc p203-malloc-array-of-structs.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 Marlo 17
@@ -349,7 +349,7 @@ Mark 29
 Sharon 18
 >>> Program exited with exit code 0
 
-% ../dcc p205-malloc-struct-array-print-reverse.c --rootdir=/home/derrell/ME
+% ../dcc p205-malloc-struct-array-print-reverse.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 Sharon 18
@@ -360,7 +360,7 @@ Chris 23
 Marlo 17
 >>> Program exited with exit code 0
 
-% ../dcc p206-push-pop.c --rootdir=/home/derrell/ME
+% ../dcc p206-push-pop.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
  2
@@ -389,7 +389,7 @@ STDOUT:
 -999999
 >>> Program exited with exit code 0
 
-% echo '1 2 + p 1 2 s + p 3 5 - p 2 2 * 3 3 * * p 2 3 + 4 s * p 2 + a q' |  ../dcc p207-rpn-calculator.c --rootdir=/home/derrell/ME
+% echo '1 2 + p 1 2 s + p 3 5 - p 2 2 * 3 3 * * p 2 3 + 4 s * p 2 + a q' |  ../dcc p207-rpn-calculator.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 1 2 + p 1 2 s + p 3 5 - p 2 2 * 3 3 * * p 2 3 + 4 s * p 2 + a q
 STDOUT: 
 >>> Running program
@@ -404,14 +404,14 @@ Empty stack
 Unrecognized command
 >>> Program exited with exit code 0
 
-% ../dcc t001-global-pointer-initialized.c --rootdir=/home/derrell/ME
+% ../dcc t001-global-pointer-initialized.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 chicken wing!
  huzzah
 >>> Program exited with exit code 0
 
-% ../dcc t002-decl-after-stmt.c --rootdir=/home/derrell/ME
+% ../dcc t002-decl-after-stmt.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: Error: See arrow pointing to position of error near line 9:
 ...table statement    char            c;  
@@ -422,26 +422,26 @@ STDOUT: Error: See arrow pointing to position of error near line 9:
 Errors encountered: 1
 
 
-% ../dcc t003-forward-decl.c --rootdir=/home/derrell/ME
+% ../dcc t003-forward-decl.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 >>> Program exited with exit code 0
 
-% ../dcc t004-forward-decl-missing.c --rootdir=/home/derrell/ME
+% ../dcc t004-forward-decl-missing.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: 
 >>> Running program
 Error near line 5: Function 'doit' has not been defined.
 >>> Program had errors. It did not run to completion.
 
-% ../dcc t005-forward-decl-only.c --rootdir=/home/derrell/ME
+% ../dcc t005-forward-decl-only.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: 
 >>> Running program
 Error near line 7: Function 'doit' has not been defined.
 >>> Program had errors. It did not run to completion.
 
-% ../dcc t006-struct-decl-and-access.c --rootdir=/home/derrell/ME
+% ../dcc t006-struct-decl-and-access.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 i=23 d=2.000000 e=4.200000 j=42
@@ -449,7 +449,7 @@ i=23 d=2.000000 e=4.200000 j=42
 &x.k=0x8fd8
 >>> Program exited with exit code 0
 
-% ../dcc t007-struct-pointer-deref.c --rootdir=/home/derrell/ME
+% ../dcc t007-struct-pointer-deref.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 Via structure access:
@@ -464,23 +464,23 @@ i=23 d=2.000000 e=4.200000 j=42
 &pX->k=0x8fd4
 >>> Program exited with exit code 0
 
-% ../dcc t008-struct-redeclaration.c --rootdir=/home/derrell/ME
+% ../dcc t008-struct-redeclaration.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: Error near line 9: Redeclaration of struct/union/enum X
 >>> Program had errors. It did not run to completion.
 
-% ../dcc t009-union-simple.c --rootdir=/home/derrell/ME
+% ../dcc t009-union-simple.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 bytes: 44 33 22 11
 >>> Program exited with exit code 0
 
-% ../dcc t011-undef-enum-param.c --rootdir=/home/derrell/ME
+% ../dcc t011-undef-enum-param.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: Error near line 9: Error: line 9: Struct, union, or enum 'F' is not declared.
 >>> Program had errors. It did not run to completion.
 
-% ../dcc t012-preproc-correct-lines-if.c --rootdir=/home/derrell/ME --preproc
+% ../dcc t012-preproc-correct-lines-if.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files --preproc
 STDOUT: 
 
 
@@ -502,7 +502,7 @@ int main(int argc, char * argv[])
 }
 
 
-% ../dcc t013-preproc-correct-lines-else.c --rootdir=/home/derrell/ME --preproc
+% ../dcc t013-preproc-correct-lines-else.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files --preproc
 STDOUT: 
 
 
@@ -524,7 +524,7 @@ int main(int argc, char * argv[])
 }
 
 
-% ../dcc t014-switch-break.c --rootdir=/home/derrell/ME
+% ../dcc t014-switch-break.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 0a
@@ -532,7 +532,7 @@ STDOUT:
 0c
 >>> Program exited with exit code 0
 
-% ../dcc t015-switch-no-break.c --rootdir=/home/derrell/ME
+% ../dcc t015-switch-no-break.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 1a
@@ -543,40 +543,40 @@ STDOUT:
 2c
 >>> Program exited with exit code 0
 
-% ../dcc t016-switch-default.c --rootdir=/home/derrell/ME
+% ../dcc t016-switch-default.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 default-a
 default-b
 >>> Program exited with exit code 0
 
-% ../dcc t017-macro-good.c --rootdir=/home/derrell/ME --preproc
+% ../dcc t017-macro-good.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files --preproc
 STDOUT: 
 
 printf("%d\n", b);
 
 
-% ../dcc t018-macro-bad.c --rootdir=/home/derrell/ME --preproc
+% ../dcc t018-macro-bad.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files --preproc
 ERROR: Error: Command failed: 
 STDOUT: Error near line 4: illegal invocation of macro X, expected 2 parameters but got 1
 >>> Preprocessor encountered an error:
 TypeError: Cannot call method 'replace' of undefined
 
-% ../dcc t019-fscanf-null-handle.c --rootdir=/home/derrell/ME
+% ../dcc t019-fscanf-null-handle.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: 
 >>> Running program
 Error near line 9: Maybe you forgot to test for a NULL return value from fopen()? Invalid file handle.
 >>> Program had errors. It did not run to completion.
 
-% ../dcc t020-fscanf-bad-handle.c --rootdir=/home/derrell/ME
+% ../dcc t020-fscanf-bad-handle.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: 
 >>> Running program
 Error near line 9: Invalid file handle, causing an attempt to access an uninitialized or illegal memory address. (This is sometimes called a 'Segmentation Fault'.)
 >>> Program had errors. It did not run to completion.
 
-% ../dcc t021-preproc-leading-blank-lines.c --rootdir=/home/derrell/ME --preproc
+% ../dcc t021-preproc-leading-blank-lines.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files --preproc
 STDOUT: 
 
 
@@ -600,7 +600,7 @@ int main(int argc, char * argv[])
 }
 
 
-% ../dcc t022-array-initialize.c --rootdir=/home/derrell/ME
+% ../dcc t022-array-initialize.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 a=23 b=23 c[0]=1 c[1]=2 d[0]=3 d[1]=4
@@ -623,42 +623,42 @@ chars[4]=65=e
 chars[5]=00= 
 >>> Program exited with exit code 0
 
-% ../dcc t023-array-initialize-bad-1.c --rootdir=/home/derrell/ME
+% ../dcc t023-array-initialize-bad-1.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: 
 >>> Running program
 Error near line 4: Array size is 2, initializer length is 3. Initializers do not fit in array.
 >>> Program had errors. It did not run to completion.
 
-% ../dcc t024-call-int-as-func.c --rootdir=/home/derrell/ME
+% ../dcc t024-call-int-as-func.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: 
 >>> Running program
 Error near line 5: Attempting to call function 'i' but 'i' is not declared as a function.
 >>> Program had errors. It did not run to completion.
 
-% ../dcc t025-call-function-via-pointer.c --rootdir=/home/derrell/ME
+% ../dcc t025-call-function-via-pointer.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: 
 >>> Running program
 Error near line 10: Pointers to functions are not currently supported.
 >>> Program had errors. It did not run to completion.
 
-% ../dcc t026-struct-initialize.c --rootdir=/home/derrell/ME
+% ../dcc t026-struct-initialize.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: 
 >>> Running program
 Error near line 7: struct initializers are not currently supported.
 >>> Program had errors. It did not run to completion.
 
-% ../dcc t027-union-initialize.c --rootdir=/home/derrell/ME
+% ../dcc t027-union-initialize.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: 
 >>> Running program
 Error near line 7: union initializers are not currently supported.
 >>> Program had errors. It did not run to completion.
 
-% ../dcc t028-global-struct-decl.c --rootdir=/home/derrell/ME
+% ../dcc t028-global-struct-decl.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 sizeof(struct Swingset1) = 8 sizeof(struct Swingset2) = 8
@@ -667,42 +667,42 @@ Swingset1: 1 of 2 swings in use
 Swingset2: 3 of 5 swings in use
 >>> Program exited with exit code 0
 
-% ../dcc t029-include-missing-right-angle.c --rootdir=/home/derrell/ME
+% ../dcc t029-include-missing-right-angle.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: Error near line 1: #include must be followed by a file name enclosed in angle brackets, e.g., <stdio.h>
 >>> Preprocessor encountered an error:
 Error near line 1: #include must be followed by a file name enclosed in angle brackets, e.g., <stdio.h>
 
-% ../dcc t030-include-missing-left-angle.c --rootdir=/home/derrell/ME
+% ../dcc t030-include-missing-left-angle.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: Error near line 1: #include must be followed by a file name enclosed in angle brackets, e.g., <stdio.h>
 >>> Preprocessor encountered an error:
 Error near line 1: #include must be followed by a file name enclosed in angle brackets, e.g., <stdio.h>
 
-% ../dcc t031-include-missing-both-angles.c --rootdir=/home/derrell/ME
+% ../dcc t031-include-missing-both-angles.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: Error near line 1: #include must be followed by a file name enclosed in angle brackets, e.g., <stdio.h>
 >>> Preprocessor encountered an error:
 Error near line 1: #include must be followed by a file name enclosed in angle brackets, e.g., <stdio.h>
 
-% ../dcc t032-include-with-quotes.c --rootdir=/home/derrell/ME
+% ../dcc t032-include-with-quotes.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: >>> Error near line 1: #include for local files (with quotes) is not yet supported: "defs.h"
 If it's a system include file, you should use angle brackets instead: <defs.h>
 
-% ../dcc t033-include-missing-right-quote.c --rootdir=/home/derrell/ME
+% ../dcc t033-include-missing-right-quote.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: Error near line 1: #include must be followed by a file name enclosed in angle brackets, e.g., <stdio.h>
 >>> Preprocessor encountered an error:
 Error near line 1: #include must be followed by a file name enclosed in angle brackets, e.g., <stdio.h>
 
-% ../dcc t034-include-missing-left-quote.c --rootdir=/home/derrell/ME
+% ../dcc t034-include-missing-left-quote.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: Error near line 1: #include must be followed by a file name enclosed in angle brackets, e.g., <stdio.h>
 >>> Preprocessor encountered an error:
 Error near line 1: #include must be followed by a file name enclosed in angle brackets, e.g., <stdio.h>
 
-% ../dcc t035-ctype.c --rootdir=/home/derrell/ME
+% ../dcc t035-ctype.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 0x00   digit:0 space:0 upper:0 lower:0 alpha:0 print:0 punct:0 cntrl:1
@@ -835,28 +835,28 @@ STDOUT:
 0x7f   digit:0 space:0 upper:0 lower:0 alpha:0 print:0 punct:0 cntrl:1
 >>> Program exited with exit code 0
 
-% ../dcc t036-assignment-error-1.c --rootdir=/home/derrell/ME
+% ../dcc t036-assignment-error-1.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: 
 >>> Running program
 Error near line 5: The left hand side of an assignment must be a variable, pointer dereference, or array element reference
 >>> Program had errors. It did not run to completion.
 
-% ../dcc t037-assignment-error-2.c --rootdir=/home/derrell/ME
+% ../dcc t037-assignment-error-2.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: 
 >>> Running program
 Error near line 7: The left hand side of an assignment must be a variable, pointer dereference, or array element reference
 >>> Program had errors. It did not run to completion.
 
-% ../dcc t038-assignment-error-3.c --rootdir=/home/derrell/ME
+% ../dcc t038-assignment-error-3.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: 
 >>> Running program
 Error near line 7: The left hand side of an assignment may not be the result of the address-of operator. The left hand side of an assignment must be a variable, pointer dereference, or array element reference.
 >>> Program had errors. It did not run to completion.
 
-% ../dcc t039-multiple-case.c --rootdir=/home/derrell/ME
+% ../dcc t039-multiple-case.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 case 4 and default
@@ -873,21 +873,21 @@ case 5
 case 5 (second try)
 >>> Program exited with exit code 0
 
-% ../dcc t040-case-enum.c --rootdir=/home/derrell/ME
+% ../dcc t040-case-enum.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 hello world
 hi there
 >>> Program exited with exit code 0
 
-% ../dcc t041-case-const.c --rootdir=/home/derrell/ME
+% ../dcc t041-case-const.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: 
 >>> Running program
 Error near line 7: Error: line 7: Each 'case' statement must represent a constant expression. It may not rely on any variables' values.
 >>> Program had errors. It did not run to completion.
 
-% ../dcc t042-non-special-escape.c --rootdir=/home/derrell/ME
+% ../dcc t042-non-special-escape.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 Hello world!
@@ -895,21 +895,21 @@ Escaped escape: \n
 ch=w
 >>> Program exited with exit code 0
 
-% ../dcc t043-for-loop-comma-list.c --rootdir=/home/derrell/ME
+% ../dcc t043-for-loop-comma-list.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 i=1 j=10 k=20 l=30
 i=2 j=11 k=11 l=10
 >>> Program exited with exit code 0
 
-% ../dcc t044-enum-value-lvalue.c --rootdir=/home/derrell/ME
+% ../dcc t044-enum-value-lvalue.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: 
 >>> Running program
 Error near line 11: Can not alter an enum value.
 >>> Program had errors. It did not run to completion.
 
-% ../dcc t045-math.c --rootdir=/home/derrell/ME
+% ../dcc t045-math.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 acos(-1.1) = NaN
@@ -1037,7 +1037,7 @@ tan(PI / 3)    = 1.732051
 
 >>> Program exited with exit code 0
 
-% ../dcc t046-array-parameter.c --rootdir=/home/derrell/ME
+% ../dcc t046-array-parameter.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: 
 >>> Running program
@@ -1045,7 +1045,7 @@ First char: h h
 Error near line 8: Can not alter an array address or constant pointer
 >>> Program had errors. It did not run to completion.
 
-% ../dcc t047-array-var-dereference.c --rootdir=/home/derrell/ME
+% ../dcc t047-array-var-dereference.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: 
 >>> Running program
@@ -1053,25 +1053,25 @@ First char: h h
 Error near line 9: Can not alter an array address or constant pointer
 >>> Program had errors. It did not run to completion.
 
-% ../dcc t048-time.c --rootdir=/home/derrell/ME
+% ../dcc t048-time.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 t1 = time(&t2): (t1 == t2): 1
 >>> Program exited with exit code 0
 
-% ../dcc t049-initializer-is-function.c --rootdir=/home/derrell/ME
+% ../dcc t049-initializer-is-function.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 aa=10 bb=23
 >>> Program exited with exit code 0
 
-% ../dcc t050-shadowed-parameter.c --rootdir=/home/derrell/ME
+% ../dcc t050-shadowed-parameter.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: Warning near line 3: The declaration of local variable 'a' shadows the parameter of the same name. This makes the parameter inaccessible.
 
 >>> Running program
 >>> Program exited with exit code 0
 
-% ../dcc t051-cast.c --rootdir=/home/derrell/ME
+% ../dcc t051-cast.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 Converting 1.230000 yields 1.000000
@@ -1079,20 +1079,20 @@ Converting 0x112233 yields 0x33 0x33 0x33
 Converting 0xaabbccdd yields 0xffffffdd 0xdd 0xffffffdd
 >>> Program exited with exit code 0
 
-% ../dcc t052-error-dereference.c --rootdir=/home/derrell/ME
+% ../dcc t052-error-dereference.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: 
 >>> Running program
 Error near line 5: You have attempted to dereference a value whose type does not indicate that it is an address. Its type is 'int'
 >>> Program had errors. It did not run to completion.
 
-% ../dcc t053-multiple-initializers.c --rootdir=/home/derrell/ME
+% ../dcc t053-multiple-initializers.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 a=1 b=2 c=3 d=10 e=11 f=12
 >>> Program exited with exit code 0
 
-% ../dcc t054-post-increment-pointer.c --rootdir=/home/derrell/ME
+% ../dcc t054-post-increment-pointer.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 Size of struct X is 8
@@ -1100,7 +1100,7 @@ pInt=0x104 pShort=0x202 pX=308
 pInt=0x108 pShort=0x204 pX=310
 >>> Program exited with exit code 0
 
-% ../dcc t055-short-circuit.c --rootdir=/home/derrell/ME
+% ../dcc t055-short-circuit.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 
@@ -1138,13 +1138,13 @@ Reached body of if statement (good)
 
 >>> Program exited with exit code 0
 
-% ../dcc t056-printf-percent-g.c --rootdir=/home/derrell/ME
+% ../dcc t056-printf-percent-g.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 1.068e-10
 >>> Program exited with exit code 0
 
-% ../dcc t057-sizeof-as-argument.c --rootdir=/home/derrell/ME
+% ../dcc t057-sizeof-as-argument.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
 x=32
@@ -1152,7 +1152,7 @@ x=32
 x=2
 >>> Program exited with exit code 0
 
-% ../dcc t058-null-not-in-quotes.c --rootdir=/home/derrell/ME
+% ../dcc t058-null-not-in-quotes.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: Error: See arrow pointing to position of error near line 2:
 ...har * argv[]){    \0;}
@@ -1163,57 +1163,57 @@ STDOUT: Error: See arrow pointing to position of error near line 2:
 Errors encountered: 1
 
 
-% ../dcc t059-address-of-array.c --rootdir=/home/derrell/ME
+% ../dcc t059-address-of-array.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: 
 >>> Running program
 Error near line 8: Operation [subtraction (-)] between 'address' and 'address' makes no sense
 >>> Program had errors. It did not run to completion.
 
-% ../dcc t060-array-variable-length.c --rootdir=/home/derrell/ME
+% ../dcc t060-array-variable-length.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: Error near line 6: The length of an array must be a constant. It can not be a variable.
 >>> Program had errors. It did not run to completion.
 
-% ../dcc t061-return-value-from-void-function.c --rootdir=/home/derrell/ME
+% ../dcc t061-return-value-from-void-function.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: 
 >>> Running program
 Error near line 11: It appears that you may be trying to access the return value of a 'void' function, or return a value from a 'void' function.
 >>> Program had errors. It did not run to completion.
 
-% ../dcc t062-duplicate-function-forward-decl.c --rootdir=/home/derrell/ME
+% ../dcc t062-duplicate-function-forward-decl.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: Error near line 8: The name 'x' is already defined. It was previously defined near line 6.
 >>> Program had errors. It did not run to completion.
 
-% ../dcc t063-function-name-as-lvalue.c --rootdir=/home/derrell/ME
+% ../dcc t063-function-name-as-lvalue.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: 
 >>> Running program
 Error near line 17: You are attempting to read or write a function address. Function pointers are an advanced feature of C which are not currently implemented in LearnCS!.
 >>> Program had errors. It did not run to completion.
 
-% ../dcc t064-function-name-as-rvalue.c --rootdir=/home/derrell/ME
+% ../dcc t064-function-name-as-rvalue.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: 
 >>> Running program
 Error near line 12: You are attempting to read or write a function address. Function pointers are an advanced feature of C which are not currently implemented in LearnCS!.
 >>> Program had errors. It did not run to completion.
 
-% ../dcc t065-redefine-builtin.c --rootdir=/home/derrell/ME
+% ../dcc t065-redefine-builtin.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: Error near line 8: Error: line 8: Identifier 'fclose' was previously declared.
 >>> Program had errors. It did not run to completion.
 
-% ../dcc t067-call-int-as-function.c --rootdir=/home/derrell/ME
+% ../dcc t067-call-int-as-function.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: 
 >>> Running program
 Error near line 8: This appears to be attempting to call a function, but the identifier  being called is not defined as a function.
 >>> Program had errors. It did not run to completion.
 
-% ../dcc t069-multi-char-char-constant.c --rootdir=/home/derrell/ME
+% ../dcc t069-multi-char-char-constant.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: Error: See arrow pointing to position of error near line 6:
 ...      if (c == '/0')    {        prin

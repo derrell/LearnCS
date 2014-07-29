@@ -7,7 +7,8 @@
 
 COMMON		= ./ansic.js
 LIBDIR          = ../../playground/source/class/playground/c/lib
-PLAYGROUND	= ../../playground/source/resource/playground/script/ansic.js
+PLAYGROUND_DIR	= ../../playground/source/resource/playground/script
+PLAYGROUND	= $(PLAYGROUND_DIR)/ansic.js
 
 all:	$(COMMON) $(PLAYGROUND)
 
@@ -19,6 +20,7 @@ $(COMMON):	ansic.jison ansic.lex $(LIBDIR)/Node.js $(LIBDIR)/Symtab.js
 	@echo "------------------------------"
 
 $(PLAYGROUND):	ansic.jison ansic.lex $(LIBDIR)/Node.js $(LIBDIR)/Symtab.js
+	mkdir -p $(PLAYGROUND_DIR)
 	nodejs cli-wrapper.js -m amd -o $(PLAYGROUND) ansic.jison ansic.lex
 	@echo ""
 	@echo "------------------------------"
