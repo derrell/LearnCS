@@ -164,9 +164,13 @@ qx.Mixin.define("playground.dbif.MUser",
 
               // Generate the fully-qualified course name
               courseData.name = 
-                courseData.institution +
-                ", " + courseData.courseName +
-                ", Prof. " + instructors.join(", ");
+                (courseData.institution
+                 ? courseData.institution + ", "
+                 : "") +
+                courseData.courseName +
+                (instructors.length > 0 
+                 ? ", Prof. " + instructors.join(", ")
+                 : "");
               if (labInstructors.length > 0)
               {
                 courseData.name += 
