@@ -45,23 +45,19 @@ process.argv.forEach(
     {
     case 2 :
       username = val;
-      console.log("email : " + username);
       break;
       
     case 3 :
       password = val;
       shasum.update(password);
       passwordHash = shasum.digest('hex');
-      console.log("password : " + password + ", hash : " + passwordHash);
       break;
       
     case 4 :
       fullname = val;
-      console.log("full name : " + fullname);
       break;
       
     default :
-      console.log(index + ": " + val);
       break;
     }
   });
@@ -77,9 +73,6 @@ db = new sqlite3.Database(
       process.exit(1);
     }
 
-    // The open succeeded. Give 'em the database handle
-    console.log("database " + dbName + " has been opened");
-    
     db.run(
       [ 
         "INSERT INTO authLocal ",
@@ -103,5 +96,4 @@ db = new sqlite3.Database(
         // Success
         console.log("User " + username + " has been added.");
       });
-    
   });
