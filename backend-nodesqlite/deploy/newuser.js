@@ -45,23 +45,19 @@ process.argv.forEach(
     {
     case 2 :
       username = val;
-      console.log("email : " + username);
       break;
       
     case 3 :
       password = val;
       shasum.update(password);
       passwordHash = shasum.digest('hex');
-      console.log("password : " + password + ", hash : " + passwordHash);
       break;
       
     case 4 :
       fullname = val;
-      console.log("full name : " + fullname);
       break;
       
     default :
-      console.log(index + ": " + val);
       break;
     }
   });
@@ -82,11 +78,11 @@ db = new sqlite3.Database(
     
     // Ensure that there is at least one course for a new user to select from
     db.get(
-      "SELECT COUNT(*) FROM course;",
+      "SELECT COUNT(*) as numCourses FROM course;",
       function(err, row)
       {
         // Determine if there were any rows found
-        if (+row > 0)
+        if (+row.numCourses > 0)
         {
           // There are already courses there. Nothing to do.
           return;
