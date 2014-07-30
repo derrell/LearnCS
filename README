@@ -9,8 +9,8 @@ $ cd canning
 $ ./dotests.sh
 $ cd ../../../../backend-nodesqlite
 $ ./generate.py build
-$ cd deploy
 $ tar -xvzf USERCODE-initial.tgz
+$ cd deploy
 $ nodejs ./backend.js http.port=8080 https.port=0 &
 $ nodejs newuser.js <username> <password> "<full name>"
 
