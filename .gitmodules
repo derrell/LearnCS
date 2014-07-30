@@ -1,12 +1,3 @@
-[submodule "lib/ScriptListLoader"]
-	path = lib/ScriptListLoader
-	url = git@github.com:qooxdoo-contrib/ScriptListLoader.git
-[submodule "lib/Blockly"]
-	path = lib/Blockly
-	url = git@github.com:derrell/Blockly.git
-[submodule "desktop/compilers/jison.git"]
-	path = desktop/compilers/jison.git
-	url = https://github.com/zaach/jison.git
 [submodule "lib/qooxdoo.git"]
 	path = lib/qooxdoo.git
 	url = https://github.com/qooxdoo/qooxdoo.git
