@@ -1448,6 +1448,48 @@ else... */
 
 
     /**
+     * Mark an error in the editor
+     */
+    showError : function(location, message, type)
+    {
+      var             r;
+      var             editor = this.editor;
+      var             Range = ace.require("ace/range").Range;
+
+      // Highlight the region of text near the error
+      r = new Range(location.first_line - 1,
+                    location.first_column - 1,
+                    location.last_line - 1,
+                    location.last_column); // extended one position wider
+      editor.addMarker(r, "ace_error-marker", "text", false);
+
+      // Add an annotation in the gutter for this error.
+      editor.setAnnotations(
+        [
+          {
+            row    : location.first_line - 1,
+            column : location.first_column - 1,
+            text   : message,
+            type   : type || "warning"
+          }
+        ]);
+      
+      // Be sure that the error line is visible
+      editor.scrollToLine(location.first_line);
+    },
+
+    clearErrors : function()
+    {
+      var             editor = this.editor;
+
+      // Clear the gutter annotations
+      editor.setAnnotations([]);
+      
+      // Clear the error highlights
+      editor.removeAllMarkers(false);
+    },
+
+    /**
      * Runs the current set sample and checks if it need to be saved to the url.
      *
      * @param e {qx.event.type.Event} A possible events (unused)
@@ -1478,6 +1520,7 @@ else... */
       terminal.getGraphicsCanvas().exclude();
       
       playground.c.Main.output("", true);
+      this.clearErrors();
 
       // We need an initial attempt at requiring ansic.js, which fails much
       // of the time. The next require of the same file will then succeed.

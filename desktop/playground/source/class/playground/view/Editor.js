@@ -171,6 +171,15 @@ qx.Class.define("playground.view.Editor",
           "background-position: 4px center;"
       );
 
+      // Provide a style for an error indicator.
+      // NOTE: This one is marked as !important so that it overrides breakpoint
+      qx.bom.Stylesheet.createElement(
+        ".ace_gutter-cell.ace_error{" +
+          "background-image:" +
+          " url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAABOFBMVEX/////////QRswFAb/Ui4wFAYwFAYwFAaWGAfDRymzOSH/PxswFAb/SiUwFAYwFAbUPRvjQiDllog5HhHdRybsTi3/Tyv9Tir+Syj/UC3////XurebMBIwFAb/RSHbPx/gUzfdwL3kzMivKBAwFAbbvbnhPx66NhowFAYwFAaZJg8wFAaxKBDZurf/RB6mMxb/SCMwFAYwFAbxQB3+RB4wFAb/Qhy4Oh+4QifbNRcwFAYwFAYwFAb/QRzdNhgwFAYwFAbav7v/Uy7oaE68MBK5LxLewr/r2NXewLswFAaxJw4wFAbkPRy2PyYwFAaxKhLm1tMwFAazPiQwFAaUGAb/QBrfOx3bvrv/VC/maE4wFAbRPBq6MRO8Qynew8Dp2tjfwb0wFAbx6eju5+by6uns4uH9/f36+vr/GkHjAAAAYnRSTlMAGt+64rnWu/bo8eAA4InH3+DwoN7j4eLi4xP99Nfg4+b+/u9B/eDs1MD1mO7+4PHg2MXa347g7vDizMLN4eG+Pv7i5evs/v79yu7S3/DV7/498Yv24eH+4ufQ3Ozu/v7+y13sRqwAAADLSURBVHjaZc/XDsFgGIBhtDrshlitmk2IrbHFqL2pvXf/+78DPokj7+Fz9qpU/9UXJIlhmPaTaQ6QPaz0mm+5gwkgovcV6GZzd5JtCQwgsxoHOvJO15kleRLAnMgHFIESUEPmawB9ngmelTtipwwfASilxOLyiV5UVUyVAfbG0cCPHig+GBkzAENHS0AstVF6bacZIOzgLmxsHbt2OecNgJC83JERmePUYq8ARGkJx6XtFsdddBQgZE2nPR6CICZhawjA4Fb/chv+399kfR+MMMDGOQAAAABJRU5ErkJggg==') !important;" +
+          "background-position: 4px center;"
+      );
+
       // Provide a style for the current line when stopped at a breakpoint
       qx.bom.Stylesheet.createElement(
         ".ace_gutter-cell.current-line{" +
@@ -432,6 +441,60 @@ qx.Class.define("playground.view.Editor",
     },
 
     /**
+     * Add a marker (typically for showing the location of an error)
+     */
+    addMarker : function(range, clazz, type, bInFront)
+    {
+      if (this.__ace)
+      {
+        return this.__ace.getSession().addMarker(range, clazz, type, bInFront);
+      }
+      
+      return null;
+    },
+
+    /**
+     * Set the annotation list
+     */
+    setAnnotations : function(annotations)
+    {
+      if (this.__ace)
+      {
+        this.__ace.getSession().setAnnotations(annotations);
+      }
+    },
+
+    /**
+     * Remove a marker
+     */
+    removeMarker : function(markerId)
+    {
+      if (this.__ace)
+      {
+        this.__ace.getSession().removeMarker(markerId);
+      }
+    },
+
+    /**
+     * Remove all markers
+     */
+    removeAllMarkers : function(bInFront)
+    {
+      var             markers;
+      var             session = this.__ace.getSession();
+
+      if (this.__ace)
+      {
+        markers = session.getMarkers(bInFront);
+        Object.keys(markers).forEach(
+          function(marker)
+          {
+            session.removeMarker(markers[marker].id);
+          });
+      }
+    },
+
+    /**
      * Returns the current set of breakpoints
      * 
      * @return {Array}
@@ -467,6 +530,14 @@ qx.Class.define("playground.view.Editor",
     clearBreakpoint : function(line)
     {
       this.__ace.getSession().clearBreakpoint(line);
+    },
+
+    /**
+     * Clear all breakpoints
+     */
+    clearBreakpoints : function()
+    {
+      this.__ace.getSession().clearBreakpoints();
     },
 
     /**

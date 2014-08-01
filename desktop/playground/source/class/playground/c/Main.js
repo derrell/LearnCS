@@ -152,7 +152,9 @@ qx.Class.define("playground.c.Main",
           var             errStr;
           var             showPosition;
           var             button;
-
+          var             hint = "Syntax error";
+          var             editor;
+          
           try
           {
             // Disable the Stop button, reset the Stop flag, enable the Run
@@ -187,7 +189,11 @@ qx.Class.define("playground.c.Main",
                 "'ADD_ASSIGN', 'SUB_ASSIGN', 'LEFT_ASSIGN', 'RIGHT_ASSIGN', " +
                 "'AND_ASSIGN', 'XOR_ASSIGN', 'OR_ASSIGN', ';', 'RBRACE', " +
                 "got .*"),
-              "Maybe you forgot a semicolon?");
+              function(match)
+              {
+                hint = "Maybe you forgot a semicolon?";
+                return hint;
+              });
 
                   
             str = str.replace(
@@ -195,20 +201,24 @@ qx.Class.define("playground.c.Main",
                 "Expecting " +
                 "'\\)', ']', ',', ':', ';', " +
                 "got .*"),
-              "Maybe you forgot a semicolon?");
+              function(match)
+              {
+                hint = "Maybe you forgot a semicolon?";
+                return hint;
+              });
 
             // If we have a previous position to display, then show it;
             // otherwise show the current position (if known), along with the
             // error description.
             if (! parser.lexer.matched)
             {
-              errStr = "Error near line " + hash.line + ":\n";
+              errStr = "Error near line " + hash.loc.first_line + ":\n";
             }
             else
             {
               errStr =
                 "Error: See arrow pointing to position of error near line " +
-                hash.line +
+                hash.loc.first_line +
                 ":\n" +
                 (prevPosition || parser.lexer.showPosition()) +
                 "\n";
@@ -228,6 +238,9 @@ qx.Class.define("playground.c.Main",
               });
 
             playground.c.Main.output(errStr);
+            
+            // Show the error in the editor window
+            qx.core.Init.getApplication().showError(hash.loc, hint, "error");
           }
           else
           {
@@ -499,8 +512,10 @@ qx.Class.define("playground.c.Main",
 
     process : function(root, argv)
     {
-      var             message;
+      var             hint;
+      var             line;
       var             button;
+      var             message;
 
       try
       {
@@ -510,22 +525,27 @@ qx.Class.define("playground.c.Main",
       {
         if (error instanceof playground.c.lib.RuntimeError)
         {
+          line = error.node.line;
+          hint = error.message;
           message =
-            "Error near line " + error.node.line + ": " + error.message + "\n";
+            "Error near line " + line + ": " + hint + "\n";
         }
         else if (error instanceof playground.c.lib.NotYetImplemented)
         {
-          message =
+          line = playground.c.lib.Node._currentNode.line;
+          hint =
             "This feature is not yet implemented in LearnCS!: " +
-            error.thingNotImplemented + "\n";
+            error.thingNotImplemented;
+          message = hint + "\n";
         }
         else
         {
+          line = playground.c.lib.Node._currentNode.line;
+          hint = error + "\n" + error.stack;
           message =
             "Internal error near line " +
             playground.c.lib.Node._currentNode.line +
-            ": " + error + "\n" + 
-            error.stack + "\n";
+            ": " + hint + "\n";
         }
 
         // Send the error message as a status report
@@ -534,6 +554,16 @@ qx.Class.define("playground.c.Main",
             type       : "exit_crash",
             exit_crash : message
           });
+
+        // Show the error in the editor
+        qx.core.Init.getApplication().showError(
+          {
+            first_line   : line,
+            first_column : 0,
+            last_line    : line,
+            last_column  : 9999
+          },
+          message);
 
         // Output the error message
         playground.c.Main.output(message);
@@ -621,6 +651,16 @@ qx.Class.define("playground.c.Main",
           error = fInclude();
           if (error)
           {
+            // Show the error in the editor
+            qx.core.Init.getApplication().showError(
+              {
+                first_line   : error.node.line,
+                first_column : 0,
+                last_line    : error.node.line,
+                last_column  : 9999
+              },
+              error.message);
+
             message =
               "Error near line " + error.node.line +
               ": " + error.message + "\n";
@@ -747,6 +787,8 @@ qx.Class.define("playground.c.Main",
 
       function catchError(error)
       {
+        var             line;
+        var             hint;
         var             message;
         var             button;
 
@@ -800,37 +842,54 @@ qx.Class.define("playground.c.Main",
         // Determine what type of error we encountered
         if (error instanceof playground.c.lib.Break)
         {
+          line = error.node.line;
+          hint =
+            "Found 'break' not in a loop, nor immediately within a 'switch'\n";
           message =
-            "Error near line " + error.node.line + ": " + 
-            "Found 'break' not in a loop, " +
-            "nor immediately within a 'switch'\n";
+            "Error near line " + line + ": " + hint;
         }
         else if (error instanceof playground.c.lib.Continue)
         {
-          message =
-            "Error near line " + error.node.line + ": " + 
+          line = error.node.line;
+          hint =
             "Found 'continue' not immediately within a loop\n";
+          message =
+            "Error near line " + line + ": " + hint;
         }
         else if (error instanceof playground.c.lib.RuntimeError)
         {
+          line = error.node.line;
+          hint = error.message;
           message =
-            "Error near line " + error.node.line + ": " + error.message + "\n";
+            "Error near line " + line + ": " + hint + "\n";
         }
         else if (error instanceof playground.c.lib.NotYetImplemented)
         {
-          message =
+          line = playground.c.lib.Node._currentNode.line;
+          hint =
             "This feature is not yet implemented in LearnCS!: " +
-            error.thingNotImplemented + "\n";
+            error.thingNotImplemented;
+          message = hint + "\n";
         }
         else
         {
-          message =
-            "Internal error near line " +
-            playground.c.lib.Node._currentNode.line +
-            ": " + error + "\n" +
-            error.stack + "\n";
+          line = playground.c.lib.Node._currentNode.line;
+          hint =
+            error + "\n" + error.stack;
+          message = 
+            "Internal error near line " + line + ": " + hint + "\n";
         }
         
+        // Show the error in the editor
+        qx.core.Init.getApplication().showError(
+          {
+            first_line   : line,
+            first_column : 0,
+            last_line    : line,
+            last_column  : 9999
+          },
+          hint);
+
         // Output the error message
         playground.c.Main.output(message);
         

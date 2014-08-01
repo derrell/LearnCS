@@ -615,13 +615,14 @@ qx.Class.define("playground.c.stdio.Stdio",
             failure(new playground.c.lib.RuntimeError(
                       playground.c.lib.Node._currentNode,
                       "Maybe you forgot to test for a NULL return value " +
-                      "from fopen()? Invalid file handle."));
+                      "from fopen()? This file handle is invalid."));
           }
           else
           {
             failure(new playground.c.lib.RuntimeError(
                       playground.c.lib.Node._currentNode,
-                      "Invalid file handle, causing an attempt to access " +
+                      "This  file handle is invalid (but not NULL), " +
+                      "causing an attempt to access " +
                       "an uninitialized or illegal memory address. " +
                       "(This is sometimes called a 'Segmentation Fault'.)"));
           }
@@ -701,13 +702,14 @@ qx.Class.define("playground.c.stdio.Stdio",
             failure(new playground.c.lib.RuntimeError(
                       playground.c.lib.Node._currentNode,
                       "Maybe you forgot to test for a NULL return value " +
-                      "from fopen()? Invalid file handle."));
+                      "from fopen()? This file handle is invalid."));
           }
           else
           {
             failure(new playground.c.lib.RuntimeError(
                       playground.c.lib.Node._currentNode,
-                      "Invalid file handle, causing an attempt to access " +
+                      "This file handle is invalid, " +
+                      "causing an attempt to access " +
                       "an uninitialized or illegal memory address. " +
                       "(This is sometimes called a 'Segmentation Fault'.)"));
           }
@@ -899,13 +901,14 @@ qx.Class.define("playground.c.stdio.Stdio",
               failure(new playground.c.lib.RuntimeError(
                         playground.c.lib.Node._currentNode,
                         "Maybe you forgot to test for a NULL return value " +
-                        "from fopen()? Invalid file handle."));
+                        "from fopen()? This file handle is invalid."));
             }
             else
             {
               failure(new playground.c.lib.RuntimeError(
                         playground.c.lib.Node._currentNode,
-                        "Invalid file handle, causing an attempt to access " +
+                        "This file handle is invalid, " +
+                        "causing an attempt to access " +
                         "an uninitialized or illegal memory address. " +
                         "(This is sometimes called a 'Segmentation Fault'.)"));
             }
@@ -982,13 +985,14 @@ qx.Class.define("playground.c.stdio.Stdio",
               failure(new playground.c.lib.RuntimeError(
                         playground.c.lib.Node._currentNode,
                         "Maybe you forgot to test for a NULL return value " +
-                        "from fopen()? Invalid file handle."));
+                        "from fopen()? This file handle is invalid."));
             }
             else
             {
               failure(new playground.c.lib.RuntimeError(
                         playground.c.lib.Node._currentNode,
-                        "Invalid file handle, causing an attempt to access " +
+                        "This file handle is invalid, " +
+                        "causing an attempt to access " +
                         "an uninitialized or illegal memory address. " +
                         "(This is sometimes called a 'Segmentation Fault'.)"));
             }

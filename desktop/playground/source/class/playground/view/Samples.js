@@ -268,6 +268,10 @@ qx.Class.define("playground.view.Samples",
         "change",
         function() 
         {
+          var             app = qx.core.Init.getApplication();
+          var             editor;
+          var             stopButton;
+
           // Get the selected sample
           var sample = this.__list.getSelection().getItem(0);
           
@@ -282,6 +286,23 @@ qx.Class.define("playground.view.Samples",
             if (! this.__internalSelect)
             {
               // ... then handle a user selection
+
+              // First, clean up prior program. If the program was running...
+              stopButton = app.getUserData("stopButton");
+              if (stopButton.getEnabled())
+              {
+                // ... then stop it
+                playground.view.Toolbar.programStopped("");
+              }
+
+              // Clear any breakpoints from the prior program
+              editor = app.getUserData("sourceeditor");
+              editor.clearBreakpoints();
+
+              // Clear any error indications in the prior program
+              app.clearErrors();
+
+              // Now prepare the new program
               this.fireDataEvent("selectSample", sample);
             }
           }
