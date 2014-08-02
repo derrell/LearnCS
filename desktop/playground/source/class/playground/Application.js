@@ -1449,6 +1449,7 @@ else... */
 
     /**
      * Mark an error in the editor
+     * @ignore(ace.require)
      */
     showError : function(location, message, type)
     {
