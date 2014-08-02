@@ -152,7 +152,7 @@ qx.Class.define("playground.c.Main",
           var             errStr;
           var             showPosition;
           var             button;
-          var             hint = "Syntax error";
+          var             hint = "Unrecognized C syntax";
           var             editor;
           
           try
@@ -226,7 +226,7 @@ qx.Class.define("playground.c.Main",
 
             if (str)
             {
-              errStr += "\t" + str + "\n\n";
+              errStr += "\t" + hint + "\n\n";
             }
 
             // Send the error as a status report
