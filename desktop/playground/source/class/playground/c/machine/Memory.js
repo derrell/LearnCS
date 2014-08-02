@@ -417,6 +417,9 @@ qx.Class.define("playground.c.machine.Memory",
     {
       var             i;
       var             size;
+      var             hint;
+      var             addrMessage;
+      var             symtabInfo;
       var             info = playground.c.machine.Memory.info;
 
       // Determine size to be accessed
@@ -492,11 +495,37 @@ qx.Class.define("playground.c.machine.Memory",
         {
           if (! playground.c.machine.Memory._memInitialized[addr + i])
           {
+            // Create a message containing the address of the problem
+            addrMessage =
+              (this.__getBase() == 16 ? "0x" : "") +
+              (addr + i).toString(this.__getBase());
+            
+            // Create the default hint
+            hint = "Reading an uninitialized value from address " + addrMessage;
+
+            // See if there's a symbol entry at the current address, or if
+            // not, then at the base address.
+            symtabInfo = this._symbolInfo[addr + i] || this._symbolInfo[addr];
+            if (symtabInfo)
+            {
+              // Yup, we found one. Create a hint based on that.
+              if (i == 0)
+              {
+                hint =
+                  " Variable " + symtabInfo.name +
+                  " appears to be uninitialized when reading from it" +
+                  " (at address " + addrMessage + ")";
+              }
+              else
+              {
+                hint +=
+                  " (near variable " + symtabInfo.name + ")";
+              }
+            }
+
             throw new playground.c.lib.RuntimeError(
               playground.c.lib.Node._currentNode,
-              "Reading an uninitialized value from address " +
-              (this.__getBase() == 16 ? "0x" : "") +
-              (addr + i).toString(this.__getBase()));
+              hint);
           }
         }
       }
