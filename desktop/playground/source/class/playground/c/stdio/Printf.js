@@ -252,6 +252,19 @@ qx.Class.define("playground.c.stdio.Printf",
 
       var str = '';
       var position = 0;
+      var numFlags = 0;
+      var formatForDisplay;
+
+      // Figure out how many format markers are in the format string
+      this._tokens.forEach(
+        function(token)
+        {
+          if (typeof token == "object" && token["specifier"])
+          {
+            ++numFlags;
+          }
+        });
+
       for (var i = 0, token; i < this._tokens.length; i++)
       {
         token = this._tokens[i];
@@ -280,10 +293,45 @@ qx.Class.define("playground.c.stdio.Printf",
 
             if (position >= arguments.length)
             {
+              // Convert the format string back into C syntax
+              formatForDisplay = [];
+              this._format.split("").forEach(
+                function(ch)
+                {
+                  if ("\a\b\f\n\r\t\v\'\"\\".indexOf(ch) != -1)
+                  {
+                    formatForDisplay.push('\\');
+                    formatForDisplay.push(
+                      {
+                        '\a' : 'a',
+                        '\b' : 'b',
+                        '\f' : 'f',
+                        '\n' : 'n',
+                        '\r' : 'r',
+                        '\t' : 't',
+                        '\v' : 'v',
+                        '\'' : '\'',
+                        '\"' : '"',
+                        '\\' : '\\'
+                      }[ch]);
+                  }
+                  else
+                  {
+                    formatForDisplay.push(ch);
+                  }
+                });
+              formatForDisplay = formatForDisplay.join("");
+
               throw new playground.c.lib.RuntimeError(
                 playground.c.lib.Node._currentNode,
-                "Got " + arguments.length + 
-                " arguments, insufficient for format: " + this._format);
+                "Format string \"" + formatForDisplay + "\" " +
+                "requires more values (arguments) be provided. Only " + 
+                arguments.length +
+                (arguments.length == 1 ? " was" : " were") + " given. " +
+                "Counting percent signs in the format string indicates that " +
+                numFlags + " additional " +
+                (numFlags == 1 ? "argument is" : "arguments are") + 
+                " likely required.");
             }
 
             token.arg = arguments[position++];
