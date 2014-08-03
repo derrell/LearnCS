@@ -191,7 +191,9 @@ qx.Class.define("playground.c.Main",
                 "got .*"),
               function(match)
               {
-                hint = "Maybe you forgot a semicolon?";
+                hint = 
+                  "Maybe you forgot a semicolon, other punctuation, " +
+                  "or an operator?";
                 return hint;
               });
 
@@ -203,8 +205,8 @@ qx.Class.define("playground.c.Main",
                 "got .*"),
               function(match)
               {
-                hint = "Maybe you forgot a semicolon?";
-                return hint;
+                hint = 
+                  "Maybe you forgot a semicolon or other punctuation?";
               });
 
             // If we have a previous position to display, then show it;
