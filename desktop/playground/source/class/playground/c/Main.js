@@ -261,7 +261,14 @@ qx.Class.define("playground.c.Main",
             playground.c.Main.output(errStr);
             
             // Show the error in the editor window
-            qx.core.Init.getApplication().showError(hash.loc, hint, "error");
+            try
+            {
+              qx.core.Init.getApplication().showError(hash.loc, hint, "error");
+            }
+            catch(e)
+            {
+              // fails in non-gui environment
+            }
           }
           else
           {
@@ -577,14 +584,21 @@ qx.Class.define("playground.c.Main",
           });
 
         // Show the error in the editor
-        qx.core.Init.getApplication().showError(
-          {
-            first_line   : line,
-            first_column : 0,
-            last_line    : line,
-            last_column  : 9999
-          },
-          message);
+        try
+        {
+          qx.core.Init.getApplication().showError(
+            {
+              first_line   : line,
+              first_column : 0,
+              last_line    : line,
+              last_column  : 9999
+            },
+            message);
+        }
+        catch(e)
+        {
+          // fails in non-gui environment
+        }
 
         // Output the error message
         playground.c.Main.output(message);
@@ -673,14 +687,21 @@ qx.Class.define("playground.c.Main",
           if (error)
           {
             // Show the error in the editor
-            qx.core.Init.getApplication().showError(
-              {
-                first_line   : error.node.line,
-                first_column : 0,
-                last_line    : error.node.line,
-                last_column  : 9999
-              },
-              error.message);
+            try
+            {
+              qx.core.Init.getApplication().showError(
+                {
+                  first_line   : error.node.line,
+                  first_column : 0,
+                  last_line    : error.node.line,
+                  last_column  : 9999
+                },
+                error.message);
+            }
+            catch(e)
+            {
+              // fails in non-gui environment
+            }
 
             message =
               "Error near line " + error.node.line +
@@ -902,14 +923,21 @@ qx.Class.define("playground.c.Main",
         }
         
         // Show the error in the editor
-        qx.core.Init.getApplication().showError(
-          {
-            first_line   : line,
-            first_column : 0,
-            last_line    : line,
-            last_column  : 9999
-          },
-          hint);
+        try
+        {
+          qx.core.Init.getApplication().showError(
+            {
+              first_line   : line,
+              first_column : 0,
+              last_line    : line,
+              last_column  : 9999
+            },
+            hint);
+        }
+        catch(e)
+        {
+          // fails in non-gui environment
+        }
 
         // Output the error message
         playground.c.Main.output(message);
