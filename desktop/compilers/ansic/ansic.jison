@@ -1579,7 +1579,7 @@ statement_list
   {
     playground.c.lib.Node.getError().parseError(
       "Declarations must precede executable statements.",
-      { line : yylineno },
+      { line : yylineno, loc : yy.lexer.yylloc, displayError : true },
       $2);
   }
   ;
@@ -2005,13 +2005,13 @@ constant
       playground.c.lib.Node.getError().parseError(
         "Unrecognized single-quoted character (" + yytext + "). " +
         "Maybe the forward slash (/) is supposed to be a backslash (\\)?",
-        { line : yylineno });
+        { line : yylineno, loc : yy.lexer.yylloc, displayError : true });
     }
     else
     {
       playground.c.lib.Node.getError().parseError(
         "Unrecognized single-quoted character (" + yytext + ")",
-        { line : yylineno });
+        { line : yylineno, loc : yy.lexer.yylloc, displayError : true });
     }
   }
   | CONSTANT_FLOAT
