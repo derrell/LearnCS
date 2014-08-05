@@ -413,7 +413,7 @@ chicken wing!
 
 % ../dcc t002-decl-after-stmt.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
-STDOUT: Error: See arrow pointing to position of error near line 9:
+STDOUT: Error: See arrow pointing to position of error near line 12:
 ...table statement    char            c;  
 ----------------------^
 	Declarations must precede executable statements.
@@ -566,14 +566,14 @@ TypeError: Cannot call method 'replace' of undefined
 ERROR: Error: Command failed: 
 STDOUT: 
 >>> Running program
-Error near line 9: Maybe you forgot to test for a NULL return value from fopen()? Invalid file handle.
+Error near line 9: Maybe you forgot to test for a NULL return value from fopen()? This file handle is invalid.
 >>> Program had errors. It did not run to completion.
 
 % ../dcc t020-fscanf-bad-handle.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: 
 >>> Running program
-Error near line 9: Invalid file handle, causing an attempt to access an uninitialized or illegal memory address. (This is sometimes called a 'Segmentation Fault'.)
+Error near line 9: This file handle is invalid, causing an attempt to access an uninitialized or illegal memory address. (This is sometimes called a 'Segmentation Fault'.)
 >>> Program had errors. It did not run to completion.
 
 % ../dcc t021-preproc-leading-blank-lines.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files --preproc
@@ -1154,7 +1154,7 @@ x=2
 
 % ../dcc t058-null-not-in-quotes.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
-STDOUT: Error: See arrow pointing to position of error near line 2:
+STDOUT: Error: See arrow pointing to position of error near line 3:
 ...har * argv[]){    \0;}
 ---------------------^
 	Unexpected character: \
@@ -1215,7 +1215,7 @@ Error near line 8: This appears to be attempting to call a function, but the ide
 
 % ../dcc t069-multi-char-char-constant.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
-STDOUT: Error: See arrow pointing to position of error near line 6:
+STDOUT: Error: See arrow pointing to position of error near line 7:
 ...      if (c == '/0')    {        prin
 ----------------------^
 	Unrecognized single-quoted character ('/0'). Maybe the forward slash (/) is supposed to be a backslash (\)?
