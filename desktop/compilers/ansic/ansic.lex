@@ -32,7 +32,7 @@ NL                      [\n]
     {
       playground.c.lib.Node.getError().parseError(
         "#include may only be used at the top level (global scope)",
-        { line : yylineno });
+        { line : yylineno, loc : yy.lexer.yylloc, displayError : true });
     }
     else
     {
@@ -154,7 +154,7 @@ NL                      [\n]
     /* bad character */
     playground.c.lib.Node.getError().parseError(
       "Unexpected character: " + yytext,
-      { line : yylineno });
+      { line : yylineno, loc : yy.lexer.yylloc, displayError : true });
 }
 
 
@@ -176,7 +176,7 @@ NL                      [\n]
         "If it's a system include file, you should use angle brackets " +
         "instead: " +
         " <" + yytext.substr(1, yytext.length - 2) + ">",
-        { line : yylineno });
+        { line : yylineno, loc : yy.lexer.yylloc, displayError : true });
 }
 
 <inc>\<(\\.|[^\\>])*\>  {
@@ -235,7 +235,11 @@ NL                      [\n]
                           default :
                             playground.c.lib.Node.getError().parseError(
                               "Include file not found (" + yytext + ")",
-                              { line : yylineno }); 
+                              {
+                                line : yylineno,
+                                loc : yy.lexer.yylloc,
+                                displayError : true
+                              }); 
                             return;
                           }
 
@@ -255,7 +259,11 @@ NL                      [\n]
                           {
                             playground.c.lib.Node.getError().parseError(
                                 error.message,
-                                { line : error.node.line });
+                                {
+                                  line : error.node.line,
+                                  loc : yy.lexer.yylloc,
+                                  displayError : true
+                                });
                             return;
                           }
                         }
