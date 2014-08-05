@@ -209,6 +209,25 @@ qx.Class.define("playground.c.Main",
                   "Maybe you forgot a semicolon or other punctuation?";
               });
 
+            // If this is a custom error message fron ansic.jison...
+            if (hash.displayError)
+            {
+              // ... then use the error message as given
+              hint = str;
+            }
+
+            // If there's no loc member of the hash, create one
+            if (! hash.loc)
+            {
+              hash.loc =
+                {
+                  first_line   : hash.line + 1,
+                  first_column : 0,
+                  last_line    : hash.line + 1,
+                  last_column  : 9999
+                };
+            }
+
             // If we have a previous position to display, then show it;
             // otherwise show the current position (if known), along with the
             // error description.

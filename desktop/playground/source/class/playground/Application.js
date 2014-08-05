@@ -1454,27 +1454,28 @@ else... */
     showError : function(location, message, type)
     {
       var             r;
+      var             annotations;
       var             editor = this.editor;
       var             Range = ace.require("ace/range").Range;
 
       // Highlight the region of text near the error
       r = new Range(location.first_line - 1,
-                    location.first_column - 1,
+                    location.first_column - 4,
                     location.last_line - 1,
                     location.last_column); // extended one position wider
       editor.addMarker(r, "ace_error-marker", "text", false);
 
       // Add an annotation in the gutter for this error.
-      editor.setAnnotations(
-        [
-          {
-            row    : location.first_line - 1,
-            column : location.first_column - 1,
-            text   : message,
-            type   : type || "warning"
-          }
-        ]);
-      
+      annotations = editor.getAnnotations();
+      annotations.push(
+        {
+          row    : location.first_line - 1,
+          column : location.first_column - 1,
+          text   : message,
+          type   : type || "warning"
+        });
+      editor.setAnnotations(annotations);
+
       // Be sure that the error line is visible
       editor.scrollToLine(location.first_line);
     },

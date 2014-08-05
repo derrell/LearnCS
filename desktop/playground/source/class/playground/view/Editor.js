@@ -463,6 +463,19 @@ qx.Class.define("playground.view.Editor",
     },
 
     /**
+     * Get the annotation list
+     */
+    getAnnotations : function()
+    {
+      if (this.__ace)
+      {
+        return this.__ace.getSession().getAnnotations();
+      }
+      
+      return null;
+    },
+
+    /**
      * Set the annotation list
      */
     setAnnotations : function(annotations)
