@@ -64,6 +64,7 @@ qx.Class.define("playground.Application",
     __initCalled     : false,
 
     editor : null,
+    __bFirstError : true,
 
     // storages
     __samples : null,
@@ -1471,13 +1472,19 @@ else... */
         {
           row    : location.first_line - 1,
           column : location.first_column - 1,
-          text   : message,
+          text   : "! " + message,
           type   : type || "warning"
         });
       editor.setAnnotations(annotations);
 
-      // Be sure that the error line is visible
-      editor.scrollToLine(location.first_line);
+      // Be sure that the first error line is visible
+      if (this.__bFirstError)
+      {
+        editor.scrollToLine(location.first_line);
+      }
+      
+      // The next encountered error is not the first one
+      this.__bFirstError = false;
     },
 
     clearErrors : function()
@@ -1489,6 +1496,9 @@ else... */
       
       // Clear the error highlights
       editor.removeAllMarkers(false);
+      
+      // Clear the indicator that we've scrolled to the first error
+      this.__bFirstError = true;
     },
 
     /**
