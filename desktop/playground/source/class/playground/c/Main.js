@@ -152,8 +152,9 @@ qx.Class.define("playground.c.Main",
           var             errStr;
           var             showPosition;
           var             button;
-          var             hint = "Unrecognized C syntax";
+          var             hint;
           var             editor;
+          var             expected;
           
           try
           {
@@ -174,6 +175,7 @@ qx.Class.define("playground.c.Main",
             // Strip off entry meaningless text that we'll replicate
             str = str.replace(/^Parse error on.*\n.*\n.*\n/, "");
 
+console.log(JSON.stringify(hash, null, "  ") + "\n" + str);
             // Trap the most common errors: missing semicolon
             str = str.replace(
               new RegExp(
@@ -209,6 +211,15 @@ qx.Class.define("playground.c.Main",
                   "Maybe you forgot a semicolon or other punctuation?";
               });
 
+            str = str.replace(
+              new RegExp(
+                "Expecting ';', got .*"),
+              function(match)
+              {
+                hint = 
+                  "Maybe you forgot a semicolon?";
+              });
+
             // If this is a custom error message fron ansic.jison...
             if (hash.displayError)
             {
@@ -226,6 +237,108 @@ qx.Class.define("playground.c.Main",
                   last_line    : hash.line + 1,
                   last_column  : 9999
                 };
+            }
+
+            // If we haven't ascertained a hint yet...
+            if (! hint)
+            {
+              // ... then assign a default one
+              hint = "Unrecognized C syntax";
+              
+              // Get a list of expected tokens
+              expected = [];
+              
+              (function(tokens)
+               {
+                 tokens.forEach(
+                   function(token)
+                   {
+                     expected.push(
+                       {
+                         "'PTR_OP'"          : "->",
+                         "'INC_OP'"          : "++",
+                         "'DEC_OP'"          : "--",
+                         "'SIZEOF'"          : "sizeof",
+                         "'LEFT_OP'"         : "<<",
+                         "'RIGHT_OP'"        : ">>",
+                         "'LE_OP'"           : "<=",
+                         "'GE_OP'"           : ">=",
+                         "'EQ_OP'"           : "==",
+                         "'NE_OP'"           : "!=",
+                         "'AND_OP'"          : "&&",
+                         "'OR_OP'"           : "||",
+                         "'MUL_ASSIGN'"      : "*=",
+                         "'DIV_ASSIGN'"      : "/=",
+                         "'MOD_ASSIGN'"      : "%=",
+                         "'ADD_ASSIGN'"      : "+=",
+                         "'SUB_ASSIGN'"      : "-=",
+                         "'LEFT_ASSIGN'"     : "<<=",
+                         "'RIGHT_ASSIGN'"    : ">>=",
+                         "'AND_ASSIGN'"      : "&=",
+                         "'XOR_ASSIGN'"      : "^=",
+                         "'OR_ASSIGN'"       : "|=",
+                         "'TYPEDEF'"         : "typedef",
+                         "'EXTERN'"          : "extern",
+                         "'STATIC'"          : "static",
+                         "'AUTO'"            : "auto",
+                         "'REGISTER'"        : "register",
+                         "'VOID'"            : "void",
+                         "'CHAR'"            : "char",
+                         "'SHORT'"           : "short",
+                         "'INT'"             : "int",
+                         "'LONG'"            : "long",
+                         "'FLOAT'"           : "float",
+                         "'DOUBLE'"          : "double",
+                         "'SIGNED'"          : "signed",
+                         "'UNSIGNED'"        : "unsigned",
+                         "'STRUCT'"          : "struct",
+                         "'UNION'"           : "union",
+                         "'ENUM'"            : "enum",
+                         "'CONST'"           : "const",
+                         "'VOLATILE'"        : "volatile",
+                         "'CASE'"            : "case",
+                         "'DEFAULT'"         : "default",
+                         "'IF'"              : "if",
+                         "'ELSE'"            : "else",
+                         "'SWITCH'"          : "switch",
+                         "'WHILE'"           : "while",
+                         "'DO'"              : "do",
+                         "'FOR'"             : "for",
+                         "'GOTO'"            : "goto",
+                         "'CONTINUE'"        : "continue",
+                         "'BREAK'"           : "break",
+                         "'RETURN'"          : "return",
+                         "'IDENTIFIER'"      : "(an identifier)",
+                         "'TYPE_NAME'"       : "(a type name)",
+                         "'CONSTANT_HEX'"    : "(a hexidecimal constant)",
+                         "'CONSTANT_OCTAL'"  : "(an octal constant)",
+                         "'CONSTANT_DECIMAL'": "(a decimal constant)",
+                         "'CONSTANT_CHAR'"   : "(a character constant)",
+                         "'CONSTANT_FLOAT'"  : "(a floating-point constant)",
+                         "'STRING_LITERAL'"  : "(a string literal)",
+                         "'ELLIPSIS'"        : "...",
+                         "'LBRACE'"          : "{",
+                         "'RBRACE'"          : "}"
+                       }[token] || token);
+                   });
+               })(hash.expected || []);
+               
+              // Add some detail to the error message
+              if (expected.length == 1)
+              {
+                // Only one expected token. Show it without the default hint.
+                hint =
+                  "\n" + "\tFound '" + hash.text + "' but expected " +
+                  expected[0];
+              }
+              else if (expected.length > 1 && expected.length <= 4)
+              {
+                // A few expected tokens. Show them with the default hint.
+                hint +=
+                  "\n" + "\tFound '" + hash.text + "' but expected one of:" +
+                  expected.join(", ");
+              }
+              // Otherwise there are many expected tokens. Don't show them.
             }
 
             // If we have a previous position to display, then show it;
