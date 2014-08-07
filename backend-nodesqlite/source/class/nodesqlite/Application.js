@@ -574,6 +574,11 @@ qx.Class.define("nodesqlite.Application",
           // parse the url-encoded body ourself, here.
           var qs = require("qs");
           req.body = qs.parse(req.body);
+          
+          // Ensure that the user name is lower case since LDAP is case
+          // insensitive, and we want only a single version of the name (and a
+          // single ObjUser UID) in the database.
+          req.body.username = req.body.username.toLowerCase();
 
           // Authenticate
           passport.authenticate(
