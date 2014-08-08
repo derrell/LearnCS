@@ -771,6 +771,9 @@ console.log(JSON.stringify(hash, null, "  ") + "\n" + str);
       var             Memory = playground.c.machine.Memory;
       var             mem = Memory.getInstance();
 
+      // In case we'd run the program previously, clean up from last time
+      completion();
+
       // Initialize memory
       mem.initAll();
 
@@ -1063,7 +1066,7 @@ console.log(JSON.stringify(hash, null, "  ") + "\n" + str);
           });
 
         // Clean up after program completion
-        completion();
+//        completion();
 
         playground.c.Main.output(
           ">>> Program had errors. It did not run to completion.\n");
@@ -1345,7 +1348,7 @@ console.log(JSON.stringify(hash, null, "  ") + "\n" + str);
               {
                 catchError(e);
               }
-            }
+          }
           else
           {
             message = "Missing main() function\n";

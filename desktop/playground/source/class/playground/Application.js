@@ -1456,6 +1456,7 @@ else... */
     {
       var             r;
       var             annotations;
+      var             application = qx.core.Init.getApplication();
       var             editor = this.editor;
       var             Range = ace.require("ace/range").Range;
 
@@ -1483,6 +1484,29 @@ else... */
         editor.scrollToLine(location.first_line);
       }
       
+      // If requested, show the memory view automatically. Don't issue a
+      // status report for it, though, prevented by memoryViewButtonInternalSet
+      if (application.getUserData("openOnError").getValue())
+      {
+        // Since the normal status message won't be sent, create our own,
+        // special one to show that we're automatically opening the memory
+        // view.
+        if (! application.getUserData("memoryViewButton").getValue())
+        {
+          playground.ServerOp.statusReport(
+            {
+              type             : "show_memory_view",
+              show_memory_view : "automatic via error"
+            });
+        }
+        
+        // Automatically display the memory view now, without sending the
+        // normal status report.
+        application.setUserData("memoryViewButtonInternalSet", true);
+        application.getUserData("memoryViewButton").setValue(true);
+        application.setUserData("memoryViewButtonInternalSet", false);
+      }
+
       // The next encountered error is not the first one
       this.__bFirstError = false;
     },

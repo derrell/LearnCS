@@ -312,12 +312,16 @@ qx.Class.define("playground.view.Toolbar",
       function(e) {
         var             bOn = !!e.getData();
 
-        // Generate a status report showing toggling of Memory Template view 
-        playground.ServerOp.statusReport(
-          {
-            type             : "show_memory_view",
-            show_memory_view : bOn.toString()
-          });
+        // If we're not opening the memory view due to an error, generate a
+        // status report showing toggling of Memory Template view
+        if (! application.getUserData("memoryViewButtonInternalSet"))
+        {
+          playground.ServerOp.statusReport(
+            {
+              type             : "show_memory_view",
+              show_memory_view : bOn.toString()
+            });
+        }
 
         // Show or hide the Memory Template view
         if (bOn)
@@ -329,6 +333,19 @@ qx.Class.define("playground.view.Toolbar",
           application.memTemplateBox.exclude();
         }
     }, this);
+    
+    application.setUserData("memoryViewButton", this.__showMemTemplateButton);
+
+
+    // Open Memory View button on error
+    this.__openMemoryViewOnError =
+      new qx.ui.form.CheckBox(this.tr("Debug on error"));
+    this.add(this.__openMemoryViewOnError);
+    this.__openMemoryViewOnError.setValue(true);
+    this.__openMemoryViewOnError.setToolTipText(
+      this.tr("Show the Memory View automatically if a run-time error occurs"));
+    application.setUserData("openOnError", this.__openMemoryViewOnError);
+    
 // ...djl
 
     // url shortening button
