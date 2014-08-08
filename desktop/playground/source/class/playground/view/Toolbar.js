@@ -268,11 +268,13 @@ qx.Class.define("playground.view.Toolbar",
         width           : 200,
         value           : (
           "<b style='color:blue'>" +
+/*
           "Get the UMass Lowell Computing 1 (CS1) " +
           "<a target='_blank' " +
           "   href='http://www.cs.uml.edu/~dlipman/computing1-labs'>" +
           "lab&nbsp;handouts" +
           "</a>." +
+*/
           "</b>")
       });
     this.add(label);
