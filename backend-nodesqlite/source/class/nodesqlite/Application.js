@@ -109,6 +109,7 @@ qx.Class.define("nodesqlite.Application",
     main : function()
     {
       var             i;
+      var             r;
       var             _this = this;
       var             server;
       var             rpcHandler;
@@ -124,6 +125,7 @@ qx.Class.define("nodesqlite.Application",
       var             LocalStrategy = require("passport-local").Strategy;
       var             LdapStrategy = require("passport-ldapauth").Strategy;
       var             app = express();
+      var             secret = [];
       var             strategies = [ "local" ];
       var             ldapConfig;
       var             credentials;
@@ -168,9 +170,20 @@ qx.Class.define("nodesqlite.Application",
       //
       app.use(logger("short"));
       app.use(cookieParser());
+      
+      // Build a random session secret
+      r  = Math.floor(Math.random() * 20);
+      for (i = r + 10; i >= 0; i--)
+      {
+        r = Math.floor(Math.random() * 63);
+        secret.push(
+          ("abcdefghijklmnopqrstuvwxyz" +
+           "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
+           "1234567890 ")[r]);
+      }
       app.use(cookieSession(
                 {
-                  secret : "my secret test program",
+                  secret : secret.join(""),
                   cookie : 
                   {
                     maxAge : 1000 * 60 * 60 * 24 * 7 // one week idle time
