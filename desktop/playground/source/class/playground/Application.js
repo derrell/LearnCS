@@ -1484,9 +1484,11 @@ else... */
         editor.scrollToLine(location.first_line);
       }
       
-      // If requested, show the memory view automatically. Don't issue a
-      // status report for it, though, prevented by memoryViewButtonInternalSet
-      if (application.getUserData("openOnError").getValue())
+      // If this is a run-time error (i.e., not a syntax error, as would be
+      // indicated by the "type" parameter being defined) and so requested,
+      // show the memory view automatically. Don't issue a status report for
+      // it, though, prevented by memoryViewButtonInternalSet
+      if (! type && application.getUserData("openOnError").getValue())
       {
         // Since the normal status message won't be sent, create our own,
         // special one to show that we're automatically opening the memory
