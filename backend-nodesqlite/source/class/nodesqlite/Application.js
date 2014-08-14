@@ -620,6 +620,9 @@ qx.Class.define("nodesqlite.Application",
       // Static File Handler
       //
 
+      // The one and only static file directory not requiring authentication
+      app.use("/ext", express["static"](__dirname + "/ext"));
+
       // Function to confirm that the user is authenticated
       function ensureAuthenticated(req, res, next)
       {
