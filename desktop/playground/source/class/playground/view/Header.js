@@ -55,7 +55,7 @@ qx.Class.define("playground.view.Header",
     qx.core.Init.getApplication().setUserData("whoAmI", whoAmI);
 
     var version = 
-      new qxc.ui.versionlabel.VersionLabel("Playground", "0.064");
+      new qxc.ui.versionlabel.VersionLabel("Playground", "0.065");
     version.set(
       {
         font : "default",
@@ -131,7 +131,7 @@ qx.Class.define("playground.view.Header",
 
             // Issue a request for the user's directory listing, if they're
             // already enrolled.
-            if (result.enrolledCourse)
+            if (typeof result.enrolledCourse == "number")
             {
               playground.ServerOp.rpc(
                 // success handler
