@@ -19,6 +19,7 @@ qx.Class.define("playground.view.Settings",
     var             text;
     var             label;
     var             vBox;
+    var             vBoxResearch;
     var             hBox;
     var             researchOk;
     var             saveButton;
@@ -45,9 +46,7 @@ qx.Class.define("playground.view.Settings",
     label.set(
       {
         font  : "bold",
-        value : ("Please select the lab section " +
-                 "(or course section, if yours has no lab) " +
-                 "that you are enrolled in:")
+        value : ("Please select the course that you are enrolled in:")
       });
     vBox.add(label);
 
@@ -68,9 +67,22 @@ qx.Class.define("playground.view.Settings",
     // Spacer between course list and research approval
     vBox.add(new qx.ui.core.Spacer(20, 20));
 
+    // vertical box 
+    vBoxResearch = new qx.ui.container.Composite(new qx.ui.layout.VBox());
+    vBox.add(vBoxResearch);
+    
+    // Plea for help
+    label = new qx.ui.basic.Label();
+    label.set(
+      {
+        font  : "bold",
+        value : "Please help improve Computer Science education:"
+      });
+    vBoxResearch.add(label);
+    
     // horizontally align the checkbox and its text
     hBox = new qx.ui.container.Composite(new qx.ui.layout.HBox(20));
-    vBox.add(hBox);
+    vBoxResearch.add(hBox);
 
     this._researchOk = new qx.ui.form.CheckBox();
     this._researchOk.setValue(true);
@@ -83,11 +95,14 @@ qx.Class.define("playground.view.Settings",
       "With your concurrence, we will also include your program changes and " +
       "operations in a research project aimed to improve introductory " +
       "computer " +
-      "science educational procedures and processes. No identifiable details " +
+      "science educational procedures and processes. No " +
+      "personally identifiable details " +
       "about you will ever be released or published without your " +
       "explicit consent. " +
+      "<br><span style='font-weight: bold;'>" +
       "Check the box to the left if we may include your work in " +
-      "this project.";
+      "this project." +
+      "</span>";
     label = new qx.ui.basic.Label(text);
     label.set(
       {
@@ -96,8 +111,8 @@ qx.Class.define("playground.view.Settings",
       });
     hBox.add(label);
     
-// Hide the research question for now. We have paper consent forms
-hBox.hide();
+//    // Hide the research question for now. We have paper consent forms
+//    vBoxResearch.hide();
 
     // Spacer between research approval and save/cancel buttons
     vBox.add(new qx.ui.core.Spacer(20, 20));
@@ -111,10 +126,7 @@ hBox.hide();
       });
     vBox.add(label);
     
-    label = new qx.ui.basic.Label("Be sure your lab selection is correct.");
-    vBox.add(label);
-    
-    label = new qx.ui.basic.Label("Verify you selected the correct lab day.");
+    label = new qx.ui.basic.Label("Verify you selected the correct course.");
     vBox.add(label);
 
     label = new qx.ui.basic.Label();

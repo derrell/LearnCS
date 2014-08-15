@@ -169,7 +169,7 @@ qx.Mixin.define("playground.dbif.MUser",
                  : "") +
                 courseData.courseName +
                 (instructors.length > 0 
-                 ? ", Prof. " + instructors.join(", ")
+                 ? ", " + instructors.join(", ")
                  : "");
               if (labInstructors.length > 0)
               {
