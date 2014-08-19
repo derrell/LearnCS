@@ -175,6 +175,7 @@ qx.Class.define("playground.c.Main",
             // Strip off entry meaningless text that we'll replicate
             str = str.replace(/^Parse error on.*\n.*\n.*\n/, "");
 
+//console.log(JSON.stringify(hash, null, "  ") + "\n" + str);
             // Trap the most common errors: missing semicolon
             str = str.replace(
               new RegExp(
@@ -343,7 +344,7 @@ qx.Class.define("playground.c.Main",
             // If we have a previous position to display, then show it;
             // otherwise show the current position (if known), along with the
             // error description.
-            if (! parser.lexer.matched)
+            if (! parser || ! parser.lexer || ! parser.lexer.matched)
             {
               errStr = "Error near line " + hash.loc.first_line + ":\n";
             }
@@ -555,7 +556,7 @@ qx.Class.define("playground.c.Main",
           default :
             playground.c.lib.Node.getError().parseError(
               "Include file not found (" + file + ")",
-              { line : line }); 
+              { line : line, displayError : true }); 
             return;
           }
 
@@ -574,7 +575,8 @@ qx.Class.define("playground.c.Main",
           if (includeError)
           {
             playground.c.lib.Node.getError().parseError(
-                includeError.message, { line : line });
+              includeError.message,
+              { line : line, displayError : true });
             return;
           }
       });
