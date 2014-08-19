@@ -175,7 +175,6 @@ qx.Class.define("playground.c.Main",
             // Strip off entry meaningless text that we'll replicate
             str = str.replace(/^Parse error on.*\n.*\n.*\n/, "");
 
-console.log(JSON.stringify(hash, null, "  ") + "\n" + str);
             // Trap the most common errors: missing semicolon
             str = str.replace(
               new RegExp(
