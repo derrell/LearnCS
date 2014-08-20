@@ -33,5 +33,13 @@ qx.Class.define("playground.c.lib.RuntimeError",
     this.base(arguments);
     this.node = node;
     this.message = message;
+  },
+  
+  members :
+  {
+    toString : function()
+    {
+      return "Error near line " + this.node.line + ": " + this.message;
+    }
   }
 });

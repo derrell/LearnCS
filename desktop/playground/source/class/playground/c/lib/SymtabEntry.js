@@ -156,7 +156,9 @@ qx.Class.define("playground.c.lib.SymtabEntry",
           break;
 
         case "label" :
-          throw new Error("Don't yet know how to get type/size of label");
+          throw new playground.c.lib.RuntimeError(
+            playground.c.lib.Node._currentNode,
+            "Don't know how to get type/size of label");
           break;
 
 

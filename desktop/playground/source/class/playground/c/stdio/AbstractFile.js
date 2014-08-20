@@ -33,7 +33,9 @@ qx.Class.define("playground.c.stdio.AbstractFile",
       break;
       
     default :
-      throw new Error("Unrecognized stdio mode: " + mode);
+      throw new playground.c.lib.RuntimeError(
+        playground.c.lib.Node._currentNode,
+        "Unrecognized stdio mode: " + mode);
     }
     
     // Initialize this stream
@@ -111,7 +113,9 @@ qx.Class.define("playground.c.stdio.AbstractFile",
              },
              function()
              {
-               throw new Error("Failed to flush files on program end");
+               throw new playground.c.lib.RuntimeError(
+                 playground.c.lib.Node._currentNode,
+                 "Failed to flush files on program end");
              },
              true);
          })(0);

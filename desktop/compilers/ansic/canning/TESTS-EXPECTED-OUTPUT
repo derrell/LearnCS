@@ -669,20 +669,17 @@ Swingset2: 3 of 5 swings in use
 
 % ../dcc t029-include-missing-right-angle.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
-STDOUT: Error near line 1: #include must be followed by a file name enclosed in angle brackets, e.g., <stdio.h>
->>> Preprocessor encountered an error:
+STDOUT: >>> Preprocessor encountered an error:
 Error near line 1: #include must be followed by a file name enclosed in angle brackets, e.g., <stdio.h>
 
 % ../dcc t030-include-missing-left-angle.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
-STDOUT: Error near line 1: #include must be followed by a file name enclosed in angle brackets, e.g., <stdio.h>
->>> Preprocessor encountered an error:
+STDOUT: >>> Preprocessor encountered an error:
 Error near line 1: #include must be followed by a file name enclosed in angle brackets, e.g., <stdio.h>
 
 % ../dcc t031-include-missing-both-angles.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
-STDOUT: Error near line 1: #include must be followed by a file name enclosed in angle brackets, e.g., <stdio.h>
->>> Preprocessor encountered an error:
+STDOUT: >>> Preprocessor encountered an error:
 Error near line 1: #include must be followed by a file name enclosed in angle brackets, e.g., <stdio.h>
 
 % ../dcc t032-include-with-quotes.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
@@ -692,14 +689,12 @@ If it's a system include file, you should use angle brackets instead: <defs.h>
 
 % ../dcc t033-include-missing-right-quote.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
-STDOUT: Error near line 1: #include must be followed by a file name enclosed in angle brackets, e.g., <stdio.h>
->>> Preprocessor encountered an error:
+STDOUT: >>> Preprocessor encountered an error:
 Error near line 1: #include must be followed by a file name enclosed in angle brackets, e.g., <stdio.h>
 
 % ../dcc t034-include-missing-left-quote.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
-STDOUT: Error near line 1: #include must be followed by a file name enclosed in angle brackets, e.g., <stdio.h>
->>> Preprocessor encountered an error:
+STDOUT: >>> Preprocessor encountered an error:
 Error near line 1: #include must be followed by a file name enclosed in angle brackets, e.g., <stdio.h>
 
 % ../dcc t035-ctype.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files

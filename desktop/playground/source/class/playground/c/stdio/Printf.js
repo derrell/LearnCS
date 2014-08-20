@@ -247,7 +247,9 @@ qx.Class.define("playground.c.stdio.Printf",
     {
       if (this._mapped && typeof filler != 'object')
       {
-        throw new Error('format requires a mapping');
+        throw new playground.c.lib.RuntimeError(
+          playground.c.lib.Node._currentNode,
+          'format requires a mapping');
       }
 
       var str = '';
@@ -279,7 +281,9 @@ qx.Class.define("playground.c.stdio.Printf",
           {
             if (typeof filler[token.mapping] == 'undefined')
             {
-              throw new Error('missing key ' + token.mapping);
+              throw new playground.c.lib.RuntimeError(
+                playground.c.lib.Node._currentNode,
+                'missing key ' + token.mapping);
             }
 
             token.arg = filler[token.mapping];
@@ -376,8 +380,9 @@ qx.Class.define("playground.c.stdio.Printf",
                 break;
 
               default:
-                throw Error('bad formatting flag \'' + 
-                            token.flags.charAt(fi) + '\'');
+                throw new playground.c.lib.RuntimeError(
+                  playground.c.lib.Node._currentNode,
+                  'bad formatting flag \'' + token.flags.charAt(fi) + '\'');
               }
             }
 
@@ -403,7 +408,9 @@ qx.Class.define("playground.c.stdio.Printf",
             var mixins = this._specifiers[token.specifier];
             if (typeof mixins == 'undefined')
             {
-              throw new Error('unexpected specifier \'' + token.specifier + '\'');
+              throw new playground.c.lib.RuntimeError(
+                playground.c.lib.Node._currentNode,
+                'unexpected specifier \'' + token.specifier + '\'');
             }
 
             if (mixins.extend)
@@ -437,15 +444,19 @@ qx.Class.define("playground.c.stdio.Printf",
           {
             if (this._mapped)
             {
-              throw new Error('* width not supported in mapped formats');
+              throw new playground.c.lib.RuntimeError(
+                playground.c.lib.Node._currentNode,
+                '* width not supported in mapped formats');
             }
 
             token.minWidth = parseInt(arguments[position++]);
 
             if (isNaN(token.minWidth))
             {
-              throw new Error('the argument for * width at position ' + 
-                              position + ' is not a number in ' + this._format);
+              throw new playground.c.lib.RuntimeError(
+                playground.c.lib.Node._currentNode,
+                'the argument for * width at position ' + 
+                  position + ' is not a number in ' + this._format);
             }
 
             // negative width means rightJustify
@@ -460,15 +471,19 @@ qx.Class.define("playground.c.stdio.Printf",
           {
             if (this._mapped)
             {
-              throw new Error('* precision not supported in mapped formats');
+              throw new playground.c.lib.RuntimeError(
+                playground.c.lib.Node._currentNode,
+                '* precision not supported in mapped formats');
             }
 
             token.precision = parseInt(arguments[position++]);
 
             if (isNaN(token.precision))
             {
-              throw Error('the argument for * precision at position ' + 
-                          position + ' is not a number in ' + this._format);
+              throw new playground.c.lib.RuntimeError(
+                playground.c.lib.Node._currentNode,
+                'the argument for * precision at position ' + 
+                  position + ' is not a number in ' + this._format);
             }
 
             // negative precision means unspecified
@@ -523,8 +538,10 @@ qx.Class.define("playground.c.stdio.Printf",
         // allow this only if arg is number
         if (typeof token.arg != 'number')
         {
-          throw new Error('format argument \'' + token.arg +
-                          '\' not an integer; parseInt returned ' + i);
+          throw new playground.c.lib.RuntimeError(
+            playground.c.lib.Node._currentNode,
+            'format argument \'' + token.arg +
+              '\' not an integer; parseInt returned ' + i);
         }
 
         //return '' + i;
@@ -596,8 +613,10 @@ qx.Class.define("playground.c.stdio.Printf",
         // allow this only if arg is number
         if (typeof token.arg != 'number')
         {
-          throw new Error('format argument \'' + token.arg +
-                          '\' not a float; parseFloat returned ' + f);
+          throw new playground.c.lib.RuntimeError(
+            playground.c.lib.Node._currentNode,
+            'format argument \'' + token.arg +
+              '\' not a float; parseFloat returned ' + f);
         }
 
         // C99 says that for 'f':
@@ -650,8 +669,9 @@ qx.Class.define("playground.c.stdio.Printf",
         break;
 
       default:
-        throw new Error('unexpected double notation \'' + 
-                        token.doubleNotation + '\'');
+        throw new playground.c.lib.RuntimeError(
+          playground.c.lib.Node._currentNode,
+          'unexpected double notation \'' + token.doubleNotation + '\'');
       }
 
       // C says that exponent must have at least two digits.

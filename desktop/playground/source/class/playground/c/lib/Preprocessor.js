@@ -283,9 +283,9 @@ qx.Class.define("playground.c.lib.Preprocessor",
 
       // make sure that execution never continues when an error occurs.
       var user_err = settings.error_func;
-      settings.error_func = function(e)
+      settings.error_func = function(e, line)
       {
-        user_err(e);
+        user_err(e, line);
         throw e;
       };
 
@@ -510,7 +510,7 @@ qx.Class.define("playground.c.lib.Preprocessor",
 
           if (!text)
           {
-            error('input empty or null');
+            error('input empty or null', line);
           }
 
           // Replace \r\n line endings with \n
@@ -533,10 +533,9 @@ qx.Class.define("playground.c.lib.Preprocessor",
           var if_stack = [];
 
           // wrapped error function, augments line number and file
-          var error = function(text)
+          var error = function(text, line)
           {
-            settings.error_func("Error near line " + line + ": " +
-              text);
+            settings.error_func(text, line);
           };
 
           // wrapped warning function, augments line number and file
@@ -582,7 +581,7 @@ qx.Class.define("playground.c.lib.Preprocessor",
 
               if (par_count)
               {
-                error('unbalanced parentheses in define: ' + elem);
+                error('unbalanced parentheses in define: ' + elem, line);
               }
 
               if (head === undefined)
@@ -593,12 +592,13 @@ qx.Class.define("playground.c.lib.Preprocessor",
               if (self.defined(head))
               {
                 // djl -- was warn() but made it an error, for this application
-                error(head + ' redefined');
+                error(head + ' redefined', line);
               }
 
               if (!self._is_identifier(head) && !self._is_macro(head))
               {
-                error("not a valid preprocessor identifier: '" + head + "'");
+                error("not a valid preprocessor identifier: '" + head + "'", 
+                      line);
               }
 
               self.define(head, tail);
@@ -617,7 +617,8 @@ qx.Class.define("playground.c.lib.Preprocessor",
                 // #include was not followed by an angle-bracketted nor
                 // double-quoted file name
                 error("#include must be followed by a file name enclosed " +
-                      "in angle brackets, e.g., <stdio.h>");
+                      "in angle brackets, e.g., <stdio.h>",
+                      line);
               }
               else if (parts[4])
               {
@@ -627,13 +628,14 @@ qx.Class.define("playground.c.lib.Preprocessor",
                 if (! extraText.match(/ *\/\//) &&
                     ! extraText.match(/ *\/\*/))
                 {
-                  error("unrecognized characters in include: " + elem);
+                  error("unrecognized characters in include: " + elem, line);
                 }
                 else if (extraText.match(/ *\/\*/))
                 {
                   // disallow /*-style comments on #include lines
                   error("Only // is allowed for comments on #include " +
-                        "line, not /* (in LearnCS!).");
+                        "line, not /* (in LearnCS!).",
+                        line);
                 }
               }
               var file = (parts[2] || '') + (parts[3] || '');
@@ -641,7 +643,8 @@ qx.Class.define("playground.c.lib.Preprocessor",
               if (!settings.include_func)
               {
                 error("include directive not supported, " +
-                  "no handler specified");
+                      "no handler specified",
+                      line);
               }
 
               settings.include_func(
@@ -652,8 +655,7 @@ qx.Class.define("playground.c.lib.Preprocessor",
                 {
                   if (contents === null)
                   {
-                    error("failed to access include file: " +
-                      file);
+                    error("failed to access include file: " + file, line);
                   }
                   var s = {};
                   for (var k in settings)
@@ -693,18 +695,18 @@ qx.Class.define("playground.c.lib.Preprocessor",
               return false;
 
             case "error":
-              error("#error: " + elem);
+              error("#error: " + elem, line);
               break;
 
             case "pragma":
               if (!settings.pragma_func(elem))
               {
-                error('unrecognized #pragma: ' + elem);
+                error('unrecognized #pragma: ' + elem, line);
               }
               break;
 
             default:
-              error("unrecognized preprocessor command: " + command);
+              error("unrecognized preprocessor command: " + command, line);
               break;
             };
             return true;
@@ -759,8 +761,7 @@ var __PRE__ = "";
               case "ifndef":
                 if (!elem)
                 {
-                  error("expected identifier after " +
-                    command);
+                  error("expected identifier after " + command, line);
                 }
                 // translate ifdef/ifndef to regular if by using defined()
                 elem = "(defined " + elem + ")";
@@ -774,7 +775,7 @@ var __PRE__ = "";
                 if_stack.push(false);
                 if (!elem.length)
                 {
-                  error("expected identifier after if");
+                  error("expected identifier after if", line);
                 }
                 // fallthrough
 
@@ -791,7 +792,7 @@ var __PRE__ = "";
 
                   if (command == 'else' && elem.length)
                   {
-                    error('nothing allowed after else');
+                    error('nothing allowed after else', line);
                   }
                 }
 
@@ -813,7 +814,7 @@ var __PRE__ = "";
               case "endif":
                 if (!if_stack.length)
                 {
-                  error("endif with no matching if");
+                  error("endif with no matching if", line);
                 }
                 if (ifs_failed > 0)
                 {
@@ -850,7 +851,7 @@ var __PRE__ = "";
 
           if (if_stack.length > 0)
           {
-            error("unexpected EOF, expected endif");
+            error("unexpected EOF, expected endif", line);
           }
 
           return this._result(out, state);
@@ -1351,7 +1352,7 @@ var __PRE__ = "";
                     right)) && !this._is_pp_special_token(left + right))
               {
                 error('pasting "' + left + '" and "' + right +
-                  '" does not give a valid preprocessing token');
+                      '" does not give a valid preprocessing token');
               }
 
               // the result of the concatenation is another token, but
@@ -1497,9 +1498,9 @@ var __PRE__ = "";
               0])
             {
               error('illegal invocation of macro ' + macro_name +
-                ', expected ' +
-                info.params.length + ' parameters but got ' +
-                params_found.length);
+                    ', expected ' +
+                    info.params.length + ' parameters but got ' +
+                    params_found.length);
             }
             else
             {
@@ -1729,7 +1730,19 @@ var __PRE__ = "";
     {
       warn_func        : playground.c.lib.Preprocessor._output,
 
-      error_func       : playground.c.lib.Preprocessor._output,
+      error_func       : function(s, line)
+      {
+        var node = 
+          {
+            line : line || 0,
+            toString : function()
+            {
+              return s;
+            }
+          };
+
+        throw new playground.c.lib.RuntimeError(node, s);
+      },
 
       pragma_func      : function(pragma)
       {

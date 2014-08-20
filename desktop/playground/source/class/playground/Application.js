@@ -1575,30 +1575,99 @@ else... */
         console.log("Pre-load of ansic.js: " + e);
       }
 
+      function handleError(e)
+      {
+        var             line;
+        var             hint;
+        var             message;
+        var             button;
+
+        if (e instanceof playground.c.lib.RuntimeError)
+        {
+          line = e.node.line;
+          hint = e.message;
+          message =
+            "Error near line " + line + ": " + hint + "\n";
+        }
+        else
+        {
+          line = playground.c.lib.Node._currentNode.line;
+          hint = e + "\n" + e.stack;
+          message =
+            "Internal error near line " +
+            playground.c.lib.Node._currentNode.line +
+            ": " + hint + "\n";
+        }
+
+        // Send the error message as a status report
+        playground.c.Main._statusReport(
+          {
+            type       : "exit_crash",
+            exit_crash : message
+          });
+
+        // Show the error in the editor
+        try
+        {
+          qx.core.Init.getApplication().showError(
+            {
+              first_line   : line,
+              first_column : 0,
+              last_line    : line,
+              last_column  : 9999
+            },
+            message);
+        }
+        catch(e2)
+        {
+          // fails in non-gui environment
+        }
+
+        playground.c.Main.output(e);
+
+        try
+        {
+          // Disable the Stop button, reset the Stop flag, enable
+          // the Run button
+          button = 
+            qx.core.Init.getApplication().getUserData("stopButton");
+          button.setEnabled(false);
+          button =
+            qx.core.Init.getApplication().getUserData("runButton");
+          button.setEnabled(true);
+        }
+        catch(e2)
+        {
+          // fails in non-gui environment
+        }
+      }
+
       try
       {
         playground.c.lib.Preprocessor.preprocess(
           code,
           function(preprocessedCode)
           {
-            require(["resource/playground/script/ansic.js"],
-                    function(ansic)
-                    {
-                      try
-                      {
-                        playground.c.Main.main(ansic);
-                        ansic.parse(preprocessedCode);
-                      }
-                      catch (e2)
-                      {
-                        playground.c.Main.output(e2);
-                      }
-                    });
+            require(
+              ["resource/playground/script/ansic.js"],
+              function(ansic)
+              {
+                try
+                {
+                  playground.c.Main.main(ansic);
+                  ansic.parse(preprocessedCode);
+                }
+                catch (e2)
+                {
+                  handleError(e2);
+                }
+              });
           }.bind(this));
       }
       catch(e2)
       {
-        console.log("Preprocess attempt to load ansic.js: " + e);
+        console.log("Preprocess attempt to load ansic.js: " + e2);
+        handleError(e2);
       }
     },
 

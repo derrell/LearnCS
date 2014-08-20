@@ -30,7 +30,9 @@ qx.Class.define("playground.c.stdio.StringOut",
     // Ensure some reasonable maxLen value
     if (maxLen <= 0)
     {
-      throw new Error("Maximum string length must be positive");
+      throw new playground.c.lib.RuntimeError(
+        playground.c.lib.Node._currentNode,
+        "Maximum string length must be positive");
     }
 
     // Save the maximum number of bytes to write to that address

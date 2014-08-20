@@ -474,8 +474,14 @@ qx.Class.define("playground.c.Main",
 
           if (! inclFile.is_global)
           {
-            throw (
-              "Error near line " + line + ": " +
+            throw new playground.c.lib.RuntimeError(
+              {
+                line : line,
+                toString : function()
+                {
+                  return file;
+                }
+              },
               "#include for local files (with quotes) " +
               "is not yet supported: \"" + file + "\"\n" +
               "If it's a system include file, you should use angle brackets " +
