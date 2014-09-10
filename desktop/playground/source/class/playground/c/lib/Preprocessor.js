@@ -69,12 +69,16 @@ qx.Class.define("playground.c.lib.Preprocessor",
     {
       debugFlags :
       {
-        // Enable math function debugging
-        math : true
+        // Whether math function debugging is enabled
+        math : 1,
+
+        // Whether 
+        uninitializedMemory : 1
       },
       
       warnAsError :
       {
+        // Whether shadowed variables are considered an error (not implemented)
         shadow : true
       }
     },
@@ -1747,6 +1751,7 @@ var __PRE__ = "";
       pragma_func      : function(pragma)
       {
         var             fields;
+        var             Preprocessor = playground.c.lib.Preprocessor;
 
         // See if this is a debug pragma, in the form #pragma debug:math=0
         if (pragma && pragma.match(/^debug:/))
@@ -1761,7 +1766,12 @@ var __PRE__ = "";
           switch(fields[0])
           {
           case "math" :
-            playground.c.lib.Preprocessor.pragma.debugFlags.math = 
+            Preprocessor.pragma.debugFlags.math = 
+              Number(fields[1]);
+            return true;
+            
+          case "uninitialized" :
+            Preprocessor.pragma.debugFlags.uninitializedMemory =
               Number(fields[1]);
             return true;
           }

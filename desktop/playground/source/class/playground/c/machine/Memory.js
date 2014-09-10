@@ -422,6 +422,13 @@ qx.Class.define("playground.c.machine.Memory",
       var             symtabInfo;
       var             info = playground.c.machine.Memory.info;
 
+      // If we've been asked not to abort on uninitialized memory...
+      if (! playground.c.lib.Preprocessor.pragma.debugFlags.uninitializedMemory)
+      {
+        // ... then ignore parameter
+        bRequireInitialized = false;
+      }
+
       // Determine size to be accessed
       size = playground.c.machine.Memory.typeSize[type];
 
