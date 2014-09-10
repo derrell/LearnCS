@@ -145,7 +145,8 @@
         "command"   :
         [
           "(cd ../desktop/playground && ./generate.py build)",
-          "cp build/script/nodesqlite.js deploy/backend.js"
+          "cp build/script/nodesqlite.js deploy/backend.js",
+          "git log -n 1 > deploy/CURRENT_VERSION"
         ]
       }
     },
