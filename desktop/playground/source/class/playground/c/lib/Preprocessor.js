@@ -70,16 +70,16 @@ qx.Class.define("playground.c.lib.Preprocessor",
       debugFlags :
       {
         // Whether math function debugging is enabled
-        math : 1,
+        math : null,                    // initialized in preprocess()
 
         // Whether 
-        uninitializedMemory : 1
+        uninitializedMemory : null      // initialized in preprocess()
       },
       
       warnAsError :
       {
         // Whether shadowed variables are considered an error (not implemented)
-        shadow : true
+        shadow : null                   // initialzied in preprocess()
       }
     },
 
@@ -92,6 +92,11 @@ qx.Class.define("playground.c.lib.Preprocessor",
       var             preprocessed;
       var             statics = playground.c.lib.Preprocessor;
       
+      // Reset all pragma flags
+      statics.pragma.debugFlags.math = 1;
+      statics.pragma.debugFlags.uninitializedMemory = 1;
+      statics.pragma.warnAsError.shadow = 1;
+
       // Add the user-provided callback function to the settings
       statics.settings.completion_func = callback;
 
