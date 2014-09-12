@@ -135,6 +135,7 @@ qx.Class.define("nodesqlite.Application",
       var             httpPort = 80;
       var             httpsPort = 443;
       var             users;
+      var             dbif=  new playground.dbif.DbifNodeSqlite();
       
       if (qx.core.Environment.get("runtime.name") == "node.js") 
       {
@@ -615,6 +616,105 @@ qx.Class.define("nodesqlite.Application",
           res.redirect("/login");
         });
 
+      // Log out
+      app.get(
+        "/logout",
+        function(req, res)
+        {
+          req.logout();
+          res.redirect("/login");
+        });
+
+
+      //
+      // Create New User page
+      //
+
+      // Display New User page upon GET
+      app.get(
+        "/newuser", 
+        function(req, res, next)
+        {
+          req.logout();
+          res.sendfile(__dirname + "/login/newuser.html");
+        });
+
+      // Authenticate, upon POST
+      app.post(
+        "/newuser",
+        function(req, res, next)
+        {
+          var             sync = require("synchronize");
+
+          // We're not using bodyParser due to some internal problem. Instead,
+          // parse the url-encoded body ourself, here.
+          var qs = require("qs");
+          req.body = qs.parse(req.body);
+          
+          // Ensure that the user name is lower case since LDAP is case
+          // insensitive, and we want only a single version of the name (and a
+          // single ObjUser UID) in the database.
+          req.body.username = req.body.username.toLowerCase();
+
+          // Call the RPC to request a new user
+          sync.fiber(
+            function()
+            {
+              if (dbif.requestNewUser(req.protocol,
+                                      req.ip,
+                                      req.secure ? httpsPort : httpPort,
+                                      req.body.username,
+                                      req.body.password,
+                                      req.body.displayName) != 0)
+              {
+                // Failure. This should not occur. Just redirect to same page.
+                res.redirect("/newuser");
+                return;
+              }
+
+              // Redirect them to the page that tells them what to expect.
+              res.redirect("/newuser-expect");
+            });
+        },
+        function(req, res) 
+        {
+          res.redirect("/");
+        });
+
+      app.get(
+        "/newuser-expect", 
+        function(req, res, next)
+        {
+          res.sendfile(__dirname + "/login/newuser-expect.html");
+        });
+
+      app.get(
+        "/confirmuser", 
+        function(req, res, next)
+        {
+          var             sync = require("synchronize");
+
+          sync.fiber(
+            function()
+            {
+              var             secret;
+
+              // The query string is the secret for this new user
+              secret = decodeURIComponent(req.query["q"]);
+
+              // Call the RPC to complete new user setup
+              if (dbif.completeNewUser(secret) != 0)
+              {
+                // Failure. This should not occur. Just redirect to same page.
+                res.redirect("/newuser");
+              }
+              else
+              {
+                // Success. Redirect to the login page
+                res.redirect("/login");
+              }
+            });
+        });
 
       //
       // Static File Handler

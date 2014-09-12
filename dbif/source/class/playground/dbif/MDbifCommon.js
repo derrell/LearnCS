@@ -8,6 +8,7 @@
 /**
  * @use(playground.dbif.ObjCourse)
  * @use(playground.dbif.ObjAuthLocal)
+ * @use(playground.dbif.ObjPendingAuthLocal)
  */
 
 qx.Mixin.define("playground.dbif.MDbifCommon",
@@ -17,7 +18,8 @@ qx.Mixin.define("playground.dbif.MDbifCommon",
     playground.dbif.MUser,
     playground.dbif.MUsageDetail,
     playground.dbif.MFiles,
-    playground.dbif.MSettings
+    playground.dbif.MSettings,
+    playground.dbif.MAuth
   ],
 
   properties :

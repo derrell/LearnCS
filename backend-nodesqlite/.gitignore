@@ -10,3 +10,4 @@
 /deploy/frontend/
 learncs.db
 run.sh
+emailconfig.json
