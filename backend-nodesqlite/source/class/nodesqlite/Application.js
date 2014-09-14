@@ -571,17 +571,9 @@ qx.Class.define("nodesqlite.Application",
       // Login page
       //
 
-      // Display login page upon GET
-      app.get(
-        "/login", 
-        function(req, res, next)
-        {
-          res.sendfile(__dirname + "/login/index.html");
-        });
-
       // Authenticate, upon POST
       app.post(
-        "/login",
+        "/trylogin",
         function(req, res, next)
         {
           // We're not using bodyParser due to some internal problem. Instead,
@@ -594,6 +586,7 @@ qx.Class.define("nodesqlite.Application",
           // single ObjUser UID) in the database.
           req.body.username = req.body.username.toLowerCase();
 
+console.log("/login handler: username=" + req.body.username + ", " + "password=" + req.body.password);
           // Authenticate
           passport.authenticate(
             strategies,
@@ -606,6 +599,17 @@ qx.Class.define("nodesqlite.Application",
         {
           res.redirect("/");
         });
+
+      // Display login page upon GET
+      app.use("/login", express["static"](__dirname + "/login"));
+/*
+      app.get(
+        "/login", 
+        function(req, res, next)
+        {
+          res.sendfile(__dirname + "/login/index.html");
+        });
+*/
 
       // Log out
       app.get(
@@ -721,6 +725,7 @@ qx.Class.define("nodesqlite.Application",
       //
 
       // The one and only static file directory not requiring authentication
+      // (other than in /login)
       app.use("/ext", express["static"](__dirname + "/ext"));
 
       // Function to confirm that the user is authenticated

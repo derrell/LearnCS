@@ -1,0 +1,159 @@
+{
+  "name"    : "Login config.json",
+
+  "include" :
+  [
+    {
+      "path" : "${QOOXDOO_PATH}/tool/data/config/application.json"
+    }
+  ],
+
+  "default-job" : "source",
+
+  "let" :
+  {
+    "APPLICATION"  : "login",
+    "QOOXDOO_PATH" : "../../lib/qooxdoo.git",
+    "QXTHEME"      : "login.theme.Theme",
+    "LOCALES"      : [ "en", "de", "ro", "sv", "cs"],
+    "OPTIMIZE"     : [ "basecalls", "comments", "privates", "strings", "variables", "variants", "whitespace" ],
+//    "OPTIMIZE"     : [],
+    "ROOT"         : ".",
+  },
+
+  "config-warnings" :
+  {
+    "job-shadowing" : ["source", "source-hybrid", "build-resources", "build-script", "translation"],
+
+    "environment" : [ "non-literal-keys" ]
+  },
+
+  "jobs" :
+  {
+    // this one so that source, build-script and build-resources use common settings
+    "login-compile" :
+    {
+      "config-warnings" :
+      {
+        "exclude" : ["*"],
+        "environment" : [ "variants-and-url-settings" ]
+      },
+/* djl
+      "include" :
+      [
+        "${APPLICATION}.*",
+        "qx.*"
+      ],
+*/
+      "library" :
+      [
+        {
+          "manifest" : "${QOOXDOO_PATH}/component/library/versionlabel/Manifest.json"
+        },
+        { 
+          "manifest" : "../../dbif/Manifest.json"
+        },
+        { 
+          "manifest" : "../../lib/liberated.git/Manifest.json"
+        },
+        {
+          "manifest" : "../../lib/dialog/Manifest.json"
+        }
+      ],
+/* djl
+      "exclude" :
+      [
+        "qx.test.*",
+        "qx.dev.unit.*",
+        "login.test.*",
+        "qx.core.MEvents",
+        "qx.lang.Core"
+      ],
+*/
+
+      "environment" :
+      {
+//        "qx.debug" : true,
+        "qx.debug.ui.queue" : true,
+        "qx.nativeScrollBars" : true,
+        "qx.allowUrlSettings" : true,
+        "qx.mobile.emulatetouch" : true
+      }
+    },
+
+/*
+    "source-script" :
+    {
+      "environment" :
+      {
+        "qx.debug.dispose" : true
+      }
+    },    
+*/
+
+    "build" :
+    {
+      "=run" : [
+        "build-script",
+        "build-resources",
+        "build-files",
+        "build-backend"
+      ]
+    },
+
+    "build-backend" :
+    {
+      "shell" :
+      {
+        "command"   :
+        [
+          "rsync -av ./build/ ../../backend-nodesqlite/deploy/login/"
+        ]
+      }
+    },
+
+    "build-script" :
+    {
+      "extend" : [ "login-compile" ],
+      "add-css" :
+      [
+        {
+          "uri" : "resource/qx/mobile/css/indigo.css"
+        }
+      ]
+    },
+
+    "build-resources" :
+    {
+      "extend" : [ "login-compile" ]
+    },
+
+
+    "source" :
+    {
+      "extend" : [ "login-compile" ],
+      "add-css" :
+      [
+        {
+          "uri" : "../../lib/qooxdoo.git/framework/source/resource/qx/mobile/css/indigo.css"
+        }
+      ]
+    },
+
+    "source-hybrid" :
+    {
+      "extend" : [ "login-compile" ],
+      "add-css" :
+      [
+        {
+          "uri" : "../../lib/qooxdoo.git/framework/source/resource/qx/mobile/css/indigo.css"
+        }
+      ]
+    },
+
+    "translation" :
+    {
+      "translate" : { "poentry-with-occurrences" : false  }
+    }
+  }
+}

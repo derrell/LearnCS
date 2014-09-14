@@ -1,0 +1,35 @@
+{
+  "info" : 
+  {
+    "name" : "Login",
+
+    "summary" : "Login to the LearnCS! playground",
+    "description" : "",
+    
+    "keywords" : [],
+    "homepage" : "http://github.com/derrell/LearnCS",
+
+    "license" : "LGPL/EPL",
+    "authors" : 
+    [
+      {
+        "name" : "Derrell Lipman",
+        "email" : "dlipman DOT lipman AT cs DOT uml DOT edu"
+      }
+    ],
+
+    "version" : "trunk",
+    "qooxdoo-versions": ["trunk"]
+  },
+  
+  "provides" : 
+  {
+    "namespace"   : "login",
+    "encoding"    : "utf-8",
+    "class"       : "source/class",
+    "resource"    : "source/resource",
+    "translation" : "source/translation",
+    "type"        : "application"
+  }
+}
+
