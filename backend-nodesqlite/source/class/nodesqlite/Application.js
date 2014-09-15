@@ -602,14 +602,6 @@ console.log("/login handler: username=" + req.body.username + ", " + "password="
 
       // Display login page upon GET
       app.use("/login", express["static"](__dirname + "/login"));
-/*
-      app.get(
-        "/login", 
-        function(req, res, next)
-        {
-          res.sendfile(__dirname + "/login/index.html");
-        });
-*/
 
       // Log out
       app.get(
@@ -631,19 +623,8 @@ console.log("/login handler: username=" + req.body.username + ", " + "password="
 
 
       //
-      // Create New User page
+      // Process a New User request
       //
-
-      // Display New User page upon GET
-      app.get(
-        "/newuser", 
-        function(req, res, next)
-        {
-          req.logout();
-          res.sendfile(__dirname + "/login/newuser.html");
-        });
-
-      // Authenticate, upon POST
       app.post(
         "/newuser",
         function(req, res, next)

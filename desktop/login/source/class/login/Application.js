@@ -19,9 +19,7 @@ qx.Class.define("login.Application",
   {
     // UI Components
     __header            : null,
-    __pageLogin         : null,
-    __pageNewUser       : null,
-    __pagePasswordReset : null,
+    __pages             : {},
 
     /**
      * This method contains the initial application code and gets called
@@ -63,15 +61,30 @@ qx.Class.define("login.Application",
       mainContainer.add(new qx.ui.core.Spacer(0, 20));
 
       // add the login page
-      this.__pageLogin = 
+      this.__pages["login"] = 
         new qx.ui.container.Composite(new qx.ui.layout.VBox(20));
-      mainContainer.add(this.__pageLogin, { flex : 1 });
-      this._addLoginPage(this.__pageLogin);
+      mainContainer.add(this.__pages["login"], { flex : 1 });
+      this._addLoginPage(this.__pages["login"]);
 
-      this.__pageNewUser = 
+      // Add the new account page
+      this.__pages["new user"] = 
         new qx.ui.container.Composite(new qx.ui.layout.VBox(20));
-      mainContainer.add(this.__pageNewUser, { flex : 1 });
-      this._addNewUserPage(this.__pageNewUser);
+      mainContainer.add(this.__pages["new user"], { flex : 1 });
+      this._addNewUserPage(this.__pages["new user"]);
+      
+      // Add the new account instructions page
+      this.__pages["new user instructions"] = 
+        new qx.ui.container.Composite(new qx.ui.layout.VBox(20));
+      mainContainer.add(this.__pages["new user instructions"], { flex : 1 });
+      this._addNewUserInstructionsPage(this.__pages["new user instructions"]);
+      
+      //
+      // blank space at the page bottom
+      //
+      mainContainer.add(new qx.ui.core.Spacer(0, 20));
+
+  // Initially show the login page
+      this.selectPage("login");
     },
     
     /**
@@ -84,6 +97,7 @@ qx.Class.define("login.Application",
     {
       var             o;
       var             hBox;
+      var             vBox;
       var             username;
       var             password;
       var             form;
@@ -94,7 +108,7 @@ qx.Class.define("login.Application",
       form = new qx.ui.form.Form();
 
       // add the first headline
-      form.addGroupHeader("Login");
+      form.addGroupHeader(this.tr("Login"));
 
       // add usernamne
       username = new qx.ui.form.TextField();
@@ -126,7 +140,7 @@ qx.Class.define("login.Application",
       page.add(hBox);
 
       // create the log-in button and add it, centered
-      butLogin = new qx.ui.form.Button("Log in");
+      butLogin = new qx.ui.form.Button(this.tr("Log in"));
       hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
       hBox.add(butLogin);
       hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
@@ -137,8 +151,6 @@ qx.Class.define("login.Application",
         {
           var             request;
 
-          console.log("username=" + username.getValue() +
-                      ", password=" + password.getValue());
           request = new qx.io.remote.Request("/trylogin", "POST");
           request.setParameter("username", username.getValue(), true);
           request.setParameter("password", password.getValue(), true);
@@ -173,16 +185,51 @@ qx.Class.define("login.Application",
       // create an hbox to center the first set of instructions
       hBox = new qx.ui.container.Composite(new qx.ui.layout.HBox());
       page.add(hBox);
-
-      // create the instructions and add it, centered
-      o = new qx.ui.basic.Label(
-        "<span style='font-weight: bold;'>UMass Lowell users:</span> " +
-        "use your cs.uml.edu username and password." +
-        "<br />" +
-        "<span style='font-weight: bold;'>Outside users:</span> " +
-        "use your registered email address and password.");
-      o.setRich(true);
       hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
+      o = new qx.ui.basic.Label(
+        this.tr(
+          "<span style='font-weight: bold;'>UMass Lowell users:</span> " +
+          "use your cs.uml.edu username and password." +
+          "<br />" +
+          "<span style='font-weight: bold;'>Outside users:</span> " +
+          "use your registered email address and password."));
+      o.setRich(true);
+      hBox.add(o);
+      hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
+      
+      // Add a vertical spacer
+      page.add(new qx.ui.core.Spacer(), { flex : 1 });
+
+      // Add the "Try LearnCS!" text and button, centered
+      vBox = new qx.ui.container.Composite(new qx.ui.layout.VBox());
+      page.add(vBox);
+
+      hBox = new qx.ui.container.Composite(new qx.ui.layout.HBox());
+      vBox.add(hBox);
+      hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
+      o = new qx.ui.basic.Label(
+        this.tr("Want to give ") +
+        "<span style=" +
+        "'font-weight: 900; font-size: 130%; font-family: JosefinSlab'>" +
+        "LearnCS!" +
+        "</span>" +
+        this.tr(" a try? "));
+      o.setRich(true);
+      hBox.add(o);
+      hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
+
+      // Add the Add New Account button, centered
+      hBox = new qx.ui.container.Composite(new qx.ui.layout.HBox());
+      vBox.add(hBox);
+      hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
+      o = new qx.ui.form.Button(this.tr("Create a new, temporary account"));
+      o.addListener(
+        "execute",
+        function()
+        {
+          this.selectPage("new user");
+        },
+        this);
       hBox.add(o);
       hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
     },
@@ -192,6 +239,8 @@ qx.Class.define("login.Application",
      * 
      * @param pageNewUser {qx.ui.container.Composite}
      *   The container for this page's widgets
+     * 
+     * @lint ignoreDeprecated(alert)
      */
     _addNewUserPage : function(page)
     {
@@ -243,8 +292,6 @@ qx.Class.define("login.Application",
       // create an hbox to center the form
       hBox = new qx.ui.container.Composite(new qx.ui.layout.HBox());
       page.add(hBox);
-
-      // create the form and add it, centered
       hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
       hBox.add(renderer);
       hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
@@ -252,10 +299,8 @@ qx.Class.define("login.Application",
       // create an hbox to center the login-in button
       hBox = new qx.ui.container.Composite(new qx.ui.layout.HBox());
       page.add(hBox);
-
-      // create the log-in button and add it, centered
-      butCreateUser = new qx.ui.form.Button("Create Account");
       hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
+      butCreateUser = new qx.ui.form.Button(this.tr("Create Account"));
       hBox.add(butCreateUser);
       hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
 
@@ -264,7 +309,7 @@ qx.Class.define("login.Application",
         function()
         {
           butCreateUser.setEnabled(false);
-          butCreateUser.setLabel("Validating...");
+          butCreateUser.setLabel(this.tr("Validating..."));
           manager.validate();
         }, 
         this);
@@ -307,25 +352,43 @@ qx.Class.define("login.Application",
           // If it's a valid email address...
           if (bStillValid)
           {
-            // ... then verify that the account doesn't already exist
-
-            // use a timeout instead of a server request (async)
-            window.setTimeout(
-              function() 
+            // ... then issue a request to verify that the account doesn't
+            // already exist
+            login.ServerOp.rpc(
+              // success handler
+              function(bExists, id)
               {
-                if (value.substr(-4) == ".com") 
-                {
-                  validator.setValid(false, "Server said no!");
-                }
-                else
+                if (! bExists)
                 {
                   validator.setValid(true);
                 }
-              }, 
-              3000);
+                else
+                {
+                  validator.setValid(false, "User name already exists.");
+                }
+
+                // Re-enable the button
+                butCreateUser.setEnabled(true);
+                butCreateUser.setLabel(this.tr("Create Account"));
+              }.bind(this),
+
+              // failure handler
+              function(ex, id)
+              {
+                // Ignore the failure. Should not ever occur.
+                console.log("FAILED to determine if user exists: " + ex);
+              }.bind(this),
+
+              // function to call
+              "userExists",
+
+              // arguments
+              [
+                value
+              ]
+            );
           }
-        }
-      );
+        }.bind(this));
 
       // add the email with a predefined email validator
       manager.add(email, qx.util.Validate.email());
@@ -359,18 +422,61 @@ qx.Class.define("login.Application",
 
       manager.addListener(
         "complete",
-        function()
+        function(e)
         {
-          butCreateUser.setEnabled(true);
-          butCreateUser.setLabel("Create Account");
-        });
+          var             request;
+
+          // If all fields are valid...
+          if (! manager.isValid())
+          {
+            // Re-enable the button
+            butCreateUser.setEnabled(true);
+            butCreateUser.setLabel(this.tr("Create Account"));
+          }
+          else
+          {
+            request = new qx.io.remote.Request("/newuser", "POST");
+            request.setParameter("username", email.getValue(), true);
+            request.setParameter("password", password.getValue(), true);
+            request.setParameter("displayName", displayName.getValue(), true);
+
+            request.addListener(
+              "completed",
+              function(e)
+              {
+                this.selectPage("new user instructions");
+              },
+              this);
+
+            request.addListener(
+              "failed",
+              function(e)
+              {
+                // Something failed. Try again.
+                alert("internal error: adding user failed");
+                window.location = "/login";
+              });
+
+            request.addListener(
+              "timeout",
+              function(e)
+              {
+                alert("internal error: adding user timed out");
+                window.location = "/login";
+              });
+
+            request.send();
+            
+            
+          }
+        },
+        this);
 
 /*
       // create an hbox to center the first set of instructions
       hBox = new qx.ui.container.Composite(new qx.ui.layout.HBox());
       page.add(hBox);
-
-      // create the instructions and add it, centered
+      hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
       o = new qx.ui.basic.Label(
         "<span style='font-weight: bold;'>UMass Lowell users:</span> " +
         "use your cs.uml.edu username and password." +
@@ -378,48 +484,60 @@ qx.Class.define("login.Application",
         "<span style='font-weight: bold;'>Outside users:</span> " +
         "use your registered email address and password.");
       o.setRich(true);
-      hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
       hBox.add(o);
       hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
 */
+    },
+    
+    /**
+     * Add the new user instructions page
+     */
+    _addNewUserInstructionsPage : function(page)
+    {
+      var             o;
+      var             vBox;
+      var             hBox;
+      
+      // This page is a series of vertically-placed items
+      vBox = new qx.ui.container.Composite(new qx.ui.layout.VBox());
+      page.add(vBox);
+      
+      // create an hbox to center the first set of instructions
+      hBox = new qx.ui.container.Composite(new qx.ui.layout.HBox());
+      vBox.add(hBox);
+      hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
+      o = new qx.ui.basic.Label(
+        "<span style='font-weight: bold;'>" +
+        this.tr(
+          "Thank you. Your account creation is now pending confirmation." +
+          "<p />" +
+          "Check your email for a confirmation link. Once you confirm your " +
+          "account, you will be able to log in using the email address and " +
+          "password you just provided.") +
+        "</span>");
+      o.setRich(true);
+      hBox.add(o);
+      hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
+    },
 
-/*
-      // Issue a request to rename the program
-      login.ServerOp.rpc(
-        // success handler
-        function(result, id)
-        {
-          if (result.status === 0)
-          {
-            this.setName(result.name);
-            this._displayDirectoryListing(result.dirList);
-          }
-          else
-          {
-            alert(this.tr("Could not rename file. ") +
-                  this.tr("Maybe the name you requested already exists?"));
-          }
-        }.bind(this),
+    /**
+     * Select the page to be shown.
+     * 
+     * @param pageName {String}
+     *   The name of the page to be shown
+     */
+    selectPage : function(pageName)
+    {
+      var             name;
 
-        // failure handler
-        function(ex, id)
-        {
-          // Ignore the failure. Should not ever occur.
-          console.log("FAILED to rename file " + oldName +
-                      " to " + newName + ": " + ex);
-        }.bind(this),
-
-        // function to call
-        "renameProgram",
-        
-        // arguments
-        [
-          oldName,
-          newName,
-          this.editor.getCode()
-        ]
-      );
-*/
+      // First, hide all pages
+      for (name in this.__pages)
+      {
+        this.__pages[name].exclude();
+      }
+      
+      // Now show the selected page
+      this.__pages[pageName].show();
     }
   }
 });

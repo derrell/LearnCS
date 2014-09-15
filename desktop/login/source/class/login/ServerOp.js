@@ -44,9 +44,6 @@ qx.Class.define("login.ServerOp",
     {
       var             id;
 
-      // Ensure there are no prior pending requests
-      login.ServerOp.flushQueue();
-
       // If there were no arguments provided, create an empty argument list;
       // otherwise clone the argument list.
       args = args ? args.slice(0) : [];

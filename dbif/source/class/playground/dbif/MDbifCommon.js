@@ -78,6 +78,7 @@ qx.Mixin.define("playground.dbif.MDbifCommon",
       var             whoAmI;
       var             bAnonymous;
 
+console.log("MDbifCommon:authorize: methodName=" + methodName);
       whoAmI = this.getWhoAmI();
 
       // If the user is an adminstrator, ...
@@ -123,6 +124,8 @@ qx.Mixin.define("playground.dbif.MDbifCommon",
       case "learncs.saveSettings":
         return ! bAnonymous;    // Access is allowed if they're logged in
 
+      case "learncs.userExists":
+        return true;            // Access is always allowed
 
 /*
       case "learncs.somePrivateMethod":

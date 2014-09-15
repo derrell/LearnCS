@@ -13,6 +13,13 @@ qx.Mixin.define("playground.dbif.MAuth",
     // Register the remote procedure call services available in this mixin
     //
     
+    // Determine if a user name already exists
+    this.registerService("learncs.userExists", 
+                         this.userExists,
+                         [ 
+                           "username"
+                         ]);
+
     // Request a new user account
     this.registerService("learncs.requestNewUser", 
                          this.requestNewUser,
@@ -35,6 +42,34 @@ qx.Mixin.define("playground.dbif.MAuth",
 
   members :
   {
+    /**
+     * Determine whether a user name already exists in AuthLocal
+     *
+     * @param username {String}
+     *   New user's email address (which becomes their user name)
+     * 
+     * @return {Integer}
+     *   1 if the user exists; 0 otherwise
+     */
+    userExists : function(username)
+    {
+      var             users;
+      var             bFound;
+
+      // See if 
+      users = liberated.dbif.Entity.query(
+        "playground.dbif.ObjAuthLocal",
+        {
+          type  : "element",
+          field : "username",
+          value : username.toLowerCase()
+        });
+
+      // Let 'em know whether the user name was found
+      bFound = users && users.length > 0;
+      return bFound ? 1 : 0;
+    },
+    
     /**
      * Begin creating a new AuthLocal user account. This adds the requested
      * credentials to AuthLocalPending, and sends email to the user. The
