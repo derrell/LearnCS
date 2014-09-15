@@ -190,6 +190,8 @@ qx.Mixin.define("playground.dbif.MAuth",
             mailOptions,
             function(error, info)
             {
+              var             sync = require("synchronize");
+              
               if(error)
               {
                 console.log("Failed to send confirmation message to " +
@@ -197,8 +199,14 @@ qx.Mixin.define("playground.dbif.MAuth",
                 
                 // We couldn't send the email, so there's no reason to keep
                 // the pendingAuthLocal object around any longer.
-                // NOTE: This will happen outside of the transaction.
-                pendingAuthLocalObj.removeSelf();
+                //
+                // NOTE: This will happen outside of the transaction, and
+                // outside of the original fiber created in Application.js
+                sync.fiber(
+                  function()
+                  {
+                    pendingAuthLocalObj.removeSelf();
+                  });
               }
               else
               {
