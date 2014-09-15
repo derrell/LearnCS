@@ -20,15 +20,6 @@ qx.Mixin.define("playground.dbif.MAuth",
                            "username"
                          ]);
 
-    // Request a new user account
-    this.registerService("learncs.requestNewUser", 
-                         this.requestNewUser,
-                         [ 
-                           "username",
-                           "password",
-                           "displayName"
-                         ]);
-    
     // Complete creation of a new user account
     this.registerService("learncs.completeNewUser", 
                          this.completeNewUser,
@@ -79,9 +70,6 @@ qx.Mixin.define("playground.dbif.MAuth",
      * @param protocol {String}
      *   The protocol on which the request was made (http or https)
      * 
-     * @param hostname {String}
-     *   The hostname to which the request was made
-     * 
      * @param port {Number}
      *   The port to which the request was made
      * 
@@ -99,8 +87,7 @@ qx.Mixin.define("playground.dbif.MAuth",
      *
      * @ignore(require)
      */
-    requestNewUser : function(protocol, hostname, port,
-                              username, password, displayName)
+    requestNewUser : function(protocol, port, username, password, displayName)
     {
       return liberated.dbif.Entity.asTransaction(
         function()
@@ -116,7 +103,6 @@ qx.Mixin.define("playground.dbif.MAuth",
           var             secret = [];
           var             now = new Date();
           var             mailOptions;
-          var             newAccountNotify;
 
           // Hash the entered password
           shasum.update(password);
@@ -158,6 +144,7 @@ qx.Mixin.define("playground.dbif.MAuth",
                var             emailConfig;
                var             fs = require("fs");
                var             nodemailer = require("nodemailer");
+               var             newAccountNotify;
 
                // Read the email configuration
                emailConfig = fs.readFileSync("../emailconfig.json");
@@ -166,6 +153,21 @@ qx.Mixin.define("playground.dbif.MAuth",
                // Create an email transport
                playground.dbif.MAuth.transporter =
                  nodemailer.createTransport(emailConfig);
+
+               // Read the host name and the name(s) of the notification
+               // recipient(s)
+               newAccountNotify = fs.readFileSync("../new-account-notify.json");
+               newAccountNotify= JSON.parse(newAccountNotify);
+               
+               // Ensure that the minimum requirements are met
+               if (! newAccountNotify.hostname)
+               {
+                 throw new Error("The local host name must be specified");
+               }
+               
+               // Save the host name and recipients
+               playground.dbif.MAuth.hostname = newAccountNotify.hostname;
+               playground.dbif.MAuth.recipients = newAccountNotify.recipients;
              })();
           }
 
@@ -177,7 +179,8 @@ qx.Mixin.define("playground.dbif.MAuth",
               subject : "Your LearnCS! account",
               text    : ("Please confirm your LearnCS! account request " +
                          "by visiting this link: " +
-                         protocol + "://" + hostname + ":" + port +
+                         protocol + "://" + 
+                         playground.dbif.MAuth.hostname + ":" + port +
                          "/confirmuser?" + 
                          "q=" + encodeURIComponent(secret.join("")) +
                          "\n\n" +
@@ -217,20 +220,16 @@ qx.Mixin.define("playground.dbif.MAuth",
 
           // If someone is configured to receive email notification of new
           // accounts...
-          try
+          if (playground.dbif.MAuth.recipients)
           {
-            // Read the name(s) of the notification recipient(s)
-            newAccountNotify = fs.readFileSync("../new-account-notify.json");
-            newAccountNotify= JSON.parse(newAccountNotify);
-
             // Send email
             mailOptions = 
               {
                 from    : "LearnCS! <noreply@learn.cs.uml.edu>",
-                to      : newAccountNotify.recipients,
+                to      : playground.dbif.MAuth.recipients,
                 subject : "New account notification",
-                text    : ("A new account has been requested:\n\n" +
-                           displayName + " <" + username + ">")
+                text    : ("A new account has been requested:\n" +
+                           "  " + displayName + " <" + username + ">")
               };
 
             // send mail with defined transport object
@@ -241,21 +240,15 @@ qx.Mixin.define("playground.dbif.MAuth",
                 if(error)
                 {
                   console.log("Failed to send notification message to " +
-                              newAccountNotify.recipients + ": " + error);
+                              playground.dbif.MAuth.recipients + ": " + error);
                 }
                 else
                 {
                   console.log("Notification message sent to " + 
-                              newAccountNotify.recipients + ": " + 
+                              playground.dbif.MAuth.recipients + ": " + 
                               info.response);
                 }
             });
-          }
-          catch(e)
-          {
-            // do nothing if there's no one configured to receive
-            // notifications, and ignore failures to send the message
-            console.log("Could not send notification message: " + e);
           }
 
           return 0;
@@ -268,9 +261,6 @@ qx.Mixin.define("playground.dbif.MAuth",
      *
      * @param protocol {String}
      *   The protocol on which the request was made (http or https)
-     * 
-     * @param hostname {String}
-     *   The hostname to which the request was made
      * 
      * @param port {Number}
      *   The port to which the request was made
@@ -286,7 +276,7 @@ qx.Mixin.define("playground.dbif.MAuth",
      *
      * @ignore(require)
      */
-    resetPassword : function(protocol, hostname, port, username, password)
+    resetPassword : function(protocol, port, username, password)
     {
       var             users;
 
@@ -307,7 +297,7 @@ qx.Mixin.define("playground.dbif.MAuth",
       }
       
       // Call requestNewUser() to do the rest of the work
-      return this.requestNewUser(protocol, hostname, port,
+      return this.requestNewUser(protocol, port, 
                                  username, password, users[0].displayName);
     },
     

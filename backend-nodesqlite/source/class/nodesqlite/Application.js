@@ -586,7 +586,6 @@ qx.Class.define("nodesqlite.Application",
           // single ObjUser UID) in the database.
           req.body.username = req.body.username.toLowerCase();
 
-console.log("/login handler: username=" + req.body.username + ", " + "password=" + req.body.password);
           // Authenticate
           passport.authenticate(
             strategies,
@@ -646,7 +645,6 @@ console.log("/login handler: username=" + req.body.username + ", " + "password="
             function()
             {
               if (dbif.requestNewUser(req.protocol,
-                                      req.ip,
                                       req.secure ? httpsPort : httpPort,
                                       req.body.username,
                                       req.body.password,
@@ -690,7 +688,6 @@ console.log("/login handler: username=" + req.body.username + ", " + "password="
             function()
             {
               if (dbif.resetPassword(req.protocol,
-                                     req.ip,
                                      req.secure ? httpsPort : httpPort,
                                      req.body.username,
                                      req.body.password) != 0)
