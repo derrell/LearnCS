@@ -78,7 +78,6 @@ qx.Mixin.define("playground.dbif.MDbifCommon",
       var             whoAmI;
       var             bAnonymous;
 
-console.log("MDbifCommon:authorize: methodName=" + methodName);
       whoAmI = this.getWhoAmI();
 
       // If the user is an adminstrator, ...

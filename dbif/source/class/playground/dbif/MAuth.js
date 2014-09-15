@@ -56,7 +56,7 @@ qx.Mixin.define("playground.dbif.MAuth",
       var             users;
       var             bFound;
 
-      // See if 
+      // See if this user exists
       users = liberated.dbif.Entity.query(
         "playground.dbif.ObjAuthLocal",
         {
@@ -110,10 +110,13 @@ qx.Mixin.define("playground.dbif.MAuth",
           var             pendingAuthLocalObj;
           var             pendingAuthLocalData;
           var             passwordHash;
+          var             fs = require("fs");
           var             crypto = require('crypto');
           var             shasum = crypto.createHash('sha1');
           var             secret = [];
           var             now = new Date();
+          var             mailOptions;
+          var             newAccountNotify;
 
           // Hash the entered password
           shasum.update(password);
@@ -146,19 +149,6 @@ qx.Mixin.define("playground.dbif.MAuth",
           // Save this new pending auth object
           pendingAuthLocalObj.put();
           
-          // Send email
-          var mailOptions = 
-            {
-              from    : "LearnCS! <noone@learn.cs.uml.edu>",
-              to      : username,
-              subject : "Your LearnCS! account",
-              text    : ("Please confirm your LearnCS! new account request " +
-                         "by visiting this link: " +
-                         protocol + "://" + hostname + ":" + port +
-                         "/confirmuser?" + 
-                         "q=" + encodeURIComponent(secret.join("")))
-            };
-
           // Do we have an email transport yet?
           if (! playground.dbif.MAuth.transporter)
           {
@@ -178,6 +168,22 @@ qx.Mixin.define("playground.dbif.MAuth",
                  nodemailer.createTransport(emailConfig);
              })();
           }
+
+          // Send email
+          mailOptions = 
+            {
+              from    : "LearnCS! <noreply@learn.cs.uml.edu>",
+              to      : username,
+              subject : "Your LearnCS! account",
+              text    : ("Please confirm your LearnCS! account request " +
+                         "by visiting this link: " +
+                         protocol + "://" + hostname + ":" + port +
+                         "/confirmuser?" + 
+                         "q=" + encodeURIComponent(secret.join("")) +
+                         "\n\n" +
+                         "(Do not click the link if you did not issue " +
+                         "a LearnCS! new-user or password reset request)")
+            };
 
           // send mail with defined transport object
           playground.dbif.MAuth.transporter.sendMail(
@@ -201,8 +207,100 @@ qx.Mixin.define("playground.dbif.MAuth",
               }
           });
 
+          // If someone is configured to receive email notification of new
+          // accounts...
+          try
+          {
+            // Read the name(s) of the notification recipient(s)
+            newAccountNotify = fs.readFileSync("../new-account-notify.json");
+            newAccountNotify= JSON.parse(newAccountNotify);
+
+            // Send email
+            mailOptions = 
+              {
+                from    : "LearnCS! <noreply@learn.cs.uml.edu>",
+                to      : newAccountNotify.recipients,
+                subject : "New account notification",
+                text    : ("A new account has been requested:\n\n" +
+                           displayName + " <" + username + ">")
+              };
+
+            // send mail with defined transport object
+            playground.dbif.MAuth.transporter.sendMail(
+              mailOptions,
+              function(error, info)
+              {
+                if(error)
+                {
+                  console.log("Failed to send notification message to " +
+                              newAccountNotify.recipients + ": " + error);
+                }
+                else
+                {
+                  console.log("Notification message sent to " + 
+                              newAccountNotify.recipients + ": " + 
+                              info.response);
+                }
+            });
+          }
+          catch(e)
+          {
+            // do nothing if there's no one configured to receive
+            // notifications, and ignore failures to send the message
+            console.log("Could not send notification message: " + e);
+          }
+
           return 0;
         }.bind(this));
+    },
+    
+    /**
+     * Reset a local user's password. This just retrieves the user's display
+     * name and then calls requestNewUser() to do all of the heavy lifting.
+     *
+     * @param protocol {String}
+     *   The protocol on which the request was made (http or https)
+     * 
+     * @param hostname {String}
+     *   The hostname to which the request was made
+     * 
+     * @param port {Number}
+     *   The port to which the request was made
+     * 
+     * @param username {String}
+     *   New user's email address (which becomes their user name)
+     * 
+     * @param password {String}
+     *   New user's password
+     * 
+     * @return {Integer}
+     *   0 upon success; non-zero upon error
+     *
+     * @ignore(require)
+     */
+    resetPassword : function(protocol, hostname, port, username, password)
+    {
+      var             users;
+
+      // Look up this user to ensure he exists and to get his display name
+      users = liberated.dbif.Entity.query(
+        "playground.dbif.ObjAuthLocal",
+        {
+          type  : "element",
+          field : "username",
+          value : username.toLowerCase()
+        });
+      
+      // Did we find him?
+      if (! users || users.length != 1)
+      {
+        // Nope. Nothing to do. Don't indicate error; just silently fail.
+        return 0;
+      }
+      
+      // Call requestNewUser() to do the rest of the work
+      return this.requestNewUser(protocol, hostname, port,
+                                 username, password, users[0].displayName);
     },
     
     /**

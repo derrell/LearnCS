@@ -657,8 +657,8 @@ console.log("/login handler: username=" + req.body.username + ", " + "password="
                 return;
               }
 
-              // Redirect them to the page that tells them what to expect.
-              res.redirect("/newuser-expect");
+              // Let 'em know we're done.
+              res.send("0");
             });
         },
         function(req, res) 
@@ -666,11 +666,47 @@ console.log("/login handler: username=" + req.body.username + ", " + "password="
           res.redirect("/");
         });
 
-      app.get(
-        "/newuser-expect", 
+      //
+      // Process a Reset Password request
+      //
+      app.post(
+        "/resetpassword",
         function(req, res, next)
         {
-          res.sendfile(__dirname + "/login/newuser-expect.html");
+          var             sync = require("synchronize");
+
+          // We're not using bodyParser due to some internal problem. Instead,
+          // parse the url-encoded body ourself, here.
+          var qs = require("qs");
+          req.body = qs.parse(req.body);
+          
+          // Ensure that the user name is lower case since LDAP is case
+          // insensitive, and we want only a single version of the name (and a
+          // single ObjUser UID) in the database.
+          req.body.username = req.body.username.toLowerCase();
+
+          // Call the RPC to request a new user
+          sync.fiber(
+            function()
+            {
+              if (dbif.resetPassword(req.protocol,
+                                     req.ip,
+                                     req.secure ? httpsPort : httpPort,
+                                     req.body.username,
+                                     req.body.password) != 0)
+              {
+                // Failure. This should not occur. Just redirect to same page.
+                res.redirect("/login");
+                return;
+              }
+              
+              // Let 'em know we're done
+              res.send("0");
+            });
+        },
+        function(req, res) 
+        {
+          res.redirect("/");
         });
 
       app.get(

@@ -72,12 +72,24 @@ qx.Class.define("login.Application",
       mainContainer.add(this.__pages["new user"], { flex : 1 });
       this._addNewUserPage(this.__pages["new user"]);
       
+      // Add the reset password page
+      this.__pages["reset password"] = 
+        new qx.ui.container.Composite(new qx.ui.layout.VBox(20));
+      mainContainer.add(this.__pages["reset password"], { flex : 1 });
+      this._addResetPasswordPage(this.__pages["reset password"]);
+      
       // Add the new account instructions page
       this.__pages["new user instructions"] = 
         new qx.ui.container.Composite(new qx.ui.layout.VBox(20));
       mainContainer.add(this.__pages["new user instructions"], { flex : 1 });
       this._addNewUserInstructionsPage(this.__pages["new user instructions"]);
       
+      // Add the UML password reset instructions page
+      this.__pages["uml password reset"] = 
+        new qx.ui.container.Composite(new qx.ui.layout.VBox(20));
+      mainContainer.add(this.__pages["uml password reset"], { flex : 1 });
+      this._addUMLPasswordResetInstructions(this.__pages["uml password reset"]);
+
       //
       // blank space at the page bottom
       //
@@ -90,7 +102,7 @@ qx.Class.define("login.Application",
     /**
      * Add the login page
      * 
-     * @param pageLogin {qx.ui.container.Composite}
+     * @param page {qx.ui.container.Composite}
      *   The container for this page's widgets
      */
     _addLoginPage : function(page)
@@ -197,7 +209,30 @@ qx.Class.define("login.Application",
       hBox.add(o);
       hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
       
-      // Add a vertical spacer
+      // Add a bit of vertical space
+      page.add(new qx.ui.core.Spacer(0, 20));
+      
+      // Add the Forgot password button, centered
+      vBox = new qx.ui.container.Composite(new qx.ui.layout.VBox());
+      page.add(vBox);
+
+      // Add the Reset Password button, centered
+      hBox = new qx.ui.container.Composite(new qx.ui.layout.HBox());
+      vBox.add(hBox);
+      hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
+      o = new qx.ui.form.Button(this.tr("Reset Password"));
+      o.addListener(
+        "execute",
+        function()
+        {
+          this.selectPage("reset password");
+        },
+        this);
+      hBox.add(o);
+      hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
+
+
+      // Add a vertical spacer to move Try LearnCS! to the page bottom
       page.add(new qx.ui.core.Spacer(), { flex : 1 });
 
       // Add the "Try LearnCS!" text and button, centered
@@ -237,7 +272,7 @@ qx.Class.define("login.Application",
     /**
      * Add the create new user page 
      * 
-     * @param pageNewUser {qx.ui.container.Composite}
+     * @param page {qx.ui.container.Composite}
      *   The container for this page's widgets
      * 
      * @lint ignoreDeprecated(alert)
@@ -246,6 +281,7 @@ qx.Class.define("login.Application",
     {
       var             o;
       var             hBox;
+      var             vBox;
       var             email;
       var             password;
       var             passwordRepeat;
@@ -309,28 +345,50 @@ qx.Class.define("login.Application",
         function()
         {
           butCreateUser.setEnabled(false);
-          butCreateUser.setLabel(this.tr("Validating..."));
           manager.validate();
         }, 
         this);
 
+      // Add a vertical spacer
+      page.add(new qx.ui.core.Spacer(0, 30));
+
+      // create a vbox for the warning text
+      vBox = new qx.ui.container.Composite(new qx.ui.layout.VBox());
+      page.add(vBox);
+
+      // create an hbox to center the warning text
+      hBox = new qx.ui.container.Composite(new qx.ui.layout.HBox());
+      vBox.add(hBox);
+      hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
+      o = new qx.ui.basic.Label(
+        "<span style='color: red;'>" +
+        this.tr("Beware: Temporary accounts are for trying out ") +
+        "<span style=" +
+        "'font-weight: 900; font-size: 130%; font-family: JosefinSlab'>" +
+        "LearnCS!" +
+        "</span>. " +
+        this.tr("Your temporary account and/or your files " +
+                "could be removed at any time.") +
+        "</span>");
+      o.setRich(true);
+      hBox.add(o);
+      hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
+
+      // create an hbox to center the warning text
+      hBox = new qx.ui.container.Composite(new qx.ui.layout.HBox());
+      vBox.add(hBox);
+      hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
+      o = new qx.ui.basic.Label(
+        "<span style='font-weight: bold;'>" +
+        this.tr(
+        "Do not use these temporary accounts for student course work.") +
+        "</span>");
+      o.setRich(true);
+      hBox.add(o);
+      hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
+
       // create the form manager
       manager = new qx.ui.form.validation.Manager();
-
-      // create a validator function for the password length
-      var passwordLengthValidator = function(value, item) 
-      {
-        var             valid;
-          
-        valid = value != null && value.length >= 6;
-        if (!valid) 
-        {
-          item.setInvalidMessage(
-            "Passwords must be at least 6 characters long.");
-        }
-        
-        return valid;
-      };
 
       // create an async validator function to ensure the account doesn't exist
       var emailValidator = new qx.ui.form.validation.AsyncValidator(
@@ -369,7 +427,6 @@ qx.Class.define("login.Application",
 
                 // Re-enable the button
                 butCreateUser.setEnabled(true);
-                butCreateUser.setLabel(this.tr("Create Account"));
               }.bind(this),
 
               // failure handler
@@ -390,36 +447,17 @@ qx.Class.define("login.Application",
           }
         }.bind(this));
 
-      // add the email with a predefined email validator
-      manager.add(email, qx.util.Validate.email());
-
-      // add the email with the async validator too
+      // add the email with the async validator
       manager.add(email, emailValidator);
 
       // add the password fields with the notEmpty validator
-      manager.add(password, passwordLengthValidator);
-      manager.add(passwordRepeat, passwordLengthValidator);
+      manager.add(password, this.passwordValidator.bind(this));
+      manager.add(passwordRepeat, this.passwordValidator.bind(this));
 
       // add a validator to the manager itself (passwords must be equal)
-      manager.setValidator(
-        function(items) 
-        {
-          var             valid;
-          var             message;
+      manager.setValidator(this.passwordsEqual.bind(this));
 
-          valid = password.getValue() == passwordRepeat.getValue();
-          if (!valid) 
-          {
-            message = "Passwords do not match.";
-            password.setInvalidMessage(message);
-            passwordRepeat.setInvalidMessage(message);
-            password.setValid(false);
-            passwordRepeat.setValid(false);
-          }
-          
-          return valid;
-        });
-
+      // When validation succeeds, post the new user request
       manager.addListener(
         "complete",
         function(e)
@@ -431,7 +469,6 @@ qx.Class.define("login.Application",
           {
             // Re-enable the button
             butCreateUser.setEnabled(true);
-            butCreateUser.setLabel(this.tr("Create Account"));
           }
           else
           {
@@ -471,26 +508,13 @@ qx.Class.define("login.Application",
           }
         },
         this);
-
-/*
-      // create an hbox to center the first set of instructions
-      hBox = new qx.ui.container.Composite(new qx.ui.layout.HBox());
-      page.add(hBox);
-      hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
-      o = new qx.ui.basic.Label(
-        "<span style='font-weight: bold;'>UMass Lowell users:</span> " +
-        "use your cs.uml.edu username and password." +
-        "<br />" +
-        "<span style='font-weight: bold;'>Outside users:</span> " +
-        "use your registered email address and password.");
-      o.setRich(true);
-      hBox.add(o);
-      hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
-*/
     },
     
     /**
      * Add the new user instructions page
+     * 
+     * @param page {qx.ui.container.Composite}
+     *   The container for this page's widgets
      */
     _addNewUserInstructionsPage : function(page)
     {
@@ -509,7 +533,7 @@ qx.Class.define("login.Application",
       o = new qx.ui.basic.Label(
         "<span style='font-weight: bold;'>" +
         this.tr(
-          "Thank you. Your account creation is now pending confirmation." +
+          "Thank you. Your account is now pending confirmation." +
           "<p />" +
           "Check your email for a confirmation link. Once you confirm your " +
           "account, you will be able to log in using the email address and " +
@@ -518,6 +542,321 @@ qx.Class.define("login.Application",
       o.setRich(true);
       hBox.add(o);
       hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
+    },
+
+    /**
+     * Add the UML password reset instructions
+     * 
+     * @param page {qx.ui.container.Composite}
+     *   The container for this page's widgets
+     */
+    _addUMLPasswordResetInstructions : function(page)
+    {
+      var             o;
+      var             vBox;
+      var             hBox;
+      
+      // This page is a series of vertically-placed items
+      vBox = new qx.ui.container.Composite(new qx.ui.layout.VBox());
+      page.add(vBox);
+      
+      // create an hbox to center the first set of instructions
+      hBox = new qx.ui.container.Composite(new qx.ui.layout.HBox());
+      vBox.add(hBox);
+      hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
+      o = new qx.ui.basic.Label(
+        "<span style='font-weight: bold;'>" +
+        this.tr(
+          "Password reset for UMass Lowell students can not be accomplished " +
+          "automatically. Please visit the Computing Office, OS312, to " +
+          "request a password reset.") +
+        "</span>");
+      o.setRich(true);
+      hBox.add(o);
+      hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
+    },
+
+    /**
+     * Add the password reset page 
+     * 
+     * @param page {qx.ui.container.Composite}
+     *   The container for this page's widgets
+     * 
+     * @lint ignoreDeprecated(alert)
+     */
+    _addResetPasswordPage : function(page)
+    {
+      var             o;
+      var             hBox;
+      var             email;
+      var             password;
+      var             passwordRepeat;
+      var             form;
+      var             renderer;
+      var             manager;
+      var             butResetPassword;
+
+      // create the form
+      form = new qx.ui.form.Form();
+
+      // add the first headline
+      form.addGroupHeader("Reset password");
+
+      // add email
+      email = new qx.ui.form.TextField();
+      email.setRequired(true);
+      form.add(email, "Email");
+      
+      // add password
+      password = new qx.ui.form.PasswordField();
+      password.setRequired(true);
+      form.add(password, "New account password");
+
+      // add password repeat
+      passwordRepeat = new qx.ui.form.PasswordField();
+      passwordRepeat.setRequired(true);
+      form.add(passwordRepeat, "Repeat new password");
+
+      // create the renderer
+      renderer = new qx.ui.form.renderer.Single(form);
+      
+      // Get the renderer's first item, the header, and center it
+      o = renderer._getChildren()[0];
+      o.setAlignX("center");
+      o.setHeight(30);
+
+      // create an hbox to center the form
+      hBox = new qx.ui.container.Composite(new qx.ui.layout.HBox());
+      page.add(hBox);
+      hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
+      hBox.add(renderer);
+      hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
+
+      // create an hbox to center the login-in button
+      hBox = new qx.ui.container.Composite(new qx.ui.layout.HBox());
+      page.add(hBox);
+      hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
+      butResetPassword = new qx.ui.form.Button(this.tr("Create Account"));
+      hBox.add(butResetPassword);
+      hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
+
+      butResetPassword.addListener(
+        "execute",
+        function()
+        {
+          butResetPassword.setEnabled(false);
+          manager.validate();
+        }, 
+        this);
+
+      // create the form manager
+      manager = new qx.ui.form.validation.Manager();
+
+      // create an async validator function to ensure the account doesn't exist
+      var emailValidator = new qx.ui.form.validation.AsyncValidator(
+        function(validator, value) 
+        {
+          var             reUml = /[.@]uml.edu$/i;
+          var             bStillValid = true;
+
+          // First, ensure that it's a valid email address. 
+          try
+          {
+            qx.util.Validate.checkEmail(value, validator);
+          }
+          catch(e)
+          {
+            validator.setValid(false);
+            bStillValid = false;
+          }
+
+          // If it's a valid email address...
+          if (bStillValid)
+          {
+            // ... then first check for a UML account
+            if (reUml.test(value))
+            {
+              // It is a UML account. Give 'em the local password reset
+              // instructions.
+              this.selectPage("uml password reset");
+              return;
+            }
+
+            // Issue a request to verify that the account exists
+            login.ServerOp.rpc(
+              // success handler
+              function(bExists, id)
+              {
+                if (bExists)
+                {
+                  validator.setValid(true);
+                }
+                else
+                {
+                  validator.setValid(false, "User name does not exist.");
+                }
+
+                // Re-enable the button
+                butResetPassword.setEnabled(true);
+              }.bind(this),
+
+              // failure handler
+              function(ex, id)
+              {
+                // Ignore the failure. Should not ever occur.
+                console.log("FAILED to determine if user exists: " + ex);
+              }.bind(this),
+
+              // function to call
+              "userExists",
+
+              // arguments
+              [
+                value
+              ]
+            );
+          }
+        }.bind(this));
+
+      // add the email with the async validator
+      manager.add(email, emailValidator);
+
+      // add the password fields with the notEmpty validator
+      manager.add(password, this.passwordValidator.bind(this));
+      manager.add(passwordRepeat, this.passwordValidator.bind(this));
+
+      // add a validator to the manager itself (passwords must be equal)
+      manager.setValidator(this.passwordsEqual.bind(this));
+
+      // When validation succeeds, post the change password request
+      manager.addListener(
+        "complete",
+        function(e)
+        {
+          var             request;
+
+          // If all fields are valid...
+          if (! manager.isValid())
+          {
+            // Re-enable the button
+            butResetPassword.setEnabled(true);
+          }
+          else
+          {
+            request = new qx.io.remote.Request("/resetpassword", "POST");
+            request.setParameter("username", email.getValue(), true);
+            request.setParameter("password", password.getValue(), true);
+
+            request.addListener(
+              "completed",
+              function(e)
+              {
+                this.selectPage("new user instructions");
+              },
+              this);
+
+            request.addListener(
+              "failed",
+              function(e)
+              {
+                // Something failed. Try again.
+                alert("internal error: adding user failed");
+                window.location = "/login";
+              });
+
+            request.addListener(
+              "timeout",
+              function(e)
+              {
+                alert("internal error: adding user timed out");
+                window.location = "/login";
+              });
+
+            request.send();
+            
+            
+          }
+        },
+        this);
+    },
+    
+    /**
+     * Validate a password
+     * 
+     * @param value {String}
+     *   The requested password
+     * 
+     * @param item {qx.ui.form.AbstractField}
+     *   The field containing the password
+     * 
+     * @return {Boolean}
+     *   true if the password is valid; false otherwise
+     * 
+     * @sideeffect
+     *   Applies an invalid message if the password is not valid
+     */
+    passwordValidator : function(value, item) 
+    {
+      var             valid;
+
+      valid = value != null && value.length >= 6;
+      if (!valid) 
+      {
+        item.setInvalidMessage(
+          this.tr("Passwords must be at least 6 characters long."));
+      }
+
+      return valid;
+    },
+
+    /**
+     * Validate that the entered passwords are the same
+     * 
+     * @param items {Array}
+     *   Array of two password fields
+     * 
+     * @return {Boolean}
+     *   true if the passwords are equal; false otherwise
+     * 
+     * @sideeffect
+     *   Sets the fields to invalid and applies an invalid message if the
+     *   passwords are not equal
+     */
+    passwordsEqual : function(items) 
+    {
+      var             valid;
+      var             message;
+      var             numItems = items.length;
+      var             password;
+      var             passwordRepeat;
+      
+      // The new user page has 4 items, in the order displayName, email,
+      // password, passwordRepeat.
+      //
+      // The reset password page has 3 items, in the order email, password,
+      // passwordRepeat.
+      if (numItems == 4)
+      {
+        password = items[2];
+        passwordRepeat = items[3];
+      }
+      else
+      {
+        password = items[1];
+        passwordRepeat = items[2];
+      }
+      
+      valid = password.getValue() == passwordRepeat.getValue();
+      if (!valid) 
+      {
+        message = this.tr("Passwords do not match.");
+        password.setInvalidMessage(message);
+        passwordRepeat.setInvalidMessage(message);
+        password.setValid(false);
+        passwordRepeat.setValid(false);
+      }
+
+      return valid;
     },
 
     /**
