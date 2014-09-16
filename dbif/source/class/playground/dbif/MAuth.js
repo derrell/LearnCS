@@ -67,12 +67,6 @@ qx.Mixin.define("playground.dbif.MAuth",
      * account is pending until they click on the link in the email, at which
      * time the completeNewUser RPC is initiated.
      *
-     * @param protocol {String}
-     *   The protocol on which the request was made (http or https)
-     * 
-     * @param port {Number}
-     *   The port to which the request was made
-     * 
      * @param username {String}
      *   New user's email address (which becomes their user name)
      * 
@@ -86,8 +80,10 @@ qx.Mixin.define("playground.dbif.MAuth",
      *   0 upon success; non-zero upon error
      *
      * @ignore(require)
+     * @ignore(nodesqlite)
+     * @ignore(nodesqlite.Application)
      */
-    requestNewUser : function(protocol, port, username, password, displayName)
+    requestNewUser : function(username, password, displayName)
     {
       return liberated.dbif.Entity.asTransaction(
         function()
@@ -103,6 +99,7 @@ qx.Mixin.define("playground.dbif.MAuth",
           var             secret = [];
           var             now = new Date();
           var             mailOptions;
+          var             config;
 
           // Hash the entered password
           shasum.update(password);
@@ -144,30 +141,13 @@ qx.Mixin.define("playground.dbif.MAuth",
                var             emailConfig;
                var             fs = require("fs");
                var             nodemailer = require("nodemailer");
-               var             newAccountNotify;
 
-               // Read the email configuration
-               emailConfig = fs.readFileSync("../emailconfig.json");
-               emailConfig = JSON.parse(emailConfig);
+               // Retrieve the configuration
+               config = nodesqlite.Application.config;
 
                // Create an email transport
                playground.dbif.MAuth.transporter =
-                 nodemailer.createTransport(emailConfig);
-
-               // Read the host name and the name(s) of the notification
-               // recipient(s)
-               newAccountNotify = fs.readFileSync("../new-account-notify.json");
-               newAccountNotify= JSON.parse(newAccountNotify);
-               
-               // Ensure that the minimum requirements are met
-               if (! newAccountNotify.hostname)
-               {
-                 throw new Error("The local host name must be specified");
-               }
-               
-               // Save the host name and recipients
-               playground.dbif.MAuth.hostname = newAccountNotify.hostname;
-               playground.dbif.MAuth.recipients = newAccountNotify.recipients;
+                 nodemailer.createTransport(config.email);
              })();
           }
 
@@ -179,8 +159,7 @@ qx.Mixin.define("playground.dbif.MAuth",
               subject : "Your LearnCS! account",
               text    : ("Please confirm your LearnCS! account request " +
                          "by visiting this link: " +
-                         protocol + "://" + 
-                         playground.dbif.MAuth.hostname + ":" + port +
+                         config.url +
                          "/confirmuser?" + 
                          "q=" + encodeURIComponent(secret.join("")) +
                          "\n\n" +
@@ -220,13 +199,13 @@ qx.Mixin.define("playground.dbif.MAuth",
 
           // If someone is configured to receive email notification of new
           // accounts...
-          if (playground.dbif.MAuth.recipients)
+          if (config.notifyRecipients)
           {
             // Send email
             mailOptions = 
               {
                 from    : "LearnCS! <noreply@learn.cs.uml.edu>",
-                to      : playground.dbif.MAuth.recipients,
+                to      : config.notifyRecipients,
                 subject : "New account notification",
                 text    : ("A new account has been requested:\n" +
                            "  " + displayName + " <" + username + ">")
@@ -240,12 +219,12 @@ qx.Mixin.define("playground.dbif.MAuth",
                 if(error)
                 {
                   console.log("Failed to send notification message to " +
-                              playground.dbif.MAuth.recipients + ": " + error);
+                              config.notifyRecipients + ": " + error);
                 }
                 else
                 {
                   console.log("Notification message sent to " + 
-                              playground.dbif.MAuth.recipients + ": " + 
+                              config.notifyRecipients + ": " + 
                               info.response);
                 }
             });
@@ -259,12 +238,6 @@ qx.Mixin.define("playground.dbif.MAuth",
      * Reset a local user's password. This just retrieves the user's display
      * name and then calls requestNewUser() to do all of the heavy lifting.
      *
-     * @param protocol {String}
-     *   The protocol on which the request was made (http or https)
-     * 
-     * @param port {Number}
-     *   The port to which the request was made
-     * 
      * @param username {String}
      *   New user's email address (which becomes their user name)
      * 
@@ -276,7 +249,7 @@ qx.Mixin.define("playground.dbif.MAuth",
      *
      * @ignore(require)
      */
-    resetPassword : function(protocol, port, username, password)
+    resetPassword : function(username, password)
     {
       var             users;
 
@@ -297,8 +270,7 @@ qx.Mixin.define("playground.dbif.MAuth",
       }
       
       // Call requestNewUser() to do the rest of the work
-      return this.requestNewUser(protocol, port, 
-                                 username, password, users[0].displayName);
+      return this.requestNewUser(username, password, users[0].displayName);
     },
     
     /**

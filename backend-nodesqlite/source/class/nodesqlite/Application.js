@@ -15,6 +15,9 @@ qx.Class.define("nodesqlite.Application",
     /** The database (and remote procedure call) interface instance */
     dbif : null,
 
+    /** System configuration, parsed from JSON configuration file */
+    config : null,
+
     /**
      * Process a POST request. These are the standard GUI-initiated remote
      * procedure calls.
@@ -165,6 +168,11 @@ qx.Class.define("nodesqlite.Application",
           return;
         }
       }
+
+      // 
+      // Read the configuration file
+      //
+      this.readConfig();
 
       //
       // Generic configuration
@@ -397,10 +405,9 @@ qx.Class.define("nodesqlite.Application",
 */
 
       // See if we find LDAP configuration
-      try
+      if (nodesqlite.Application.config.ldap)
       {
-        ldapConfig = fs.readFileSync("../ldapconfig.json");
-        ldapConfig = JSON.parse(ldapConfig);
+        ldapConfig = nodesqlite.Application.config.ldap;
         
         // Authenticate against the LDAP server
         passport.use(
@@ -443,10 +450,10 @@ qx.Class.define("nodesqlite.Application",
             fs.readFileSync("../../private/uml.cs-ldap-cert.pem"));
         }
       }
-      catch(e)
+      else
       {
         // nothing to do. we simply won't use ldap.
-        console.log("LDAP not being used. " + e);
+        console.log("LDAP not being used.");
       }
 
 
@@ -644,9 +651,7 @@ qx.Class.define("nodesqlite.Application",
           sync.fiber(
             function()
             {
-              if (dbif.requestNewUser(req.protocol,
-                                      req.secure ? httpsPort : httpPort,
-                                      req.body.username,
+              if (dbif.requestNewUser(req.body.username,
                                       req.body.password,
                                       req.body.displayName) != 0)
               {
@@ -687,10 +692,7 @@ qx.Class.define("nodesqlite.Application",
           sync.fiber(
             function()
             {
-              if (dbif.resetPassword(req.protocol,
-                                     req.secure ? httpsPort : httpPort,
-                                     req.body.username,
-                                     req.body.password) != 0)
+              if (dbif.resetPassword(req.body.username, req.body.password) != 0)
               {
                 // Failure. This should not occur. Just redirect to same page.
                 res.redirect("/login");
@@ -843,6 +845,56 @@ qx.Class.define("nodesqlite.Application",
         httpsServer.listen(httpsPort);
       }
       console.log("");
+    },
+    
+    /**
+     * Read the configuration file. 
+     * 
+     * Known keys, at present:
+     *   url {String} : 
+     *     This LearnCS! host's URL, used to build new account confirmation
+     *     links
+     *
+     *   email {Map} : 
+     *     Email config per https://github.com/andris9/nodemailer-smtp-transport
+     *
+     *   notify-recipients {String} : 
+     *     string, comma-separated list of recipients to be notified when a
+     *     new account is self-created.
+     * 
+     *   ldap {Map?} :
+     *     ldap config per Express LdapStrategy
+     */
+    readConfig : function()
+    {
+      var             fs = require("fs");
+
+      // Read the configuration file and parse its JSON.
+      try
+      {
+        nodesqlite.Application.config =
+          fs.readFileSync("../../private/learncs-config.json");
+        nodesqlite.Application.config = 
+          JSON.parse(nodesqlite.Application.config);
+      }
+      catch(e)
+      {
+        throw new Error("Could not read or parse config.json: " + e);
+      }
+      
+      // Ensure that mandatory fields are present
+      [
+        "url",
+        "email",
+        "notifyRecipients"
+      ].forEach(
+        function(key)
+        {
+          if (typeof nodesqlite.Application.config[key] === "undefined")
+          {
+            throw new Error("config.json is missing key '" + key + "'");
+          }
+        }.bind(this));
     }
   }
 });
