@@ -82,6 +82,7 @@ qx.Mixin.define("playground.dbif.MAuth",
      * @ignore(require)
      * @ignore(nodesqlite)
      * @ignore(nodesqlite.Application)
+     * @ignore(nodesqlite.Application.config)
      */
     requestNewUser : function(username, password, displayName)
     {

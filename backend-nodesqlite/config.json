@@ -36,7 +36,7 @@
     "QOOXDOO_PATH" : "../lib/qooxdoo.git",
     "LOCALES"      : [ "en" ],
     "CACHE"        : "${TMPDIR}/qx${QOOXDOO_VERSION}/cache",
-    "OPTIMIZE"     : [],
+//    "OPTIMIZE"     : [],
     "ROOT"         : "."
   },
 
