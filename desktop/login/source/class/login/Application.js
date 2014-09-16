@@ -636,7 +636,7 @@ qx.Class.define("login.Application",
       hBox = new qx.ui.container.Composite(new qx.ui.layout.HBox());
       page.add(hBox);
       hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
-      butResetPassword = new qx.ui.form.Button(this.tr("Create Account"));
+      butResetPassword = new qx.ui.form.Button(this.tr("Reset Password"));
       hBox.add(butResetPassword);
       hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
 

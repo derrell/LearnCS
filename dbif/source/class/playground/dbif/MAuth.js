@@ -80,9 +80,8 @@ qx.Mixin.define("playground.dbif.MAuth",
      *   0 upon success; non-zero upon error
      *
      * @ignore(require)
-     * @ignore(nodesqlite)
-     * @ignore(nodesqlite.Application)
      * @ignore(nodesqlite.Application.config)
+     * @ignore(nodesqlite.Application.config.*)
      */
     requestNewUser : function(username, password, displayName)
     {
@@ -100,7 +99,6 @@ qx.Mixin.define("playground.dbif.MAuth",
           var             secret = [];
           var             now = new Date();
           var             mailOptions;
-          var             config;
 
           // Hash the entered password
           shasum.update(password);
@@ -139,12 +137,9 @@ qx.Mixin.define("playground.dbif.MAuth",
             // Nope. Create one.
             (function()
              {
-               var             emailConfig;
+               var             config = nodesqlite.Application.config;
                var             fs = require("fs");
                var             nodemailer = require("nodemailer");
-
-               // Retrieve the configuration
-               config = nodesqlite.Application.config;
 
                // Create an email transport
                playground.dbif.MAuth.transporter =
@@ -160,7 +155,7 @@ qx.Mixin.define("playground.dbif.MAuth",
               subject : "Your LearnCS! account",
               text    : ("Please confirm your LearnCS! account request " +
                          "by visiting this link: " +
-                         config.url +
+                         nodesqlite.Application.config.url +
                          "/confirmuser?" + 
                          "q=" + encodeURIComponent(secret.join("")) +
                          "\n\n" +
@@ -200,13 +195,13 @@ qx.Mixin.define("playground.dbif.MAuth",
 
           // If someone is configured to receive email notification of new
           // accounts...
-          if (config.notifyRecipients)
+          if (nodesqlite.Application.config.notifyRecipients)
           {
             // Send email
             mailOptions = 
               {
                 from    : "LearnCS! <noreply@learn.cs.uml.edu>",
-                to      : config.notifyRecipients,
+                to      : nodesqlite.Application.config.notifyRecipients,
                 subject : "New account notification",
                 text    : ("A new account has been requested:\n" +
                            "  " + displayName + " <" + username + ">")
@@ -220,13 +215,14 @@ qx.Mixin.define("playground.dbif.MAuth",
                 if(error)
                 {
                   console.log("Failed to send notification message to " +
-                              config.notifyRecipients + ": " + error);
+                              nodesqlite.Application.config.notifyRecipients +
+                              ": " + error);
                 }
                 else
                 {
                   console.log("Notification message sent to " + 
-                              config.notifyRecipients + ": " + 
-                              info.response);
+                              nodesqlite.Application.config.notifyRecipients +
+                              ": " + info.response);
                 }
             });
           }
