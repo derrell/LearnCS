@@ -76,6 +76,9 @@ qx.Mixin.define("playground.dbif.MAuth",
      * @param displayName {String}
      *   Full name of new user
      * 
+     * @param bPasswordReset {Boolean}
+     *   true if this is actually a password reset request, not a new account
+     * 
      * @return {Integer}
      *   0 upon success; non-zero upon error
      *
@@ -83,7 +86,7 @@ qx.Mixin.define("playground.dbif.MAuth",
      * @ignore(nodesqlite.Application.config)
      * @ignore(nodesqlite.Application.config.*)
      */
-    requestNewUser : function(username, password, displayName)
+    requestNewUser : function(username, password, displayName, bPasswordReset)
     {
       return liberated.dbif.Entity.asTransaction(
         function()
@@ -184,8 +187,10 @@ qx.Mixin.define("playground.dbif.MAuth",
               {
                 from    : "LearnCS! <noreply@learn.cs.uml.edu>",
                 to      : nodesqlite.Application.config.notifyRecipients,
-                subject : "New account notification",
-                text    : ("A new account has been requested:\n" +
+                subject : "Account notification",
+                text    : ("A " +
+                           (bPasswordReset ? "password reset" : "new account") +
+                           " has been requested:\n" +
                            "  " + displayName + " <" + username + ">")
               };
 
@@ -246,7 +251,8 @@ qx.Mixin.define("playground.dbif.MAuth",
       }
       
       // Call requestNewUser() to do the rest of the work
-      return this.requestNewUser(username, password, users[0].displayName);
+      return this.requestNewUser(username, password,
+                                 users[0].displayName, true);
     },
     
     /**
