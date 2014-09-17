@@ -135,6 +135,68 @@ qx.Mixin.define("playground.dbif.MDbifCommon",
         // Do not allow access to unrecognized method names
         return false;
       }
+    },
+    
+    /**
+     * Send a mail message
+     *
+     * @param mailOptions {Map}
+     *   Map conforming to nodemailer specifications. Typically, it will
+     *   contain four members: from, to, subject, and text.
+     *
+     * @param onSuccess {Function?}
+     *   Function to call upon successful sending of the email. This function
+     *   is called asyncronously!
+     *
+     * @param onFailure {Function?}
+     *   Function to call upon failure to send the email.  This function
+     *   is called asyncronously!
+     *
+     * @ignore(require)
+     * @ignore(nodesqlite.Application.config)
+     * @ignore(nodesqlite.Application.config.*)
+     */
+    sendMail : function(mailOptions, onSuccess, onFailure)
+    {
+      // Never let email failure crash the system
+      try
+      {
+        // Do we have an email transport yet?
+        if (! playground.dbif.MDbifCommon.transporter)
+        {
+          // Nope. Create one.
+          (function()
+           {
+             var             config = nodesqlite.Application.config;
+             var             fs = require("fs");
+             var             nodemailer = require("nodemailer");
+
+             // Create an email transport
+             playground.dbif.MDbifCommon.transporter =
+               nodemailer.createTransport(config.email);
+           })();
+        }
+
+
+        // send mail with defined transport object
+        playground.dbif.MDbifCommon.transporter.sendMail(
+          mailOptions,
+          function(error, info)
+          {
+            if (error && onFailure)
+            {
+              onFailure(error, info);
+            }
+            else if (onSuccess)
+            {
+              onSuccess(info);
+            }
+        });
+      }
+      catch(e)
+      {
+        console.log("Failed to send mail: " + e);
+      }
     }
   }
 });

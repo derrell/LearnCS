@@ -91,6 +91,9 @@ qx.Mixin.define("playground.dbif.MFiles",
      *
      * @return {Number}
      *   Zero upon success; non-zero otherwise
+     *
+     * @ignore(nodesqlite.Application.config)
+     * @ignore(nodesqlite.Application.config.*)
      */
     _saveProgram : function(programName, detail, code, notes)
     {
@@ -104,6 +107,7 @@ qx.Mixin.define("playground.dbif.MFiles",
       var             line;
       var             cmd;
       var             hash;
+      var             mailOptions;
       var             userFilesDir = playground.dbif.MFiles.UserFilesDir;
       var             progDir = playground.dbif.MFiles.ProgDir;
       var             gitDir;
@@ -269,6 +273,38 @@ qx.Mixin.define("playground.dbif.MFiles",
       }
       
       console.log("\n");
+
+      if (detail == "exit_crash" &&
+          /"exit_crash":"Internal error/.test(notes) &&
+          nodesqlite.Application.config.developerRecipients)
+      {
+        // Send email
+        mailOptions = 
+          {
+            from    : "LearnCS! <noreply@learn.cs.uml.edu>",
+            to      : nodesqlite.Application.config.developerRecipients,
+            subject : "Internal error encountered",
+            text    : (code + "\n\n" + detail + "\n\n" + notes)
+          };
+
+        // send mail with defined transport object
+        this.sendMail(
+          mailOptions,
+          function(info)
+          {
+            console.log("Internal error message sent to " + 
+                        nodesqlite.Application.config.developerRecipients +
+                        ": " + info.response);
+          },
+          function(error, info)
+          {
+            console.log("Failed to send internal error message to " +
+                        nodesqlite.Application.config.developerRecipients +
+                        ": " + error);
+          });
+        
+      }
+
       return 0;
     },
 

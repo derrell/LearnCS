@@ -131,22 +131,6 @@ qx.Mixin.define("playground.dbif.MAuth",
           // Save this new pending auth object
           pendingAuthLocalObj.put();
           
-          // Do we have an email transport yet?
-          if (! playground.dbif.MAuth.transporter)
-          {
-            // Nope. Create one.
-            (function()
-             {
-               var             config = nodesqlite.Application.config;
-               var             fs = require("fs");
-               var             nodemailer = require("nodemailer");
-
-               // Create an email transport
-               playground.dbif.MAuth.transporter =
-                 nodemailer.createTransport(config.email);
-             })();
-          }
-
           // Send email
           mailOptions = 
             {
@@ -163,35 +147,33 @@ qx.Mixin.define("playground.dbif.MAuth",
                          "a LearnCS! new-user or password reset request)")
             };
 
-          // send mail with defined transport object
-          playground.dbif.MAuth.transporter.sendMail(
+          // send mail
+          this.sendMail(
             mailOptions,
+            function(info)
+            {
+              console.log("Confirmation message sent to " + 
+                          username + ": " + info.response);
+            },
             function(error, info)
             {
               var             sync = require("synchronize");
+
+              console.log("Failed to send confirmation message to " +
+                          username + ": " + error);
+
+              // We couldn't send the email, so there's no reason to keep
+              // the pendingAuthLocal object around any longer.
+              //
+              // NOTE: This will happen outside of the transaction, and
+              // outside of the original fiber created in Application.js
+              sync.fiber(
+                function()
+                {
+                  pendingAuthLocalObj.removeSelf();
+                });
               
-              if(error)
-              {
-                console.log("Failed to send confirmation message to " +
-                            username + ": " + error);
-                
-                // We couldn't send the email, so there's no reason to keep
-                // the pendingAuthLocal object around any longer.
-                //
-                // NOTE: This will happen outside of the transaction, and
-                // outside of the original fiber created in Application.js
-                sync.fiber(
-                  function()
-                  {
-                    pendingAuthLocalObj.removeSelf();
-                  });
-              }
-              else
-              {
-                console.log("Confirmation message sent to " + 
-                            username + ": " + info.response);
-              }
-          });
+            });
 
           // If someone is configured to receive email notification of new
           // accounts...
@@ -208,23 +190,20 @@ qx.Mixin.define("playground.dbif.MAuth",
               };
 
             // send mail with defined transport object
-            playground.dbif.MAuth.transporter.sendMail(
+            this.sendMail(
               mailOptions,
+              function(info)
+              {
+                console.log("Notification message sent to " + 
+                            nodesqlite.Application.config.notifyRecipients +
+                            ": " + info.response);
+              },
               function(error, info)
               {
-                if(error)
-                {
-                  console.log("Failed to send notification message to " +
-                              nodesqlite.Application.config.notifyRecipients +
-                              ": " + error);
-                }
-                else
-                {
-                  console.log("Notification message sent to " + 
-                              nodesqlite.Application.config.notifyRecipients +
-                              ": " + info.response);
-                }
-            });
+                console.log("Failed to send notification message to " +
+                            nodesqlite.Application.config.notifyRecipients +
+                            ": " + error);
+              });
           }
 
           return 0;
