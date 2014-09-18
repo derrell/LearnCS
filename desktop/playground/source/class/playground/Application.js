@@ -1591,7 +1591,17 @@ else... */
         }
         else
         {
-          line = playground.c.lib.Node._currentNode.line;
+          // currentNode may not yet exist (e.g., preprocessor)
+          try
+          {
+            line = playground.c.lib.Node._currentNode.line;
+          }
+          catch(e2)
+          {
+            // Ignore preprocessor errors, other than logging them
+            console.log("Ignoring error without line number: " + e);
+            return;
+          }
           hint = e + "\n" + e.stack;
           message =
             "Internal error near line " +
