@@ -170,11 +170,21 @@ qx.Mixin.define("playground.dbif.MAuth",
               //
               // NOTE: This will happen outside of the transaction, and
               // outside of the original fiber created in Application.js
-              sync.fiber(
-                function()
-                {
-                  pendingAuthLocalObj.removeSelf();
-                });
+              // most of the time. If the original fiber is still running,
+              // we'll get a transaction-within-a-transaction error which we
+              // must just ignore for now.
+              try
+              {
+                sync.fiber(
+                  function()
+                  {
+                    pendingAuthLocalObj.removeSelf();
+                  });
+              }
+              catch(e)
+              {
+                console.log("Could not remove pendingAuthLocal object: " + e);
+              }
               
             });
 
