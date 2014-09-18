@@ -125,7 +125,15 @@
 
     "build-resources" :
     {
-      "extend" : [ "login-compile" ]
+      "extend" : [ "login-compile" ],
+      "shell"  :
+      {
+        "command"   :
+        [
+          "mkdir -p ./build/resource/login/images",
+          "cp ./source/resource/login/images/loading.gif ./build/resource/login/images/"
+        ]
+      }
     },
 
 
