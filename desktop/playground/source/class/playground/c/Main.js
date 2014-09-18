@@ -691,7 +691,7 @@ qx.Class.define("playground.c.Main",
           line = playground.c.lib.Node._currentNode.line;
           hint = error + "\n" + error.stack;
           message =
-            "Internal error near line " +
+            "[2]Internal error near line " +
             playground.c.lib.Node._currentNode.line +
             ": " + hint + "\n";
         }
@@ -1042,7 +1042,7 @@ qx.Class.define("playground.c.Main",
           hint =
             error + "\n" + error.stack;
           message = 
-            "Internal error near line " + line + ": " + hint + "\n";
+            "[3]Internal error near line " + line + ": " + hint + "\n";
         }
         
         // Show the error in the editor

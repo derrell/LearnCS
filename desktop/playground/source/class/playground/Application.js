@@ -1604,7 +1604,7 @@ else... */
           }
           hint = e + "\n" + e.stack;
           message =
-            "Internal error near line " +
+            "[1]Internal error near line " +
             playground.c.lib.Node._currentNode.line +
             ": " + hint + "\n";
         }
@@ -1669,7 +1669,8 @@ else... */
                 }
                 catch (e2)
                 {
-                  handleError(e2);
+                  console.log("Ignoring (irrelevant?) error: " + e2);
+//                  handleError(e2);
                 }
               });
           }.bind(this));
