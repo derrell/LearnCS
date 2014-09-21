@@ -31,6 +31,8 @@ qx.Mixin.define("playground.dbif.MUsageDetail",
      * @return {Map|null}
      *   If any element of the dataList contains a snapshot, then a directory
      *   listing is returned; otherwise null.
+     * 
+     * @ignore(nodesqlite.Application)
      */
     usageDetail : function(dataList, error)
     {
