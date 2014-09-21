@@ -302,7 +302,6 @@ qx.Mixin.define("playground.dbif.MFiles",
                         nodesqlite.Application.config.developerRecipients +
                         ": " + error);
           });
-        
       }
 
       return 0;

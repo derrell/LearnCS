@@ -50,6 +50,8 @@ qx.Mixin.define("playground.dbif.MUsageDetail",
               var             detailObj;
               var             detailData;
               var             messageData;
+              var             mailOptions;
+              var             Application = nodesqlite.Application;
 
               // Store any snapshot data, and then delete it from the
               // object. It's saved in git, not in the database.
@@ -96,6 +98,37 @@ qx.Mixin.define("playground.dbif.MUsageDetail",
                     messageData.button_press == "Run")
                 {
                   message = "run";
+                }
+                else if (messageData.type == "developer")
+                {
+                  // Send email to the developer
+                  message = messageData.type;
+
+                  // Send email
+                  mailOptions = 
+                    {
+                      from    : "LearnCS! <noreply@learn.cs.uml.edu>",
+                      to      : Application.config.developerRecipients,
+                      subject : "Developer debug message",
+                      text    : (snapshot + "\n\n" +
+                                 qx.lang.Json.stringify(messageData))
+                    };
+
+                  // send mail with defined transport object
+                  this.sendMail(
+                    mailOptions,
+                    function(info)
+                    {
+                      console.log("Developer message sent to " + 
+                                  Application.config.developerRecipients +
+                                  ": " + info.response);
+                    },
+                    function(error, info)
+                    {
+                      console.log("Failed to send developer message to " +
+                                  Application.config.developerRecipients +
+                                  ": " + error);
+                    });
                 }
                 else if (messageData.type == "error")
                 {

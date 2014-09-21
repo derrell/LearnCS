@@ -1671,6 +1671,13 @@ else... */
                 {
                   console.log("Ignoring (irrelevant?) error: " + e2);
 //                  handleError(e2);
+
+                  // Send the error as a developer (debug) status report
+                  playground.c.Main._statusReport(
+                    {
+                      type       : "developer",
+                      error      : e2 + "\n" + e2.stack
+                    });
                 }
               });
           }.bind(this));
