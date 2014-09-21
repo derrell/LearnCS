@@ -664,6 +664,7 @@ qx.Class.define("playground.c.Main",
       var             line;
       var             button;
       var             message;
+      var             developer = false;
 
       try
       {
@@ -694,13 +695,15 @@ qx.Class.define("playground.c.Main",
             "[2]Internal error near line " +
             playground.c.lib.Node._currentNode.line +
             ": " + hint + "\n";
+          developer = true;
         }
 
         // Send the error message as a status report
         playground.c.Main._statusReport(
           {
             type       : "exit_crash",
-            exit_crash : message
+            exit_crash : message,
+            developer  : developer
           });
 
         // Show the error in the editor
@@ -956,6 +959,7 @@ qx.Class.define("playground.c.Main",
         var             hint;
         var             message;
         var             button;
+        var             developer = false;
 
         try
         {
@@ -1043,6 +1047,7 @@ qx.Class.define("playground.c.Main",
             error + "\n" + error.stack;
           message = 
             "[3]Internal error near line " + line + ": " + hint + "\n";
+          developer = true;
         }
         
         // Show the error in the editor
@@ -1069,7 +1074,8 @@ qx.Class.define("playground.c.Main",
         playground.c.Main._statusReport(
           {
             type       : "exit_crash",
-            exit_crash : message
+            exit_crash : message,
+            developer  : developer
           });
 
         // Clean up after program completion

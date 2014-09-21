@@ -1581,6 +1581,7 @@ else... */
         var             hint;
         var             message;
         var             button;
+        var             developer = false;
 
         if (e instanceof playground.c.lib.RuntimeError)
         {
@@ -1607,13 +1608,17 @@ else... */
             "[1]Internal error near line " +
             playground.c.lib.Node._currentNode.line +
             ": " + hint + "\n";
+          
+          // Send internal errors to the developer
+          developer = true;
         }
 
         // Send the error message as a status report
         playground.c.Main._statusReport(
           {
             type       : "exit_crash",
-            exit_crash : message
+            exit_crash : message,
+            developer  : developer
           });
 
         // Show the error in the editor
@@ -1671,13 +1676,6 @@ else... */
                 {
                   console.log("Ignoring (irrelevant?) error: " + e2);
 //                  handleError(e2);
-
-                  // Send the error as a developer (debug) status report
-                  playground.c.Main._statusReport(
-                    {
-                      type       : "developer",
-                      error      : e2 + "\n" + e2.stack
-                    });
                 }
               });
           }.bind(this));
