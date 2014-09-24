@@ -76,7 +76,10 @@ qx.Class.define("playground.dbif.DbifNodeSqlite",
       
       // Find out who is logged in
       user = request.user;
-      console.log("user=" + JSON.stringify(user));
+      console.log("identifying user logged in: " + 
+                  (typeof user == "undefined" 
+                   ? "no one" 
+                   : JSON.stringify(user)));
       
       // If no one is logged in...
       if (! user)
