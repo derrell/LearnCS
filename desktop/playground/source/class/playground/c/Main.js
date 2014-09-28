@@ -156,19 +156,8 @@ qx.Class.define("playground.c.Main",
           var             editor;
           var             expected;
           
-          try
-          {
-            // Disable the Stop button, reset the Stop flag, enable the Run
-            // button
-            button = qx.core.Init.getApplication().getUserData("stopButton");
-            button.setEnabled(false);
-            button = qx.core.Init.getApplication().getUserData("runButton");
-            button.setEnabled(true);
-          }
-          catch(e)
-          {
-            // fails in non-gui environment
-          }
+          // Set the program state
+          qx.core.Init.getApplication().setProgramState("idle");
 
           if (true)
           {
@@ -403,19 +392,8 @@ qx.Class.define("playground.c.Main",
         errorCount : 0
       };
 
-      try
-      {
-        // Enable the Stop button and disable the Run button
-        button = qx.core.Init.getApplication().getUserData("stopButton");
-        button.setEnabled(true);
-        button = qx.core.Init.getApplication().getUserData("runButton");
-        button.setEnabled(false);
-        playground.c.lib.Node._bStop = false;
-      }
-      catch(e)
-      {
-        // fails in non-gui environment
-      }
+      // Re-initialize the environment
+      playground.c.Main.reinit();
 
       // Function called upon each error encountered during parsing
       parser.yy.parseError = error.parseError;
@@ -428,9 +406,6 @@ qx.Class.define("playground.c.Main",
 
       // Create the root-level symbol table
       new playground.c.lib.Symtab(null, null, 0);
-
-      // Re-initialize the environment
-      playground.c.Main.reinit();
 
       // If there was a prior stdin and/or stdout, cancel any of its pending
       // timers, and flush output.
@@ -728,19 +703,8 @@ qx.Class.define("playground.c.Main",
         playground.c.Main.output(
           ">>> Program had errors. It did not run to completion.\n");
 
-        try
-        {
-          // Disable the Stop button, reset the Stop flag, enable the Run button
-          button = qx.core.Init.getApplication().getUserData("stopButton");
-          button.setEnabled(false);
-          button = qx.core.Init.getApplication().getUserData("runButton");
-          button.setEnabled(true);
-          playground.c.lib.Node._bStop = false;
-        }
-        catch(e)
-        {
-          // fails in non-gui environment
-        }
+        // Set the program state
+        qx.core.Init.getApplication().setProgramState("crashed");
 
         if (typeof process != "undefined")
         {
@@ -848,25 +812,14 @@ qx.Class.define("playground.c.Main",
       
       function completion()
       {
-        var             application;
         var             editor;
         var             memData;
         var             model;
         var             button;
+        var             application = qx.core.Init.getApplication();
 
-        try
-        {
-          // Disable the Stop button, reset the Stop flag, enable the Run button
-          button = qx.core.Init.getApplication().getUserData("stopButton");
-          button.setEnabled(false);
-          button = qx.core.Init.getApplication().getUserData("runButton");
-          button.setEnabled(true);
-          playground.c.lib.Node._bStop = false;
-        }
-        catch(e)
-        {
-          // fails in non-gui environment
-        }
+        // Set the program state
+        application.setProgramState("idle");
 
         // Handle stdio clean-up
         playground.c.stdio.AbstractFile.onProgramEnd();
@@ -896,10 +849,6 @@ qx.Class.define("playground.c.Main",
         // 'try' will fail when not in GUI environment
         try
         {
-          // We have stored some "global" variables in user data of
-          // the app
-          application = qx.core.Init.getApplication();
-
           // Retrieve the editor object
           editor = application.getUserData("sourceeditor");
 
@@ -960,20 +909,6 @@ qx.Class.define("playground.c.Main",
         var             message;
         var             button;
         var             developer = false;
-
-        try
-        {
-          // Disable the Stop button, reset the Stop flag, enable the Run button
-          button = qx.core.Init.getApplication().getUserData("stopButton");
-          button.setEnabled(false);
-          button = qx.core.Init.getApplication().getUserData("runButton");
-          button.setEnabled(true);
-          playground.c.lib.Node._bStop = false;
-        }
-        catch(e)
-        {
-          // fails in non-gui environment
-        }
 
         // Was this actually an Exit request?
         if (error instanceof playground.c.lib.Exit)
@@ -1078,8 +1013,8 @@ qx.Class.define("playground.c.Main",
             developer  : developer
           });
 
-        // Clean up after program completion
-//        completion();
+        // Set program state
+        qx.core.Init.getApplication().setProgramState("crashed");
 
         playground.c.Main.output(
           ">>> Program had errors. It did not run to completion.\n");
@@ -1089,6 +1024,9 @@ qx.Class.define("playground.c.Main",
           process.exit(1);
         }
       };
+
+      // Set program state
+      qx.core.Init.getApplication().setProgramState("running");
 
       // Process the abstract syntax tree to create symbol tables
       root.process(
@@ -1369,28 +1307,15 @@ qx.Class.define("playground.c.Main",
             // Output the error message
             playground.c.Main.output(message);
 
-            try
-            {
-              // Disable the Stop button, reset the Stop flag, enable the Run
-              // button
-              var button;
-              button = qx.core.Init.getApplication().getUserData("stopButton");
-              button.setEnabled(false);
-              button = qx.core.Init.getApplication().getUserData("runButton");
-              button.setEnabled(true);
-              playground.c.lib.Node._bStop = false;
-            }
-            catch(e)
-            {
-              // fails in non-gui environment
-            }
-
             // Send the error message as a status report
             playground.c.Main._statusReport(
               {
                 type       : "exit_crash",
                 exit_crash : message
               });
+
+            // Set program state
+            qx.core.Init.getApplication().setProgramState("idle");
 
             if (typeof process != "undefined")
             {

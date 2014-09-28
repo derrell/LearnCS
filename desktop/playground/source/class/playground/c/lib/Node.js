@@ -738,6 +738,9 @@ qx.Class.define("playground.c.lib.Node",
           // Is there a breakpoint at the current line?
           if (breakpoints[this.line - 1] || playground.c.lib.Node._bStep)
           {
+            // Set program state
+            qx.core.Init.getApplication().setProgramState("stopped");
+
             // Display the memory template view
             displayMemoryTemplateView();
 
@@ -765,6 +768,7 @@ qx.Class.define("playground.c.lib.Node",
                   function()
                   {
                     var             terminal;
+                    var             application = qx.core.Init.getApplication();
 
                     try
                     {
@@ -776,13 +780,15 @@ qx.Class.define("playground.c.lib.Node",
                           button_press : "Step"
                         });
 
+                      // Set the program state
+                      application.setProgramState("continuing");
+
                       // Note that they pressed the Step button, to break at
                       // next line.
                       playground.c.lib.Node._bStep = true;
 
                       // Set the focus on the terminal window
-                      terminal = 
-                        qx.core.Init.getApplication().getUserData("terminal");
+                      terminal = application.getUserData("terminal");
                       terminal.focus();
 
                       // Process the next node
@@ -801,6 +807,7 @@ qx.Class.define("playground.c.lib.Node",
                   function()
                   {
                     var             terminal;
+                    var             application = qx.core.Init.getApplication();
 
                     try
                     {
@@ -816,9 +823,11 @@ qx.Class.define("playground.c.lib.Node",
                       // breakpoint at that line)
                       playground.c.lib.Node._bStep = false;
 
+                      // Set the program state
+                      application.setProgramState("continuing");
+
                       // Set the focus on the terminal window
-                      terminal = 
-                        qx.core.Init.getApplication().getUserData("terminal");
+                      terminal = application.getUserData("terminal");
                       terminal.focus();
 
                       // Process the next nodes (until a breakpoint)

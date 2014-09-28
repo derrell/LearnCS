@@ -222,6 +222,7 @@ qx.Class.define("playground.view.Toolbar",
     // step button
     var stepButton = new qx.ui.toolbar.Button(
       this.tr("Step"), "icon/22/actions/go-next.png");
+    stepButton.setEnabled(false);
     this.add(stepButton);
     stepButton.setToolTipText(
       this.tr("Run current line of the program, then stop in called " +
@@ -231,6 +232,7 @@ qx.Class.define("playground.view.Toolbar",
     // continue button
     var continueButton = new qx.ui.toolbar.Button(
       this.tr("Continue"), "icon/22/actions/go-down.png");
+    continueButton.setEnabled(false);
     this.add(continueButton);
     continueButton.setToolTipText(
       this.tr("Continue running the program until the next breakpoint " +

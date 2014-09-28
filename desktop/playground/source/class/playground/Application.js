@@ -39,6 +39,13 @@ qx.Class.define("playground.Application",
       apply : "_applyCurrentSample",
       event : "changeCurrentSample",
       nullable : true
+    },
+    
+    
+    /** Current state of the program, for keeping gui in sync */
+    programState : {
+      apply : "_applyProgramState",
+      check : [ "idle", "running", "stopped", "continuing", "crashed" ]
     }
   },
 
@@ -680,6 +687,197 @@ else... */
         // arguments
         args
       );
+    },
+
+
+    // property apply
+    _applyProgramState : function(newState, old)
+    {
+      var             setGuiState;
+      var             application = qx.core.Init.getApplication();
+      
+      setGuiState = function(info)
+      {
+        // Set the button state for each button
+        info.buttonInfo.forEach(
+          function(buttonInfo)
+          {
+            var             button;
+
+            button = this.getUserData(buttonInfo.button);
+            button.setEnabled(buttonInfo.enabled);
+          }.bind(this));
+        
+        // Reset the Stop flag, if requested
+        if (info.resetStopFlag)
+        {
+          playground.c.lib.Node._bStop = false;
+        }
+        
+        // Clear all errors, if requested
+        if (info.clearErrors)
+        {
+          this.clearErrors();
+        }
+        
+        // Open the memory view, if requested
+        if (info.openMemoryView)
+        {
+          // Automatically display the memory view now, without sending the
+          // normal status report.
+          application.setUserData("memoryViewButtonInternalSet", true);
+          application.getUserData("memoryViewButton").setValue(true);
+          application.setUserData("memoryViewButtonInternalSet", false);
+        }
+      }.bind(this);
+
+      try
+      {
+        switch(newState)
+        {
+        case "idle" :             // not yet run or exited without crash
+          setGuiState(
+            {
+              buttonInfo :
+                [
+                  {
+                    button : "runButton",
+                    enabled: true
+                  },
+                  {
+                    button : "stepButton",
+                    enabled: false
+                  },
+                  {
+                    button : "continueButton",
+                    enabled: false
+                  },
+                  {
+                    button : "stopButton",
+                    enabled: false
+                  }
+                ],
+
+              resetStopFlag : true
+            });
+          break;
+
+        case "running" :          // starting program running
+          setGuiState(
+            {
+              buttonInfo :
+                [
+                  {
+                    button : "runButton",
+                    enabled: false
+                  },
+                  {
+                    button : "stepButton",
+                    enabled: false
+                  },
+                  {
+                    button : "continueButton",
+                    enabled: false
+                  },
+                  {
+                    button : "stopButton",
+                    enabled: true
+                  }
+                ],
+
+              resetStopFlag : true,
+              clearErrors   : true
+            });
+          break;
+
+        case "stopped" :          // stopped at a breakpoint
+          setGuiState(
+            {
+              buttonInfo :
+                [
+                  {
+                    button : "runButton",
+                    enabled: false
+                  },
+                  {
+                    button : "stepButton",
+                    enabled: true
+                  },
+                  {
+                    button : "continueButton",
+                    enabled: true
+                  },
+                  {
+                    button : "stopButton",
+                    enabled: true
+                  }
+                ],
+
+              resetStopFlag  : true,
+              openMemoryView : true
+            });
+          break;
+
+        case "continuing" :       // continuing via Step or Continue
+          setGuiState(
+            {
+              buttonInfo :
+                [
+                  {
+                    button : "runButton",
+                    enabled: false
+                  },
+                  {
+                    button : "stepButton",
+                    enabled: false
+                  },
+                  {
+                    button : "continueButton",
+                    enabled: false
+                  },
+                  {
+                    button : "stopButton",
+                    enabled: true
+                  }
+                ]
+            });
+          break;
+
+        case "crashed" :          // program crashed
+          setGuiState(
+            {
+              buttonInfo :
+                [
+                  {
+                    button : "runButton",
+                    enabled: true
+                  },
+                  {
+                    button : "stepButton",
+                    enabled: false
+                  },
+                  {
+                    button : "continueButton",
+                    enabled: false
+                  },
+                  {
+                    button : "stopButton",
+                    enabled: false
+                  }
+                ],
+
+              resetStopFlag : true
+            });
+          break;
+
+        default:
+          throw new Error("unexpected program state: " + newState);
+        }
+      }
+      catch(e)
+      {
+          // fails in non-gui environment
+      }
     },
 
 
@@ -1640,21 +1838,8 @@ else... */
 
         playground.c.Main.output(e);
 
-        try
-        {
-          // Disable the Stop button, reset the Stop flag, enable
-          // the Run button
-          button = 
-            qx.core.Init.getApplication().getUserData("stopButton");
-          button.setEnabled(false);
-          button =
-            qx.core.Init.getApplication().getUserData("runButton");
-          button.setEnabled(true);
-        }
-        catch(e2)
-        {
-          // fails in non-gui environment
-        }
+        // Set the program state
+        this.setProgramState("crashed");
       }
 
       try
