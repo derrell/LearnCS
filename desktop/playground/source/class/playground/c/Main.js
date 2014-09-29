@@ -810,7 +810,7 @@ qx.Class.define("playground.c.Main",
       // Initialize the machine singleton, which initializes the registers
       machine = playground.c.machine.Machine.getInstance();
       
-      function completion()
+      function completion(programState)
       {
         var             editor;
         var             memData;
@@ -819,7 +819,7 @@ qx.Class.define("playground.c.Main",
         var             application = qx.core.Init.getApplication();
 
         // Set the program state
-        application.setProgramState("idle");
+        application.setProgramState(programState || "idle");
 
         // Handle stdio clean-up
         playground.c.stdio.AbstractFile.onProgramEnd();
@@ -878,11 +878,14 @@ qx.Class.define("playground.c.Main",
         // Restore the original stack pointer
         mem.setReg("SP", "unsigned int", origSp);
 
-        // We're finished with this activation record.
-        mem.endActivationRecord();
+        if (programState != "crashed")
+        {
+          // We're finished with this activation record.
+          mem.endActivationRecord();
 
-        // Flush the arguments and any global variables from the memory view
-        mem.removeSymbolInfo();
+          // Flush the arguments and any global variables from the memory view
+          mem.removeSymbolInfo();
+        }
 
         try
         {
@@ -920,7 +923,7 @@ qx.Class.define("playground.c.Main",
               finalize();
             });
 
-          completion();
+          completion(error.exitCode === 127 ? "crashed" : "idle");
 
           // Show them their exit value
           playground.c.Main.output(
@@ -1271,7 +1274,7 @@ qx.Class.define("playground.c.Main",
                       finalize();
                     });
 
-                  completion();
+                  completion(value.value === 127 ? "crashed" : "idle");
                   
                   // Show them their exit value
                   playground.c.Main.output(
