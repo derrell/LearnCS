@@ -755,6 +755,10 @@ else... */
                   {
                     button : "stopButton",
                     enabled: false
+                  },
+                  {
+                    button : "clearErrButton",
+                    enabled: true
                   }
                 ],
 
@@ -782,6 +786,10 @@ else... */
                   {
                     button : "stopButton",
                     enabled: true
+                  },
+                  {
+                    button : "clearErrButton",
+                    enabled: false
                   }
                 ],
 
@@ -810,6 +818,10 @@ else... */
                   {
                     button : "stopButton",
                     enabled: true
+                  },
+                  {
+                    button : "clearErrButton",
+                    enabled: false
                   }
                 ],
 
@@ -838,6 +850,10 @@ else... */
                   {
                     button : "stopButton",
                     enabled: true
+                  },
+                  {
+                    button : "clearErrButton",
+                    enabled: false
                   }
                 ]
             });
@@ -863,6 +879,10 @@ else... */
                   {
                     button : "stopButton",
                     enabled: false
+                  },
+                  {
+                    button : "clearErrButton",
+                    enabled: true
                   }
                 ],
 

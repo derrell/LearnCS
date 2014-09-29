@@ -145,20 +145,27 @@ qx.Class.define("playground.view.Toolbar",
       this);
 */
 
-    // sample button
-    this.__samplesCheckButton = new qx.ui.form.ToggleButton(
+    // Create a grid for the primary buttons
+    var gridLayout = new qx.ui.layout.Grid(4, 0);
+    gridLayout.setRowHeight(0, 38);
+    gridLayout.setRowHeight(1, 38);
+    var grid = new qx.ui.container.Composite(gridLayout);
+    this.add(grid, { flex : 1 });
+
+
+
+    // show files button
+    this.__showFilesButton = new qx.ui.form.ToggleButton(
       this.tr("Show Files"), "icon/22/actions/edit-find.png"
     );
-    this.__samplesCheckButton.setValue(true);
-    this.add(this.__samplesCheckButton);
-    this.__samplesCheckButton.setToolTipText(this.tr("Show files"));
-    this.__samplesCheckButton.setAppearance("toolbar-button");
-    this.__samplesCheckButton.addListener("changeValue", function(e) {
+    this.__showFilesButton.setValue(true);
+    gridLayout.setColumnAlign(2, "right");
+    grid.add(this.__showFilesButton, { column : 2, row : 1 });
+    this.__showFilesButton.setToolTipText(this.tr("Show files"));
+    this.__showFilesButton.setAppearance("toolbar-button");
+    this.__showFilesButton.addListener("changeValue", function(e) {
       this.fireDataEvent("changeSample", e.getData(), e.getOldData());
     }, this);
-// djl...
-  //    this.__samplesCheckButton.exclude();
-// ...djl
 
     // Create an input area for command line arguments
     var label = new qx.ui.basic.Label("Command line: ");
@@ -166,7 +173,7 @@ qx.Class.define("playground.view.Toolbar",
       {
         marginTop : 14
       });
-    this.add(label);
+    grid.add(label, { column : 0, row : 0 });
 
     label = new qx.ui.basic.Label("a.out");
     label.set(
@@ -176,16 +183,16 @@ qx.Class.define("playground.view.Toolbar",
         marginRight : 8,
         font        : "bold"
       });
-    this.add(label);
+    grid.add(label, { column : 1, row : 0 });
 
     var cmdLine = new qx.ui.form.TextField();
     cmdLine.set(
       {
         height    : 28,
-        width     : 200,
+        width     : 140,
         marginTop : 8
       });
-    this.add(cmdLine);
+    grid.add(cmdLine, { column : 2, row : 0 });
     cmdLine.setToolTipText(
       this.tr("Command line arguments. Arguments are split at whitespace. "
 /*
@@ -202,7 +209,7 @@ qx.Class.define("playground.view.Toolbar",
     var runButton = new qx.ui.toolbar.Button(
       this.tr("Run"), "icon/22/actions/media-playback-start.png"
     );
-    this.add(runButton);
+    grid.add(runButton, { column : 3, row : 0 });
     runButton.setToolTipText(this.tr("Run the source code"));
     application.setUserData("runButton", runButton);
     runButton.addListener("execute", function() {
@@ -223,7 +230,7 @@ qx.Class.define("playground.view.Toolbar",
     var stepButton = new qx.ui.toolbar.Button(
       this.tr("Step"), "icon/22/actions/go-next.png");
     stepButton.setEnabled(false);
-    this.add(stepButton);
+    grid.add(stepButton, { column : 4, row : 0 });
     stepButton.setToolTipText(
       this.tr("Run current line of the program, then stop in called " +
               "function, or at next line"));
@@ -233,7 +240,7 @@ qx.Class.define("playground.view.Toolbar",
     var continueButton = new qx.ui.toolbar.Button(
       this.tr("Continue"), "icon/22/actions/go-down.png");
     continueButton.setEnabled(false);
-    this.add(continueButton);
+    grid.add(continueButton, { column : 4, row : 1 });
     continueButton.setToolTipText(
       this.tr("Continue running the program until the next breakpoint " +
               "or the program ends"));
@@ -242,12 +249,28 @@ qx.Class.define("playground.view.Toolbar",
     // stop button
     var stopButton = new qx.ui.toolbar.Button(
       this.tr("Stop"), "icon/22/actions/process-stop.png");
-    this.add(stopButton);
+    grid.add(stopButton, { column : 3, row : 1 });
     stopButton.setToolTipText(
       this.tr("Stop running the program"));
     application.setUserData("stopButton", stopButton);
     stopButton.setEnabled(false);
     stopButton.addListener("execute", playground.view.Toolbar.programStopped);
+
+    // clear errors button
+    var clearErrButton = new qx.ui.toolbar.Button(
+      this.tr("Clear Errors"), "icon/22/actions/edit-clear.png");
+    grid.add(clearErrButton, { column : 5, row : 0 });
+    stopButton.setToolTipText(
+      this.tr("Clear displayed error indicators"));
+    application.setUserData("clearErrButton", clearErrButton);
+    clearErrButton.setEnabled(false);
+    clearErrButton.addListener(
+      "execute",
+      function(e)
+      {
+        qx.core.Init.getApplication().clearErrors();
+      },
+      this);
 
     // highlighting button
     this.__highlightButton = new qx.ui.form.ToggleButton(
@@ -267,7 +290,7 @@ qx.Class.define("playground.view.Toolbar",
     label.set(
       {
         rich            : true,
-        width           : 200,
+        maxWidth        : 300,
         value           : (
           "<b style='color:blue'>" +
 /*
@@ -279,10 +302,8 @@ qx.Class.define("playground.view.Toolbar",
 */
           "</b>")
       });
-    this.add(label);
-
-    // spacer
-    this.addSpacer();
+    gridLayout.setColumnFlex(7, 1);
+    grid.add(label, { column : 7, row : 0, rowSpan : 2 });
 
     // log Check button
     this.__logCheckButton = new qx.ui.toolbar.CheckBox(
@@ -302,7 +323,7 @@ qx.Class.define("playground.view.Toolbar",
     this.__showMemTemplateButton = new qx.ui.toolbar.CheckBox(
       this.tr("Memory View"), "icon/22/apps/utilities-log-viewer.png"
     );
-    this.add(this.__showMemTemplateButton);
+    grid.add(this.__showMemTemplateButton, { column : 5, row : 1 });
     this.__showMemTemplateButton.setValue(true);
     this.__showMemTemplateButton.setToolTipText(
       this.tr("Show/hide memory view"));
@@ -344,7 +365,8 @@ qx.Class.define("playground.view.Toolbar",
     // Open Memory View button on error
     this.__openMemoryViewOnError =
       new qx.ui.form.CheckBox(this.tr("Debug on error"));
-    this.add(this.__openMemoryViewOnError);
+    grid.add(this.__openMemoryViewOnError, { column : 6, row : 1 });
+    this.__openMemoryViewOnError.setAlignY("bottom");
     this.__openMemoryViewOnError.setValue(true);
     this.__openMemoryViewOnError.setToolTipText(
       this.tr("Show the Memory View automatically if a run-time error occurs"));
@@ -404,7 +426,7 @@ qx.Class.define("playground.view.Toolbar",
     this.setRemovePriority(helpButton, 7);
     this.setRemovePriority(apiButton, 6);
     this.setRemovePriority(this.__logCheckButton, 5);
-    this.setRemovePriority(this.__samplesCheckButton, 4);
+    this.setRemovePriority(this.__showFilesButton, 4);
     this.setRemovePriority(this.__highlightButton, 3);
     this.setRemovePriority(urlShortButton, 1);
 
@@ -526,7 +548,7 @@ qx.Class.define("playground.view.Toolbar",
     __overflowMenu          : null,
     __highlightButton       : null,
     __logCheckButton        : null,
-    __samplesCheckButton    : null,
+    __showFilesButton    : null,
     __showMemTemplateButton : null,
 
     /**
@@ -543,7 +565,7 @@ qx.Class.define("playground.view.Toolbar",
      * @param show {Boolean} True, if the button should be pressed.
      */
     showExamples : function(show) {
-      this.__samplesCheckButton.setValue(show);
+      this.__showFilesButton.setValue(show);
     },
 
 
