@@ -157,7 +157,14 @@ qx.Class.define("playground.c.Main",
           var             expected;
           
           // Set the program state
-          qx.core.Init.getApplication().setProgramState("idle");
+          try
+          {
+            qx.core.Init.getApplication().setProgramState("idle");
+          }
+          catch(e)
+          {
+            // fails in non-gui environment
+          }
 
           if (true)
           {
@@ -664,11 +671,13 @@ qx.Class.define("playground.c.Main",
         }
         else
         {
-          line = playground.c.lib.Node._currentNode.line;
+          line = 
+            playground.c.lib.Node._currentNode
+            ? playground.c.lib.Node._currentNode.line
+            : 0;
           hint = error + "\n" + error.stack;
           message =
-            "[2]Internal error near line " +
-            playground.c.lib.Node._currentNode.line +
+            "[2]Internal error near line " + line +
             ": " + hint + "\n";
           developer = true;
         }
@@ -704,7 +713,14 @@ qx.Class.define("playground.c.Main",
           ">>> Program had errors. It did not run to completion.\n");
 
         // Set the program state
-        qx.core.Init.getApplication().setProgramState("crashed");
+        try
+        {
+          qx.core.Init.getApplication().setProgramState("crashed");
+        }
+        catch(e)
+        {
+          // fails in non-gui environment
+        }
 
         if (typeof process != "undefined")
         {
@@ -816,10 +832,16 @@ qx.Class.define("playground.c.Main",
         var             memData;
         var             model;
         var             button;
-        var             application = qx.core.Init.getApplication();
 
         // Set the program state
-        application.setProgramState(programState || "idle");
+        try
+        {
+          qx.core.Init.getApplication().setProgramState(programState || "idle");
+        }
+        catch (e)
+        {
+          // Ignore failure. It will fail when not in GUI environment
+        }
 
         // Handle stdio clean-up
         playground.c.stdio.AbstractFile.onProgramEnd();
@@ -850,7 +872,7 @@ qx.Class.define("playground.c.Main",
         try
         {
           // Retrieve the editor object
-          editor = application.getUserData("sourceeditor");
+          editor = qx.core.Init.getApplication().getUserData("sourceeditor");
 
           // Remove any decoration on the previous line
           if (playground.c.lib.Node._prevLine >= 0)
@@ -897,7 +919,7 @@ qx.Class.define("playground.c.Main",
           model = qx.data.marshal.Json.createModel(memData);
 
           // ... and update the memory template view.
-          application.memTemplate.setModel(model);
+          qx.core.Init.getApplication().memTemplate.setModel(model);
         }
         catch(e)
         {
@@ -1017,7 +1039,14 @@ qx.Class.define("playground.c.Main",
           });
 
         // Set program state
-        qx.core.Init.getApplication().setProgramState("crashed");
+        try
+        {
+          qx.core.Init.getApplication().setProgramState("crashed");
+        }
+        catch (e)
+        {
+          // Ignore failure. It will fail when not in GUI environment
+        }
 
         playground.c.Main.output(
           ">>> Program had errors. It did not run to completion.\n");
@@ -1029,7 +1058,14 @@ qx.Class.define("playground.c.Main",
       };
 
       // Set program state
-      qx.core.Init.getApplication().setProgramState("running");
+      try
+      {
+        qx.core.Init.getApplication().setProgramState("running");
+      }
+      catch (e)
+      {
+        // Ignore failure. It will fail when not in GUI environment
+      }
 
       // Process the abstract syntax tree to create symbol tables
       root.process(
@@ -1318,7 +1354,14 @@ qx.Class.define("playground.c.Main",
               });
 
             // Set program state
-            qx.core.Init.getApplication().setProgramState("idle");
+            try
+            {
+              qx.core.Init.getApplication().setProgramState("idle");
+            }
+            catch (e)
+            {
+              // Ignore failure. It will fail when not in GUI environment
+            }
 
             if (typeof process != "undefined")
             {
