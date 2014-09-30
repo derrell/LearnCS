@@ -452,9 +452,8 @@ var tests =
 */
     {
       name   : "t069-multi-char-char-constant.c"
-    }
+    },
 /*
-    ,
     {
       name   : "t070-missing-arg-to-builtin.c"
     },
@@ -465,6 +464,9 @@ var tests =
       name   : "t072-n-dir-array-initialization.c"
     }
 */
+    {
+      name   : "t073-assign-declared-not-defined-function.c"
+    }
   ];
 
 (function runTest(test)
