@@ -69,7 +69,7 @@ cat > /tmp/dcc$$ <<EOF
           }
           catch(e)
           {
-            console.log(">>> " + e.toString());
+            console.log(">>> " + e.toString() + "\n" + e.stack);
             process.exit(1);
           }
         }
