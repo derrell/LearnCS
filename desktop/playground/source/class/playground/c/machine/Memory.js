@@ -445,6 +445,14 @@ qx.Class.define("playground.c.machine.Memory",
         throw new playground.c.lib.NotYetImplemented("function pointers");
       }
 
+      if (addr === null)
+      {
+        throw new playground.c.lib.RuntimeError(
+          playground.c.lib.Node._currentNode,
+          "You are attempting to read or write something that does not have " +
+          "a value.");
+      }
+
       // Ensure we are accessing a valid region of memory
       if (! ((addr >= info.defs.start && 
               addr < info.defs.start + info.defs.length) ||
