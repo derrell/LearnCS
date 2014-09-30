@@ -3938,6 +3938,15 @@ qx.Class.define("playground.c.lib.Node",
               // declarators
               data.entry.calculateOffset();
 
+// FIXME: flatten the sub-AST and insert 0's for all uninitialized elements.
+// The flattened subtree should have a single initializer_list containing many
+// primary expressions with constants, rather than an initializer_list that
+// contains other initializer_list nodes. This is reasonable to do here,
+// because we now know the size of each of the dimensions of the array.
+//
+// We can also, here, ascertain if a dimension other than the first has been
+// left empty. Currently, that goes undetected.
+
               // If this is a root entry (global variable)...
               if (data.entry.getSymtab().getParent() === null &&
                   data.entry.getSpecAndDecl()[0].getType() != "function")
@@ -6192,7 +6201,11 @@ qx.Class.define("playground.c.lib.Node",
               type = "pointer";
               break;
 
-            case "array" :
+            case "array" :      // should only happen in initializers
+              // Find out the type based on the next specifier/declarator
+              specAndDecl.shift();
+              continue;
+
             case "address" :
               // Find out the type based on the next specifier/declarator
               if (bFirst)

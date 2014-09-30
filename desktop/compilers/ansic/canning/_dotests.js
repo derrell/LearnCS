@@ -457,6 +457,12 @@ var tests =
     ,
     {
       name   : "t070-missing-arg-to-builtin.c"
+    },
+    {
+      name   : "t071-uppercase-while.c"
+    },
+    {
+      name   : "t072-n-dir-array-initialization.c"
     }
 */
   ];
