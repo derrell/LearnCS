@@ -297,45 +297,17 @@ qx.Class.define("playground.c.stdio.Printf",
 
             if (position >= arguments.length)
             {
-              // Convert the format string back into C syntax
-              formatForDisplay = [];
-              this._format.split("").forEach(
-                function(ch)
-                {
-                  if ("\a\b\f\n\r\t\v\'\"\\".indexOf(ch) != -1)
-                  {
-                    formatForDisplay.push('\\');
-                    formatForDisplay.push(
-                      {
-                        '\a' : 'a',
-                        '\b' : 'b',
-                        '\f' : 'f',
-                        '\n' : 'n',
-                        '\r' : 'r',
-                        '\t' : 't',
-                        '\v' : 'v',
-                        '\'' : '\'',
-                        '\"' : '"',
-                        '\\' : '\\'
-                      }[ch]);
-                  }
-                  else
-                  {
-                    formatForDisplay.push(ch);
-                  }
-                });
-              formatForDisplay = formatForDisplay.join("");
-
               throw new playground.c.lib.RuntimeError(
                 playground.c.lib.Node._currentNode,
-                "Format string \"" + formatForDisplay + "\" " +
-                "requires more values (arguments) be provided. Only " + 
-                arguments.length +
-                (arguments.length == 1 ? " was" : " were") + " given. " +
+                "The format string indicates that " +
+                "more values (arguments) must be provided.\n" + 
                 "Counting percent signs in the format string indicates that " +
-                numFlags + " additional " +
-                (numFlags == 1 ? "argument is" : "arguments are") + 
-                " likely required.");
+                numFlags +
+                  (numFlags == 1 
+                   ? " argument after the format string is\n"
+                   : " arguments after the format string are\n") + 
+                "likely required, but only " + arguments.length +
+                (arguments.length == 1 ? " was" : " were") + " provided.");
             }
 
             token.arg = arguments[position++];
