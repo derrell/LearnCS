@@ -5395,9 +5395,10 @@ qx.Class.define("playground.c.lib.Node",
                         this,
                         "The dot following '" + v.getName() + "' " +
                         "indicates that you are trying to reference " +
-                        "a structure or union member, but variable '" +
-                         v.getName() + "' is not declared as a " +
-                         "structure or union."));
+                        "a structure or union member,\n" +
+                        "but variable '" + v.getName() + "' " +
+                        "is not declared as a " +
+                        "structure or union."));
               return;
             }
 
