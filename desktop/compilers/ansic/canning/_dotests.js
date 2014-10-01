@@ -439,7 +439,7 @@ var tests =
     },
 /*
     {
-      name   : "x066-deref-address-of.c"
+      name   : "t066-deref-address-of.c"
     },
 */
     {
