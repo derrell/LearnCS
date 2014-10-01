@@ -5387,6 +5387,20 @@ qx.Class.define("playground.c.lib.Node",
             specAndDecl = value1.specAndDecl[value1.specAndDecl.length - 1];
             symtab = specAndDecl.getStructSymtab();
             
+            // If we didn't find a struct/union symbol table...
+            if (! symtab)
+            {
+              // ... then this identifier is not a struct/union
+              failure(new playground.c.lib.RuntimeError(
+                        this,
+                        "The dot following '" + v.getName() + "' " +
+                        "indicates that you are trying to reference " +
+                        "a structure or union member, but variable '" +
+                         v.getName() + "' is not declared as a " +
+                         "structure or union."));
+              return;
+            }
+
             // Push the struct symbol table onto the symtab stack
             playground.c.lib.Symtab.pushStack(symtab);
 
