@@ -687,6 +687,7 @@ ERROR: Error: Command failed:
 STDOUT: >>> Error near line 1: #include for local files (with quotes) is not yet supported: "defs.h"
 If it's a system include file, you should use angle brackets instead: <defs.h>
 
+
 % ../dcc t033-include-missing-right-quote.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: >>> Preprocessor encountered an error:
@@ -1218,4 +1219,19 @@ STDOUT: Error: See arrow pointing to position of error near line 7:
 
 Errors encountered: 1
 
+
+% ../dcc t073-assign-declared-not-defined-function.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
+ERROR: Error: Command failed: 
+STDOUT: 
+>>> Running program
+Error near line 6: You are attempting to read or write something that does not have a value.
+>>> Program had errors. It did not run to completion.
+
+% ../dcc t074-struct-member-access-on-non-struct-var.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
+ERROR: Error: Command failed: 
+STDOUT: 
+>>> Running program
+Error near line 4: The dot following 'x' indicates that you are trying to reference a structure or union member,
+but variable 'x' is not declared as a structure or union.
+>>> Program had errors. It did not run to completion.
 

@@ -466,6 +466,9 @@ var tests =
 */
     {
       name   : "t073-assign-declared-not-defined-function.c"
+    },
+    {
+      name   : "t074-struct-member-access-on-non-struct-var.c"
     }
   ];
 
