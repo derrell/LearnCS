@@ -5597,7 +5597,8 @@ qx.Class.define("playground.c.lib.Node",
                 "A switch statement must be followed by an opening " +
                 "brace ({),\n" + 
                 "  then by some number of 'case' statement blocks,\n" +
-                "  then by a closing brace (})."));
+                "  then by a closing brace (}),\n" +
+                "  and should not be terminated with a semicolon."));
             return;
           }
 
