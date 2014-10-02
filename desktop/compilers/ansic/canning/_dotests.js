@@ -469,6 +469,12 @@ var tests =
     },
     {
       name   : "t074-struct-member-access-on-non-struct-var.c"
+    },
+    {
+      name   : "t075-switch-no-statement-list.c"
+    },
+    {
+      name   : "t076-switch-empty-statement-list.c"
     }
   ];
 
