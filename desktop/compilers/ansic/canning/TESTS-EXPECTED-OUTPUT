@@ -1235,3 +1235,16 @@ Error near line 4: The dot following 'x' indicates that you are trying to refere
 but variable 'x' is not declared as a structure or union.
 >>> Program had errors. It did not run to completion.
 
+% ../dcc t075-switch-no-statement-list.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
+ERROR: Error: Command failed: 
+STDOUT: Error near line 3: A switch statement must be followed by an opening brace ({),
+  then by some number of 'case' statement blocks,
+  then by a closing brace (}).
+>>> Program had errors. It did not run to completion.
+
+% ../dcc t076-switch-empty-statement-list.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
+ERROR: Error: Command failed: 
+STDOUT: 
+>>> Running program
+>>> Program exited with exit code 127
+
