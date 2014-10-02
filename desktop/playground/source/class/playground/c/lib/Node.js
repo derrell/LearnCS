@@ -5588,7 +5588,21 @@ qx.Class.define("playground.c.lib.Node",
          */
         if (! bExecuting)
         {
-          if (this.children[1].children[1].type != "statement_list")
+          // Ensure there's at least a set of braces for a statement list
+          if (! this.children[1].children[1])
+          {
+            failure(
+              new playground.c.lib.RuntimeError(
+                this,
+                "A switch statement must be followed by an opening " +
+                "brace ({),\n" + 
+                "  then by some number of 'case' statement blocks,\n" +
+                "  then by a closing brace (})."));
+            return;
+          }
+
+          if (this.children[1].children[1].type != "statement_list" &&
+              this.children[1].children[1].type != "_null_")
           {
             throw new Error("Internal error: expected statement list");
           }
@@ -5618,6 +5632,14 @@ qx.Class.define("playground.c.lib.Node",
 
                 // Get a reference to the statement list
                 subnode = this.children[1].children[1];
+
+                // If there's no statement list...
+                if (subnode.type == "_null_")
+                {
+                  // ... then there's nothing to do.
+                  succ();
+                  return;
+                }
 
                 // If we haven't evaluated case expressions yet...
                 if (! subnode.cases)
