@@ -4273,7 +4273,7 @@ console.log("\n\n");
           this,
           "Found a label that is neither 'default' nor 'case ' " +
           "followed by a constant.\n" +
-          "  Perhaps it is misspelled or missing a space?");
+          "  Perhaps it is misspelled or missing a space after 'case'?");
 
         // Not reached; just to make this easier to find, later...
         throw new playground.c.lib.NotYetImplemented("label");
