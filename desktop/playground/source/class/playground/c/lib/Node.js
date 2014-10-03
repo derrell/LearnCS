@@ -4267,9 +4267,16 @@ console.log("\n\n");
           break;
         }
         
-        data.specifiers.setType("label");
+        // Labels are not currently implemented. If we get here, it likely
+        // means that they put in a mis-spelled case label.
+        throw new playground.c.lib.RuntimeError(
+          this,
+          "Found a label that is neither 'default' nor 'case ' " +
+          "followed by a constant.\n" +
+          "  Perhaps it is misspelled or missing a space?");
+
+        // Not reached; just to make this easier to find, later...
         throw new playground.c.lib.NotYetImplemented("label");
-        success();
         break;
 
       case "left-shift" :
