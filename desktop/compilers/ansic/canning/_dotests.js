@@ -475,6 +475,12 @@ var tests =
     },
     {
       name   : "t076-switch-empty-statement-list.c"
+    },
+    {
+      name   : "t077-multi-dim-array-initializer.c"
+    },
+    {
+      name   : "t078-multi-dim-array-bad-1.c "
     }
   ];
 

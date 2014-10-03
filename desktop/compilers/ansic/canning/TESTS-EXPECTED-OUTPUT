@@ -603,7 +603,7 @@ int main(int argc, char * argv[])
 % ../dcc t022-array-initialize.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 STDOUT: 
 >>> Running program
-a=23 b=23 c[0]=1 c[1]=2 d[0]=3 d[1]=4
+a=23 c[0]=1 c[1]=2 d[0]=3 d[1]=4
 arr55[0]=no
 arr55[1]=first
 arr55[2]=second
@@ -625,9 +625,8 @@ chars[5]=00= 
 
 % ../dcc t023-array-initialize-bad-1.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
-STDOUT: 
->>> Running program
-Error near line 4: Array size is 2, initializer length is 3. Initializers do not fit in array.
+STDOUT: Error near line 4: The array's dimension 0 size is 2; the initializer length is 3.
+  Initializer values do not fit in the array.
 >>> Program had errors. It did not run to completion.
 
 % ../dcc t024-call-int-as-func.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
@@ -646,16 +645,12 @@ Error near line 10: Pointers to functions are not currently supported.
 
 % ../dcc t026-struct-initialize.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
-STDOUT: 
->>> Running program
-Error near line 7: struct initializers are not currently supported.
+STDOUT: Error near line 7: struct initializers are not currently supported.
 >>> Program had errors. It did not run to completion.
 
 % ../dcc t027-union-initialize.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
-STDOUT: 
->>> Running program
-Error near line 7: union initializers are not currently supported.
+STDOUT: Error near line 7: union initializers are not currently supported.
 >>> Program had errors. It did not run to completion.
 
 % ../dcc t028-global-struct-decl.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
@@ -1168,7 +1163,7 @@ Error near line 8: Operation [subtraction (-)] between 'address' and 'address' m
 
 % ../dcc t060-array-variable-length.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
-STDOUT: Error near line 6: The length of an array must be a constant. It can not be a variable.
+STDOUT: Error near line 6: The length of an array must be a constant. It may not be a variable or expression.
 >>> Program had errors. It did not run to completion.
 
 % ../dcc t061-return-value-from-void-function.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
@@ -1239,7 +1234,8 @@ but variable 'x' is not declared as a structure or union.
 ERROR: Error: Command failed: 
 STDOUT: Error near line 3: A switch statement must be followed by an opening brace ({),
   then by some number of 'case' statement blocks,
-  then by a closing brace (}).
+  then by a closing brace (}),
+  and should not be terminated with a semicolon.
 >>> Program had errors. It did not run to completion.
 
 % ../dcc t076-switch-empty-statement-list.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
@@ -1247,4 +1243,39 @@ ERROR: Error: Command failed:
 STDOUT: 
 >>> Running program
 >>> Program exited with exit code 127
+
+% ../dcc t077-multi-dim-array-initializer.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
+STDOUT: 
+>>> Running program
+arr[0][0][0] = 23
+arr[0][0][1] = 0
+arr[0][0][2] = 0
+arr[0][0][3] = 0
+arr[0][1][0] = 0
+arr[0][1][1] = 0
+arr[0][1][2] = 0
+arr[0][1][3] = 0
+arr[1][0][0] = 24
+arr[1][0][1] = 0
+arr[1][0][2] = 0
+arr[1][0][3] = 0
+arr[1][1][0] = 25
+arr[1][1][1] = 26
+arr[1][1][2] = 0
+arr[1][1][3] = 0
+arr[2][0][0] = 0
+arr[2][0][1] = 0
+arr[2][0][2] = 0
+arr[2][0][3] = 0
+arr[2][1][0] = 0
+arr[2][1][1] = 0
+arr[2][1][2] = 0
+arr[2][1][3] = 0
+>>> Program exited with exit code 0
+
+% ../dcc t078-multi-dim-array-bad-1.c  --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
+ERROR: Error: Command failed: 
+STDOUT: Error near line 1: Array must be given an explicit length for every dimension except the first (0th) dimension.
+Dimension 1 is missing a length.
+>>> Program had errors. It did not run to completion.
 
