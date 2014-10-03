@@ -301,15 +301,7 @@ qx.Class.define("playground.c.lib.Node",
 
     /**
      * Display, recursively, the abstract syntax tree beginning at the
-     * specified node
-     *
-     * @param node {Map|String|Null}
-     *   One of:
-     *    - A Node object to be displayed, along with, recursively, all of its
-     *      children.
-     *    - A string, representing the value of the parent node. This is used
-     *      for the names of identifiers, values of integers, etc.
-     *    - null, to indicate lack of an optional child of the parent node
+     * current node
      *
      * @param indent {Integer?}
      *   The indentation level. The top-level call may be issued without passing
@@ -1231,7 +1223,7 @@ qx.Class.define("playground.c.lib.Node",
                   new playground.c.lib.RuntimeError(
                     this,
                     "The length of an array must be a constant. " +
-                    "It can not be a variable."));
+                    "It may not be a variable or expression."));
                 return;
               }
 
@@ -3878,7 +3870,15 @@ qx.Class.define("playground.c.lib.Node",
             bExecuting,
             function()
             {
+              var             i;
+              var             info;
+              var             type;
+              var             nodeExpr;
+              var             nodeConst;
+              var             dimSizes;
               var             specOrDecl;
+              var             newInitList;
+              var             lineNum = this.children[0].line;
 
               // If we're not executing, and we find that the declarator is an
               // array without a length, then determine the length by the number
@@ -3938,14 +3938,260 @@ qx.Class.define("playground.c.lib.Node",
               // declarators
               data.entry.calculateOffset();
 
-// FIXME: flatten the sub-AST and insert 0's for all uninitialized elements.
-// The flattened subtree should have a single initializer_list containing many
-// primary expressions with constants, rather than an initializer_list that
-// contains other initializer_list nodes. This is reasonable to do here,
-// because we now know the size of each of the dimensions of the array.
-//
-// We can also, here, ascertain if a dimension other than the first has been
-// left empty. Currently, that goes undetected.
+              // Retrieve the array sizes (among other information)
+              info = playground.c.lib.SymtabEntry.getInfo(data.specAndDecl);
+              
+              // Ensure that all dimensions have a length
+              dimSizes = info.arraySizes;
+              dimSizes.forEach(
+                function(dimSize, index)
+                {
+                  if (typeof dimSize != "number" || dimSize <= 0)
+                  {
+                    throw new playground.c.lib.RuntimeError(
+                      this,
+                      "Array must be given an explicit length for every " +
+                        "dimension except the first (0th) dimension.\n" +
+                      "Dimension " + index + " is missing a length.");
+                  }
+                }.bind(this));
+
+/*
+console.log("flatten: dim=" + dim + "\n\ndestInitList:");
+destInitList.display(0);
+console.log("\nsrcInitList:");
+if (srcInitList)
+{
+  srcInitList.display(0);
+}
+else
+{
+  console.log("null");
+}
+console.log("\n\n");
+
+                // See if there are remaining dimensions.
+                if (dim < dimSizes.length - 1)
+                {
+                  // If there's an initializer, it must be another list
+                  if (srcInitList && srcInitList.type != "initializer_list")
+                  {
+                    throw new RuntimeError(
+                      this,
+                      "Missing braces in initializer list.\n" +
+                      "Only the final dimension may have " +
+                      "constant value initializers.");
+                  }
+
+                  // ... then call recursively.
+                  flatten(destInitList, 
+                          (srcInitList && srcInitList.children
+                           ? srcInitList.children[dim]
+                           : null),
+                          dim + 1);
+                }
+
+                // Copy all initializers from source to destination
+                for (;
+                     length > 0 && srcInitList && srcInitList.length > 0;
+                     --length)
+                {
+                  destInitList.children.push(srcInitList.pop());
+                }
+                
+                // Now fill the destination with 0's until length is reached
+                for (; length > 0; --length)
+                {
+                  // Create a new primary expression node
+                  nodeExpr = new playground.c.lib.Node("primary_expression", 
+                                                       "", 
+                                                       lineNum);
+                  
+                  // It's child is the constant (value 0) node
+                  nodeConst = 
+                    new playground.c.lib.Node("constant", "0", lineNum);
+                  nodeConst.numberType = playground.c.lib.Node.NumberType.Int;
+                  nodeConst.value = 0;
+                  nodeExpr.children.push(nodeConst);
+                  
+                  // Add expression node to the destination initialization list
+                  destInitList.children.push(nodeExpr);
+                }
+
+console.log("returning. dim=" + dim + ", length=" + length);
+destInitList.display(0);
+console.log("\nsrcInitList:");
+if (srcInitList)
+{
+  srcInitList.display(0);
+}
+else
+{
+  console.log("null");
+}
+console.log("\n\n");
+*/
+
+              if (this.children[1].type == "initializer_list")
+              {
+                // Struct and union initializers are not currently implmeneted
+                type = data.specAndDecl[data.specAndDecl.length - 1].getType();
+                if (type == "struct" || type == "union")
+                {
+                  failure(
+                    new playground.c.lib.RuntimeError(
+                      this,
+                      type + " initializers are not currently supported."));
+                  return;
+                }
+
+                // Add extra elements to the initializer list, so that there
+                // is one per element in the array. All elements not
+                // explicitly initialized in the program are implicitly
+                // initialized to 0.
+                var addInitializers = function(initList, dim)
+                {
+                  var             i;
+                  var             type;
+                  var             bMaxDim = (dim == dimSizes.length - 1);
+                  var             expected;
+                  var             nodeExpr;
+                  var             nodeConst;
+                  var             nodeInitializerList;
+                  
+                  // Ensure there are no more initializers than this dimension
+                  if (initList.length > dimSizes[dim])
+                  {
+                    throw new playground.c.lib.RuntimeError(
+                      this,
+                      "The array's dimension " + dim +
+                      " size is " + dimSizes[dim] + "; " +
+                      "the initializer length is " + 
+                      initList.length + ".\n" +
+                      "  Initializer values do not fit in the array.");
+                  }
+
+                  // If we're at the maximum dimension...
+                  if (bMaxDim)
+                  {
+                    // ... then we expect all primary_expressions here
+                    expected = "primary_expression";
+                  }
+                  else
+                  {
+                    // otherwise, we expect initializer_lists
+                    expected = "initializer_list";
+                  }
+
+                  // Ensure that we find the correct thing at this dimension
+                  for (i = 0; i < initList.length; i++)
+                  {
+                    if (initList[i].type != expected)
+                    {
+                      throw new playground.c.lib.RuntimeError(
+                        this,
+                        "It appears you have the wrong number of sets of " +
+                        "braces in the initializer.\n" +
+                        "  Initializers must have one set of braces for " +
+                        "each dimension of an array.\n" +
+                        "  Initializer constants may only " +
+                        "apply to the final dimension.");
+                    }
+                  }
+
+                  // Do we need to add something at this dimension?
+                  if (initList.length < dimSizes[dim])
+                  {
+                    // Are we at the maximum dimension?
+                    if (! bMaxDim)
+                    {
+                      // Nope. We'll add an initializer list
+                      while (initList.length < dimSizes[dim])
+                      {
+                        nodeInitializerList = 
+                          new playground.c.lib.Node("initializer_list",
+                                                    "",
+                                                    lineNum);
+                        initList.push(nodeInitializerList);
+                      }
+                    }
+                    else
+                    {
+                      // This is the maximum dimension. Add constants
+                      while (initList.length < dimSizes[dim])
+                      {
+                        // Create a new primary expression node
+                        nodeExpr = 
+                          new playground.c.lib.Node("primary_expression", 
+                                                    "", 
+                                                    lineNum);
+                        nodeConst = 
+                          new playground.c.lib.Node("constant", "0", lineNum);
+                        nodeConst.numberType = 
+                          playground.c.lib.Node.NumberType.Int;
+                        nodeConst.value = 0;
+                        nodeExpr.children.push(nodeConst);
+                        initList.push(nodeExpr);
+                      }
+                    }
+                  }
+                  
+                  if (! bMaxDim)
+                  {
+                    for (i = 0; i < dimSizes[dim]; i++)
+                    {
+                      addInitializers(initList[i].children, dim + 1);
+                    }
+                  }
+                }.bind(this);
+
+//console.log("before: ");
+//this.children[1].display(0);
+//console.log("\n\n");
+                addInitializers(this.children[1].children, 0);
+//console.log("after addInitializers: ");
+//this.children[1].display(0);
+//console.log("\n\n");
+
+                // Flatten initializer_list AST. The flattened subtree has a
+                // single initializer_list containing many primary expressions
+                // with constants, rather than an initializer_list that
+                // contains other initializer_list nodes. This is reasonable
+                // to do here, because we now know the size of each of the
+                // dimensions of the array and addInitializers has filled it
+                // in.
+                var flatten = function(srcInitList, destInitList)
+                {
+                  var             node;
+
+                  // As long as there are still nodes in the source list...
+                  while (srcInitList.length > 0)
+                  {
+                    // Retrieve the first remaining node
+                    node = srcInitList.pop();
+                    
+                    // If it's an initializer_list (not final dimension)...
+                    if (node.type == "initializer_list")
+                    {
+                      // ... then call recursively
+                      flatten(node.children, destInitList);
+                    }
+                    else
+                    {
+                      // It's a primary_expression. Move it to new list.
+                      destInitList.unshift(node);
+                    }
+                  }
+                }.bind(this);
+
+                newInitList = [];
+                flatten(this.children[1].children, newInitList);
+                this.children[1].children = newInitList;
+
+//console.log("after flatten: ");
+//this.children[1].display(0);
+//console.log("\n\n");
+              }
 
               // If this is a root entry (global variable)...
               if (data.entry.getSymtab().getParent() === null &&
@@ -6325,43 +6571,6 @@ qx.Class.define("playground.c.lib.Node",
             // Get a reference to the initializer list, for quick access
             initializerList = this.children[1].children;
 
-            // Struct and union initializers are not currently implmeneted
-            if (specAndDecl[specAndDecl.length - 1].getType() == "struct" || 
-                specAndDecl[specAndDecl.length - 1].getType() == "union")
-            {
-              failure(
-                new playground.c.lib.RuntimeError(
-                  this,
-                  type + " initializers are not currently supported."));
-              return;
-            }
-
-            // Ensure there is no more than one initializer for a scalar
-            if ((! (specAndDecl[0] instanceof playground.c.lib.Declarator) &&
-                initializerList.length > 1))
-            {
-              failure(
-                new playground.c.lib.RuntimeError(
-                  this,
-                  "There can only be one single initializer; found " +
-                  initializerList.length + " initializers."));
-              return;
-            }
-
-            // Ensure there are no more initializers than a fixed array length
-            if ((specAndDecl[0] instanceof playground.c.lib.Declarator &&
-                 initializerList.length > specAndDecl[0].getArrayCount()))
-            {
-              failure(
-                new playground.c.lib.RuntimeError(
-                  this,
-                  "Array size is " + specAndDecl[0].getArrayCount() + ", " +
-                  "initializer length is " + 
-                  initializerList.length +
-                  ". Initializers do not fit in array."));
-              return;
-            }
-
             if (initializerList.length > 0)
             {
               i = 0;
@@ -6471,12 +6680,15 @@ qx.Class.define("playground.c.lib.Node",
 
               // If the value being assigned to is a pointer and the
               // RHS's type is some sort of int...
-              if ((value1.specAndDecl[0].getType() == "pointer" ||
-                   value1.specAndDecl[0].getType() == "array"))
+              if (value1.specAndDecl[0].getType() == "pointer")
               {
                 // ... then figure out the size of what's pointed to
                 specAndDecl = value1.specAndDecl.slice(1);
                 size = specAndDecl[0].calculateByteCount(1, specAndDecl, 0);
+              }
+              else if (value1.specAndDecl[0].getType() == "array")
+              {
+                size = playground.c.machine.Memory.typeSize[type];
               }
               else
               {
