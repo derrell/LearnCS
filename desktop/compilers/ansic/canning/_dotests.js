@@ -481,6 +481,9 @@ var tests =
     },
     {
       name   : "t078-multi-dim-array-bad-1.c "
+    },
+    {
+      name   : "t079-pass-struct-to-function-2.c"
     }
   ];
 

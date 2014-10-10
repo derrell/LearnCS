@@ -224,11 +224,11 @@ qx.Class.define("playground.c.lib.Node",
               ! specOrDecl.getConstant ||
               specOrDecl.getConstant() != "enum_value")
           {
-              // occurs during executing, so error is fatal
-              this.error("Each 'case' statement must represent a constant " +
-                         "expression. It may not rely on any variables' " +
-                         "values.");
-              // not reached
+            // occurs during executing, so error is fatal
+            this.error("Each 'case' statement must represent a constant " +
+                       "expression. It may not rely on any variables' " +
+                       "values.");
+            // not reached
           }
 
           // We need to retrieve the enum value.
@@ -256,6 +256,21 @@ qx.Class.define("playground.c.lib.Node",
           // symbol's current value.
           if (! bNoDerefAddress && specOrDecl.getType() != "array")
           {
+            // assignment and passing of whole structs is not supported
+            if (type == "struct" || type == "union")
+            {
+              this.error("Sorry, struct and union types may not be assigned " +
+                         "or passed as a whole in LearnCS!.");
+
+              // not reached
+
+              // reminder
+              throw new playground.c.lib.NotYetImplemented(
+                "struct/union assignment/passing");
+
+              // not reached
+            }
+
             value.value = 
               playground.c.lib.Node.__mem.get(value.value, type, true); 
           }
@@ -3765,7 +3780,8 @@ qx.Class.define("playground.c.lib.Node",
         else
         {
           // We're executing. Obtain the symbol table entry for this identifier
-          entry = playground.c.lib.Symtab.getCurrent().get(this.value, false);
+          symtab = playground.c.lib.Symtab.getCurrent();
+          entry = symtab && symtab.get(this.value, false);
           if (! entry)
           {
             this._throwIt(new playground.c.lib.RuntimeError(

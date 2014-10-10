@@ -1279,3 +1279,10 @@ STDOUT: Error near line 1: Array must be given an explicit length for every dime
 Dimension 1 is missing a length.
 >>> Program had errors. It did not run to completion.
 
+% ../dcc t079-pass-struct-to-function-2.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
+ERROR: Error: Command failed: 
+STDOUT: 
+>>> Running program
+Error near line 16: Error: line 16: Sorry, struct and union types may not be assigned or passed as a whole in LearnCS!.
+>>> Program had errors. It did not run to completion.
+
