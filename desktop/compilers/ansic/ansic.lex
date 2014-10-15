@@ -81,9 +81,10 @@ NL                      [\n]
 
 {L}({L}|{D})*		{
                           var             sym;
+                          var             symtab;
 
-                          sym = playground.c.lib.Symtab.getCurrent().get(
-                              yytext, false);
+                          symtab = playground.c.lib.Symtab.getCurrent();
+                          sym = symtab && symtab.get(yytext, false);
                           return (sym &&
                                   sym.getIsType() &&
                                   ! playground.c.lib.Node.bSawStruct
