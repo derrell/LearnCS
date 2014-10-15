@@ -123,6 +123,7 @@ qx.Class.define("nodesqlite.Application",
       var             logger = require("morgan");
       var             express = require("express");
       var             passport = require("passport");
+      var             constants = require('constants');
       var             cookieParser = require("cookie-parser");
       var             cookieSession = require("cookie-session");
       var             LocalStrategy = require("passport-local").Strategy;
@@ -834,7 +835,14 @@ qx.Class.define("nodesqlite.Application",
 //              ca                 : fs.readFileSync(credentialFiles.ca, "utf8"),
 //            requestCert        : true,
 //            passphrase         : "mypass",
-              rejectUnauthorized : false
+              rejectUnauthorized : false,
+              
+              //
+              // Supply `SSL_OP_NO_SSLv3` constant as secureOption to disable
+              // SSLv3 from the list of supported protocols that SSLv23_method
+              // supports (due to POODLE exploit)
+              //
+              secureOptions: constants.SSL_OP_NO_SSLv3
             };
         }
 
