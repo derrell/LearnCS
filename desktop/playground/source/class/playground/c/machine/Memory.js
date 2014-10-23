@@ -385,8 +385,8 @@ qx.Class.define("playground.c.machine.Memory",
               (this.__getBase() == 16 ? "0x" : "") +
               addr.toString(this.__getBase()) + 
               ": " +
-              "Can not access type '" + type + "' at this address. " +
-              "(This is sometimes called a 'Bus Error'.)");
+              "\n  Can not access type '" + type + "' at this address. " +
+              "\n  (This is sometimes called a 'Bus Error'.)");
         }
         else
         {
@@ -438,7 +438,7 @@ qx.Class.define("playground.c.machine.Memory",
         throw new playground.c.lib.RuntimeError(
           playground.c.lib.Node._currentNode,
           "You are attempting to read or write a function address. " +
-          "Function pointers are an advanced feature of C which are not " +
+          "\n  Function pointers are an advanced feature of C which are not " +
           "currently implemented in LearnCS!.");
         
         // not reached, but here to easily locate it later
@@ -468,10 +468,10 @@ qx.Class.define("playground.c.machine.Memory",
           "Invalid memory access at " + 
             (this.__getBase() == 16 ? "0x" : "") +
             addr.toString(this.__getBase()) + ": " +
-            "Address to read from is not within the " +
+            "\n  Address to read from is not within the " +
             "'globals and statics', 'heap', or " +
             "'run time stack' regions of memory. " +
-            "(This is sometimes called a 'Segmentation Fault'.)");
+            "\n  (This is sometimes called a 'Segmentation Fault'.)");
       }
 
       // Ensure that the access remains in one region of memory
@@ -496,11 +496,11 @@ qx.Class.define("playground.c.machine.Memory",
           "Invalid memory access at " + 
             (this.__getBase() == 16 ? "0x" : "") +
             addr.toString(this.__getBase()) + ": " +
-            "Size of object being assigned causes a " +
+            "\n  Size of object being assigned causes a " +
             "read beyond the " +
             "bounds of its 'globals and statics', 'heap', or " +
             "'run time stack' region of memory. " +
-            "(This is sometimes called a 'Segmentation Fault'.)");
+            "\n  (This is sometimes called a 'Segmentation Fault'.)");
       }
 
       // If so requested, test that memory to be accessed has been initialized.
@@ -575,7 +575,7 @@ qx.Class.define("playground.c.machine.Memory",
         throw new playground.c.lib.RuntimeError(
           playground.c.lib.Node._currentNode,
           "You are attempting to read or write a function address. " +
-          "Function pointers are an advanced feature of C which are not " +
+          "\n  Function pointers are an advanced feature of C which are not " +
           "currently implemented in LearnCS!.");
         
         // not reached, but here to easily locate it later
@@ -600,10 +600,10 @@ qx.Class.define("playground.c.machine.Memory",
           "Invalid memory access at " + 
             (this.__getBase() == 16 ? "0x" : "") +
             addr.toString(this.__getBase()) + ": " +
-            "Address to write to is not within the " +
+            "\n  Address to write to is not within the " +
             "'globals and statics', 'heap', or " +
-            "'run time stack' regions of memory. " +
-            "(This is sometimes called a 'Segmentation Fault'.)");
+            "'run time stack' regions of memory." +
+            "\n  (This is sometimes called a 'Segmentation Fault'.)");
       }
 
       // Ensure that the access remains in one region of memory
@@ -628,11 +628,11 @@ qx.Class.define("playground.c.machine.Memory",
           "Invalid memory access at " + 
             (this.__getBase() == 16 ? "0x" : "") +
             addr.toString(this.__getBase()) + ": " +
-            "Size of object being assigned causes a " +
+            "\n  Size of object being assigned causes a " +
             "write beyond the " +
             "bounds of its 'globals and statics', 'heap', or " +
             "'run time stack' region of memory. " +
-            "(This is sometimes called a 'Segmentation Fault'.)");
+            "\n  (This is sometimes called a 'Segmentation Fault'.)");
       }
 
       // Mark initialized memory
@@ -785,7 +785,7 @@ qx.Class.define("playground.c.machine.Memory",
             "Invalid memory access at " + 
               (this.__getBase() == 16 ? "0x" : "") +
               addrDest.toString(this.__getBase()) + ": " +
-              "ASSIGN TO address is not within the " +
+              "\n  ASSIGN TO address is not within the " +
               "'globals and statics', 'heap', or " +
               "'run time stack' regions of memory.");
         }
@@ -815,7 +815,7 @@ qx.Class.define("playground.c.machine.Memory",
             "Invalid memory access at " + 
               (this.__getBase() == 16 ? "0x" : "") +
               addrSrc.toString(this.__getBase()) + ": " +
-              "Size of object being assigned causes a " +
+              "\n  Size of object being assigned causes a " +
               "read beyond the " +
               "bounds of its 'globals and statics', 'heap', or " +
               "'run time stack' region of memory.");
@@ -846,7 +846,7 @@ qx.Class.define("playground.c.machine.Memory",
             "Invalid memory access at " + 
               (this.__getBase() == 16 ? "0x" : "") +
               addrDest.toString(this.__getBase()) + ": " +
-              "Size of object being assigned to causes a " +
+              "\n  Size of object being assigned to causes a " +
               "write beyond " +
               "the bounds of its 'globals and statics', " +
               "'heap', or 'run time stack' region of memory.");
@@ -860,7 +860,7 @@ qx.Class.define("playground.c.machine.Memory",
           "Invalid memory access at " +
             (this.__getBase() == 16 ? "0x" : "") +
             addrSrc.toString(this.__getBase()) + ": " +
-            "only char or unsigned char can be read from " +
+            "\n  only char or unsigned char can be read from " +
             "an odd address.");
       }
 
@@ -873,7 +873,7 @@ qx.Class.define("playground.c.machine.Memory",
           "Invalid memory access at " + 
             (this.__getBase() == 16 ? "0x" : "") +
             addrDest.toString(this.__getBase()) + ": " +
-            "only char or unsigned char can be written to " +
+            "\n  only char or unsigned char can be written to " +
             "an odd address.");
       }
 
