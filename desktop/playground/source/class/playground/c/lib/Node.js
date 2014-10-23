@@ -1334,7 +1334,7 @@ qx.Class.define("playground.c.lib.Node",
                                 "that is not an array"),
                             success,
                             failure);
-              break;
+              return;
             }
 
             // If we got a symbol table entry...
@@ -1394,6 +1394,7 @@ qx.Class.define("playground.c.lib.Node",
                                   "Array index must evaluate to an integer"),
                                 success,
                                 failure);
+                  return;
                 }
 
                 // Multiply together the byte count of each element, and the
@@ -1664,6 +1665,7 @@ qx.Class.define("playground.c.lib.Node",
           // Throw a Break error, which will be caught by loops and the switch
           // statement.
           this._throwIt(new playground.c.lib.Break(this), success, failure);
+          return;
         }
         else
         {
@@ -2009,7 +2011,7 @@ qx.Class.define("playground.c.lib.Node",
 
         // Throw a Continue error, which will be caught by loops.
         this._throwIt(new playground.c.lib.Continue(this), success, failure);
-        break;
+        return;
 
       case "declaration" :
         /*
@@ -3798,7 +3800,7 @@ qx.Class.define("playground.c.lib.Node",
                             "Undeclared variable: " + this.value),
                           success,
                           failure);
-            break;
+            return;
           }
           success(entry);
         }

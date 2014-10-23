@@ -1295,3 +1295,10 @@ Expected type for array: pointer to  pointer to  int
 
 >>> Program exited with exit code 0
 
+% ../dcc t081-int-accessed-as-array.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
+ERROR: Error: Command failed: 
+STDOUT: 
+>>> Running program
+Error near line 7: Can't access an array element of something that is not an array
+>>> Program had errors. It did not run to completion.
+

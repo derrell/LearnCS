@@ -487,6 +487,9 @@ var tests =
     },
     {
       name   : "t080-array-wrong-param-type.c"
+    },
+    {
+      name   : "t081-int-accessed-as-array.c"
     }
   ];
 
