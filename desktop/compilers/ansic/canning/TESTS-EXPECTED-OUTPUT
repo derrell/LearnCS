@@ -1182,14 +1182,16 @@ STDOUT: Error near line 8: The name 'x' is already defined. It was previously de
 ERROR: Error: Command failed: 
 STDOUT: 
 >>> Running program
-Error near line 17: You are attempting to read or write a function address. Function pointers are an advanced feature of C which are not currently implemented in LearnCS!.
+Error near line 17: You are attempting to read or write a function address. 
+  Function pointers are an advanced feature of C which are not currently implemented in LearnCS!.
 >>> Program had errors. It did not run to completion.
 
 % ../dcc t064-function-name-as-rvalue.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 
 STDOUT: 
 >>> Running program
-Error near line 12: You are attempting to read or write a function address. Function pointers are an advanced feature of C which are not currently implemented in LearnCS!.
+Error near line 12: You are attempting to read or write a function address. 
+  Function pointers are an advanced feature of C which are not currently implemented in LearnCS!.
 >>> Program had errors. It did not run to completion.
 
 % ../dcc t065-redefine-builtin.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
@@ -1287,13 +1289,13 @@ Error near line 16: Error: line 16: Sorry, struct and union types may not be ass
 >>> Program had errors. It did not run to completion.
 
 % ../dcc t080-array-wrong-param-type.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
+ERROR: Error: Command failed: 
 STDOUT: 
 >>> Running program
-Line 12: The type of argument 1 to function find_size is incompatible with the declaration of parameter array
-Argument type: int
-Expected type for array: pointer to  pointer to  int
-
->>> Program exited with exit code 0
+Error near line 12: The type of argument 1 to function find_size is incompatible with the declaration of parameter array
+  Argument type: int
+  Expected type for array: pointer to  pointer to  int
+>>> Program had errors. It did not run to completion.
 
 % ../dcc t081-int-accessed-as-array.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
 ERROR: Error: Command failed: 

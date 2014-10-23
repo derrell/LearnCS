@@ -842,169 +842,319 @@ qx.Class.define("playground.c.stdio.Scanf",
         var             i = 0;
         var             addr;
 
-        switch (kind)
+        // We may have blocked awaiting characters, and thus not be in a
+        // context where someone has an open try/catch block. We'll create one
+        // here. This will catch illegal memory setting, if the addresses
+        // we've been passed are bad.
+        try
         {
-        default:
-          // not recognized, like %q
-          success(conv || ic != this.EOF ? done : this.EOF); // ultimate return
-          return;
-
-        case 'n':
-          if (! (flags & this.Flags.NOASSIGN))
-          {                     // silly, though
-            if (flags & this.Flags.SHORT)
-            {
-              this._mem.set(this._args.shift(), "short", nrchars);
-            }
-            else if (flags & this.Flags.LONG)
-            {
-              this._mem.set(this._args.shift(), "long", nrchars);
-            }
-            else
-            {
-              this._mem.set(this._args.shift(), "int", nrchars);
-            }
-          }
-          doscan_7(succ, fail);
-          break;
-
-        case 'p':               // pointer
-          flags |= this.Flags.POINTER;
-          /* fallthrough */
-
-        case 'b':               // binary
-        case 'd':               // decimal
-        case 'i':               // general integer
-        case 'o':               // octal
-        case 'u':               // unsigned
-        case 'x':               // hexadecimal
-        case 'X':               // ditto
-          if (! (flags & this.Flags.WIDTHSPEC) || width > this.NUMLEN)
+          switch (kind)
           {
-            width = this.NUMLEN;
-          }
-
-          if (!width)
-          {
-            success(done);      // ultimate return
+          default:
+            // not recognized, like %q
+            success(conv ||
+                    ic != this.EOF ? done : this.EOF); // ultimate return
             return;
-          }
 
-          this.o_collect(
-            function(b)
-            {
-              base = b;
-
-              if (this._inpBuf.length == 0 ||
-                  (this._inpBuf.length == 1 && 
-                   (this._inpBuf[0] == '-' || this._inpBuf[0] == '+')))
+          case 'n':
+            if (! (flags & this.Flags.NOASSIGN))
+            {                     // silly, though
+              if (flags & this.Flags.SHORT)
               {
-                success(done);      // ultimate return
-                return;
+                this._mem.set(this._args.shift(), "short", nrchars);
               }
-
-              // We had already counted the first character, so the number of
-              // characters is the input buffer length - 1.
-              nrchars += this._inpBuf.length - 1;
-
-              if (! (flags & this.Flags.NOASSIGN))
+              else if (flags & this.Flags.LONG)
               {
-                val = parseInt(this._inpBuf.join(""), base);
+                this._mem.set(this._args.shift(), "long", nrchars);
+              }
+              else
+              {
+                this._mem.set(this._args.shift(), "int", nrchars);
+              }
+            }
+            doscan_7(succ, fail);
+            break;
 
-                if (flags & this.Flags.LONG)
+          case 'p':               // pointer
+            flags |= this.Flags.POINTER;
+            /* fallthrough */
+
+          case 'b':               // binary
+          case 'd':               // decimal
+          case 'i':               // general integer
+          case 'o':               // octal
+          case 'u':               // unsigned
+          case 'x':               // hexadecimal
+          case 'X':               // ditto
+            if (! (flags & this.Flags.WIDTHSPEC) || width > this.NUMLEN)
+            {
+              width = this.NUMLEN;
+            }
+
+            if (!width)
+            {
+              success(done);      // ultimate return
+              return;
+            }
+
+            this.o_collect(
+              function(b)
+              {
+                base = b;
+
+                if (this._inpBuf.length == 0 ||
+                    (this._inpBuf.length == 1 && 
+                     (this._inpBuf[0] == '-' || this._inpBuf[0] == '+')))
                 {
-                  this._mem.set(this._args.shift(), "unsigned long", val);
+                  success(done);      // ultimate return
+                  return;
                 }
-                else if (flags & this.Flags.SHORT)
+
+                // We had already counted the first character, so the number of
+                // characters is the input buffer length - 1.
+                nrchars += this._inpBuf.length - 1;
+
+                if (! (flags & this.Flags.NOASSIGN))
                 {
-                  this._mem.set(this._args.shift(), "unsigned short", val);
+                  val = parseInt(this._inpBuf.join(""), base);
+
+                  if (flags & this.Flags.LONG)
+                  {
+                    this._mem.set(this._args.shift(), "unsigned long", val);
+                  }
+                  else if (flags & this.Flags.SHORT)
+                  {
+                    this._mem.set(this._args.shift(), "unsigned short", val);
+                  }
+                  else
+                  {
+                    this._mem.set(this._args.shift(), "unsigned int", val);
+                  }
+                }
+
+                doscan_7(succ, fail);
+              }.bind(this),
+              fail,
+              ic,
+              stream,
+              kind,
+              width);
+            break;
+
+          case 'c':
+            if (! (flags & this.Flags.WIDTHSPEC))
+            {
+              width = 1;
+            }
+
+            if (! (flags & this.Flags.NOASSIGN))
+            {
+              addr = this._args.shift();
+            }
+
+            if (!width)
+            {
+              success(done);      // ultimate return
+              return;
+            }
+
+            i = 0;
+
+            var doscan_6_case_c_1 = function(succ, fail)
+            {
+              if (width && ic != this.EOF)
+              {
+                if (! (flags & this.Flags.NOASSIGN))
+                {
+                  this._mem.set(addr + i++, "char", ic.charCodeAt(0));
+                }
+
+                if (--width)
+                {
+                  stream.getc(
+                    function(ch)
+                    {
+                      ic = ch;
+                      nrchars++;
+                      doscan_6_case_c_1(succ, fail);
+                    }.bind(this),
+                    fail);
                 }
                 else
                 {
-                  this._mem.set(this._args.shift(), "unsigned int", val);
+                  doscan_6_case_c_2(succ, fail);
                 }
-              }
-              
-              doscan_7(succ, fail);
-            }.bind(this),
-            fail,
-            ic,
-            stream,
-            kind,
-            width);
-          break;
-
-        case 'c':
-          if (! (flags & this.Flags.WIDTHSPEC))
-          {
-            width = 1;
-          }
-
-          if (! (flags & this.Flags.NOASSIGN))
-          {
-            addr = this._args.shift();
-          }
-
-          if (!width)
-          {
-            success(done);      // ultimate return
-            return;
-          }
-
-          i = 0;
-
-          var doscan_6_case_c_1 = function(succ, fail)
-          {
-            if (width && ic != this.EOF)
-            {
-              if (! (flags & this.Flags.NOASSIGN))
-              {
-                this._mem.set(addr + i++, "char", ic.charCodeAt(0));
-              }
-
-              if (--width)
-              {
-                stream.getc(
-                  function(ch)
-                  {
-                    ic = ch;
-                    nrchars++;
-                    doscan_6_case_c_1(succ, fail);
-                  }.bind(this),
-                  fail);
               }
               else
               {
                 doscan_6_case_c_2(succ, fail);
               }
+            }.bind(this);
+
+            var doscan_6_case_c_2 = function(succ, fail)
+            {
+              if (width)
+              {
+                if (ic != this.EOF)
+                {
+                  stream.ungetc(ic);
+                }
+                nrchars--;
+              }
+
+              doscan_7(succ, fail);
+            }.bind(this);
+
+            doscan_6_case_c_1(succ, fail);
+            break;
+
+          case 's':
+            var doscan_6_case_s_1 = function(succ, fail)
+            {
+              if (width && ic != this.EOF && !isspace(ic))
+              {
+                if (! (flags & this.Flags.NOASSIGN))
+                {
+                  this._mem.set(addr + i++, "char", ic.charCodeAt(0));
+                }
+
+                if (--width)
+                {
+                  stream.getc(
+                    function(ch)
+                    {
+                      ic = ch;
+                      nrchars++;
+                      doscan_6_case_s_1(succ, fail);
+                    }.bind(this),
+                    fail);
+                }
+                else
+                {
+                  doscan_6_case_s_2(succ, fail);
+                }
+              }
+              else
+              {
+                doscan_6_case_s_2(succ, fail);
+              }
+            }.bind(this);
+
+            var doscan_6_case_s_2 = function(succ, fail)
+            {
+              // terminate the string
+              if (! (flags & this.Flags.NOASSIGN))
+              {
+                this._mem.set(addr + i++, "char", 0);
+              }
+
+              if (width)
+              {
+                if (ic != this.EOF)
+                {
+                  stream.ungetc(ic);
+                }
+                nrchars--;
+              }
+
+              doscan_7(succ, fail);
+            }.bind(this);
+
+            if (! (flags & this.Flags.WIDTHSPEC))
+            {
+              width = 0xffff;
+            }
+
+            if (! (flags & this.Flags.NOASSIGN))
+            {
+              addr = this._args.shift();
+            }
+
+            if (!width)
+            {
+              success(done);      // ultimate return
+              return;
+            }
+
+            i = 0;
+            doscan_6_case_s_1(succ, fail);
+            break;
+
+          case '[':
+            if (! (flags & this.Flags.WIDTHSPEC))
+            {
+              width = 0xffff;
+            }
+
+            if (!width)
+            {
+              success(done);      // ultimate return
+              return;
+            }
+
+            if (getFormatChar() == '^' )
+            {
+              reverse = 1;
+              getFormatChar();
             }
             else
             {
-              doscan_6_case_c_2(succ, fail);
+              reverse = 0;
             }
-          }.bind(this);
 
-          var doscan_6_case_c_2 = function(succ, fail)
-          {
-            if (width)
+            xtable = {};
+
+            if (this._format[0] == ']')
             {
-              if (ic != this.EOF)
-              {
-                stream.ungetc(ic);
-              }
-              nrchars--;
+              xtable[getFormatChar()] = 1;
             }
-            
-            doscan_7(succ, fail);
-          }.bind(this);
 
-          doscan_6_case_c_1(succ, fail);
-          break;
+            while (this._format.length > 0 && this._format[0] != ']')
+            {
+              xtable[getFormatChar()] = 1;
 
-        case 's':
-          var doscan_6_case_s_1 = function(succ, fail)
-          {
-            if (width && ic != this.EOF && !isspace(ic))
+              if (this._format[0] == '-')
+              {
+                getFormatChar();
+
+                if (this._format.length > 0 &&
+                    this._format[0] != ']' &&
+                    this._format[0] >= this._formatUsed[1])
+                {
+                  var c;
+
+                  for (c = this._formatUsed[1] + 1; c <= this._format[0] ; c++)
+                  {
+                    xtable[c] = 1;
+                  }
+                  getFormatChar();
+                }
+                else
+                {
+                  xtable['-'] = 1;
+                }
+              }
+            }
+
+            if (this._format.length === 0)
+            {
+              success(done);      // ultimate return
+              return;
+            }
+
+            if (! ((xtable[ic] || 0) ^ reverse))
+            {
+              stream.ungetc(ic);
+              success(done);      // ultimate return
+              return;
+            }
+
+            if (! (flags & this.Flags.NOASSIGN))
+            {
+              addr = this._args.shift();
+            }
+
+            var doscan_6_case_charset_1 = function(succ, fail)
             {
               if (! (flags & this.Flags.NOASSIGN))
               {
@@ -1018,237 +1168,101 @@ qx.Class.define("playground.c.stdio.Scanf",
                   {
                     ic = ch;
                     nrchars++;
-                    doscan_6_case_s_1(succ, fail);
+
+                    if (width &&
+                        ic != this.EOF && ((xtable[ic] || 0) ^ reverse))
+                    {
+                      doscan_6_case_charset_1(succ, fail);
+                    }
+                    else
+                    {
+                      doscan_6_case_charset_2(succ, fail);
+                    }
                   }.bind(this),
                   fail);
               }
-              else
+            }.bind(this);
+
+            var doscan_6_case_charset_2 = function(succ, fail)
+            {
+              if (width)
               {
-                doscan_6_case_s_2(succ, fail);
-              }
-            }
-            else
-            {
-              doscan_6_case_s_2(succ, fail);
-            }
-          }.bind(this);
-
-          var doscan_6_case_s_2 = function(succ, fail)
-          {
-            // terminate the string
-            if (! (flags & this.Flags.NOASSIGN))
-            {
-              this._mem.set(addr + i++, "char", 0);
-            }
-
-            if (width)
-            {
-              if (ic != this.EOF)
-              {
-                stream.ungetc(ic);
-              }
-              nrchars--;
-            }
-            
-            doscan_7(succ, fail);
-          }.bind(this);
-
-          if (! (flags & this.Flags.WIDTHSPEC))
-          {
-            width = 0xffff;
-          }
-
-          if (! (flags & this.Flags.NOASSIGN))
-          {
-            addr = this._args.shift();
-          }
-
-          if (!width)
-          {
-            success(done);      // ultimate return
-            return;
-          }
-          
-          i = 0;
-          doscan_6_case_s_1(succ, fail);
-          break;
-
-        case '[':
-          if (! (flags & this.Flags.WIDTHSPEC))
-          {
-            width = 0xffff;
-          }
-
-          if (!width)
-          {
-            success(done);      // ultimate return
-            return;
-          }
-
-          if (getFormatChar() == '^' )
-          {
-            reverse = 1;
-            getFormatChar();
-          }
-          else
-          {
-            reverse = 0;
-          }
-
-          xtable = {};
-          
-          if (this._format[0] == ']')
-          {
-            xtable[getFormatChar()] = 1;
-          }
-
-          while (this._format.length > 0 && this._format[0] != ']')
-          {
-            xtable[getFormatChar()] = 1;
-
-            if (this._format[0] == '-')
-            {
-              getFormatChar();
-
-              if (this._format.length > 0 &&
-                  this._format[0] != ']' &&
-                  this._format[0] >= this._formatUsed[1])
-              {
-                var c;
-
-                for (c = this._formatUsed[1] + 1; c <= this._format[0] ; c++)
+                if (ic != this.EOF)
                 {
-                  xtable[c] = 1;
+                  stream.ungetc(ic);
                 }
-                getFormatChar();
+                nrchars--;
               }
-              else
+
+              if (! (flags & this.Flags.NOASSIGN))
+              {                     // terminate string
+                this._mem.set(addr + i++, "char", 0);
+              }
+
+              succ(true);         // continue
+            }.bind(this);
+
+            doscan_6_case_charset_1(succ, fail);
+            break;
+
+          case 'e':
+          case 'E':
+          case 'f':
+          case 'g':
+          case 'G':
+            if (! (flags & this.Flags.WIDTHSPEC) || width > this.NUMLEN)
+            {
+              width = this.NUMLEN;
+            }
+
+            if (!width)
+            {
+              success(done);      // ultimate return
+              return;
+            }
+
+            this.f_collect(
+              function()
               {
-                xtable['-'] = 1;
-              }
-            }
-          }
-
-          if (this._format.length === 0)
-          {
-            success(done);      // ultimate return
-            return;
-          }
-
-          if (! ((xtable[ic] || 0) ^ reverse))
-          {
-            stream.ungetc(ic);
-            success(done);      // ultimate return
-            return;
-          }
-
-          if (! (flags & this.Flags.NOASSIGN))
-          {
-            addr = this._args.shift();
-          }
-
-          var doscan_6_case_charset_1 = function(succ, fail)
-          {
-            if (! (flags & this.Flags.NOASSIGN))
-            {
-              this._mem.set(addr + i++, "char", ic.charCodeAt(0));
-            }
-
-            if (--width)
-            {
-              stream.getc(
-                function(ch)
+                if (this._inpBuf.length == 0 ||
+                    (this._inpBuf.length == 1 &&
+                     (this._inpBuf[0] == '-' || this._inpBuf[0] == '+')))
                 {
-                  ic = ch;
-                  nrchars++;
-                  
-                  if (width && ic != this.EOF && ((xtable[ic] || 0) ^ reverse))
+                  success(done);      // ultimate return
+                  return;
+                }
+
+                // We had already counted the first character, so the number of
+                // characters is the input buffer length - 1.
+                nrchars += this._inpBuf.length - 1;
+
+                if (! (flags & this.Flags.NOASSIGN))
+                {
+                  ld_val = parseFloat(this._inpBuf.join(""));
+
+                  if (flags & this.Flags.LONG)
                   {
-                    doscan_6_case_charset_1(succ, fail);
+                    this._mem.set(this._args.shift(), "double", ld_val);
                   }
                   else
                   {
-                    doscan_6_case_charset_2(succ, fail);
+                    this._mem.set(this._args.shift(), "float", ld_val);
                   }
-                }.bind(this),
-                fail);
-            }
-          }.bind(this);
-
-          var doscan_6_case_charset_2 = function(succ, fail)
-          {
-            if (width)
-            {
-              if (ic != this.EOF)
-              {
-                stream.ungetc(ic);
-              }
-              nrchars--;
-            }
-
-            if (! (flags & this.Flags.NOASSIGN))
-            {                     // terminate string
-              this._mem.set(addr + i++, "char", 0);
-            }
-            
-            succ(true);         // continue
-          }.bind(this);
-
-          doscan_6_case_charset_1(succ, fail);
-          break;
-
-        case 'e':
-        case 'E':
-        case 'f':
-        case 'g':
-        case 'G':
-          if (! (flags & this.Flags.WIDTHSPEC) || width > this.NUMLEN)
-          {
-            width = this.NUMLEN;
-          }
-
-          if (!width)
-          {
-            success(done);      // ultimate return
-            return;
-          }
-
-          this.f_collect(
-            function()
-            {
-              if (this._inpBuf.length == 0 ||
-                  (this._inpBuf.length == 1 &&
-                   (this._inpBuf[0] == '-' || this._inpBuf[0] == '+')))
-              {
-                success(done);      // ultimate return
-                return;
-              }
-
-              // We had already counted the first character, so the number of
-              // characters is the input buffer length - 1.
-              nrchars += this._inpBuf.length - 1;
-
-              if (! (flags & this.Flags.NOASSIGN))
-              {
-                ld_val = parseFloat(this._inpBuf.join(""));
-
-                if (flags & this.Flags.LONG)
-                {
-                  this._mem.set(this._args.shift(), "double", ld_val);
                 }
-                else
-                {
-                  this._mem.set(this._args.shift(), "float", ld_val);
-                }
-              }
-              
-              doscan_7(succ, fail);
-            }.bind(this),
-            fail,
-            ic,
-            stream,
-            width);
-          break;
+
+                doscan_7(succ, fail);
+              }.bind(this),
+              fail,
+              ic,
+              stream,
+              width);
+            break;
+          }
+        }
+        catch(e)
+        {
+          console.log("doscan_6: " + e);
+          fail(e);
         }
       }.bind(this);
 

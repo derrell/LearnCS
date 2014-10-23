@@ -3187,35 +3187,46 @@ qx.Class.define("playground.c.lib.Node",
                             "incompatible with the declaration " +
                             "of parameter " + entry.getName() + 
                             "\n" +
-                            "Argument type: " + 
+                            "  Argument type: " + 
                             playground.c.lib.SymtabEntry.getInfo(
                               otherSpecAndDecl).description +
                             "\n" +
-                            "Expected type for " +  entry.getName() + ": " + 
+                            "  Expected type for " +  entry.getName() + ": " + 
                             playground.c.lib.SymtabEntry.getInfo(
                             thisSpecAndDecl).description;
                         }
                       }.bind(this));
                   }
 
-                  // If not compatible, display a warning.
-                  // FIXME: this should be an error, not a warning. We'll
-                  // leave it as a warning until feeling sure that it doesn't
-                  // generate messages when it shouldn't.
-                  if (error)
+                  if (false)
                   {
-                    error = "Line " + this.line + ": " + error + "\n";
+                    // If not compatible, display a warning.
+                    // FIXME: this should be an error, not a warning. We'll
+                    // leave it as a warning until feeling sure that it doesn't
+                    // generate messages when it shouldn't.
+                    if (error)
+                    {
+                      error = "Line " + this.line + ": " + error + "\n";
 
-                    try
-                    {
-                      terminal = 
-                        qx.core.Init.getApplication().getUserData(
-                          "terminal");
-                      terminal.addOutput(error);
+                      try
+                      {
+                        terminal = 
+                          qx.core.Init.getApplication().getUserData(
+                            "terminal");
+                        terminal.addOutput(error);
+                      }
+                      catch(e)
+                      {
+                        console.log(error);
+                      }
                     }
-                    catch(e)
+                  }
+                  else
+                  {
+                    if (error)
                     {
-                      console.log(error);
+                      failure(new playground.c.lib.RuntimeError(this, error));
+                      return;
                     }
                   }
 
