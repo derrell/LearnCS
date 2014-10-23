@@ -3153,19 +3153,28 @@ qx.Class.define("playground.c.lib.Node",
                         // Get the argument's specifier/declarator list
                         otherSpecAndDecl = data.argTypes[i];
 
-                        // Compare each specifier/declarator. If any are not
-                        // compatible, then the list is incompatible.
-                        incompatible =
-                          thisSpecAndDecl.filter(
-                            function(specOrDecl, i)
-                            {
-                              var             incompatible;
-                              incompatible = 
-                                ! specOrDecl.isCompatible(
-                                  otherSpecAndDecl[i],
-                                  otherSpecAndDecl.length == 1);
-                              return incompatible;
-                            });
+                        // Specifier/declarator lists must be the same length
+                        if (thisSpecAndDecl.length != otherSpecAndDecl.length)
+                        {
+                          // Add an entry to show that they're incompatible
+                          incompatible.push(1); 
+                        }
+                        else
+                        {
+                          // Compare each specifier/declarator. If any are not
+                          // compatible, then the list is incompatible.
+                          incompatible =
+                            thisSpecAndDecl.filter(
+                              function(specOrDecl, i)
+                              {
+                                var             incompatible;
+                                incompatible = 
+                                  ! specOrDecl.isCompatible(
+                                    otherSpecAndDecl[i],
+                                    otherSpecAndDecl.length == 1);
+                                return incompatible;
+                              });
+                        }
 
                         if (incompatible.length > 0)
                         {

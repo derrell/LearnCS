@@ -484,6 +484,9 @@ var tests =
     },
     {
       name   : "t079-pass-struct-to-function-2.c"
+    },
+    {
+      name   : "t080-array-wrong-param-type.c"
     }
   ];
 
