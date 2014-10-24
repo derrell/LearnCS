@@ -1304,3 +1304,18 @@ STDOUT:
 Error near line 7: Can't access an array element of something that is not an array
 >>> Program had errors. It did not run to completion.
 
+% echo '3' |  ../dcc t082-scanf-address-0.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
+3
+ERROR: Error: Command failed: 
+STDOUT: 
+>>> Running program
+How many squares should display? Error near line 8: Invalid memory access at 0: 
+  Address to write to is not within the 'globals and statics', 'heap', or 'run time stack' regions of memory.
+  (This is sometimes called a 'Segmentation Fault'.)
+>>> Program had errors. It did not run to completion.
+
+% ../dcc t083-array-initializer-negative-value.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
+STDOUT: 
+>>> Running program
+>>> Program exited with exit code 0
+

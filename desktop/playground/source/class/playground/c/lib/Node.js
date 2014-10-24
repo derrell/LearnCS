@@ -4092,7 +4092,7 @@ console.log("\n\n");
                   var             i;
                   var             type;
                   var             bMaxDim = (dim == dimSizes.length - 1);
-                  var             expected;
+                  var             bExpectInitializerList;
                   var             nodeExpr;
                   var             nodeConst;
                   var             nodeInitializerList;
@@ -4109,22 +4109,20 @@ console.log("\n\n");
                       "  Initializer values do not fit in the array.");
                   }
 
-                  // If we're at the maximum dimension...
-                  if (bMaxDim)
+                  // If we're not at the maximum dimension...
+                  if (! bMaxDim)
                   {
-                    // ... then we expect all primary_expressions here
-                    expected = "primary_expression";
-                  }
-                  else
-                  {
-                    // otherwise, we expect initializer_lists
-                    expected = "initializer_list";
+                    // ... then we expect initializer_lists
+                    bExpectInitializerList = true;
                   }
 
                   // Ensure that we find the correct thing at this dimension
                   for (i = 0; i < initList.length; i++)
                   {
-                    if (initList[i].type != expected)
+                    if ((bExpectInitializerList && 
+                         initList[i].type != "initializer_list") ||
+                        (! bExpectInitializerList &&
+                         initList[i].type == "initializer_list"))
                     {
                       throw new playground.c.lib.RuntimeError(
                         this,

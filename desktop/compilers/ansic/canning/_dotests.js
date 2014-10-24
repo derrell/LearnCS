@@ -490,6 +490,13 @@ var tests =
     },
     {
       name   : "t081-int-accessed-as-array.c"
+    },
+    {
+      name   : "t082-scanf-address-0.c",
+      stdin  : "3"
+    },
+    {
+      name   : "t083-array-initializer-negative-value.c"
     }
   ];
 
