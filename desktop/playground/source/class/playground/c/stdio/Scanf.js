@@ -1261,7 +1261,6 @@ qx.Class.define("playground.c.stdio.Scanf",
         }
         catch(e)
         {
-          console.log("doscan_6: " + e);
           fail(e);
         }
       }.bind(this);
