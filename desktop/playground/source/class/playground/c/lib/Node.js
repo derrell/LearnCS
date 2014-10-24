@@ -577,6 +577,49 @@ qx.Class.define("playground.c.lib.Node",
       var             WORDSIZE = playground.c.machine.Memory.WORDSIZE;
 
 
+      // Function to process all initializers after completion of reserving
+      // memory for variables. Doing this as a post-processing step prevents
+      // function calls in initializers from messing up the stack while the
+      // activation record is still being established.
+      function processInitializers(data, bGlobals, success, failure)
+      {
+        var             f;
+
+        // Retrieve the first remaining initializer function
+        f = data.initializers.shift();
+
+        // Was there anything there?
+        if (typeof f != "function")
+        {
+          // Nope. Restore the old initializer list
+          data.initializers = oldInitializers;
+
+          // If we're not handling global declarations, process the
+          // statement list
+          if (! bGlobals)
+          {
+            this.children[1].process(
+              data,
+              bExecuting,
+              compound_statement_finalize.bind(this),
+              failure);
+          }
+          else
+          {
+            success();
+          }
+          return;
+        }
+
+        // Call the initializer function.
+        f(function()
+          {
+            // Look for additional initializer functions to call
+            processInitializers.call(this, data, bGlobals, success, failure);
+          }.bind(this),
+          failure);
+      }
+
       // Argument to case_struct_union_enum() to differentiate between cases
       var StructUnionEnum =
         {
@@ -1869,49 +1912,6 @@ qx.Class.define("playground.c.lib.Node",
           
           success();
         };
-
-        // Function to process all initializers after completion of reserving
-        // memory for variables. Doing this as a post-processing step prevents
-        // function calls in initializers from messing up the stack while the
-        // activation record is still being established.
-        function processInitializers(data, bGlobals, success, failure)
-        {
-          var             f;
-            
-          // Retrieve the first remaining initializer function
-          f = data.initializers.shift();
-
-          // Was there anything there?
-          if (typeof f != "function")
-          {
-            // Nope. Restore the old initializer list
-            data.initializers = oldInitializers;
-
-            // If we're not handling global declarations, process the
-            // statement list
-            if (! bGlobals)
-            {
-              this.children[1].process(
-                data,
-                bExecuting,
-                compound_statement_finalize.bind(this),
-                failure);
-            }
-            else
-            {
-              success();
-            }
-            return;
-          }
-
-          // Call the initializer function.
-          f(function()
-            {
-              // Look for additional initializer functions to call
-              processInitializers.call(this, data, bGlobals, success, failure);
-            }.bind(this),
-            failure);
-        }
 
         // Process the declaration list first.
         this.children[0].process(
