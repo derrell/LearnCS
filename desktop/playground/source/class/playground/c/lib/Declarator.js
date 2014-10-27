@@ -303,7 +303,7 @@ qx.Class.define("playground.c.lib.Declarator",
       var             thisType;
       var             otherType;
       
-      // normalize various pointer types for this specifier
+      // normalize various pointer types for this declarator
       if ([ "pointer", "address", "array" ].indexOf(this.__type) != -1)
       {
         thisType = "pointer";
@@ -313,7 +313,7 @@ qx.Class.define("playground.c.lib.Declarator",
         thisType = this.__type;
       }
 
-      // Similarly, normalize the other specifier
+      // Similarly, normalize the other declarator
       if ([ "pointer", "address", "array" ].indexOf(other.__type) != -1)
       {
         otherType = "pointer";

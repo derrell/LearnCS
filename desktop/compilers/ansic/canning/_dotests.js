@@ -497,6 +497,13 @@ var tests =
     },
     {
       name   : "t083-array-initializer-negative-value.c"
+    },
+    {
+      name   : "t084-scanf-one-format-marker-no-address.c",
+      stdin  : "3"
+    },
+    {
+      name   : "t085-scanf-invalid-format-string-addr.c"
     }
   ];
 

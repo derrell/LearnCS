@@ -1319,3 +1319,20 @@ STDOUT:
 >>> Running program
 >>> Program exited with exit code 0
 
+% echo '3' |  ../dcc t084-scanf-one-format-marker-no-address.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
+3
+ERROR: Error: Command failed: 
+STDOUT: 
+>>> Running program
+Enter a number: Error near line 6: The format marker ("%d") requires an additional argument, 
+  an address, where the value should be stored.
+>>> Program had errors. It did not run to completion.
+
+% ../dcc t085-scanf-invalid-format-string-addr.c --rootdir=../../../../backend-nodesqlite/deploy/stdio_files
+ERROR: Error: Command failed: 
+STDOUT: 
+>>> Running program
+Error near line 5: The format string argument appears to be invalid.
+  It is not the address of a string in memory
+>>> Program had errors. It did not run to completion.
+

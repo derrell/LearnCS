@@ -68,6 +68,14 @@ qx.Class.define("playground.c.stdio.Scanf",
     var             format = [];
     var             memBytes;
     var             i;
+    var             info = playground.c.machine.Memory.info;
+
+    if (typeof formatAddr === "undefined")
+    {
+      throw new playground.c.lib.RuntimeError(
+        playground.c.lib.Node._currentNode,
+        "The format string is missing.");
+    }
 
     // Get memory as an array
     this._mem = playground.c.machine.Memory.getInstance();
@@ -79,6 +87,20 @@ qx.Class.define("playground.c.stdio.Scanf",
     // character at a time, into an array.
     for (i = formatAddr; memBytes[i] != 0 && i < memBytes.length; i++)
     {
+      // Ensure we are accessing a valid region of memory
+      if (! ((i >= info.gas.start && 
+              i < info.gas.start + info.gas.length) ||
+             (i >= info.heap.start && 
+              i < info.heap.start + info.heap.length) ||
+             (i >= info.rts.start &&
+              i < info.rts.start  + info.rts.length)))
+      {
+        throw new playground.c.lib.RuntimeError(
+          playground.c.lib.Node._currentNode,
+          "The format string argument appears to be invalid.\n" +
+          "  It is not the address of a string in memory");
+      }
+
       format.push(memBytes[i]);
     }
     
@@ -859,6 +881,15 @@ qx.Class.define("playground.c.stdio.Scanf",
           case 'n':
             if (! (flags & this.Flags.NOASSIGN))
             {                     // silly, though
+              if (this._args.length < 1)
+              {
+                throw new playground.c.lib.RuntimeError(
+                  playground.c.lib.Node._currentNode,
+                  "The format marker (\"%n\") requires an additional " +
+                  "argument to scanf," +
+                  "\n  an address, where the value should be stored.");
+              }
+
               if (flags & this.Flags.SHORT)
               {
                 this._mem.set(this._args.shift(), "short", nrchars);
@@ -916,6 +947,15 @@ qx.Class.define("playground.c.stdio.Scanf",
 
                 if (! (flags & this.Flags.NOASSIGN))
                 {
+                  if (this._args.length < 1)
+                  {
+                    throw new playground.c.lib.RuntimeError(
+                      playground.c.lib.Node._currentNode,
+                      "The format marker (\"%" + kind + "\") requires " +
+                      "an additional argument, " +
+                      "\n  an address, where the value should be stored.");
+                  }
+
                   val = parseInt(this._inpBuf.join(""), base);
 
                   if (flags & this.Flags.LONG)
@@ -949,6 +989,15 @@ qx.Class.define("playground.c.stdio.Scanf",
 
             if (! (flags & this.Flags.NOASSIGN))
             {
+              if (this._args.length < 1)
+              {
+                throw new playground.c.lib.RuntimeError(
+                  playground.c.lib.Node._currentNode,
+                  "The format marker (\"%c\") requies that " +
+                  "more addresses (arguments) in which to store values " +
+                  "must be provided.\n");
+              }
+
               addr = this._args.shift();
             }
 
@@ -966,6 +1015,15 @@ qx.Class.define("playground.c.stdio.Scanf",
               {
                 if (! (flags & this.Flags.NOASSIGN))
                 {
+                  if (this._args.length < 1)
+                  {
+                    throw new playground.c.lib.RuntimeError(
+                      playground.c.lib.Node._currentNode,
+                      "The format marker (\"%c\") requires an additional " +
+                      "argument to scanf, " +
+                      "\n  an address, where the value should be stored.");
+                  }
+
                   this._mem.set(addr + i++, "char", ic.charCodeAt(0));
                 }
 
@@ -1067,6 +1125,15 @@ qx.Class.define("playground.c.stdio.Scanf",
 
             if (! (flags & this.Flags.NOASSIGN))
             {
+              if (this._args.length < 1)
+              {
+                throw new playground.c.lib.RuntimeError(
+                  playground.c.lib.Node._currentNode,
+                  "The format marker (\"%s\") requires an additional " +
+                  "argument to scanf, " +
+                  "\n  an address, where the string will be stored.");
+              }
+
               addr = this._args.shift();
             }
 
@@ -1151,6 +1218,15 @@ qx.Class.define("playground.c.stdio.Scanf",
 
             if (! (flags & this.Flags.NOASSIGN))
             {
+              if (this._args.length < 1)
+              {
+                throw new playground.c.lib.RuntimeError(
+                  playground.c.lib.Node._currentNode,
+                  "The format marker (\"%[\") requires an additional " +
+                  "argument to scanf, " +
+                  "\n  an address, where the string will be stored.");
+              }
+
               addr = this._args.shift();
             }
 
@@ -1239,6 +1315,15 @@ qx.Class.define("playground.c.stdio.Scanf",
                 if (! (flags & this.Flags.NOASSIGN))
                 {
                   ld_val = parseFloat(this._inpBuf.join(""));
+
+                  if (this._args.length < 1)
+                  {
+                    throw new playground.c.lib.RuntimeError(
+                      playground.c.lib.Node._currentNode,
+                      "The format marker (\"%" + kind + "\") requires " +
+                      "an additional argument, " +
+                      "\n  an address, where the value should be stored.");
+                  }
 
                   if (flags & this.Flags.LONG)
                   {
