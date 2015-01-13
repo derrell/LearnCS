@@ -605,6 +605,7 @@ qx.Mixin.define("playground.dbif.MFiles",
       var             line;
       var             code;
       var             dir;
+      var             files;
       var             userFilesDir = playground.dbif.MFiles.UserFilesDir;
       var             progDir = playground.dbif.MFiles.ProgDir;
       var             templatesDir = playground.dbif.MFiles.TemplateDir;
@@ -714,8 +715,44 @@ qx.Mixin.define("playground.dbif.MFiles",
             templatesDir;
         }
 
-        // Read the file
-        code = System.readFile(dir + "/" + programName);
+        // Read the file. In most cases, we'll find it. If, however, they had
+        // renamed the program at some point in the past, some old name may be
+        // here. We therefore do the "fast" operation of just reading the
+        // supposed file first. If it's not found, we'll do a directory
+        // listing to find out its current name.
+        try
+        {
+          code = System.readFile(dir + "/" + programName);
+        }
+        catch(e)
+        {
+          // Read the directory where this file should be found.
+          files = System.readdir(dir);
+
+          // If we didn't find anything...
+          if (! files)
+          {
+            // .. then there's something bad going on here
+            throw new Error("Internal error: no source file found");
+          }
+
+          // Filter out any files beginning with a dot (specifically, .git)
+          files = files.filter(
+            function(name)
+            {
+              return name.substr(0, 1) != '.';
+            });
+
+          // Ensure we found only one file
+          if (files.length > 1)
+          {
+            throw new Error("Internal error: found more than one file: " +
+                            files.join(", "));
+          }
+
+          // Read the first and only file
+          code = System.readFile(dir + "/" + files[0]);
+        }
 
         // Do we need to revert to HEAD?
         if (userId === user && category == "My Programs" && hash)
