@@ -82,6 +82,24 @@ is in a directory called _private_.
     cp learncs-config-TEMPLATE.json private/learncs-config.json
     ```
 
+1. Edit your private configuration file, as required for your site.
+
+  * _url_: The URL which your users will use to access <span style="font-family:
+  'trebuchet ms', arial, helvetica, sans-serif !important;'">**LearnCS!**
+  </span>. This URL will be used in the link emailed to registering users.
+
+  * _notifyRecipients_: a comma-separated list of email addresses to whom
+  notifications will be sent to notify them of user registrations. (Notice that
+  in the template configuration file, there is a leading _X_, changing the
+  configuration key from _notifyRecipients_ to _XnotifyRecipients_. The
+  leading _X_ comments out this entry, so notifications are not sent to
+  anyone. If you wish to have notifications sent, remove the leading _X_.)
+
+  * _email_: The entries inside of the braces provide the information
+  necessary for contacting your outbound SMTP mail server. This is how <span
+  style="font-family: 'trebuchet ms', arial, helvetica, sans-serif !important;'
+  "> **LearnCS!**</span> will send registration links to registering users.
+
 1. The graphical user interface and backend server are built via a single
    command, from the backend directory. Change into that directory.
    
@@ -95,21 +113,6 @@ is in a directory called _private_.
 
     `tar -xvzf USERCODE-initial.tgz`
     
-1. Edit your private configuration file, as required for your site.
-  * _url_: The URL which your users will use to access <span style="font-family:
-  'trebuchet ms', arial, helvetica, sans-serif !important;'">**LearnCS!**
-  </span>. This URL will be used in the link emailed to registering users.
-  * _notifyRecipients_: a comma-separated list of email addresses to whom
-  notifications will be sent to notify them of user registrations. (Notice that
-  in the template configuration file, there is a leading _X_, changing the
-  configuration key from _notifyRecipients_ to _XnotifyRecipients_. The
-  leading _X_ comments out this entry, so notifications are not sent to
-  anyone. If you wish to have notifications sent, remove the leading _X_.)
-  * _email_: The entries inside of the braces provide the information
-  necessary for contacting your outbound SMTP mail server. This is how <span
-  style="font-family: 'trebuchet ms', arial, helvetica, sans-serif !important;'
-  "> **LearnCS!**</span> will send registration links to registering users.
-
 1. Change into the deploy directory, from which
    <span style="font-family: 'trebuchet ms', arial, helvetica, sans-serif !important;'">
    **LearnCS!**</span>
