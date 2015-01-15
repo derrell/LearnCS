@@ -122,23 +122,22 @@ is in a directory called _private_.
 
     `nodejs ./backend.js http.port=8080 https.port=0 &`
 
-1. <span style="font-family: 'trebuchet ms', arial, helvetica, sans-serif !important;'">
-   **LearnCS!**</span>
-   currently has two authentication mechanisms. It has a very simple "local"
-   authentication mechanism, with user names (typically email addresses) and
-   password hashes stored and looked up in the local database. It also has an
-   LDAP authentication mechanism, configuration of which is beyond the scope
-   of these initial installation instructions.
+1. Create your primary and initial user account. (Additional accounts are
+created via the _Create a new account_ button in the user interface. Be sure
+to test that, to ensure that your email configuration is correct.)
 
-   Create the initial user. You may repeat this command to add multiple
-   users.
-   
-    `nodejs newuser.js <username> <password> "<full name>"`
+    `nodejs newuser.js <your_email_address> <password>, "<full_name>"`
 
 1. Connect to
    <span style="font-family: 'trebuchet ms', arial, helvetica, sans-serif !important;'">
    **LearnCS!**</span>
    using the **Chrome** browser, at
    http://YOUR_SERVER\_NAME\_OR\_IP:8080/
+
+1. Click the botton at the bottom of the page, to create a new account. Follow
+   the instructions.
+
+1. Create your course. (This currently requires a bit of SQL entry in
+   the database. Contact me for assistance.) 
 
 1. Enjoy!
