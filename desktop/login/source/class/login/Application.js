@@ -295,7 +295,7 @@ qx.Class.define("login.Application",
       form = new qx.ui.form.Form();
 
       // add the first headline
-      form.addGroupHeader("Create new, temporary account");
+      form.addGroupHeader("Create new account");
 
       // add name
       displayName = new qx.ui.form.TextField();
@@ -348,44 +348,6 @@ qx.Class.define("login.Application",
           manager.validate();
         }, 
         this);
-
-      // Add a vertical spacer
-      page.add(new qx.ui.core.Spacer(0, 30));
-
-      // create a vbox for the warning text
-      vBox = new qx.ui.container.Composite(new qx.ui.layout.VBox());
-      page.add(vBox);
-
-      // create an hbox to center the warning text
-      hBox = new qx.ui.container.Composite(new qx.ui.layout.HBox());
-      vBox.add(hBox);
-      hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
-      o = new qx.ui.basic.Label(
-        "<span style='color: red;'>" +
-        this.tr("Beware: Temporary accounts are for trying out ") +
-        "<span style=" +
-        "'font-weight: 900; font-size: 130%; font-family: JosefinSlab'>" +
-        "LearnCS!" +
-        "</span>. " +
-        this.tr("Your temporary account and/or your files " +
-                "could be removed at any time.") +
-        "</span>");
-      o.setRich(true);
-      hBox.add(o);
-      hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
-
-      // create an hbox to center the warning text
-      hBox = new qx.ui.container.Composite(new qx.ui.layout.HBox());
-      vBox.add(hBox);
-      hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
-      o = new qx.ui.basic.Label(
-        "<span style='font-weight: bold;'>" +
-        this.tr(
-        "Do not use these temporary accounts for student course work.") +
-        "</span>");
-      o.setRich(true);
-      hBox.add(o);
-      hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
 
       // create the form manager
       manager = new qx.ui.form.validation.Manager();
