@@ -76,9 +76,11 @@ on a fresh installation of Kubuntu 14.04.
 sans-serif !important;'"> **LearnCS!**</span> configuration file. This file
 is in a directory called _private_.
 
-    `cd ../../../..
-     mkdir private
-     cp learncs-config-TEMPLATE.json private/learncs-config.json`
+    ```
+    cd ../../../..
+    mkdir private
+    cp learncs-config-TEMPLATE.json private/learncs-config.json
+    ```
 
 1. The graphical user interface and backend server are built via a single
    command, from the backend directory. Change into that directory.
