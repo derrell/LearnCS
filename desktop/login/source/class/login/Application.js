@@ -257,7 +257,7 @@ qx.Class.define("login.Application",
       hBox = new qx.ui.container.Composite(new qx.ui.layout.HBox());
       vBox.add(hBox);
       hBox.add(new qx.ui.core.Spacer(), { flex : 1 });
-      o = new qx.ui.form.Button(this.tr("Create a new, temporary account"));
+      o = new qx.ui.form.Button(this.tr("Create a new account"));
       o.addListener(
         "execute",
         function()
