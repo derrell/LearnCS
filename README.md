@@ -122,7 +122,7 @@ is in a directory called _private_.
 
     `nodejs ./backend.js http.port=8080 https.port=0 &`
 
-1. Create your primary and initial user account. (Additional accounts are
+1. Create your primary (initial) user account. (Additional accounts are
 created via the _Create a new account_ button in the user interface. Be sure
 to test that, to ensure that your email configuration is correct.)
 
