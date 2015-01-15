@@ -1,0 +1,12 @@
+{
+  "url"                 : "http://yoursite.edu",
+  "XnotifyRecipients"   : "someone@yoursite.edu",
+  "email"               :
+  {
+    "host"                : "your.smtp.host.yoursite.edu",
+    "port"                : 25,
+    "secure"              : false,
+    "ignoreTLS"           : true,
+    "greetingTimeout"     : 30000
+  }
+}
