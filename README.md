@@ -72,10 +72,17 @@ on a fresh installation of Kubuntu 14.04.
 
     `cd canning; ./dotests.sh`
 
+1. Create the <span style="font-family: 'trebuchet ms', arial, helvetica,
+sans-serif !important;'"> **LearnCS!**</span> configuration file. This file
+is in a directory called _private_.
+
+    `cd ../../../..`
+    `mkdir private; cp learncs-config-TEMPLATE.json private/learncs-config.json`
+
 1. The graphical user interface and backend server are built via a single
    command, from the backend directory. Change into that directory.
    
-    `cd ../../../../backend-nodesqlite`
+    `backend-nodesqlite`
     
 1. Build the frontend GUI and the backend server.
 
@@ -85,12 +92,6 @@ on a fresh installation of Kubuntu 14.04.
 
     `tar -xvzf USERCODE-initial.tgz`
     
-1. Create the <span style="font-family: 'trebuchet ms', arial, helvetica,
-sans-serif !important;'"> **LearnCS!**</span> configuration file. This file
-is in a directory called _private_.
-
-    `mkdir private; cp learncs-config-TEMPLATE.json private/learncs-config.json`
-
 1. Edit your private configuration file, as required for your site.
   * _url_: The URL which your users will use to access <span style="font-family:
   'trebuchet ms', arial, helvetica, sans-serif !important;'">**LearnCS!**
