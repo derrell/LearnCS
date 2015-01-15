@@ -124,7 +124,7 @@ is in a directory called _private_.
 
 1. Create your primary (initial) user account. (Additional accounts are
 created via the _Create a new account_ button in the user interface. Be sure
-to test that, to ensure that your email configuration is correct.)
+to test that, later, to ensure that your email configuration is correct.)
 
     `nodejs newuser.js <your_email_address> <password>, "<full_name>"`
 
