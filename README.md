@@ -82,7 +82,7 @@ is in a directory called _private_.
 1. The graphical user interface and backend server are built via a single
    command, from the backend directory. Change into that directory.
    
-    `backend-nodesqlite`
+    `cd backend-nodesqlite`
     
 1. Build the frontend GUI and the backend server.
 
