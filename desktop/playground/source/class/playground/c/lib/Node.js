@@ -48,11 +48,11 @@ if (typeof qx === "undefined" || qx.bConsole)
  * — label names (disambiguated by the syntax of the label declaration and use);
  *
  * — the tags of structures, unions, and enumerations (disambiguated by 
- *   following any32) of the keywords struct, union, or enum);
+ *   following any of the keywords struct, union, or enum);
  *
  * — the members of structures or unions; each structure or union has a 
  *   separate name space for its members (disambiguated by the type of the 
- *   expression used to access themember via the . or -> operator);
+ *   expression used to access the member via the . or -> operator);
  *
  * — all other identifiers, called ordinary identifiers (declared in ordinary 
  *   declarators or as enumeration constants).
@@ -163,6 +163,12 @@ qx.Class.define("playground.c.lib.Node",
       return playground.c.lib.Node.__error;
     },
     
+    /**
+     * Getter for the null object 
+     * 
+     * @return {playground.c.lib.Node} 
+     *   A node to represent a leaf.
+     */
     getNull : function(line)
     {
       return new playground.c.lib.Node("_null_", null, line);
@@ -187,6 +193,23 @@ qx.Class.define("playground.c.lib.Node",
       throw new playground.c.lib.RuntimeError(this, message);
     },
 
+    /**
+     * Evaluate the value of an expression, which may be a constant, a
+     * variable, or a more sophisticated expression.
+     *
+     * @param value {Any}
+     *   The expression value to be evaluated.
+     *
+     * @param data {Map}
+     *   Recursion details, such as whether we require a constant.
+     *
+     * @param bNoDerefAddress {Boolean}
+     *   Whether an address value may be dereferenced
+     *
+     * @return {Map}
+     *   A value object, which contains a value and a specifier/declarator 
+     *   list.
+     */
     getExpressionValue : function(value, data, bNoDerefAddress)
     {
       var             type;

@@ -158,7 +158,9 @@ qx.Class.define("playground.c.lib.Symtab",
       // Save the current next offset in this symbol table
       startOffset = symtab.nextOffset;
 
-      // Increase the next offset by the requested number of bytes
+      // Increase the next offset by the requested number of bytes, wasting a
+      // few bytes, if necessary, to keep the next offset aligned on a word
+      // boundary.
       symtab.nextOffset += numBytes;
       mod = numBytes % SIB.Word;
       if (mod !== 0)
