@@ -74,7 +74,7 @@ on a fresh installation of Kubuntu 14.04.
 
 1. Create the <span style="font-family: 'trebuchet ms', arial, helvetica,
 sans-serif !important;'"> **LearnCS!**</span> configuration file. This file
-is in a directory called _private_.
+is in a directory called _private_, at the top level.
 
     ```
     cd ../../../..
