@@ -46,10 +46,11 @@ The following steps will install a working version of
 
 <h3>Important:</h3>
 <span style="font-family: 'trebuchet ms', arial, helvetica, sans-serif !important;'">
-**LearnCS!**</span> has been shown to work well 64-bit Kubuntu 14.04. If you
-want to try a different distribution, you're on your own. The node modules
-that are part of this repository are for 64-bit Linux and will likely not work
-on 32-bit Linux.
+**LearnCS!**</span> has been shown to work well on 64-bit Kubuntu 14.04. A
+hard requirement, for use with the node modules in this git repository, is
+64-bit. The (highly) recommended environment is 64-bit Kubuntu 14.04, running
+on a virtual machine.
+
 
 1. Ensure that required packages are installed
 
