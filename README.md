@@ -44,7 +44,7 @@ The following steps will install a working version of
 <span style="font-family: 'trebuchet ms', arial, helvetica, sans-serif !important;'">
 **LearnCS!**</span>.
 
-<h3>Important:</h3>
+<span style="font-weight: bold;">Important:</span>
 <span style="font-family: 'trebuchet ms', arial, helvetica, sans-serif !important;'">
 **LearnCS!**</span> has been shown to work well on 64-bit Kubuntu 14.04. A
 hard requirement, for use with the node modules in this git repository, is
