@@ -44,11 +44,11 @@ The following steps will install a working version of
 <span style="font-family: 'trebuchet ms', arial, helvetica, sans-serif !important;">
 **LearnCS!**</span>.
 
-1. <span style="font-family: 'trebuchet ms', arial, helvetica, sans-serif
-!important;"> **LearnCS!**</span> has been shown to work well on 64-bit
-Kubuntu 14.04. It has not been tested on most other distributions. A hard
-requirement, for use with the node modules in this git repository, is
-64-bit. Create a virtual machine and install 64-bit Kubuntu 14.04 Linux.
+1. Create a virtual machine and install 64-bit Kubuntu 14.04 Linux. (<span
+style="font-family: 'trebuchet ms', arial, helvetica, sans-serif !important;">
+**LearnCS!**</span> has been shown to work well on 64-bit Kubuntu 14.04. It
+has not been tested on most other distributions. A hard requirement, for use
+with the node modules in this git repository, is 64-bit.)
 
 1. Ensure that required packages are installed
 
