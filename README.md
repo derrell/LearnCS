@@ -42,8 +42,14 @@ etc.), and opening or closing the memory depiction are also stored.
 
 The following steps will install a working version of
 <span style="font-family: 'trebuchet ms', arial, helvetica, sans-serif !important;'">
-**LearnCS!**</span>
-on a fresh installation of Kubuntu 14.04.
+**LearnCS!**</span>.
+
+<h3>Important:</h3>
+<span style="font-family: 'trebuchet ms', arial, helvetica, sans-serif !important;'">
+**LearnCS!**</span> has been shown to work well 64-bit Kubuntu 14.04. If you
+want to try a different distribution, you're on your own. The node modules
+that are part of this repository are for 64-bit Linux and will likely not work
+on 32-bit Linux.
 
 1. Ensure that required packages are installed
 
