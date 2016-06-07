@@ -841,8 +841,24 @@ qx.Class.define("nodesqlite.Application",
               // Supply `SSL_OP_NO_SSLv3` constant as secureOption to disable
               // SSLv3 from the list of supported protocols that SSLv23_method
               // supports (due to POODLE exploit)
+              // 
+              // SSL_OP_NO_SSLv2 disables SSLv2 to prevent its
+              // vulernatibilities as well.
               //
-              secureOptions: constants.SSL_OP_NO_SSLv3
+              secureOptions: constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_SSLv2,
+
+              // default node 0.12 ciphers with RC4 disabled
+              ciphers:
+              [
+                "ECDHE-RSA-AES128-SHA256",
+                "DHE-RSA-AES128-SHA256",
+                "AES128-GCM-SHA256",
+                "!RC4", // RC4 be gone
+                "HIGH",
+                "!MD5",
+                "!aNULL"
+              ].join(':'),
+              honorCipherOrder: true
             };
         }
 
