@@ -993,7 +993,7 @@ qx.Class.define("playground.c.stdio.Scanf",
               {
                 throw new playground.c.lib.RuntimeError(
                   playground.c.lib.Node._currentNode,
-                  "The format marker (\"%c\") requies that " +
+                  "The format marker (\"%c\") requires that " +
                   "more addresses (arguments) in which to store values " +
                   "must be provided.\n");
               }
@@ -1015,15 +1015,6 @@ qx.Class.define("playground.c.stdio.Scanf",
               {
                 if (! (flags & this.Flags.NOASSIGN))
                 {
-                  if (this._args.length < 1)
-                  {
-                    throw new playground.c.lib.RuntimeError(
-                      playground.c.lib.Node._currentNode,
-                      "The format marker (\"%c\") requires an additional " +
-                      "argument to scanf, " +
-                      "\n  an address, where the value should be stored.");
-                  }
-
                   this._mem.set(addr + i++, "char", ic.charCodeAt(0));
                 }
 
