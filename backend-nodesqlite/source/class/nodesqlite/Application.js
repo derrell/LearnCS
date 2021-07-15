@@ -32,29 +32,22 @@ qx.Class.define("nodesqlite.Application",
      */
     doPost : function(request, response)
     {
-      var             sync = require("synchronize");
-      
-      // Run this request in a fiber, to allow for synchronous calls
-      sync.fiber(
-        function()
-        {
-          var             dbif=  new playground.dbif.DbifNodeSqlite();
-          var             rpcResult;
+      var             dbif=  new playground.dbif.DbifNodeSqlite();
+      var             rpcResult;
 
-          // Determine the logged-in user
-          dbif.identify(request);
+      // Determine the logged-in user
+      dbif.identify(request);
 
-          // Process this request
-          rpcResult = dbif.processRequest(request.body);
+      // Process this request
+      rpcResult = dbif.processRequest(request.body);
 
-          // Ignore null results, which occur if the request is a notification.
-          if (rpcResult !== null)
-          {
-            // Generate the response.
-            response.set("Content-Type", "application/json");
-            response.send(rpcResult);
-          }
-        });
+      // Ignore null results, which occur if the request is a notification.
+      if (rpcResult !== null)
+      {
+        // Generate the response.
+        response.set("Content-Type", "application/json");
+        response.send(rpcResult);
+      }
     },
 
 
@@ -71,29 +64,22 @@ qx.Class.define("nodesqlite.Application",
      */
     doGet : function(request, response)
     {
-      var             sync = require("synchronize");
-      
-      // Run this request in a fiber, to allow for synchronous calls
-      sync.fiber(
-        function()
-        {
-          var             dbif=  new playground.dbif.DbifNodeSqlite();
-          var             rpcResult;
+      var             dbif=  new playground.dbif.DbifNodeSqlite();
+      var             rpcResult;
 
-          // Determine the logged-in user
-          dbif.identify(request);
+      // Determine the logged-in user
+      dbif.identify(request);
 
-          // Process this request
-          rpcResult = dbif.processRequest(request.query);
+      // Process this request
+      rpcResult = dbif.processRequest(request.query);
 
-          // Ignore null results, which occur if the request is a notification.
-          if (rpcResult !== null)
-          {
-            // Generate the response.
-            response.set("Content-Type", "application/json");
-            response.send(rpcResult);
-          }
-        });
+      // Ignore null results, which occur if the request is a notification.
+      if (rpcResult !== null)
+      {
+        // Generate the response.
+        response.set("Content-Type", "application/json");
+        response.send(rpcResult);
+      }
     }
   },
 
@@ -264,146 +250,66 @@ qx.Class.define("nodesqlite.Application",
           },
           function(username, password, done)
           {
-            var             sync = require("synchronize");
+            var             authLocal;
+            var             userInfo;
+            var             passwordHash;
+            var             crypto = require('crypto');
+            var             shasum = crypto.createHash('sha1');
 
-            sync.fiber(
-              function()
+            console.log("Attempting local database authorization for " +
+                        username + "...");
+
+            // See if this username is found in the database
+            authLocal = liberated.dbif.Entity.query(
+              "playground.dbif.ObjAuthLocal",
               {
-                var             authLocal;
-                var             userInfo;
-                var             passwordHash;
-                var             crypto = require('crypto');
-                var             shasum = crypto.createHash('sha1');
-
-                console.log("Attempting local database authorization for " +
-                            username + "...");
-
-                // See if this username is found in the database
-                authLocal = liberated.dbif.Entity.query(
-                  "playground.dbif.ObjAuthLocal",
-                  {
-                    type  : "element",
-                    field : "username",
-                    value : username
-                  });
-
-                // If not, or if the password hash doesn't match...
-                if (authLocal.length === 0)
-                {
-                  // User was not found
-                  console.log("Local database authentication of user " + 
-                              username + " failed (user not found)");
-                  return done(null, false, { message : "Login failed" } );
-                }
-
-                // Get the one and only entry
-                authLocal = authLocal[0];
-                
-
-                // Hash the entered password
-                shasum.update(password);
-                passwordHash = shasum.digest('hex');
-                
-                // Does the hash of the entered password match this user's?
-                if (passwordHash != authLocal.passwordHash)
-                {
-                  // Nope.
-                  console.log("Local database authentication of user " + 
-                              username + " failed (password mismatch)");
-                  return done(null, false, { message : "Login failed" } );
-                }
-
-                // Authentication has succeeded. Build a userInfo return value
-                userInfo =
-                  {
-                    id          : getUserId(authLocal.username),
-                    displayName : authLocal.displayName,
-                    email       : authLocal.email,
-                    name        : authLocal.username
-                  };
-
-                  console.log("Local authenticated user " + userInfo.name +
-                              " (" + userInfo.displayName + 
-                              ", " + userInfo.email + ")" +
-                              ", id " + userInfo.id);
-                  return done(null, userInfo);
+                type  : "element",
+                field : "username",
+                value : username
               });
-          }));
 
-
-/*
-      // Temporarily also support a hard-coded user list
-      users =
-          [
+            // If not, or if the password hash doesn't match...
+            if (authLocal.length === 0)
             {
-              name        : "joe",
-              password    : "joe",
-              displayName : "Joe Blow",
-              email       : "joe@blow.com"
-            },
-            {
-              name        : "mary",
-              password    : "mary",
-              displayName : "Mary Contrary",
-              email       : "mary@elsewhere.org"
-            },
-            {
-              name        : "demo",
-              password    : "demo",
-              displayName : "Demo",
-              email       : ""
+              // User was not found
+              console.log("Local database authentication of user " + 
+                          username + " failed (user not found)");
+              return done(null, false, { message : "Login failed" } );
             }
-        ];
 
-      // Use the hard-coded user list to search for a provided user/password
-      passport.use(
-        new LocalStrategy(
-          {
-            usernameField : "username",
-            passwordField : "password"
-          },
-          function(username, password, done)
-          {
-            var             sync = require("synchronize");
+            // Get the one and only entry
+            authLocal = authLocal[0];
 
-            sync.fiber(
-              function()
+
+            // Hash the entered password
+            shasum.update(password);
+            passwordHash = shasum.digest('hex');
+
+            // Does the hash of the entered password match this user's?
+            if (passwordHash != authLocal.passwordHash)
+            {
+              // Nope.
+              console.log("Local database authentication of user " + 
+                          username + " failed (password mismatch)");
+              return done(null, false, { message : "Login failed" } );
+            }
+
+            // Authentication has succeeded. Build a userInfo return value
+            userInfo =
               {
-                var             i;
-                var             userInfo;
+                id          : getUserId(authLocal.username),
+                displayName : authLocal.displayName,
+                email       : authLocal.email,
+                name        : authLocal.username
+              };
 
-                console.log("Attempting local authorization for " +
-                            username + "...");
-
-                // See if the user name is found
-                for (i = 0; i < users.length; i++)
-                {
-                  if (users[i].name == username &&
-                      users[i].password == password)
-                  {
-                    userInfo =
-                      {
-                        id          : getUserId(users[i].name),
-                        displayName : users[i].displayName,
-                        email       : users[i].email,
-                        name        : users[i].name
-                      };
-
-                    console.log("Local authenticated user " + userInfo.name +
-                                " (" + userInfo.displayName + 
-                                ", " + userInfo.email + ")" +
-                                ", id " + userInfo.id);
-                    return done(null, userInfo);
-                  }
-                }
-
-                // User was not found
-                console.log("Local authentication of user " + 
-                            username + " failed");
-                return done(null, false, { message : "Login failed" } );
-              });
+              console.log("Local authenticated user " + userInfo.name +
+                          " (" + userInfo.displayName + 
+                          ", " + userInfo.email + ")" +
+                          ", id " + userInfo.id);
+              return done(null, userInfo);
           }));
-*/
+
 
       // See if we find LDAP configuration
       if (nodesqlite.Application.config.ldap)
@@ -418,27 +324,21 @@ qx.Class.define("nodesqlite.Application",
             },
             function(user, done)
             {
-              var             sync = require("synchronize");
+              var             userInfo;
 
-              sync.fiber(
-                function()
+              userInfo =
                 {
-                  var             userInfo;
+                  id          : getUserId(user.uid),
+                  displayName : user.cn,
+                  email       : user.mail,
+                  name        : user.uid
+                };
 
-                  userInfo =
-                    {
-                      id          : getUserId(user.uid),
-                      displayName : user.cn,
-                      email       : user.mail,
-                      name        : user.uid
-                    };
-
-                  console.log("LDAP authenticated user " + userInfo.name +
-                                " (" + userInfo.displayName + 
-                                ", " + userInfo.email + ")" +
-                              ", id " + userInfo.id);
-                  return done(null, userInfo);
-                });
+              console.log("LDAP authenticated user " + userInfo.name +
+                            " (" + userInfo.displayName + 
+                            ", " + userInfo.email + ")" +
+                          ", id " + userInfo.id);
+              return done(null, userInfo);
             }));
         
         // add ldap authentication to the list of stragies to try
@@ -636,8 +536,6 @@ qx.Class.define("nodesqlite.Application",
         "/newuser",
         function(req, res, next)
         {
-          var             sync = require("synchronize");
-
           // We're not using bodyParser due to some internal problem. Instead,
           // parse the url-encoded body ourself, here.
           var qs = require("qs");
@@ -648,22 +546,17 @@ qx.Class.define("nodesqlite.Application",
           // single ObjUser UID) in the database.
           req.body.username = req.body.username.toLowerCase();
 
-          // Call the RPC to request a new user
-          sync.fiber(
-            function()
-            {
-              if (dbif.requestNewUser(req.body.username,
-                                      req.body.password,
-                                      req.body.displayName) != 0)
-              {
-                // Failure. This should not occur. Just redirect to same page.
-                res.redirect("/newuser");
-                return;
-              }
+          if (dbif.requestNewUser(req.body.username,
+                                  req.body.password,
+                                  req.body.displayName) != 0)
+          {
+            // Failure. This should not occur. Just redirect to same page.
+            res.redirect("/newuser");
+            return;
+          }
 
-              // Let 'em know we're done.
-              res.send("0");
-            });
+          // Let 'em know we're done.
+          res.send("0");
         },
         function(req, res) 
         {
@@ -677,7 +570,6 @@ qx.Class.define("nodesqlite.Application",
         "/resetpassword",
         function(req, res, next)
         {
-          var             sync = require("synchronize");
 
           // We're not using bodyParser due to some internal problem. Instead,
           // parse the url-encoded body ourself, here.
@@ -689,20 +581,15 @@ qx.Class.define("nodesqlite.Application",
           // single ObjUser UID) in the database.
           req.body.username = req.body.username.toLowerCase();
 
-          // Call the RPC to request a new user
-          sync.fiber(
-            function()
-            {
-              if (dbif.resetPassword(req.body.username, req.body.password) != 0)
-              {
-                // Failure. This should not occur. Just redirect to same page.
-                res.redirect("/login");
-                return;
-              }
-              
-              // Let 'em know we're done
-              res.send("0");
-            });
+          if (dbif.resetPassword(req.body.username, req.body.password) != 0)
+          {
+            // Failure. This should not occur. Just redirect to same page.
+            res.redirect("/login");
+            return;
+          }
+
+          // Let 'em know we're done
+          res.send("0");
         },
         function(req, res) 
         {
@@ -713,28 +600,22 @@ qx.Class.define("nodesqlite.Application",
         "/confirmuser", 
         function(req, res, next)
         {
-          var             sync = require("synchronize");
+          var             secret;
 
-          sync.fiber(
-            function()
-            {
-              var             secret;
+          // The query string is the secret for this new user
+          secret = decodeURIComponent(req.query["q"]);
 
-              // The query string is the secret for this new user
-              secret = decodeURIComponent(req.query["q"]);
-
-              // Call the RPC to complete new user setup
-              if (dbif.completeNewUser(secret) != 0)
-              {
-                // Failure. This should not occur. Just redirect to same page.
-                res.redirect("/newuser");
-              }
-              else
-              {
-                // Success. Redirect to the login page
-                res.redirect("/login");
-              }
-            });
+          // Call the RPC to complete new user setup
+          if (dbif.completeNewUser(secret) != 0)
+          {
+            // Failure. This should not occur. Just redirect to same page.
+            res.redirect("/newuser");
+          }
+          else
+          {
+            // Success. Redirect to the login page
+            res.redirect("/login");
+          }
         });
 
       //
