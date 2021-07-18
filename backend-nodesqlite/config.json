@@ -146,9 +146,9 @@
         [
           "(cd ../desktop/playground && ./generate.py build)",
           "(cd ../desktop/login && ./generate.py build)",
+          "mkdir -p deploy/lib",
           "cp build/script/nodesqlite.js deploy/backend.js",
           "cp ../package.json deploy/",
-          "mkdir -p deploy/lib",
           "rsync -av ../lib/synchronize.git deploy/lib/",
           "git log -n 1 > deploy/CURRENT_VERSION"
         ]
