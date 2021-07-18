@@ -128,10 +128,12 @@ qx.Class.define("nodesqlite.Application",
       var             cookieSession = require("cookie-session");
       var             LocalStrategy = require("passport-local").Strategy;
       var             LdapStrategy = require("passport-ldapauth").Strategy;
+      var             FreeIPAStrategy = require("passport-freeipa").Strategy;
       var             app = express();
       var             secret = [];
       var             strategies = [ "local" ];
       var             ldapConfig;
+      var             freeipaConfig;
       var             credentials;
       var             credentialFiles;
       var             httpServer;
@@ -405,6 +407,69 @@ qx.Class.define("nodesqlite.Application",
           }));
 */
 
+      // See if we find a freeIPA configuration
+      if (nodesqlite.Application.config.freeipa)
+      {
+        freeipaConfig = nodesqlite.Application.config.freeipa;
+
+        // What's in the configuration file is the file name. Replace
+        // it with the actual certificate.
+        if (freeipaConfig.ca)
+        {
+          freeipaConfig.ca = fs.readFileSync(freeipaConfig.ca).toString();
+console.log("Using freeipaConfig=" + JSON.stringify(freeipaConfig, null, "  "));
+        }
+
+        // Authenticate against the freeIPA server
+        passport.use(
+          new FreeIPAStrategy(
+            {
+              freeipa : freeipaConfig
+            },
+            function(user, done)
+            {
+              var             sync = require("synchronize");
+
+              sync.fiber(
+                function()
+                {
+                  var             userInfo;
+
+                  if (user.error)
+                  {
+                    console.error("freeIPA authentication failed:" +
+                                JSON.stringify(user));
+                    return done(new Error(user));
+                  }
+
+console.log("user=" + JSON.stringify(user, null, "  "));
+                  userInfo =
+                    {
+                      id          : getUserId(user.uid),
+                      displayName : user.cn,
+                      email       : user.mail,
+                      name        : user.uid
+                    };
+
+                  console.log("freeIPA authenticated user " + userInfo.name +
+                                " (" + userInfo.displayName +
+                                ", " + userInfo.email + ")" +
+                              ", id " + userInfo.id);
+                  return done(null, userInfo);
+                });
+            }));
+
+        // add freeIPA authentication to the list of stragies to try
+        strategies.push("freeipa");
+      }
+      else
+      {
+        // nothing to do. we simply won't use freeIPA.
+        console.log("freeIPA not being used.");
+      }
+
+
+/*
       // See if we find LDAP configuration
       if (nodesqlite.Application.config.ldap)
       {
@@ -456,6 +521,7 @@ qx.Class.define("nodesqlite.Application",
         // nothing to do. we simply won't use ldap.
         console.log("LDAP not being used.");
       }
+*/
 
 
       // Serialize the user information so it can be stored in the session
