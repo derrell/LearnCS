@@ -1,5 +1,0 @@
-apple,red,delicious
-plum,purple,joicy
-banana,yellow,yuck!
-pineapple,yellowish,prickly
-orange,orange,sweet
