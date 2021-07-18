@@ -7,3 +7,6 @@
 [submodule "lib/jison.git"]
 	path = lib/jison.git
 	url = https://github.com/zaach/jison.git
+[submodule "lib/synchronize.git"]
+	path = lib/synchronize.git
+	url = https://github.com/al6x/synchronize.git

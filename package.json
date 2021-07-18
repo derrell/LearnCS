@@ -1,0 +1,27 @@
+{
+  "name": "0.081",
+  "version": "1.0.0",
+  "description": "",
+  "main": "backend.js",
+  "dependencies": {
+    "cookie-parser": "^1.4.5",
+    "cookie-session": "^1.4.0",
+    "express": "^4.17.1",
+    "morgan": "^1.10.0",
+    "nodemailer": "^6.6.3",
+    "passport": "^0.4.1",
+    "passport-freeipa": "^1.0.0",
+    "passport-ldapauth": "^3.0.1",
+    "passport-local": "^1.0.0",
+    "sqlite3": "^5.0.2",
+    "sync": "^0.2.5",
+    "synchronize": "file:lib/synchronize.git"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
