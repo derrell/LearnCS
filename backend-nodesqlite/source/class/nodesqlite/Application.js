@@ -1004,7 +1004,11 @@ console.log("user=" + JSON.stringify(user, null, "  "));
               // SSL_OP_NO_SSLv2 disables SSLv2 to prevent its
               // vulernatibilities as well.
               //
-              secureOptions: constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_SSLv2,
+              secureOptions: (
+                constants.SSL_OP_NO_SSLv3   |
+                constants.SSL_OP_NO_SSLv2   |
+                constants.SSL_OP_NO_TLSv1   |
+                constants.SSL_OP_NO_TLSv1_1),
 
               // default node 0.12 ciphers with RC4 disabled
               ciphers:
