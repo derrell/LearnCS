@@ -6,3 +6,5 @@ learncs.db.backup
 logs
 private
 deploy
+node_modules
+
