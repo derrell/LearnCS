@@ -111,37 +111,37 @@ qx.Class.define("nodesqlite.Application",
      */
     main : function()
     {
-      var             i;
-      var             r;
-      var             _this = this;
-      var             server;
-      var             rpcHandler;
-      var             resourceHandler;
-      var             fs = require("fs");
-      var             http = require("http");
-      var             https = require("https");
-      var             logger = require("morgan");
-      var             express = require("express");
-      var             passport = require("passport");
-      var             constants = require('constants');
-      var             cookieParser = require("cookie-parser");
-      var             cookieSession = require("cookie-session");
-      var             LocalStrategy = require("passport-local").Strategy;
-      var             LdapStrategy = require("passport-ldapauth").Strategy;
-      var             FreeIPAStrategy = require("passport-freeipa").Strategy;
-      var             app = express();
-      var             secret = [];
-      var             strategies = [ "local" ];
-      var             ldapConfig;
-      var             freeipaConfig;
-      var             credentials;
-      var             credentialFiles;
-      var             httpServer;
-      var             httpsServer;
-      var             httpPort = 80;
-      var             httpsPort = 443;
-      var             users;
-      var             dbif=  new playground.dbif.DbifNodeSqlite();
+      var         i;
+      var         r;
+      var         _this = this;
+      var         server;
+      var         rpcHandler;
+      var         resourceHandler;
+      var         fs = require("fs");
+      var         http = require("http");
+      var         https = require("https");
+      var         logger = require("morgan");
+      var         express = require("express");
+      var         passport = require("passport");
+      var         constants = require('constants');
+      var         cookieParser = require("cookie-parser");
+      var         cookieSession = require("cookie-session");
+      var         LocalStrategy = require("passport-local").Strategy;
+      var         LdapStrategy = require("passport-ldapauth").Strategy;
+      var         FreeIPAStrategy = require("passport-freeipa").Strategy;
+      var         app = express();
+      var         secret = [];
+      var         strategies = [ "local" ];
+      var         ldapConfig;
+      var         freeipaConfig;
+      var         credentials;
+      var         credentialFiles;
+      var         httpServer;
+      var         httpsServer;
+      var         httpPort = 80;
+      var         httpsPort = 443;
+      var         users;
+      var         dbif=  new playground.dbif.DbifNodeSqlite();
       
       if (qx.core.Environment.get("runtime.name") == "node.js") 
       {
@@ -333,6 +333,97 @@ qx.Class.define("nodesqlite.Application",
           }));
 
 
+      // Search for a user via ldapsearch
+      passport.use(
+        new LocalStrategy(
+          {
+            usernameField : "username",
+            passwordField : "password"
+          },
+          function(username, password, done)
+          {
+            var             sync = require("synchronize");
+
+            sync.fiber(
+              function()
+              {
+                var             ret;
+                var             args;
+                var             authLocal;
+                var             userInfo;
+                var             spawnSync = require("child_process").spawnSync;
+
+                console.log("Attempting ldapsearch authorization for " +
+                            username + "...");
+
+                // Replace this with spawn to avoid blocking whole process
+                args =
+                  [
+                    "-x",
+                    "-h",
+                    "cs-ds1",
+                    "-D",
+                    "uid=" + username +
+                      ",cn=users,cn=accounts,dc=cs,dc=uml,dc=edu",
+                    '-w',
+                    password,
+                    "uid=" + username,
+                    'cn',
+                    'mail'
+                  ];
+                ret = spawnSync("ldapsearch", args);
+
+                // If not,
+                if (ret.status !== 0)
+                {
+                  // User was not found
+                  console.log("ldapsearch database authentication of user " + 
+                              username + " failed (user not found)");
+                  return done(null, false, { message : "Login failed" } );
+                }
+
+                // Get the relevant portions of the entry (cn, mail)
+                authLocal = {};
+                ret.stdout.toString().split("\n")
+                  .filter(
+                    function(line)
+                    {
+                      // Exclude empty lines and comments
+                      return (
+                        line.trim().length > 0 && ! line.startsWith("#"));
+                    })
+                  .filter(
+                    function(line)
+                    {
+                      // Exclude all entries but cn and mail
+                      return (
+                        line.startsWith("cn: ") || line.startsWith("mail: "));
+                    })
+                  .forEach(
+                    function(line)
+                    {
+                      // Convert from string "type: value" to map
+                      var parts = line.split(/: +/);
+                      authLocal[parts[0]] = parts[1];
+                    });
+
+                // Authentication has succeeded. Build a userInfo return value
+                userInfo =
+                  {
+                    id          : getUserId(username),
+                    displayName : authLocal.cn,
+                    email       : authLocal.mail,
+                    name        : username
+                  };
+
+                console.log("ldapsearch authenticated user " + userInfo.name +
+                            " (" + userInfo.displayName + 
+                            ", " + userInfo.email + ")" +
+                            ", id " + userInfo.id);
+                return done(null, userInfo);
+              });
+          }));
+
 /*
       // Temporarily also support a hard-coded user list
       users =
@@ -407,6 +498,7 @@ qx.Class.define("nodesqlite.Application",
           }));
 */
 
+/*
       // See if we find a freeIPA configuration
       if (nodesqlite.Application.config.freeipa)
       {
@@ -467,6 +559,7 @@ console.log("user=" + JSON.stringify(user, null, "  "));
         // nothing to do. we simply won't use freeIPA.
         console.log("freeIPA not being used.");
       }
+*/
 
 
 /*
