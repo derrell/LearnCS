@@ -118,6 +118,7 @@ qx.Class.define("nodesqlite.Application",
       var         rpcHandler;
       var         resourceHandler;
       var         fs = require("fs");
+      var         temp = require("temp");
       var         http = require("http");
       var         https = require("https");
       var         logger = require("morgan");
@@ -141,7 +142,7 @@ qx.Class.define("nodesqlite.Application",
       var         httpPort = 80;
       var         httpsPort = 443;
       var         users;
-      var         dbif=  new playground.dbif.DbifNodeSqlite();
+      var         dbif = new playground.dbif.DbifNodeSqlite();
       
       if (qx.core.Environment.get("runtime.name") == "node.js") 
       {
@@ -183,6 +184,9 @@ qx.Class.define("nodesqlite.Application",
       app.use(logger("short"));
       app.use(cookieParser());
       
+      // Be sure to clean up temporary files upon exit
+      temp.track();
+
       // Build a random session secret
       r  = Math.floor(Math.random() * 20);
       for (i = r + 10; i >= 0; i--)
@@ -351,10 +355,16 @@ qx.Class.define("nodesqlite.Application",
                 var             args;
                 var             authLocal;
                 var             userInfo;
+                var             passwordFile;
                 var             spawnSync = require("child_process").spawnSync;
 
                 console.log("Attempting ldapsearch authorization for " +
                             username + "...");
+
+                // Create a temporary (mode 0600) file containing the password
+                passwordFile = temp.openSync();
+                fs.writeSync(passwordFile.fd, password);
+                fs.closeSync(passwordFile.fd);
 
                 // Replace this with spawn to avoid blocking whole process
                 args =
@@ -365,8 +375,8 @@ qx.Class.define("nodesqlite.Application",
                     "-D",
                     "uid=" + username +
                       ",cn=users,cn=accounts,dc=cs,dc=uml,dc=edu",
-                    '-w',
-                    password,
+                    '-y',
+                    passwordFile.path,
                     "uid=" + username,
                     'cn',
                     'mail'
@@ -379,6 +389,7 @@ qx.Class.define("nodesqlite.Application",
                   // User was not found
                   console.log("ldapsearch database authentication of user " + 
                               username + " failed (user not found)");
+                  fs.unlinkSync(passwordFile.path);
                   return done(null, false, { message : "Login failed" } );
                 }
 
@@ -420,6 +431,7 @@ qx.Class.define("nodesqlite.Application",
                             " (" + userInfo.displayName + 
                             ", " + userInfo.email + ")" +
                             ", id " + userInfo.id);
+                fs.unlinkSync(passwordFile.path);
                 return done(null, userInfo);
               });
           }));

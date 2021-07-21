@@ -15,7 +15,8 @@
     "passport-local": "^1.0.0",
     "sqlite3": "^5.0.2",
     "sync": "^0.2.5",
-    "synchronize": "file:lib/synchronize.git"
+    "synchronize": "file:lib/synchronize.git",
+    "temp": "^0.9.4"
   },
   "devDependencies": {},
   "scripts": {
