@@ -366,7 +366,11 @@ qx.Class.define("nodesqlite.Application",
                 fs.writeSync(passwordFile.fd, password);
                 fs.closeSync(passwordFile.fd);
 
-                // Replace this with spawn to avoid blocking whole process
+                // Consider replacing this with spawn to avoid
+                // blocking whole process. It will require more
+                // investigation and learning of how to use fibers,
+                // until we can rewrite all of this code in modern
+                // fashion, using promises/async/await.
                 args =
                   [
                     "-x",
@@ -383,10 +387,10 @@ qx.Class.define("nodesqlite.Application",
                   ];
                 ret = spawnSync("ldapsearch", args);
 
-                // If not,
+                // If command failed...
                 if (ret.status !== 0)
                 {
-                  // User was not found
+                  // ... indicate that the user was not found
                   console.log("ldapsearch database authentication of user " + 
                               username + " failed (user not found)");
                   fs.unlinkSync(passwordFile.path);
