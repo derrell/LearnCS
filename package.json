@@ -13,7 +13,7 @@
     "passport-freeipa": "^1.0.0",
     "passport-ldapauth": "^3.0.1",
     "passport-local": "^1.0.0",
-    "sqlite3": "^5.0.2",
+    "sqlite3": "^5.0.3",
     "sync": "^0.2.5",
     "synchronize": "file:lib/synchronize.git",
     "temp": "^0.9.4"
